@@ -3021,7 +3021,7 @@
         var gap=20, colW=(CW-2*gap)/3, rows=[], cur=[], curMax=0;
         function flush(){ if(cur.length){ rows.push({cells:cur,h:curMax}); cur=[]; curMax=0; } }
         fields.forEach(function(f){
-          var wide=(String(f[1]).length>32);
+          var wide=(String(f[1]).length>32 || /@/.test(String(f[1])) || /e-?mail/i.test(String(f[0])));
           var w=wide?CW:colW;
           var lines=doc.splitTextToSize(String(f[1])||"—", w-2);
           var h=11+lines.length*12+7;

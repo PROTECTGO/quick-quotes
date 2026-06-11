@@ -1671,7 +1671,6 @@
             <div class="campo col2"><label>Cargo / Account Detail</label><input type="text" id="opAccountDetail" placeholder="e.g. Amazon, electronics"></div>
             <div class="campo col3"><label>Commodities Hauled <span class="helper-inline">comma-separated · each one becomes a tag</span></label><input type="text" id="opCommodities" placeholder="e.g. Electronics, Pallets, Refrigerated food"></div>
             <div class="campo"><label>Total Commodities</label><input type="text" id="opTotalCommodities" placeholder="0"></div>
-            <div class="campo"><label>Operating Authority Date <span class="helper-inline">MM/DD/YYYY</span></label><input type="text" id="opAuthDate" class="qq-mdy" placeholder="MM/DD/YYYY" inputmode="numeric" maxlength="10"></div>
             <div class="campo"><label>MC / Docket #</label><input type="text" id="opMC" placeholder="MC-000000"></div>
             <div class="campo"><label>Operating Status</label>
               <select id="opStatus">
@@ -1900,17 +1899,18 @@
           <span class="chev"></span>
         </summary>
         <div class="sec-c">
+          <div class="cov-group-label">Resumen <span class="helper-inline" style="text-transform:none;letter-spacing:0">— se calcula solo desde la tabla de abajo</span></div>
           <div class="grid">
-            <div class="campo"><label>Current / Prior Carrier</label><input type="text" id="lossCarrier" placeholder="Carrier name"></div>
-            <div class="campo"><label>Expiring Premium $</label><input type="text" id="lossPrem" placeholder="$" inputmode="numeric"></div>
-            <div class="campo"><label>Years of Loss History</label><input type="text" id="lossYears" placeholder="e.g. 3"></div>
-            <div class="campo"><label>Total Incurred $ <span class="helper-inline">auto · suma de loss runs</span></label><input type="text" id="lossTotalIncurred" placeholder="$0" readonly></div>
+            <div class="campo"><label>Prior Carrier <span class="helper-inline">auto</span></label><input type="text" id="lossCarrier" placeholder="—" readonly></div>
+            <div class="campo"><label>Total Premium $ <span class="helper-inline">auto</span></label><input type="text" id="lossPrem" placeholder="$0" readonly></div>
+            <div class="campo"><label>Years of Loss History <span class="helper-inline">auto</span></label><input type="text" id="lossYears" placeholder="0" readonly></div>
+            <div class="campo"><label>Total Incurred $ <span class="helper-inline">auto · suma</span></label><input type="text" id="lossTotalIncurred" placeholder="$0" readonly></div>
             <div class="campo"><label>Loss Ratio <span class="helper-inline">auto · incurrido ÷ prima</span></label><input type="text" id="lossRatio" placeholder="—" readonly></div>
           </div>
-          <div class="cov-group-label" style="margin-top:18px">Loss runs — one row per policy period</div>
+          <div class="cov-group-label" style="margin-top:18px">Loss runs <span class="helper-inline" style="text-transform:none;letter-spacing:0">— el agente llena esto: una fila por periodo</span></div>
           <div class="rtable" data-rtable data-kind="losses">
-            <div class="rt-head" style="grid-template-columns:1.5fr 1fr 1fr 1.1fr 36px">
-              <div>Carrier</div><div>Loss Value $</div><div>Policy #</div><div>Period</div><div></div>
+            <div class="rt-head" style="grid-template-columns:1.3fr 1fr 1fr 1fr 1.1fr 36px">
+              <div>Carrier</div><div>Loss Value $</div><div>Premium $</div><div>Policy #</div><div>Period</div><div></div>
             </div>
             <div class="rt-rows"></div>
           </div>
@@ -3016,7 +3016,7 @@
       var commodities=tblRows("#sec-commodities",4);
       var safety=pairs("#sec-safety");
       var lossKv=pairs("#sec-losses");
-      var lossRows=tblRows("#sec-losses",4);
+      var lossRows=tblRows("#sec-losses",5);
       var units=tblRows("#sec-units",7).concat(tblRows("#sec-trailers",7));
       var drivers=tblRows("#sec-drivers",6);
       function _num(s){ var n=parseFloat(String(s).replace(/[^0-9.]/g,"")); return isNaN(n)?0:n; }
@@ -3194,7 +3194,7 @@
       }
       tableSection("06","Drivers",["Driver","DOB","CDL / DL #","St","Exp","Hired"],d.drivers,true,true);
       kvSection("07","Loss History",d.lossKv);
-      tableSection("","Loss runs",["Carrier","Loss Value $","Policy #","Period"],d.lossRows,false,false);
+      tableSection("","Loss runs",["Carrier","Loss Value $","Premium $","Policy #","Period"],d.lossRows,false,true);
 
       if(d.pkg.length||d.docs.length||d.link){
         if(y+70>PH-FOOT){doc.addPage();y=M;}
@@ -3271,18 +3271,25 @@
     function fmt(n){ return "$"+Math.round(n).toLocaleString("en-US"); }
     function recompLoss(){
       var tbl=document.querySelector('[data-rtable][data-kind="losses"]'); if(!tbl) return;
-      var total=0;
+      var totalLoss=0, totalPrem=0, years=0, carriers=[];
       tbl.querySelectorAll(".rt-row").forEach(function(r){
-        var ins=r.querySelectorAll("input"); // 0 Carrier · 1 Loss Value $ · 2 Policy # · 3 Period
-        if(ins[1]) total+=num(ins[1].value);
+        var ins=r.querySelectorAll("input"); // 0 Carrier · 1 Loss Value $ · 2 Premium $ · 3 Policy # · 4 Period
+        var any=false; ins.forEach(function(i){ if(i.value && i.value.trim()) any=true; });
+        if(!any) return;
+        years++;
+        if(ins[0] && ins[0].value.trim()){ var c=ins[0].value.trim(); if(carriers.indexOf(c)<0) carriers.push(c); }
+        if(ins[1]) totalLoss+=num(ins[1].value);
+        if(ins[2]) totalPrem+=num(ins[2].value);
       });
-      var ti=document.getElementById("lossTotalIncurred");
+      function set(id,v){ var e=document.getElementById(id); if(e) e.value=v; }
+      set("lossCarrier", carriers.join(" / "));
+      set("lossPrem", totalPrem>0 ? fmt(totalPrem) : "");
+      set("lossYears", years>0 ? String(years) : "");
+      set("lossTotalIncurred", totalLoss>0 ? fmt(totalLoss) : "");
       var lr=document.getElementById("lossRatio");
-      var prem=num((document.getElementById("lossPrem")||{}).value);
-      if(ti) ti.value = total>0 ? fmt(total) : "";
       if(lr){
-        if(total>0 && prem>0){
-          var ratio=Math.round(total/prem*100);
+        if(totalLoss>0 && totalPrem>0){
+          var ratio=Math.round(totalLoss/totalPrem*100);
           lr.value=ratio+"%";
           lr.style.fontWeight="700";
           lr.style.color = ratio<40 ? "#0f6e56" : (ratio<=60 ? "#9a6a00" : "#b3261e");
@@ -3306,10 +3313,18 @@
     var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
     var sb=null, currentId=null, userEmail="";
 
+    function snapKey(e,counts){
+      if(e.id) return "#"+e.id;
+      var campo=e.closest(".campo");
+      var sec=e.closest("details.sec, section.section"); var secId=sec&&sec.id?sec.id:"doc";
+      var lab=""; if(campo){var l=campo.querySelector("label"); if(l) lab=((l.childNodes[0]&&l.childNodes[0].nodeValue)||l.textContent||"").trim();}
+      var base=secId+"::"+lab; var n=(counts[base]=(counts[base]||0)+1); return base+"::"+n;
+    }
     function snapshot(){
-      var s={meta:{},campos:[],filings:[],tables:{},covOn:[],pkgKeyOn:[],pkgBxOn:[]};
+      var s={v:2,meta:{},fields:{},filings:[],tables:{},covOn:[],pkgKeyOn:[],pkgBxOn:[]};
       ["metaQuote","metaEffective","metaVersion","metaStatus","metaPreparedBy"].forEach(function(id){var e=document.getElementById(id); if(e) s.meta[id]=e.value;});
-      document.querySelectorAll(".campo input, .campo select, .campo textarea").forEach(function(e){ s.campos.push(e.type==="checkbox"?(e.checked?1:0):e.value); });
+      var counts={};
+      document.querySelectorAll(".campo input, .campo select, .campo textarea").forEach(function(e){ s.fields[snapKey(e,counts)] = e.type==="checkbox"?(e.checked?1:0):e.value; });
       document.querySelectorAll("#sec-op .fila-check input[type=checkbox]").forEach(function(e){ s.filings.push(e.checked?1:0); });
       document.querySelectorAll("[data-rtable]").forEach(function(t,ti){
         var kind=t.getAttribute("data-kind")||("t"+ti); var rows=[];
@@ -3325,7 +3340,8 @@
       if(!s) return;
       Object.keys(s.meta||{}).forEach(function(id){var e=document.getElementById(id); if(e) e.value=s.meta[id];});
       var ce=document.querySelectorAll(".campo input, .campo select, .campo textarea");
-      (s.campos||[]).forEach(function(v,i){ var e=ce[i]; if(!e) return; if(e.type==="checkbox") e.checked=!!v; else e.value=v; });
+      if(s.fields){ var kc={}; ce.forEach(function(e){ var k=snapKey(e,kc); if(Object.prototype.hasOwnProperty.call(s.fields,k)){ var v=s.fields[k]; if(e.type==="checkbox") e.checked=!!v; else e.value=v; } }); }
+      else { (s.campos||[]).forEach(function(v,i){ var e=ce[i]; if(!e) return; if(e.type==="checkbox") e.checked=!!v; else e.value=v; }); }
       var fe=document.querySelectorAll("#sec-op .fila-check input[type=checkbox]");
       (s.filings||[]).forEach(function(v,i){ if(fe[i]) fe[i].checked=!!v; });
       document.querySelectorAll("[data-rtable]").forEach(function(t,ti){
@@ -3393,25 +3409,4 @@
         '<span class="qq-sp"></span>'+
         '<span class="qq-user" id="qqUser"></span>'+
         '<button class="qq-b alt" data-act="logout">Salir</button>';
-      bar.style.display="none";
-      document.body.insertBefore(bar,document.body.firstChild);
-
-      panel=el("div",{"class":"qq-panel"});
-      panel.innerHTML='<header><h3>Mis Quotes</h3><button class="qq-b alt" data-act="closepanel">Cerrar</button></header><div class="qq-list" id="qqList"></div>';
-      document.body.appendChild(panel);
-
-      overlay=el("div",{"class":"qq-ov"});
-      overlay.innerHTML='<div class="qq-card">'+
-        '<h2>Quick Quotes</h2><p>Ingresa con tu cuenta para ver y guardar tus quotes.</p>'+
-        '<label>Email</label><input id="qqEmail" type="email" autocomplete="username">'+
-        '<label>Contraseña</label><input id="qqPass" type="password" autocomplete="current-password">'+
-        '<button class="qq-b" data-act="login">Entrar</button>'+
-        '<button class="qq-link" data-act="signup">Crear cuenta nueva</button>'+
-        '<div class="qq-msg" id="qqMsg"></div></div>';
-      document.body.appendChild(overlay);
-
-      toast=el("div",{"class":"qq-toast"}); document.body.appendChild(toast);
-
-      document.addEventListener("click",function(e){ var b=e.target.closest("[data-act]"); if(!b) return; var a=b.getAttribute("data-act");
-        if(a==="login") doLogin(); else if(a==="signup") doSignup(); else if(a==="logout") doLogout();
-        else if(a==="list"){ if(panel.classList.contains("open")) panel.classList.remove("open"); el
+      bar.style.dis

@@ -1572,7 +1572,6 @@
           <div class="grid">
             <div class="campo"><label>Agency Name</label><input type="text" placeholder="ProtectGo Services"></div>
             <div class="campo"><label>Carrier / MGA</label><input type="text" placeholder="Insurer / MGA name"></div>
-            <div class="campo"><label>Phone</label><input type="text" placeholder="(210) 961-9194"></div>
             <div class="campo"><label>Account Name</label><input type="text" placeholder="Legal name / DBA"></div>
             <div class="campo"><label>Representative</label><input type="text" placeholder="Name"></div>
             <div class="campo"><label>Phone</label><input type="text" placeholder="(___) ___-____"></div>
@@ -1635,6 +1634,26 @@
             <div class="campo col2"><label>Cargo / Account Detail</label><input type="text" id="opAccountDetail" placeholder="e.g. Amazon, electronics"></div>
             <div class="campo col3"><label>Commodities Hauled <span class="helper-inline">comma-separated · each one becomes a tag</span></label><input type="text" id="opCommodities" placeholder="e.g. Electronics, Pallets, Refrigerated food"></div>
             <div class="campo"><label>Total Commodities</label><input type="text" id="opTotalCommodities" placeholder="0"></div>
+            <div class="campo"><label>Operating Authority Date <span class="helper-inline">MM/DD/YYYY</span></label><input type="text" id="opAuthDate" class="qq-mdy" placeholder="MM/DD/YYYY" inputmode="numeric" maxlength="10"></div>
+            <div class="campo"><label>MC / Docket #</label><input type="text" id="opMC" placeholder="MC-000000"></div>
+            <div class="campo"><label>Operating Status</label>
+              <select id="opStatus">
+                <option value="">Select…</option>
+                <option>Active / Authorized</option>
+                <option>New entrant</option>
+                <option>Reinstated</option>
+                <option>Pending</option>
+                <option>Not authorized</option>
+              </select>
+            </div>
+            <div class="campo"><label>Hazmat Hauled</label>
+              <select id="opHazmat"><option value="">—</option><option>No</option><option>Yes — placarded</option><option>Yes — non-placarded</option></select>
+            </div>
+            <div class="campo"><label>Refrigerated <span class="helper-inline">% of loads</span></label><input type="text" id="opReeferPct" placeholder="0%"></div>
+            <div class="campo"><label>Primary States Traveled</label><input type="text" id="opStates" placeholder="e.g. FL, GA, AL, TX"></div>
+            <div class="campo"><label>Radius — Local <span class="helper-inline">0–50 mi · %</span></label><input type="text" id="opRadLocal" placeholder="0%"></div>
+            <div class="campo"><label>Radius — Intermediate <span class="helper-inline">51–200 mi · %</span></label><input type="text" id="opRadInter" placeholder="0%"></div>
+            <div class="campo"><label>Radius — Long-haul <span class="helper-inline">200+ mi · %</span></label><input type="text" id="opRadLong" placeholder="0%"></div>
           </div>
           <div class="cov-group-label" style="margin-top:18px">Filings that apply</div>
           <div class="fila-check">
@@ -1647,10 +1666,29 @@
         </div>
       </details>
 
-      <!-- ===== 03 · COVERAGES ===== -->
-      <details class="sec" id="sec-cov" open>
+      <!-- ===== 03 · COMMODITIES ===== -->
+      <details class="sec" id="sec-commodities" open>
         <summary class="sec-h">
           <span class="n">03</span>
+          <span class="t">Commodities</span>
+          <span class="sub">Each commodity with share &amp; values</span>
+          <span class="chev"></span>
+        </summary>
+        <div class="sec-c">
+          <div class="rtable" data-rtable data-kind="commodities">
+            <div class="rt-head" style="grid-template-columns:1.6fr .8fr 1fr 1fr 36px">
+              <div>Commodity</div><div>% of Loads</div><div>Avg Value $</div><div>Max Value $</div><div></div>
+            </div>
+            <div class="rt-rows"></div>
+          </div>
+          <button type="button" class="add-row">add commodity</button>
+        </div>
+      </details>
+
+      <!-- ===== 04 · COVERAGES ===== -->
+      <details class="sec" id="sec-cov" open>
+        <summary class="sec-h">
+          <span class="n">04</span>
           <span class="t">Requested Coverages</span>
           <span class="sub">Select a coverage to capture limit / deductible</span>
           <span class="chev"></span>
@@ -1762,15 +1800,15 @@
       <!-- ===== 04 · POWER UNITS ===== -->
       <details class="sec" id="sec-units">
         <summary class="sec-h">
-          <span class="n">04</span>
+          <span class="n">05</span>
           <span class="t">Power Units</span>
           <span class="sub">Year, make, VIN, body, value</span>
           <span class="chev"></span>
         </summary>
         <div class="sec-c">
           <div class="rtable" data-rtable data-kind="units">
-            <div class="rt-head" style="grid-template-columns:.7fr 1fr 1.6fr 1.2fr 1fr 36px">
-              <div>Year</div><div>Make</div><div>VIN #</div><div>Body Type</div><div>Stated Value</div><div></div>
+            <div class="rt-head" style="grid-template-columns:.55fr .8fr 1.5fr .9fr .75fr .85fr .9fr 36px">
+              <div>Year</div><div>Make</div><div>VIN #</div><div>Body Type</div><div>GVWR</div><div>Owned/Leased</div><div>Stated Value</div><div></div>
             </div>
             <div class="rt-rows"></div>
           </div>
@@ -1781,15 +1819,15 @@
       <!-- ===== 05 · TRAILERS ===== -->
       <details class="sec" id="sec-trailers">
         <summary class="sec-h">
-          <span class="n">05</span>
+          <span class="n">06</span>
           <span class="t">Trailers</span>
           <span class="sub">Owned or borrowed equipment</span>
           <span class="chev"></span>
         </summary>
         <div class="sec-c">
           <div class="rtable" data-rtable data-kind="trailers">
-            <div class="rt-head" style="grid-template-columns:.7fr 1fr 1.6fr 1.2fr 1fr 36px">
-              <div>Year</div><div>Make</div><div>VIN #</div><div>Body Type</div><div>Stated Value</div><div></div>
+            <div class="rt-head" style="grid-template-columns:.55fr .8fr 1.5fr .9fr .75fr .85fr .9fr 36px">
+              <div>Year</div><div>Make</div><div>VIN #</div><div>Body Type</div><div>GVWR</div><div>Owned/Leased</div><div>Stated Value</div><div></div>
             </div>
             <div class="rt-rows"></div>
           </div>
@@ -1800,15 +1838,15 @@
       <!-- ===== 06 · DRIVERS ===== -->
       <details class="sec" id="sec-drivers">
         <summary class="sec-h">
-          <span class="n">06</span>
+          <span class="n">07</span>
           <span class="t">Drivers</span>
           <span class="sub">Roster with license &amp; experience</span>
           <span class="chev"></span>
         </summary>
         <div class="sec-c">
           <div class="rtable" data-rtable data-kind="drivers">
-            <div class="rt-head" style="grid-template-columns:1.4fr 1fr 1.2fr .8fr 1fr 1fr 36px">
-              <div>Driver Name</div><div>DOB</div><div>CDL/DL #</div><div>State</div><div>Experience</div><div>Date of Hire</div><div></div>
+            <div class="rt-head" style="grid-template-columns:1.3fr .85fr 1.1fr .5fr .6fr .65fr .9fr .9fr 36px">
+              <div>Driver Name</div><div>DOB</div><div>CDL/DL #</div><div>State</div><div>Exp (yrs)</div><div>MVR (3yr)</div><div>Endorsements</div><div>Date of Hire</div><div></div>
             </div>
             <div class="rt-rows"></div>
           </div>
@@ -1816,10 +1854,36 @@
         </div>
       </details>
 
-      <!-- ===== 07 · SUBMISSION PACKAGE ===== -->
+      <!-- ===== 08 · LOSS HISTORY ===== -->
+      <details class="sec" id="sec-losses">
+        <summary class="sec-h">
+          <span class="n">08</span>
+          <span class="t">Loss History</span>
+          <span class="sub">Prior coverage &amp; loss runs by policy year</span>
+          <span class="chev"></span>
+        </summary>
+        <div class="sec-c">
+          <div class="grid">
+            <div class="campo"><label>Current / Prior Carrier</label><input type="text" id="lossCarrier" placeholder="Carrier name"></div>
+            <div class="campo"><label>Expiring Premium $</label><input type="text" id="lossPrem" placeholder="$"></div>
+            <div class="campo"><label>Years of Loss History</label><input type="text" id="lossYears" placeholder="e.g. 3"></div>
+            <div class="campo"><label>Loss Ratio <span class="helper-inline">incurred / premium</span></label><input type="text" id="lossRatio" placeholder="%"></div>
+          </div>
+          <div class="cov-group-label" style="margin-top:18px">Loss runs by policy year</div>
+          <div class="rtable" data-rtable data-kind="losses">
+            <div class="rt-head" style="grid-template-columns:1fr 1.4fr .8fr 1fr 1fr 1fr 36px">
+              <div>Policy Year</div><div>Carrier</div><div># Claims</div><div>Paid $</div><div>Incurred $</div><div>Status</div><div></div>
+            </div>
+            <div class="rt-rows"></div>
+          </div>
+          <button type="button" class="add-row">add loss year</button>
+        </div>
+      </details>
+
+      <!-- ===== 10 · SUBMISSION PACKAGE ===== -->
       <details class="sec" id="sec-pkg" open>
         <summary class="sec-h">
-          <span class="n">07</span>
+          <span class="n">09</span>
           <span class="t">Submission Package</span>
           <span class="sub">Key analyses &amp; supporting documents</span>
           <span class="chev"></span>
@@ -1978,7 +2042,7 @@
         <span class="lh-sep"></span>
         <span>(210) 961-9194</span>
         <span class="lh-sep"></span>
-        <span>admin@protectgoservices.com</span>
+        <span>kam@protectgoservices.com</span>
         <span class="lh-sep"></span>
         <span>protectgoservices.com</span>
       </div>
@@ -2258,8 +2322,8 @@
         }
         function formatEffective(v) {
           if (!v) return "";
-          if (v.indexOf("-") >= 0) { var p = v.split("-"); return (p.length >= 3) ? (p[1] + "/" + p[2] + "/" + p[0]) : ""; } // ISO -> MM/DD/YYYY
-          return v; // ya MM/DD/YYYY
+          if (v.indexOf("-") >= 0) { var p = v.split("-"); return (p.length >= 3) ? (p[1] + "/" + p[2]) : ""; } // ISO -> MM/DD
+          var q = v.split("/"); return (q.length >= 2) ? (q[0] + "/" + q[1]) : v; // ya MM/DD/YYYY
         }
         function dash(v) { return (v === null || v === undefined || v === "") ? "—" : v; }
 
@@ -2747,7 +2811,7 @@
         if(anHtml||docsHtml||linkHtml) H+='<div class="dsec"><h2><span class="n">06</span> Submission Package</h2><div class="pkg">'+anHtml+'</div>'+docsHtml+linkHtml+'</div>';
         H+='<div class="disc"><b>Coverage is not bound.</b> This proposal is informational and does not bind coverage. To bind, this form must be signed along with the documentation requested by the carrier. Premium must be paid in full prior to binding unless financing is elected. This policy may carry a 25% minimum earned premium. All fees are fully earned at binding. No flat cancellations allowed.</div>';
         H+='<div class="sign"><div class="ln">Insured Signature &nbsp; / &nbsp; Date</div><div class="ln">Agent Signature &nbsp; / &nbsp; Date</div></div>';
-        H+='<div class="foot"><b>ProtectGo Services LLC</b><span class="dot"></span>(210) 961-9194<span class="dot"></span>admin@protectgoservices.com<span class="dot"></span>protectgoservices.com</div>';
+        H+='<div class="foot"><b>ProtectGo Services LLC</b><span class="dot"></span>(210) 961-9194<span class="dot"></span>kam@protectgoservices.com<span class="dot"></span>protectgoservices.com</div>';
         H+='</div>';
         out.innerHTML=H;
       }catch(e){ console.warn("[buildDoc]",e); }
@@ -2910,16 +2974,20 @@
         c.querySelectorAll(".cov-det .campo").forEach(function(d){ var lab=labelOf(d).toLowerCase(); var v=fval(d.querySelector("input")); if(!v) return; if(/ded|comprehensive|collision/.test(lab)){deds.push(v);}else{limit=v;} });
         cov.push([name+(tag?"  "+tag.toUpperCase():""), limit||"—", deds.join(" / ")||"—"]);
       });
-      var units=tblRows("#sec-units",5).concat(tblRows("#sec-trailers",5));
-      var drivers=tblRows("#sec-drivers",6);
+      var commodities=tblRows("#sec-commodities",4);
+      var safety=pairs("#sec-safety");
+      var lossKv=pairs("#sec-losses");
+      var lossRows=tblRows("#sec-losses",6);
+      var units=tblRows("#sec-units",7).concat(tblRows("#sec-trailers",7));
+      var drivers=tblRows("#sec-drivers",8);
       var pkg=[]; document.querySelectorAll("#sec-pkg .pkg-key").forEach(function(k){ var nm=((k.querySelector(".name")||{}).textContent||"").trim(); var ds=((k.querySelector(".what")||{}).textContent||"").trim(); pkg.push([nm,ds,k.classList.contains("on")]); });
       var docsOn=[]; document.querySelectorAll("#sec-pkg .pkg-bx.on").forEach(function(b){ docsOn.push(b.textContent.trim()); });
-      var docsAll=[]; document.querySelectorAll("#sec-pkg .pkg-bx").forEach(function(b){ docsAll.push([b.textContent.trim(), b.classList.contains("on")]); });
       var linkInp=document.querySelector("#sec-pkg .doclink input"); var link=linkInp?(linkInp.value||"").trim():"";
       var dot=byLabel("#sec-op",/us\s*dot/i)||"";
       return {quote:quote,eff:eff,status:status,ver:ver,prep:prep,applicant:applicant,dot:dot,tags:tags,why:why,
         stats:[["Power Units",kpi("kpiUnits")],["Drivers",kpi("kpiDrivers")],["Radius",kpi("kpiRadius")],["Years in Bus.",kpi("kpiYears")],["Effective",kpi("kpiEffective")]],
-        agency:agency,op:op,cov:cov,units:units,drivers:drivers,pkg:pkg,docs:docsOn,docsAll:docsAll,link:link};
+        agency:agency,op:op,commodities:commodities,safety:safety,lossKv:lossKv,lossRows:lossRows,
+        cov:cov,units:units,drivers:drivers,pkg:pkg,docs:docsOn,link:link};
     }
     function sanitize(s){ return String(s||"").replace(/[\\/:*?"<>|]+/g," ").replace(/\s+/g," ").trim(); }
 
@@ -2939,119 +3007,68 @@
       function ensure(h){ if(y+h > PH-FOOT){ doc.addPage(); y=M; } }
       function dashedLine(x1,yy,x2){ doc.setDrawColor(LINE[0],LINE[1],LINE[2]); doc.setLineWidth(0.6); doc.setLineDashPattern([1,1.4],0); doc.line(x1,yy,x2,yy); doc.setLineDashPattern([],0); }
 
-      /* ---- LETTERHEAD (solo pág 1) ---- */
-      doc.setTextColor.apply(doc,NAVY); doc.setFont("helvetica","bold"); doc.setFontSize(21);
-      doc.text("ProtectGo", M, y+16);
-      doc.setFont("courier","normal"); doc.setFontSize(7); doc.setTextColor.apply(doc,TEAL2);
-      doc.text("I N S U R A N C E   S E R V I C E S", M, y+27);
-      doc.setFont("helvetica","bold"); doc.setFontSize(14); doc.setTextColor.apply(doc,NAVY);
-      doc.text("QUICK QUOTE", PW-M, y+9, {align:"right"});
-      doc.setFont("courier","normal"); doc.setFontSize(9); doc.setTextColor.apply(doc,MUTED);
-      doc.text("Quote "+d.quote+"   ·   Effective "+(d.eff||"—"), PW-M, y+23, {align:"right"});
-      // status pill
-      var pill=(d.status+" · v"+d.ver).toUpperCase(), pw=doc.getTextWidth(pill)+14;
-      doc.setFillColor.apply(doc,AMBSOFT); doc.setDrawColor.apply(doc,AMBBOR); doc.setLineWidth(0.7);
-      doc.roundedRect(PW-M-pw, y+30, pw, 14, 7,7,"FD");
-      doc.setFont("courier","bold"); doc.setFontSize(7.5); doc.setTextColor.apply(doc,AMBINK);
-      doc.text(pill, PW-M-pw/2, y+39.5, {align:"center"});
-      y+=46;
-      doc.setDrawColor.apply(doc,NAVY); doc.setLineWidth(1.6); doc.line(M,y,PW-M,y);
-      doc.setDrawColor.apply(doc,AMBER); doc.setLineWidth(1.6); doc.line(M,y+1.2,M+CW*0.18,y+1.2);
-      y+=18;
+      /* ---- HERO BAND (navy) ---- */
+      var TEALLT=[168,212,207], PILLBG=[10,91,84];
+      var bandX=M, bandY=y, bandW=CW, bandH=94, pad=22;
+      doc.setFillColor.apply(doc,NAVY); doc.roundedRect(bandX,bandY,bandW,bandH,6,6,"F");
+      doc.setFillColor.apply(doc,TEAL); doc.rect(bandX,bandY+bandH-3,bandW,3,"F");
+      // wordmark
+      doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor(255,255,255);
+      doc.text("PROTECTGO", bandX+pad, bandY+20);
+      var wmW=doc.getTextWidth("PROTECTGO");
+      doc.setTextColor.apply(doc,TEALLT); doc.text(" SERVICES", bandX+pad+wmW, bandY+20);
+      // US DOT pill (right, vertically centered)
+      var pillX=bandX+bandW-pad, pillW=0, pillH=42, pillY=bandY+(bandH-3-pillH)/2+4;
+      if(d.dot){
+        doc.setFont("helvetica","bold"); doc.setFontSize(16); var numW=doc.getTextWidth(d.dot);
+        doc.setFont("courier","bold"); doc.setFontSize(8); var labW=doc.getTextWidth("US DOT");
+        pillW=Math.max(numW,labW)+34; pillX=bandX+bandW-pad-pillW;
+        doc.setFillColor.apply(doc,PILLBG); doc.setDrawColor.apply(doc,TEALLT); doc.setLineWidth(1);
+        doc.roundedRect(pillX,pillY,pillW,pillH,6,6,"FD");
+        doc.setFont("courier","bold"); doc.setFontSize(8); doc.setTextColor.apply(doc,TEALLT);
+        doc.text("US DOT", pillX+pillW/2, pillY+15, {align:"center"});
+        doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.setTextColor(255,255,255);
+        doc.text(d.dot, pillX+pillW/2, pillY+33, {align:"center"});
+      }
+      // company name (auto-shrink to fit)
+      var availW=(d.dot?pillX-16:bandX+bandW-pad)-(bandX+pad);
+      var nameFs=21; doc.setFont("helvetica","bold"); doc.setFontSize(nameFs);
+      while(doc.getTextWidth(d.applicant)>availW && nameFs>12){ nameFs-=0.5; doc.setFontSize(nameFs); }
+      doc.setTextColor(255,255,255); doc.text(d.applicant, bandX+pad, bandY+54);
+      // subtitle: tags if any, else generic
+      doc.setFont("courier","normal"); doc.setFontSize(8.5); doc.setTextColor.apply(doc,TEALLT);
+      var sub=d.tags.length? d.tags.join("   ·   ") : "COMMERCIAL AUTO   ·   QUICK QUOTE";
+      var subL=doc.splitTextToSize(sub, availW); doc.text(subL[0], bandX+pad, bandY+72);
+      y=bandY+bandH+16;
 
-      /* ---- APPLICANT ---- */
-      doc.setFont("helvetica","bold"); doc.setFontSize(20); doc.setTextColor.apply(doc,NAVY);
-      doc.text(d.applicant, M, y+4);
-      var nameW=doc.getTextWidth(d.applicant);
-      // badge US DOT (al lado del nombre; si el nombre es largo, debajo)
-      var badgeBelow=false, dotTxt="", bw=0;
-      if(d.dot){ doc.setFont("courier","bold"); doc.setFontSize(9); dotTxt="US DOT "+d.dot; bw=doc.getTextWidth(dotTxt)+22;
-        badgeBelow = (M+nameW+14+bw > PW-M-104);
-        if(!badgeBelow){ var bx=M+nameW+14, by=y-11;
-          doc.setFillColor.apply(doc,NAVY); doc.roundedRect(bx,by,bw,18,9,9,"F");
-          doc.setFillColor.apply(doc,AMBER); doc.circle(bx+10,by+9,2.2,"F");
-          doc.setTextColor(255,255,255); doc.text(dotTxt,bx+17,by+12.5); } }
-      doc.setFont("courier","normal"); doc.setFontSize(8.5); doc.setTextColor.apply(doc,FAINT);
-      doc.text("Prepared by", PW-M, y-6, {align:"right"});
-      doc.setTextColor.apply(doc,MUTED); doc.text(d.prep, PW-M, y+5, {align:"right"});
-      var today=new Date(); var ds=(today.getMonth()+1)+"/"+today.getDate()+"/"+today.getFullYear();
-      doc.setTextColor.apply(doc,FAINT); doc.text(ds, PW-M, y+16, {align:"right"});
-      y+=14;
-      if(d.dot && badgeBelow){ doc.setFont("courier","bold"); doc.setFontSize(9); var bx2=M, by2=y+2;
-        doc.setFillColor.apply(doc,NAVY); doc.roundedRect(bx2,by2,bw,18,9,9,"F");
-        doc.setFillColor.apply(doc,AMBER); doc.circle(bx2+10,by2+9,2.2,"F");
-        doc.setTextColor(255,255,255); doc.text(dotTxt,bx2+17,by2+12.5); y+=24; }
-      if(d.tags.length){ doc.setFont("courier","normal"); doc.setFontSize(9); doc.setTextColor.apply(doc,TEAL2);
-        var tline=d.tags.join("   ·   "); var tl=doc.splitTextToSize(tline, CW*0.7);
-        doc.text(tl, M, y+6); y+=tl.length*11; }
+      /* ---- META STRIP ---- */
+      var meta=[["Quote #",d.quote],["Effective",d.eff||"—"],["Version","v"+d.ver],["Prepared by",d.prep]];
+      var mcw=CW/meta.length, maxLines=1;
+      meta.forEach(function(m,i){ var x=M+i*mcw;
+        doc.setFont("courier","bold"); doc.setFontSize(7); doc.setTextColor.apply(doc,FAINT);
+        doc.text(String(m[0]).toUpperCase(), x, y+4);
+        doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor.apply(doc,NAVY);
+        var vl=doc.splitTextToSize(String(m[1]||"—"), mcw-8).slice(0,2); maxLines=Math.max(maxLines,vl.length);
+        doc.text(vl, x, y+16);
+      });
+      y+=8+maxLines*12+6;
+      doc.setDrawColor.apply(doc,LINE); doc.setLineWidth(0.6); doc.line(M,y-4,PW-M,y-4);
       y+=12;
 
-      /* ---- ACCOUNT SUMMARY (KPIs + coberturas + checklist de documentos) ---- */
-      var GREEN=[39,80,10];
-      var covChips=(d.cov||[]).map(function(c){
-        var nm=String(c[0]).replace(/\s+(PRIMARY|SEPARATE LINE)\s*$/i,"").trim();
-        var lim=(c[1]&&c[1]!=="—")?(" "+c[1]):"";
-        return nm+lim;
-      });
-      var checkItems=[];
-      (d.pkg||[]).forEach(function(p){ checkItems.push([p[0],p[2]]); });
-      (d.docsAll||[]).forEach(function(x){ checkItems.push(x); });
-      var chipLines=[];
-      (function(){
-        if(!covChips.length) return;
-        doc.setFont("helvetica","bold"); doc.setFontSize(8.5);
-        var line=[],x=0,maxW=CW-24;
-        covChips.forEach(function(t){ var w=doc.getTextWidth(t)+16; if(x+w>maxW&&line.length){chipLines.push(line);line=[];x=0;} line.push({t:t,w:w}); x+=w+6; });
-        if(line.length) chipLines.push(line);
-      })();
-      var headH=17, statsH=42, chipsH=chipLines.length?chipLines.length*20+4:0;
-      var ckRows=checkItems.length?Math.ceil(checkItems.length/4):0, ckH=ckRows?ckRows*14+12:0;
-      var boxH=headH+statsH+chipsH+ckH+6;
-      ensure(boxH+6);
-      doc.setFillColor(255,255,255); doc.setDrawColor.apply(doc,TEAL); doc.setLineWidth(1);
-      doc.roundedRect(M,y,CW,boxH,5,5,"S");
-      doc.setFillColor.apply(doc,TEALSOFT); doc.rect(M+1,y+1,CW-2,headH,"F");
-      doc.setFont("courier","bold"); doc.setFontSize(7.5); doc.setTextColor.apply(doc,TEAL2);
-      doc.text("ACCOUNT SUMMARY  —  AT A GLANCE", M+12, y+12);
-      var sy=y+headH;
+      /* ---- SNAP STATS ---- */
+      var snapH=46; ensure(snapH);
+      doc.setFillColor.apply(doc,SNAPBG); doc.setDrawColor.apply(doc,LINE); doc.setLineWidth(0.7);
+      doc.roundedRect(M,y,CW,snapH,5,5,"FD");
       var n=d.stats.length, cwid=CW/n;
       d.stats.forEach(function(s,i){
         var x=M+i*cwid;
-        if(i>0){ doc.setDrawColor.apply(doc,LINE2); doc.setLineWidth(0.7); doc.line(x,sy+7,x,sy+statsH-7); }
-        doc.setFont("courier","bold"); doc.setFontSize(7.3); doc.setTextColor.apply(doc,FAINT);
-        doc.text(String(s[0]).toUpperCase(), x+12, sy+15);
-        doc.setFont("helvetica","bold"); doc.setFontSize(13.5); doc.setTextColor.apply(doc,NAVY);
-        doc.text(s[1]||"—", x+12, sy+33);
+        if(i>0){ doc.setDrawColor.apply(doc,LINE2); doc.setLineWidth(0.7); doc.line(x,y+8,x,y+snapH-8); }
+        doc.setFont("courier","bold"); doc.setFontSize(7.5); doc.setTextColor.apply(doc,FAINT);
+        doc.text(String(s[0]).toUpperCase(), x+12, y+16);
+        doc.setFont("helvetica","bold"); doc.setFontSize(15); doc.setTextColor.apply(doc,NAVY);
+        doc.text(s[1]||"—", x+12, y+35);
       });
-      sy+=statsH;
-      if(chipLines.length){
-        chipLines.forEach(function(line){
-          var x=M+12;
-          line.forEach(function(ch){
-            doc.setFillColor.apply(doc,TEALSOFT); doc.roundedRect(x,sy+3,ch.w,14,7,7,"F");
-            doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor.apply(doc,TEAL2);
-            doc.text(ch.t,x+8,sy+12.8); x+=ch.w+6;
-          });
-          sy+=20;
-        });
-        sy+=4;
-      }
-      if(ckRows){
-        doc.setDrawColor.apply(doc,LINE2); doc.setLineWidth(0.7); doc.line(M+10,sy+2,PW-M-10,sy+2); sy+=6;
-        var colW4=(CW-24)/4;
-        checkItems.forEach(function(it,i){
-          var r=Math.floor(i/4), cx=M+12+(i%4)*colW4, cy=sy+9+r*14, ok=it[1];
-          doc.setLineWidth(1.2);
-          if(ok){ doc.setDrawColor.apply(doc,TEAL2); doc.line(cx,cy-2.5,cx+2.2,cy); doc.line(cx+2.2,cy,cx+6.5,cy-6.5); }
-          else { doc.setDrawColor.apply(doc,RED); doc.line(cx,cy-6,cx+5.5,cy); doc.line(cx+5.5,cy-6,cx,cy); }
-          doc.setFont("helvetica","bold"); doc.setFontSize(8.5);
-          if(ok) doc.setTextColor.apply(doc,GREEN); else doc.setTextColor.apply(doc,RED);
-          var nm=String(it[0]); if(doc.getTextWidth(nm)>colW4-16) nm=nm.slice(0,22)+"…";
-          doc.text(nm, cx+11, cy);
-        });
-        sy+=ckRows*14+4;
-      }
-      y+=boxH+10;
+      y+=snapH+8;
 
       if(d.why){ ensure(34); doc.setDrawColor.apply(doc,TEAL); doc.setLineWidth(2); doc.line(M,y,M,y+30);
         doc.setFont("courier","bold"); doc.setFontSize(8); doc.setTextColor.apply(doc,TEAL2); doc.text("WHY THIS ACCOUNT", M+10, y+8);
@@ -3082,17 +3099,15 @@
           else { if(cur.length===3) flush(); cur.push({l:f[0],lines:lines}); curMax=Math.max(curMax,h); }
         });
         flush();
-        var totalH=rows.reduce(function(a,r){return a+r.h;},0)+10;
-        if(y+30+totalH > PH-FOOT && y>M+30){ doc.addPage(); y=M; }
         sectionHeader(num,title);
-        doc.setFillColor.apply(doc,SECBG); doc.setDrawColor.apply(doc,LINE2); doc.setLineWidth(0.6);
-        doc.roundedRect(M-6,y-6,CW+12,totalH+6,4,4,"F");
         var gap2=20, colW2=(CW-2*gap2)/3;
         rows.forEach(function(r){
+          if(y+r.h > PH-FOOT){ doc.addPage(); y=M; }
+          doc.setFillColor.apply(doc,SECBG); doc.rect(M-6, y-6, CW+12, r.h, "F");
           r.cells.forEach(function(c,i){
             var x = c.wide ? M : (M+i*(colW2+gap2));
             var w = c.wide ? CW : colW2;
-            doc.setFont("courier","bold"); doc.setFontSize(8); doc.setTextColor.apply(doc,MUTED);
+            doc.setFont("courier","bold"); doc.setFontSize(7.3); doc.setTextColor.apply(doc,FAINT);
             doc.text(String(c.l).toUpperCase(), x, y+6);
             doc.setFont("helvetica","normal"); doc.setFontSize(10.3); doc.setTextColor.apply(doc,INK);
             doc.text(c.lines, x, y+19);
@@ -3104,17 +3119,17 @@
         y+=14;
       }
 
-      function tableSection(num,title,head,body,mono,colStyles){
+      function tableSection(num,title,head,body,mono,compact){
         if(!body.length) return;
         if(y+60 > PH-FOOT){ doc.addPage(); y=M; }
         sectionHeader(num,title);
         doc.autoTable({
           startY:y, margin:{left:M,right:M,top:M},
           head:[head], body:body, theme:"plain",
-          styles:{font:mono?"courier":"helvetica",fontSize:9.5,cellPadding:6,textColor:INK,lineColor:LINE2,lineWidth:{bottom:0.6},overflow:"linebreak"},
-          headStyles:{fillColor:NAVY,textColor:[255,255,255],fontStyle:"bold",fontSize:7.8,font:"courier",cellPadding:6,lineWidth:0},
+          styles:{font:mono?"courier":"helvetica",fontSize:compact?8:9.5,cellPadding:compact?4:6,textColor:INK,lineColor:LINE2,lineWidth:{bottom:0.6},overflow:"linebreak"},
+          headStyles:{fillColor:NAVY,textColor:[255,255,255],fontStyle:"bold",fontSize:compact?6.8:7.8,font:"courier",cellPadding:compact?4:6,lineWidth:0},
           alternateRowStyles:{fillColor:[250,252,251]},
-          columnStyles:colStyles||{},
+          columnStyles:{},
           didDrawPage:function(){}
         });
         y=doc.lastAutoTable.finalY+16;
@@ -3122,15 +3137,16 @@
 
       kvSection("01","Agency & Applicant",d.agency);
       kvSection("02","Operation",d.op);
-      tableSection("03","Requested Coverages",["Coverage","Limit","Deductible"],d.cov,false);
-      tableSection("04","Power Units & Trailers",["Year","Make","VIN #","Body","Stated Value"],d.units,true,
-        {0:{cellWidth:42},2:{cellWidth:128},4:{cellWidth:78}});
-      tableSection("05","Drivers",["Driver","DOB","CDL / DL #","St","Exp","Hired"],d.drivers,true,
-        {1:{cellWidth:64},2:{cellWidth:104},3:{cellWidth:30},4:{cellWidth:36},5:{cellWidth:64}});
+      tableSection("03","Commodities",["Commodity","% of Loads","Avg Value $","Max Value $"],d.commodities,false,false);
+      tableSection("04","Requested Coverages",["Coverage","Limit","Deductible"],d.cov,false,false);
+      tableSection("05","Power Units & Trailers",["Year","Make","VIN #","Body","GVWR","Own/Lease","Stated Value"],d.units,true,true);
+      tableSection("06","Drivers",["Driver","DOB","CDL / DL #","St","Exp","MVR 3y","Endorse.","Hired"],d.drivers,true,true);
+      kvSection("07","Loss History",d.lossKv);
+      tableSection("","Loss runs by policy year",["Policy Year","Carrier","# Claims","Paid $","Incurred $","Status"],d.lossRows,false,false);
 
       if(d.pkg.length||d.docs.length||d.link){
         if(y+70>PH-FOOT){doc.addPage();y=M;}
-        sectionHeader("06","Submission Package");
+        sectionHeader("08","Submission Package");
         d.pkg.forEach(function(p){
           var ds=doc.splitTextToSize(p[1]||"", CW-150); var h=Math.max(30, 16+ds.length*10);
           ensure(h+6);
@@ -3172,68 +3188,17 @@
       for(var i=1;i<=tot;i++){ doc.setPage(i);
         doc.setDrawColor.apply(doc,LINE); doc.setLineWidth(0.6); doc.line(M,PH-40,PW-M,PH-40);
         doc.setFont("courier","normal"); doc.setFontSize(7.5); doc.setTextColor.apply(doc,MUTED);
-        doc.text("ProtectGo Services LLC   ·   (210) 961-9194   ·   admin@protectgoservices.com", PW/2, PH-28, {align:"center"});
+        doc.text("ProtectGo Services LLC   ·   (210) 961-9194   ·   kam@protectgoservices.com", PW/2, PH-28, {align:"center"});
         doc.setTextColor.apply(doc,FAINT); doc.setFontSize(7);
-        doc.text("Generated "+ds+"   ·   "+i+" / "+tot, PW-M, PH-15, {align:"right"});
+        doc.text(i+" / "+tot, PW-M, PH-15, {align:"right"});
       }
       return doc;
     }
 
-    function faltantes(){
-      var f=[];
-      if(!byLabel("#sec-agency",/account name/i)) f.push(["Account Name","sec-agency"]);
-      if(!fval(document.getElementById("metaEffective"))) f.push(["Effective date","sec-op"]);
-      if(!document.querySelector("#sec-cov .cov.on")) f.push(["Al menos 1 coverage","sec-cov"]);
-      if(!tblRows("#sec-units",5).length && !tblRows("#sec-trailers",5).length) f.push(["Al menos 1 power unit / trailer","sec-units"]);
-      if(!tblRows("#sec-drivers",6).length) f.push(["Al menos 1 driver","sec-drivers"]);
-      return f;
-    }
-    function generar(){
-      var falta=faltantes();
-      if(falta.length){
-        var names=falta.map(function(x){return "  •  "+x[0];}).join("\n");
-        if(!confirm("Antes de exportar, faltan datos clave:\n\n"+names+"\n\n¿Exportar de todas formas?")){
-          var sec=document.getElementById(falta[0][1]);
-          if(sec){ if(sec.tagName==="DETAILS") sec.open=true; sec.scrollIntoView({behavior:"smooth",block:"start"}); }
-          return;
-        }
-      }
-      var d=collect(); var doc=renderDoc(d); if(!doc) return;
+    function generar(){ var d=collect(); var doc=renderDoc(d); if(!doc) return;
       var fname=sanitize("Quick Quote - "+(d.applicant!=="—"?d.applicant:d.quote))+".pdf"; doc.save(fname); }
 
     window.__exportarCopiable = generar;
-  })();
-  </script>
-
-  <!-- ===== MASCARAS DE ENTRADA: fecha MM/DD/YYYY y telefono (xxx) xxx-xxxx ===== -->
-  <script>
-  (function(){
-    "use strict";
-    function maskDate(v){
-      var d=v.replace(/\D/g,"").slice(0,8), out=d;
-      if(d.length>4) out=d.slice(0,2)+"/"+d.slice(2,4)+"/"+d.slice(4);
-      else if(d.length>2) out=d.slice(0,2)+"/"+d.slice(2);
-      return out;
-    }
-    function maskPhone(v){
-      var d=v.replace(/\D/g,"").slice(0,10);
-      if(d.length>6) return "("+d.slice(0,3)+") "+d.slice(3,6)+"-"+d.slice(6);
-      if(d.length>3) return "("+d.slice(0,3)+") "+d.slice(3);
-      return d;
-    }
-    document.addEventListener("input",function(e){
-      var el=e.target;
-      if(!el||el.tagName!=="INPUT"||el.__masking) return;
-      var fn=null;
-      if(el.classList.contains("qq-mdy")) fn=maskDate;
-      else{
-        var c=el.closest(".campo");
-        if(c){ var l=c.querySelector("label"); var t=l?l.textContent:""; if(/phone/i.test(t)) fn=maskPhone; }
-      }
-      if(!fn) return;
-      var nv=fn(el.value);
-      if(nv!==el.value){ el.__masking=true; el.value=nv; el.__masking=false; }
-    },true);
   })();
   </script>
 
@@ -3244,98 +3209,39 @@
     "use strict";
     var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
     var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
-    var sb=null, currentId=null, userEmail="", dirty=false, restoring=false;
-    function updateCur(){
-      var e=document.getElementById("qqCur"); if(!e) return;
-      var q=(document.getElementById("metaQuote")||{}).value||"";
-      var base=currentId?("Editando "+q):(q?("Nueva "+q):"Nueva quote");
-      e.textContent=base+(dirty?"  ·  sin guardar":"  ·  guardado ✓");
-      e.className="qq-cur"+(dirty?" dirty":"");
-    }
+    var sb=null, currentId=null, userEmail="";
 
-    function fieldList(){ return document.querySelectorAll(".campo input, .campo select, .campo textarea"); }
-    function fieldKeys(){
-      var counts={}, keys=[];
-      fieldList().forEach(function(e){
-        var base;
-        if(e.id){ base="#"+e.id; }
-        else{
-          var secEl=e.closest("details.sec, section.section"); var sec=secEl&&secEl.id?secEl.id:"";
-          var covEl=e.closest(".cov"); var covN=""; if(covEl){ var nm=covEl.querySelector(".cov-top .name"); if(nm) covN=nm.textContent.trim(); }
-          var lab=""; var c=e.closest(".campo"); if(c){ var l=c.querySelector("label"); if(l) lab=(l.childNodes[0]&&l.childNodes[0].nodeValue?l.childNodes[0].nodeValue:l.textContent).trim(); }
-          base=sec+"|"+covN+"|"+lab;
-        }
-        var n=counts[base]=(counts[base]||0)+1;
-        keys.push(n>1?base+"~"+n:base);
-      });
-      return keys;
-    }
-    function togKey(el){
-      var n=el.querySelector(".name")||el.querySelector("label");
-      return (n?n.textContent:el.textContent).trim().replace(/\s+/g," ");
-    }
     function snapshot(){
-      var s={v:2,meta:{},campos:[],filings:[],tables:{},covOn:[],pkgKeyOn:[],pkgBxOn:[],
-             camposK:{},filingsK:{},covK:[],pkgKeyK:[],pkgBxK:[]};
+      var s={meta:{},campos:[],filings:[],tables:{},covOn:[],pkgKeyOn:[],pkgBxOn:[]};
       ["metaQuote","metaEffective","metaVersion","metaStatus","metaPreparedBy"].forEach(function(id){var e=document.getElementById(id); if(e) s.meta[id]=e.value;});
-      var keys=fieldKeys();
-      fieldList().forEach(function(e,i){
-        var v=e.type==="checkbox"?(e.checked?1:0):e.value;
-        s.campos.push(v); s.camposK[keys[i]]=v;
-      });
-      document.querySelectorAll("#sec-op .fila-check input[type=checkbox]").forEach(function(e){
-        var k=togKey(e.closest("label")||e.parentNode);
-        s.filings.push(e.checked?1:0); if(e.checked) s.filingsK[k]=1;
-      });
+      document.querySelectorAll(".campo input, .campo select, .campo textarea").forEach(function(e){ s.campos.push(e.type==="checkbox"?(e.checked?1:0):e.value); });
+      document.querySelectorAll("#sec-op .fila-check input[type=checkbox]").forEach(function(e){ s.filings.push(e.checked?1:0); });
       document.querySelectorAll("[data-rtable]").forEach(function(t,ti){
         var kind=t.getAttribute("data-kind")||("t"+ti); var rows=[];
-        t.querySelectorAll(".rt-rows .rt-row").forEach(function(r){ var vals=[]; r.querySelectorAll("input").forEach(function(i){vals.push(i.value);}); if(vals.some(function(v){return v&&v.trim();})) rows.push(vals); });
+        t.querySelectorAll(".rt-rows .rt-row").forEach(function(r){ var vals=[]; r.querySelectorAll("input").forEach(function(i){vals.push(i.value);}); rows.push(vals); });
         s.tables[kind]=rows;
       });
-      document.querySelectorAll(".cov").forEach(function(c,i){ if(c.classList.contains("on")){ s.covOn.push(i); s.covK.push(togKey(c)); } });
-      document.querySelectorAll(".pkg-key").forEach(function(c,i){ if(c.classList.contains("on")){ s.pkgKeyOn.push(i); s.pkgKeyK.push(togKey(c)); } });
-      document.querySelectorAll(".pkg-bx").forEach(function(c,i){ if(c.classList.contains("on")){ s.pkgBxOn.push(i); s.pkgBxK.push(togKey(c)); } });
+      document.querySelectorAll(".cov").forEach(function(c,i){ if(c.classList.contains("on")) s.covOn.push(i); });
+      document.querySelectorAll(".pkg-key").forEach(function(c,i){ if(c.classList.contains("on")) s.pkgKeyOn.push(i); });
+      document.querySelectorAll(".pkg-bx").forEach(function(c,i){ if(c.classList.contains("on")) s.pkgBxOn.push(i); });
       return s;
     }
     function restore(s){
       if(!s) return;
-      restoring=true;
-      try{ restore2(s); } finally { restoring=false; dirty=false; updateCur(); }
-    }
-    function restore2(s){
-      var keyed=s.v>=2&&s.camposK;
       Object.keys(s.meta||{}).forEach(function(id){var e=document.getElementById(id); if(e) e.value=s.meta[id];});
-      if(keyed){
-        var keys=fieldKeys();
-        fieldList().forEach(function(e,i){
-          if(!(keys[i] in s.camposK)) return;
-          var v=s.camposK[keys[i]];
-          if(e.type==="checkbox") e.checked=!!v; else e.value=v;
-        });
-      }else{
-        var ce=fieldList();
-        (s.campos||[]).forEach(function(v,i){ var e=ce[i]; if(!e) return; if(e.type==="checkbox") e.checked=!!v; else e.value=v; });
-      }
+      var ce=document.querySelectorAll(".campo input, .campo select, .campo textarea");
+      (s.campos||[]).forEach(function(v,i){ var e=ce[i]; if(!e) return; if(e.type==="checkbox") e.checked=!!v; else e.value=v; });
       var fe=document.querySelectorAll("#sec-op .fila-check input[type=checkbox]");
-      if(keyed){
-        fe.forEach(function(e){ var k=togKey(e.closest("label")||e.parentNode); e.checked=!!(s.filingsK&&s.filingsK[k]); });
-      }else{
-        (s.filings||[]).forEach(function(v,i){ if(fe[i]) fe[i].checked=!!v; });
-      }
+      (s.filings||[]).forEach(function(v,i){ if(fe[i]) fe[i].checked=!!v; });
       document.querySelectorAll("[data-rtable]").forEach(function(t,ti){
         var kind=t.getAttribute("data-kind")||("t"+ti); var rows=(s.tables||{})[kind]||[];
         var cont=t.querySelector(".rt-rows"); if(!cont) return; cont.innerHTML="";
         var addBtn=(t.closest(".sec-c")||t.parentNode).querySelector(".add-row")||t.parentNode.querySelector(".add-row");
         rows.forEach(function(vals){ if(addBtn) addBtn.click(); var nr=cont.lastElementChild; if(nr){ var ins=nr.querySelectorAll("input"); vals.forEach(function(v,j){ if(ins[j]) ins[j].value=v; }); } });
       });
-      function restoreTog(sel,keyArr,idxArr){
-        var els=document.querySelectorAll(sel); els.forEach(function(c){c.classList.remove("on");});
-        if(keyed&&keyArr){ els.forEach(function(c){ if(keyArr.indexOf(togKey(c))>=0) c.classList.add("on"); }); }
-        else{ (idxArr||[]).forEach(function(i){ if(els[i]) els[i].classList.add("on"); }); }
-      }
-      restoreTog(".cov",s.covK,s.covOn);
-      restoreTog(".pkg-key",s.pkgKeyK,s.pkgKeyOn);
-      restoreTog(".pkg-bx",s.pkgBxK,s.pkgBxOn);
+      var covs=document.querySelectorAll(".cov"); covs.forEach(function(c){c.classList.remove("on");}); (s.covOn||[]).forEach(function(i){ if(covs[i]) covs[i].classList.add("on"); });
+      var pk=document.querySelectorAll(".pkg-key"); pk.forEach(function(c){c.classList.remove("on");}); (s.pkgKeyOn||[]).forEach(function(i){ if(pk[i]) pk[i].classList.add("on"); });
+      var pb=document.querySelectorAll(".pkg-bx"); pb.forEach(function(c){c.classList.remove("on");}); (s.pkgBxOn||[]).forEach(function(i){ if(pb[i]) pb[i].classList.add("on"); });
       try{ document.dispatchEvent(new Event("input",{bubbles:true})); document.dispatchEvent(new Event("change",{bubbles:true})); }catch(e){}
       if(window.__recalcProgreso) window.__recalcProgreso();
     }
@@ -3381,9 +3287,6 @@
       ".qq-empty{color:#8a989a;font-size:13px;text-align:center;padding:30px 10px;}"+
       ".qq-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#002F3D;color:#fff;padding:10px 20px;border-radius:999px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:9999;}"+
       ".qq-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}"+
-      ".qq-cur{font-size:11.5px;color:#9fc6bd;font-family:'IBM Plex Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:30vw;}"+
-      ".qq-cur.dirty{color:#ffb400;}"+
-      "@media (max-width:640px){[data-rtable]{overflow-x:auto;-webkit-overflow-scrolling:touch;}[data-rtable] .rt-head,[data-rtable] .rt-row{min-width:620px;}.add-row{min-height:40px;}.row-del{min-width:36px;min-height:36px;}.qq-bar{flex-wrap:wrap;height:auto;padding:8px 10px;}body{padding-top:96px;}.qq-cur{max-width:90vw;}}"+
       "@media print{.qq-bar,.qq-panel,.qq-ov,.qq-toast{display:none !important;}body{padding-top:0 !important;}}";
       document.head.appendChild(css);
 
@@ -3391,9 +3294,7 @@
       bar.innerHTML='<span class="qq-logo">Protect<i>Go</i> · Quick Quotes</span>'+
         '<button class="qq-b alt" data-act="list">Mis Quotes</button>'+
         '<button class="qq-b" data-act="new">Nueva</button>'+
-        '<button class="qq-b alt" data-act="dup">Duplicar</button>'+
         '<button class="qq-b save" data-act="save">Guardar</button>'+
-        '<span class="qq-cur" id="qqCur"></span>'+
         '<span class="qq-sp"></span>'+
         '<span class="qq-user" id="qqUser"></span>'+
         '<button class="qq-b alt" data-act="logout">Salir</button>';
@@ -3419,14 +3320,9 @@
       document.addEventListener("click",function(e){ var b=e.target.closest("[data-act]"); if(!b) return; var a=b.getAttribute("data-act");
         if(a==="login") doLogin(); else if(a==="signup") doSignup(); else if(a==="logout") doLogout();
         else if(a==="list"){ if(panel.classList.contains("open")) panel.classList.remove("open"); else openPanel(); } else if(a==="closepanel"){ panel.classList.remove("open"); }
-        else if(a==="new"){ if(confirm(dirty?"Tienes cambios sin guardar que se perderán. ¿Empezar una quote nueva?":"¿Empezar una quote nueva? Se limpiará el formulario.")){ clearForm(); currentId=null; dirty=false; updateCur(); showToast("Quote nueva"); } }
-        else if(a==="dup"){ currentId=null; var mq=document.getElementById("metaQuote"); if(mq&&mq.value&&!/-COPY/.test(mq.value)) mq.value=mq.value+"-COPY"; dirty=true; updateCur(); showToast("Copia creada — dale Guardar"); }
+        else if(a==="new"){ if(confirm("¿Empezar una quote nueva? Se limpiará el formulario.")){ clearForm(); currentId=null; showToast("Quote nueva"); } }
         else if(a==="save") doSave();
       });
-      function markDirty(e){ if(restoring) return; var t=e.target; if(t&&t.closest&&t.closest(".qq-ov,.qq-bar,.qq-panel")) return; dirty=true; updateCur(); }
-      document.addEventListener("input",markDirty,true);
-      document.addEventListener("change",markDirty,true);
-      window.addEventListener("beforeunload",function(e){ if(dirty){ e.preventDefault(); e.returnValue=""; } });
     }
     function showToast(m){ toast.textContent=m; toast.classList.add("show"); setTimeout(function(){toast.classList.remove("show");},1500); }
     function msg(t,cls){ var m=document.getElementById("qqMsg"); if(m){ m.textContent=t; m.className="qq-msg "+(cls||""); } }
@@ -3434,7 +3330,7 @@
     function onAuthed(session){
       userEmail=session&&session.user?session.user.email:"";
       var u=document.getElementById("qqUser"); if(u) u.textContent=userEmail;
-      overlay.style.display="none"; bar.style.display="flex"; updateCur();
+      overlay.style.display="none"; bar.style.display="flex";
     }
     function onSignedOut(){ bar.style.display="none"; panel.classList.remove("open"); overlay.style.display="flex"; }
 
@@ -3452,7 +3348,7 @@
       if(currentId){ q=sb.from("quick_quotes").update(row).eq("id",currentId).select("id").single(); }
       else { q=sb.from("quick_quotes").insert(row).select("id").single(); }
       showToast("Guardando…");
-      q.then(function(r){ if(r.error){ showToast("Error al guardar"); alert("No se pudo guardar: "+r.error.message); return; } if(r.data&&r.data.id) currentId=r.data.id; dirty=false; updateCur(); showToast("Quote guardada ✓"); }); }
+      q.then(function(r){ if(r.error){ showToast("Error al guardar"); alert("No se pudo guardar: "+r.error.message); return; } if(r.data&&r.data.id) currentId=r.data.id; showToast("Quote guardada ✓"); }); }
     function openPanel(){ panel.classList.add("open"); var list=document.getElementById("qqList"); list.innerHTML='<div class="qq-empty">Cargando…</div>';
       sb.from("quick_quotes").select("id,account_name,quote_number,status,updated_at").order("updated_at",{ascending:false}).then(function(r){
         if(r.error){ list.innerHTML='<div class="qq-empty">Error: '+r.error.message+'</div>'; return; }
@@ -3469,9 +3365,7 @@
           list.appendChild(d);
         });
       }); }
-    function openQuote(id){
-      if(dirty&&!confirm("Tienes cambios sin guardar que se perderán. ¿Abrir esta quote?")) return;
-      showToast("Abriendo…"); sb.from("quick_quotes").select("data").eq("id",id).single().then(function(r){ if(r.error){ alert(r.error.message); return; } restore(r.data&&r.data.data?r.data.data:{}); currentId=id; dirty=false; updateCur(); panel.classList.remove("open"); showToast("Quote cargada ✓"); window.scrollTo(0,0); }); }
+    function openQuote(id){ showToast("Abriendo…"); sb.from("quick_quotes").select("data").eq("id",id).single().then(function(r){ if(r.error){ alert(r.error.message); return; } restore(r.data&&r.data.data?r.data.data:{}); currentId=id; panel.classList.remove("open"); showToast("Quote cargada ✓"); window.scrollTo(0,0); }); }
 
     function init(){
       buildUI();
@@ -3487,5 +3381,4 @@
 
 </body>
 </html>
-<!-- v0.2.0 -->
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 

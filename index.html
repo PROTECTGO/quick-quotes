@@ -1594,12 +1594,28 @@
           <div class="grid">
             <div class="campo"><label>Effective Date <span class="helper-inline">MM/DD/YYYY</span></label><input type="text" id="opEffective" class="qq-mdy" placeholder="MM/DD/YYYY" inputmode="numeric" maxlength="10"></div>
             <div class="campo"><label>US DOT#</label><input type="text" placeholder="0000000"></div>
-            <div class="campo"><label>Authority</label>
+            <div class="campo"><label>Operation Classification <span class="helper-inline">SAFER</span></label>
               <select id="opAuthority">
                 <option value="">Select…</option>
-                <option>For Hire</option>
-                <option>Private</option>
-                <option>Bobtail</option>
+                <option>Authorized For Hire</option>
+                <option>Exempt For Hire</option>
+                <option>Private (Property)</option>
+                <option>Private Passenger (Business)</option>
+                <option>Private Passenger (Non-business)</option>
+                <option>Migrant</option>
+                <option>U.S. Mail</option>
+                <option>Federal Government</option>
+                <option>State Government</option>
+                <option>Local Government</option>
+                <option>Indian Nation</option>
+              </select>
+            </div>
+            <div class="campo"><label>Carrier Operation <span class="helper-inline">SAFER</span></label>
+              <select id="opCarrierOp">
+                <option value="">Select…</option>
+                <option>Interstate</option>
+                <option>Intrastate Only (HM)</option>
+                <option>Intrastate Only (Non-HM)</option>
               </select>
             </div>
             <div class="campo"><label>Filing MC</label><select><option value="">—</option><option>Yes</option><option>No</option></select></div>
@@ -1619,17 +1635,37 @@
               </select>
             </div>
             <div class="campo"><label>Radius Of Operations</label><input type="text" id="opRadius" placeholder="e.g. 500 mi"></div>
-            <div class="campo"><label>Cargo Category</label>
+            <div class="campo"><label>Cargo Category <span class="helper-inline">SAFER</span></label>
               <select id="opCargoCat">
                 <option value="">Select…</option>
                 <option>General Freight</option>
-                <option>Refrigerated</option>
                 <option>Household Goods</option>
+                <option>Metal: sheets, coils, rolls</option>
+                <option>Motor Vehicles</option>
+                <option>Drive/Tow away</option>
+                <option>Logs, Poles, Beams, Lumber</option>
                 <option>Building Materials</option>
-                <option>Intermodal</option>
-                <option>Vehicles</option>
-                <option>Agriculture</option>
-                <option>Other</option>
+                <option>Mobile Homes</option>
+                <option>Machinery, Large Objects</option>
+                <option>Fresh Produce</option>
+                <option>Liquids/Gases</option>
+                <option>Intermodal Containers</option>
+                <option>Passengers</option>
+                <option>Oilfield Equipment</option>
+                <option>Grain, Feed, Hay</option>
+                <option>Coal/Coke</option>
+                <option>Meat</option>
+                <option>Garbage/Refuse</option>
+                <option>US Mail</option>
+                <option>Chemicals</option>
+                <option>Commodities Dry Bulk</option>
+                <option>Refrigerated Food</option>
+                <option>Beverages</option>
+                <option>Paper Products</option>
+                <option>Utilities</option>
+                <option>Agricultural/Farm Supplies</option>
+                <option>Construction</option>
+                <option>Water Well</option>
               </select>
             </div>
             <div class="campo col2"><label>Cargo / Account Detail</label><input type="text" id="opAccountDetail" placeholder="e.g. Amazon, electronics"></div>
@@ -1846,8 +1882,8 @@
         </summary>
         <div class="sec-c">
           <div class="rtable" data-rtable data-kind="drivers">
-            <div class="rt-head" style="grid-template-columns:1.2fr .8fr 1.05fr .85fr .55fr .6fr .85fr .85fr 36px">
-              <div>Driver Name</div><div>DOB</div><div>CDL/DL #</div><div>State</div><div>Exp (yrs)</div><div>MVR (3yr)</div><div>Endorsements</div><div>Date of Hire</div><div></div>
+            <div class="rt-head" style="grid-template-columns:1.5fr .95fr 1.25fr 1fr .75fr 1fr 36px">
+              <div>Driver Name</div><div>DOB</div><div>CDL/DL #</div><div>State</div><div>Exp (yrs)</div><div>Date of Hire</div><div></div>
             </div>
             <div class="rt-rows"></div>
           </div>
@@ -1860,17 +1896,18 @@
         <summary class="sec-h">
           <span class="n">08</span>
           <span class="t">Loss History</span>
-          <span class="sub">Prior coverage &amp; loss runs by policy year</span>
+          <span class="sub">Prior coverage &amp; loss runs — ratio auto-calculated</span>
           <span class="chev"></span>
         </summary>
         <div class="sec-c">
           <div class="grid">
             <div class="campo"><label>Current / Prior Carrier</label><input type="text" id="lossCarrier" placeholder="Carrier name"></div>
-            <div class="campo"><label>Expiring Premium $</label><input type="text" id="lossPrem" placeholder="$"></div>
+            <div class="campo"><label>Expiring Premium $</label><input type="text" id="lossPrem" placeholder="$" inputmode="numeric"></div>
             <div class="campo"><label>Years of Loss History</label><input type="text" id="lossYears" placeholder="e.g. 3"></div>
-            <div class="campo"><label>Loss Ratio <span class="helper-inline">incurred / premium</span></label><input type="text" id="lossRatio" placeholder="%"></div>
+            <div class="campo"><label>Total Incurred $ <span class="helper-inline">auto · suma de loss runs</span></label><input type="text" id="lossTotalIncurred" placeholder="$0" readonly></div>
+            <div class="campo"><label>Loss Ratio <span class="helper-inline">auto · incurrido ÷ prima</span></label><input type="text" id="lossRatio" placeholder="—" readonly></div>
           </div>
-          <div class="cov-group-label" style="margin-top:18px">Loss runs by policy year</div>
+          <div class="cov-group-label" style="margin-top:18px">Loss runs — one row per policy period</div>
           <div class="rtable" data-rtable data-kind="losses">
             <div class="rt-head" style="grid-template-columns:1.5fr 1fr 1fr 1.1fr 36px">
               <div>Carrier</div><div>Loss Value $</div><div>Policy #</div><div>Period</div><div></div>
@@ -1930,6 +1967,7 @@
             <div class="pkg-bx"><span class="b"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2.6" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>Police / Accident</div>
             <div class="pkg-bx"><span class="b"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2.6" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>IFTA / IRP</div>
             <div class="pkg-bx"><span class="b"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2.6" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>Inspections</div>
+            <div class="pkg-bx"><span class="b"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2.6" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>FMCSA report</div>
             <div class="pkg-bx"><span class="b"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2.6" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>ACORD</div>
             <div class="pkg-bx"><span class="b"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2.6" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>Authority</div>
             <div class="pkg-bx"><span class="b"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2.6" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>Cab card</div>
@@ -2980,7 +3018,11 @@
       var lossKv=pairs("#sec-losses");
       var lossRows=tblRows("#sec-losses",4);
       var units=tblRows("#sec-units",7).concat(tblRows("#sec-trailers",7));
-      var drivers=tblRows("#sec-drivers",8);
+      var drivers=tblRows("#sec-drivers",6);
+      function _num(s){ var n=parseFloat(String(s).replace(/[^0-9.]/g,"")); return isNaN(n)?0:n; }
+      var tivNum=0; units.forEach(function(r){ tivNum+=_num(r[r.length-1]); });
+      var tiv = tivNum? "$"+tivNum.toLocaleString("en-US") : "";
+      cov.forEach(function(c){ if(/physical damage/i.test(c[0]) && (!c[1]||c[1]==="—")) c[1]=tiv||c[1]; });
       var pkg=[]; document.querySelectorAll("#sec-pkg .pkg-key").forEach(function(k){ var nm=((k.querySelector(".name")||{}).textContent||"").trim(); var ds=((k.querySelector(".what")||{}).textContent||"").trim(); pkg.push([nm,ds,k.classList.contains("on")]); });
       var docsOn=[]; document.querySelectorAll("#sec-pkg .pkg-bx.on").forEach(function(b){ docsOn.push(b.textContent.trim()); });
       var linkInp=document.querySelector("#sec-pkg .doclink input"); var link=linkInp?(linkInp.value||"").trim():"";
@@ -2988,7 +3030,7 @@
       return {quote:quote,eff:eff,status:status,ver:ver,prep:prep,applicant:applicant,dot:dot,tags:tags,why:why,
         stats:[["Power Units",kpi("kpiUnits")],["Drivers",kpi("kpiDrivers")],["Radius",kpi("kpiRadius")],["Years in Bus.",kpi("kpiYears")],["Effective",kpi("kpiEffective")]],
         agency:agency,op:op,commodities:commodities,safety:safety,lossKv:lossKv,lossRows:lossRows,
-        cov:cov,units:units,drivers:drivers,pkg:pkg,docs:docsOn,link:link};
+        cov:cov,units:units,tiv:tiv,drivers:drivers,pkg:pkg,docs:docsOn,link:link};
     }
     function sanitize(s){ return String(s||"").replace(/[\\/:*?"<>|]+/g," ").replace(/\s+/g," ").trim(); }
 
@@ -3141,7 +3183,16 @@
       tableSection("03","Commodities",["Commodity","% of Loads","Avg Value $","Max Value $"],d.commodities,false,false);
       tableSection("04","Requested Coverages",["Coverage","Limit","Deductible"],d.cov,false,false);
       tableSection("05","Power Units & Trailers",["Year","Make","VIN #","Body","GVWR","Own/Lease","Stated Value"],d.units,true,true);
-      tableSection("06","Drivers",["Driver","DOB","CDL / DL #","St","Exp","MVR 3y","Endorse.","Hired"],d.drivers,true,true);
+      if(d.tiv){ ensure(24);
+        doc.setFillColor.apply(doc,TEALSOFT); doc.setDrawColor.apply(doc,TEAL); doc.setLineWidth(0.6);
+        doc.rect(M, y-2, CW, 20, "F"); doc.setFillColor.apply(doc,TEAL); doc.rect(M, y-2, 3, 20, "F");
+        doc.setFont("courier","bold"); doc.setFontSize(8); doc.setTextColor.apply(doc,TEAL2);
+        doc.text("TOTAL STATED VALUE  ·  AVALUOS", M+12, y+11);
+        doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor.apply(doc,NAVY);
+        doc.text(d.tiv, PW-M-10, y+11, {align:"right"});
+        y+=30;
+      }
+      tableSection("06","Drivers",["Driver","DOB","CDL / DL #","St","Exp","Hired"],d.drivers,true,true);
       kvSection("07","Loss History",d.lossKv);
       tableSection("","Loss runs",["Carrier","Loss Value $","Policy #","Period"],d.lossRows,false,false);
 
@@ -3163,10 +3214,19 @@
           doc.text((on?"Included":"Missing"), PW-M-10, y+15, {align:"right"});
           y+=h+8;
         });
-        if(d.docs.length){ ensure(20); doc.setFont("courier","bold"); doc.setFontSize(8); doc.setTextColor.apply(doc,FAINT);
-          doc.text("SUPPORTING DOCUMENTS", M, y+6);
-          doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor.apply(doc,INK);
-          doc.text(d.docs.join("    ·    "), M, y+19); y+=28; }
+        if(d.docs.length){ ensure(30); doc.setFont("courier","bold"); doc.setFontSize(8); doc.setTextColor.apply(doc,FAINT);
+          doc.text("ATTACHED DOCUMENTS", M, y+6); y+=12;
+          var cx=M, chipH=17; doc.setFont("helvetica","normal"); doc.setFontSize(9);
+          d.docs.forEach(function(nm){
+            var w=doc.getTextWidth(nm)+24;
+            if(cx+w>PW-M){ cx=M; y+=chipH+6; ensure(chipH+8); }
+            doc.setFillColor.apply(doc,TEALSOFT); doc.setDrawColor.apply(doc,TEAL); doc.setLineWidth(0.5);
+            doc.roundedRect(cx,y,w,chipH,8,8,"FD");
+            doc.setFillColor.apply(doc,TEAL); doc.circle(cx+9,y+chipH/2,2.1,"F");
+            doc.setTextColor.apply(doc,TEAL2); doc.text(nm, cx+16, y+chipH/2+3);
+            cx+=w+6;
+          });
+          y+=chipH+12; }
         if(d.link){ var ll=doc.splitTextToSize(d.link,CW); ensure(20+ll.length*11);
           doc.setFont("courier","bold"); doc.setFontSize(8); doc.setTextColor.apply(doc,FAINT);
           doc.text("COMPLETE DOCUMENTATION", M, y+6);
@@ -3200,6 +3260,40 @@
       var fname=sanitize("Quick Quote - "+(d.applicant!=="—"?d.applicant:d.quote))+".pdf"; doc.save(fname); }
 
     window.__exportarCopiable = generar;
+  })();
+  </script>
+
+  <!-- ===== LOSS RATIO: cálculo automático desde los loss runs ===== -->
+  <script>
+  (function(){
+    "use strict";
+    function num(s){ var n=parseFloat(String(s||"").replace(/[^0-9.\-]/g,"")); return isNaN(n)?0:n; }
+    function fmt(n){ return "$"+Math.round(n).toLocaleString("en-US"); }
+    function recompLoss(){
+      var tbl=document.querySelector('[data-rtable][data-kind="losses"]'); if(!tbl) return;
+      var total=0;
+      tbl.querySelectorAll(".rt-row").forEach(function(r){
+        var ins=r.querySelectorAll("input"); // 0 Carrier · 1 Loss Value $ · 2 Policy # · 3 Period
+        if(ins[1]) total+=num(ins[1].value);
+      });
+      var ti=document.getElementById("lossTotalIncurred");
+      var lr=document.getElementById("lossRatio");
+      var prem=num((document.getElementById("lossPrem")||{}).value);
+      if(ti) ti.value = total>0 ? fmt(total) : "";
+      if(lr){
+        if(total>0 && prem>0){
+          var ratio=Math.round(total/prem*100);
+          lr.value=ratio+"%";
+          lr.style.fontWeight="700";
+          lr.style.color = ratio<40 ? "#0f6e56" : (ratio<=60 ? "#9a6a00" : "#b3261e");
+        } else { lr.value=""; lr.style.color=""; lr.style.fontWeight=""; }
+      }
+    }
+    document.addEventListener("input", recompLoss);
+    document.addEventListener("change", recompLoss);
+    document.addEventListener("DOMContentLoaded", recompLoss);
+    setTimeout(recompLoss, 800);
+    window.__recompLoss = recompLoss;
   })();
   </script>
 
@@ -3320,65 +3414,4 @@
 
       document.addEventListener("click",function(e){ var b=e.target.closest("[data-act]"); if(!b) return; var a=b.getAttribute("data-act");
         if(a==="login") doLogin(); else if(a==="signup") doSignup(); else if(a==="logout") doLogout();
-        else if(a==="list"){ if(panel.classList.contains("open")) panel.classList.remove("open"); else openPanel(); } else if(a==="closepanel"){ panel.classList.remove("open"); }
-        else if(a==="new"){ if(confirm("¿Empezar una quote nueva? Se limpiará el formulario.")){ clearForm(); currentId=null; showToast("Quote nueva"); } }
-        else if(a==="save") doSave();
-      });
-    }
-    function showToast(m){ toast.textContent=m; toast.classList.add("show"); setTimeout(function(){toast.classList.remove("show");},1500); }
-    function msg(t,cls){ var m=document.getElementById("qqMsg"); if(m){ m.textContent=t; m.className="qq-msg "+(cls||""); } }
-
-    function onAuthed(session){
-      userEmail=session&&session.user?session.user.email:"";
-      var u=document.getElementById("qqUser"); if(u) u.textContent=userEmail;
-      overlay.style.display="none"; bar.style.display="flex";
-    }
-    function onSignedOut(){ bar.style.display="none"; panel.classList.remove("open"); overlay.style.display="flex"; }
-
-    function doLogin(){ var em=document.getElementById("qqEmail").value.trim(), pw=document.getElementById("qqPass").value;
-      if(!em||!pw){ msg("Escribe email y contraseña.","err"); return; } msg("Entrando…");
-      sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){ if(r.error) msg(r.error.message,"err"); else msg(""); }); }
-    function doSignup(){ var em=document.getElementById("qqEmail").value.trim(), pw=document.getElementById("qqPass").value;
-      if(!em||!pw){ msg("Escribe email y contraseña (mín. 6 caracteres).","err"); return; } msg("Creando cuenta…");
-      sb.auth.signUp({email:em,password:pw}).then(function(r){ if(r.error) msg(r.error.message,"err"); else if(r.data&&r.data.session) msg(""); else msg("Cuenta creada. Si te pide confirmar por correo, revísalo; si no, ya puedes Entrar.","ok"); }); }
-    function doLogout(){ sb.auth.signOut(); }
-
-    function doSave(){
-      var snap=snapshot(); var row={account_name:accountName(),quote_number:(document.getElementById("metaQuote")||{}).value||"",status:(document.getElementById("metaStatus")||{}).value||"Draft",data:snap};
-      var q;
-      if(currentId){ q=sb.from("quick_quotes").update(row).eq("id",currentId).select("id").single(); }
-      else { q=sb.from("quick_quotes").insert(row).select("id").single(); }
-      showToast("Guardando…");
-      q.then(function(r){ if(r.error){ showToast("Error al guardar"); alert("No se pudo guardar: "+r.error.message); return; } if(r.data&&r.data.id) currentId=r.data.id; showToast("Quote guardada ✓"); }); }
-    function openPanel(){ panel.classList.add("open"); var list=document.getElementById("qqList"); list.innerHTML='<div class="qq-empty">Cargando…</div>';
-      sb.from("quick_quotes").select("id,account_name,quote_number,status,updated_at").order("updated_at",{ascending:false}).then(function(r){
-        if(r.error){ list.innerHTML='<div class="qq-empty">Error: '+r.error.message+'</div>'; return; }
-        var rows=r.data||[]; if(!rows.length){ list.innerHTML='<div class="qq-empty">Aún no tienes quotes guardadas.<br>Llena una y dale <b>Guardar</b>.</div>'; return; }
-        list.innerHTML="";
-        rows.forEach(function(it){ var d=el("div",{"class":"qq-item"});
-          var when=it.updated_at?new Date(it.updated_at).toLocaleString():"";
-          d.innerHTML='<div class="nm"></div><div class="mt"></div><div class="row2"><span class="mt"></span><button class="qq-del" data-del="'+it.id+'">Eliminar</button></div>';
-          d.querySelector(".nm").textContent=it.account_name||"(sin nombre)";
-          d.querySelectorAll(".mt")[0].textContent=(it.quote_number||"")+"   ·   "+(it.status||"");
-          d.querySelectorAll(".mt")[1].textContent=when;
-          d.addEventListener("click",function(e){ if(e.target.closest("[data-del]")) return; openQuote(it.id); });
-          d.querySelector("[data-del]").addEventListener("click",function(e){ e.stopPropagation(); if(!confirm("¿Eliminar esta quote?")) return; sb.from("quick_quotes").delete().eq("id",it.id).then(function(rr){ if(rr.error){alert(rr.error.message);return;} if(currentId===it.id) currentId=null; openPanel(); }); });
-          list.appendChild(d);
-        });
-      }); }
-    function openQuote(id){ showToast("Abriendo…"); sb.from("quick_quotes").select("data").eq("id",id).single().then(function(r){ if(r.error){ alert(r.error.message); return; } restore(r.data&&r.data.data?r.data.data:{}); currentId=id; panel.classList.remove("open"); showToast("Quote cargada ✓"); window.scrollTo(0,0); }); }
-
-    function init(){
-      buildUI();
-      if(!(window.supabase&&window.supabase.createClient)){ msg("No se pudo cargar Supabase (revisa tu conexión a internet).","err"); overlay.style.display="flex"; return; }
-      sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-      sb.auth.getSession().then(function(r){ if(r.data&&r.data.session) onAuthed(r.data.session); else onSignedOut(); });
-      sb.auth.onAuthStateChange(function(evt,session){ if(session) onAuthed(session); else onSignedOut(); });
-    }
-    if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(init,60); });
-    else setTimeout(init,60);
-  })();
-  </script>
-
-</body>
-</html>
+        else if(a==="list"){ if(panel.classList.contains("open")) panel.classList.remove("open"); el

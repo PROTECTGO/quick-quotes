@@ -3020,7 +3020,12 @@
       var lossRows=tblRows("#sec-losses",5);
       var units=tblRows("#sec-units",7).concat(tblRows("#sec-trailers",7));
       var drivers=tblRows("#sec-drivers",6);
-      function _num(s){ var n=parseFloat(String(s).replace(/[^0-9.]/g,"")); return isNaN(n)?0:n; }
+      function _num(s){ s=String(s==null?"":s).replace(/[^0-9.,]/g,""); if(!s) return 0;
+        var hasC=s.indexOf(",")>-1, hasD=s.indexOf(".")>-1;
+        if(hasC&&hasD){ if(s.lastIndexOf(",")>s.lastIndexOf(".")) s=s.replace(/\./g,"").replace(/,/g,"."); else s=s.replace(/,/g,""); }
+        else if(hasC){ var p=s.split(","); s=(p.length>2||(p.length===2&&p[1].length===3))?s.replace(/,/g,""):s.replace(/,/g,"."); }
+        else if(hasD){ var q=s.split("."); if(q.length>2||(q.length===2&&q[1].length===3)) s=s.replace(/\./g,""); }
+        var n=parseFloat(s); return isNaN(n)?0:n; }
       var tivNum=0; units.forEach(function(r){ tivNum+=_num(r[r.length-1]); });
       var tiv = tivNum? "$"+tivNum.toLocaleString("en-US") : "";
       cov.forEach(function(c){ if(/physical damage/i.test(c[0]) && (!c[1]||c[1]==="—")) c[1]=tiv||c[1]; });
@@ -3268,7 +3273,12 @@
   <script>
   (function(){
     "use strict";
-    function num(s){ var n=parseFloat(String(s||"").replace(/[^0-9.\-]/g,"")); return isNaN(n)?0:n; }
+    function num(s){ s=String(s==null?"":s).replace(/[^0-9.,]/g,""); if(!s) return 0;
+      var hasC=s.indexOf(",")>-1, hasD=s.indexOf(".")>-1;
+      if(hasC&&hasD){ if(s.lastIndexOf(",")>s.lastIndexOf(".")) s=s.replace(/\./g,"").replace(/,/g,"."); else s=s.replace(/,/g,""); }
+      else if(hasC){ var p=s.split(","); s=(p.length>2||(p.length===2&&p[1].length===3))?s.replace(/,/g,""):s.replace(/,/g,"."); }
+      else if(hasD){ var q=s.split("."); if(q.length>2||(q.length===2&&q[1].length===3)) s=s.replace(/\./g,""); }
+      var n=parseFloat(s); return isNaN(n)?0:n; }
     function fmt(n){ return "$"+Math.round(n).toLocaleString("en-US"); }
     function recompLoss(){
       var tbl=document.querySelector('[data-rtable][data-kind="losses"]'); if(!tbl) return;

@@ -3409,4 +3409,86 @@
         '<span class="qq-sp"></span>'+
         '<span class="qq-user" id="qqUser"></span>'+
         '<button class="qq-b alt" data-act="logout">Salir</button>';
-      bar.style.dis
+      bar.style.display="none";
+      document.body.insertBefore(bar,document.body.firstChild);
+
+      panel=el("div",{"class":"qq-panel"});
+      panel.innerHTML='<header><h3>Mis Quotes</h3><button class="qq-b alt" data-act="closepanel">Cerrar</button></header><div class="qq-list" id="qqList"></div>';
+      document.body.appendChild(panel);
+
+      overlay=el("div",{"class":"qq-ov"});
+      overlay.innerHTML='<div class="qq-card">'+
+        '<h2>Quick Quotes</h2><p>Ingresa con tu cuenta para ver y guardar tus quotes.</p>'+
+        '<label>Email</label><input id="qqEmail" type="email" autocomplete="username">'+
+        '<label>Contraseña</label><input id="qqPass" type="password" autocomplete="current-password">'+
+        '<button class="qq-b" data-act="login">Entrar</button>'+
+        '<button class="qq-link" data-act="signup">Crear cuenta nueva</button>'+
+        '<div class="qq-msg" id="qqMsg"></div></div>';
+      document.body.appendChild(overlay);
+
+      toast=el("div",{"class":"qq-toast"}); document.body.appendChild(toast);
+
+      document.addEventListener("click",function(e){ var b=e.target.closest("[data-act]"); if(!b) return; var a=b.getAttribute("data-act");
+        if(a==="login") doLogin(); else if(a==="signup") doSignup(); else if(a==="logout") doLogout();
+        else if(a==="list"){ if(panel.classList.contains("open")) panel.classList.remove("open"); else openPanel(); } else if(a==="closepanel"){ panel.classList.remove("open"); }
+        else if(a==="new"){ if(confirm("¿Empezar una quote nueva? Se limpiará el formulario.")){ clearForm(); currentId=null; showToast("Quote nueva"); } }
+        else if(a==="save") doSave();
+      });
+    }
+    function showToast(m){ toast.textContent=m; toast.classList.add("show"); setTimeout(function(){toast.classList.remove("show");},1500); }
+    function msg(t,cls){ var m=document.getElementById("qqMsg"); if(m){ m.textContent=t; m.className="qq-msg "+(cls||""); } }
+
+    function onAuthed(session){
+      userEmail=session&&session.user?session.user.email:"";
+      var u=document.getElementById("qqUser"); if(u) u.textContent=userEmail;
+      overlay.style.display="none"; bar.style.display="flex";
+    }
+    function onSignedOut(){ bar.style.display="none"; panel.classList.remove("open"); overlay.style.display="flex"; }
+
+    function doLogin(){ var em=document.getElementById("qqEmail").value.trim(), pw=document.getElementById("qqPass").value;
+      if(!em||!pw){ msg("Escribe email y contraseña.","err"); return; } msg("Entrando…");
+      sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){ if(r.error) msg(r.error.message,"err"); else msg(""); }); }
+    function doSignup(){ var em=document.getElementById("qqEmail").value.trim(), pw=document.getElementById("qqPass").value;
+      if(!em||!pw){ msg("Escribe email y contraseña (mín. 6 caracteres).","err"); return; } msg("Creando cuenta…");
+      sb.auth.signUp({email:em,password:pw}).then(function(r){ if(r.error) msg(r.error.message,"err"); else if(r.data&&r.data.session) msg(""); else msg("Cuenta creada. Si te pide confirmar por correo, revísalo; si no, ya puedes Entrar.","ok"); }); }
+    function doLogout(){ sb.auth.signOut(); }
+
+    function doSave(){
+      var snap=snapshot(); var row={account_name:accountName(),quote_number:(document.getElementById("metaQuote")||{}).value||"",status:(document.getElementById("metaStatus")||{}).value||"Draft",data:snap};
+      var q;
+      if(currentId){ q=sb.from("quick_quotes").update(row).eq("id",currentId).select("id").single(); }
+      else { q=sb.from("quick_quotes").insert(row).select("id").single(); }
+      showToast("Guardando…");
+      q.then(function(r){ if(r.error){ showToast("Error al guardar"); alert("No se pudo guardar: "+r.error.message); return; } if(r.data&&r.data.id) currentId=r.data.id; showToast("Quote guardada ✓"); }); }
+    function openPanel(){ panel.classList.add("open"); var list=document.getElementById("qqList"); list.innerHTML='<div class="qq-empty">Cargando…</div>';
+      sb.from("quick_quotes").select("id,account_name,quote_number,status,updated_at").order("updated_at",{ascending:false}).then(function(r){
+        if(r.error){ list.innerHTML='<div class="qq-empty">Error: '+r.error.message+'</div>'; return; }
+        var rows=r.data||[]; if(!rows.length){ list.innerHTML='<div class="qq-empty">Aún no tienes quotes guardadas.<br>Llena una y dale <b>Guardar</b>.</div>'; return; }
+        list.innerHTML="";
+        rows.forEach(function(it){ var d=el("div",{"class":"qq-item"});
+          var when=it.updated_at?new Date(it.updated_at).toLocaleString():"";
+          d.innerHTML='<div class="nm"></div><div class="mt"></div><div class="row2"><span class="mt"></span><button class="qq-del" data-del="'+it.id+'">Eliminar</button></div>';
+          d.querySelector(".nm").textContent=it.account_name||"(sin nombre)";
+          d.querySelectorAll(".mt")[0].textContent=(it.quote_number||"")+"   ·   "+(it.status||"");
+          d.querySelectorAll(".mt")[1].textContent=when;
+          d.addEventListener("click",function(e){ if(e.target.closest("[data-del]")) return; openQuote(it.id); });
+          d.querySelector("[data-del]").addEventListener("click",function(e){ e.stopPropagation(); if(!confirm("¿Eliminar esta quote?")) return; sb.from("quick_quotes").delete().eq("id",it.id).then(function(rr){ if(rr.error){alert(rr.error.message);return;} if(currentId===it.id) currentId=null; openPanel(); }); });
+          list.appendChild(d);
+        });
+      }); }
+    function openQuote(id){ showToast("Abriendo…"); sb.from("quick_quotes").select("data").eq("id",id).single().then(function(r){ if(r.error){ alert(r.error.message); return; } restore(r.data&&r.data.data?r.data.data:{}); currentId=id; panel.classList.remove("open"); showToast("Quote cargada ✓"); window.scrollTo(0,0); }); }
+
+    function init(){
+      buildUI();
+      if(!(window.supabase&&window.supabase.createClient)){ msg("No se pudo cargar Supabase (revisa tu conexión a internet).","err"); overlay.style.display="flex"; return; }
+      sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+      sb.auth.getSession().then(function(r){ if(r.data&&r.data.session) onAuthed(r.data.session); else onSignedOut(); });
+      sb.auth.onAuthStateChange(function(evt,session){ if(session) onAuthed(session); else onSignedOut(); });
+    }
+    if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(init,60); });
+    else setTimeout(init,60);
+  })();
+  </script>
+
+</body>
+</html>

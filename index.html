@@ -1868,6 +1868,7 @@
             <div class="rt-rows"></div>
           </div>
           <button type="button" class="add-row">add trailer</button>
+          <div class="campo" style="margin-top:16px"><label>Total Stated Value $ <span class="helper-inline">auto · avalúos = unidades + trailers</span></label><input type="text" id="tivTotal" placeholder="$0" readonly></div>
         </div>
       </details>
 
@@ -3296,11 +3297,20 @@
         } else { lr.value=""; lr.style.color=""; lr.style.fontWeight=""; }
       }
     }
-    document.addEventListener("input", recompLoss);
-    document.addEventListener("change", recompLoss);
-    document.addEventListener("DOMContentLoaded", recompLoss);
-    setTimeout(recompLoss, 800);
-    window.__recompLoss = recompLoss;
+    function recompTiv(){
+      var total=0;
+      ["units","trailers"].forEach(function(kind){
+        var t=document.querySelector('[data-rtable][data-kind="'+kind+'"]'); if(!t) return;
+        t.querySelectorAll(".rt-row").forEach(function(r){ var ins=r.querySelectorAll("input"); if(ins.length){ total+=num(ins[ins.length-1].value); } });
+      });
+      var e=document.getElementById("tivTotal"); if(e) e.value = total>0 ? fmt(total) : "";
+    }
+    function recompAll(){ recompLoss(); recompTiv(); }
+    document.addEventListener("input", recompAll);
+    document.addEventListener("change", recompAll);
+    document.addEventListener("DOMContentLoaded", recompAll);
+    setTimeout(recompAll, 800);
+    window.__recompLoss = recompAll;
   })();
   </script>
 

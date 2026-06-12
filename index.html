@@ -3333,7 +3333,7 @@
     "use strict";
     var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
     var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
-    var sb=null, currentId=null, userEmail="";
+    var sb=null, currentId=null, currentUserId=null, userEmail="";
 
     function snapKey(e,counts){
       if(e.id) return "#"+e.id;
@@ -3462,7 +3462,7 @@
     function msg(t,cls){ var m=document.getElementById("qqMsg"); if(m){ m.textContent=t; m.className="qq-msg "+(cls||""); } }
 
     function onAuthed(session){
-      userEmail=session&&session.user?session.user.email:"";
+      userEmail=session&&session.user?session.user.email:""; currentUserId=session&&session.user?session.user.id:null;
       var u=document.getElementById("qqUser"); if(u) u.textContent=userEmail;
       overlay.style.display="none"; bar.style.display="flex";
     }
@@ -3499,7 +3499,7 @@
           list.appendChild(d);
         });
       }); }
-    function openQuote(id){ showToast("Abriendo…"); sb.from("quick_quotes").select("data").eq("id",id).single().then(function(r){ if(r.error){ alert(r.error.message); return; } restore(r.data&&r.data.data?r.data.data:{}); currentId=id; panel.classList.remove("open"); showToast("Quote cargada ✓"); window.scrollTo(0,0); }); }
+    function openQuote(id){ showToast("Abriendo…"); sb.from("quick_quotes").select("data,user_id").eq("id",id).single().then(function(r){ if(r.error){ alert(r.error.message); return; } restore(r.data&&r.data.data?r.data.data:{}); var mine=!r.data||!r.data.user_id||r.data.user_id===currentUserId; currentId=mine?id:null; panel.classList.remove("open"); showToast(mine?"Quote cargada ✓":"Quote de agente — al Guardar se crea tu copia"); window.scrollTo(0,0); }); }
 
     function init(){
       buildUI();

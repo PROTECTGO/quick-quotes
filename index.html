@@ -1573,6 +1573,8 @@
             <div class="campo"><label>Agency Name</label><input type="text" placeholder="ProtectGo Services"></div>
             <div class="campo"><label>Carrier / MGA</label><input type="text" placeholder="Insurer / MGA name"></div>
             <div class="campo"><label>Account Name</label><input type="text" placeholder="Legal name / DBA"></div>
+            <div class="campo"><label>Owner Name</label><input type="text" placeholder="Owner full name"></div>
+            <div class="campo"><label>Owner Date of Birth <span class="helper-inline">MM/DD/YYYY</span></label><input type="text" class="qq-mdy" placeholder="MM/DD/YYYY" inputmode="numeric" maxlength="10"></div>
             <div class="campo"><label>Representative</label><input type="text" placeholder="Name"></div>
             <div class="campo"><label>Phone</label><input type="text" placeholder="(___) ___-____"></div>
             <div class="campo col3"><label>Email</label><input type="text" placeholder="email@company.com"></div>
@@ -3433,8 +3435,9 @@
       document.body.insertBefore(bar,document.body.firstChild);
 
       panel=el("div",{"class":"qq-panel"});
-      panel.innerHTML='<header><h3>Mis Quotes</h3><button class="qq-b alt" data-act="closepanel">Cerrar</button></header><div class="qq-list" id="qqList"></div>';
+      panel.innerHTML='<header><h3 id="qqPanelTitle">Mis Quotes</h3><button class="qq-b alt" data-act="closepanel">Cerrar</button></header><div style="padding:10px 14px 0"><input id="qqSearch" placeholder="Buscar: cliente, # quote…" autocomplete="off" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #d8e0de;border-radius:8px;font-size:13px;font-family:inherit;"></div><div class="qq-list" id="qqList"></div>';
       document.body.appendChild(panel);
+      panel.querySelector("#qqSearch").addEventListener("input",function(){ var qv=this.value.toLowerCase(); panel.querySelectorAll(".qq-item").forEach(function(it){ it.style.display=it.textContent.toLowerCase().indexOf(qv)>=0?"":"none"; }); });
 
       overlay=el("div",{"class":"qq-ov"});
       overlay.innerHTML='<div class="qq-card">'+
@@ -3480,7 +3483,7 @@
       else { q=sb.from("quick_quotes").insert(row).select("id").single(); }
       showToast("Guardando…");
       q.then(function(r){ if(r.error){ showToast("Error al guardar"); alert("No se pudo guardar: "+r.error.message); return; } if(r.data&&r.data.id) currentId=r.data.id; showToast("Quote guardada ✓"); }); }
-    function openPanel(){ panel.classList.add("open"); var list=document.getElementById("qqList"); list.innerHTML='<div class="qq-empty">Cargando…</div>';
+    function openPanel(){ panel.classList.add("open"); var ttl=document.getElementById("qqPanelTitle"); if(ttl) ttl.textContent=(userEmail==="kam@protectgoservices.com")?"Todas las Quotes":"Mis Quotes"; var srch=document.getElementById("qqSearch"); if(srch) srch.value=""; var list=document.getElementById("qqList"); list.innerHTML='<div class="qq-empty">Cargando…</div>';
       sb.from("quick_quotes").select("id,account_name,quote_number,status,updated_at").order("updated_at",{ascending:false}).then(function(r){
         if(r.error){ list.innerHTML='<div class="qq-empty">Error: '+r.error.message+'</div>'; return; }
         var rows=r.data||[]; if(!rows.length){ list.innerHTML='<div class="qq-empty">Aún no tienes quotes guardadas.<br>Llena una y dale <b>Guardar</b>.</div>'; return; }

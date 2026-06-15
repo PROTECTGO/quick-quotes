@@ -2009,7 +2009,7 @@
           <div class="grid" style="margin-top:16px">
             <div class="campo"><label>Premium (coberturas) $ <span class="helper-inline">auto · suma de líneas</span></label><input type="text" id="finPremium" placeholder="$0" readonly></div>
             <div class="campo"><label>Policy Fees $</label><input type="text" id="finFees" placeholder="$0" inputmode="decimal"></div>
-            <div class="campo"><label>Agency (AG) Fees $ <span class="helper-inline">va al down · se itemiza</span></label><input type="text" id="finAg" placeholder="$0" inputmode="decimal"></div>
+            <div class="campo"><label>Contributory Fees $ <span class="helper-inline">va al down · se itemiza</span></label><input type="text" id="finAg" placeholder="$0" inputmode="decimal"></div>
             <div class="campo"><label>Taxes $</label><input type="text" id="finTaxes" placeholder="$0" inputmode="decimal"></div>
           </div>
           <div style="margin-top:14px;background:#002F3D;border-radius:10px;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;">
@@ -2026,9 +2026,15 @@
             <div class="campo"><label>Amount Financed $ <span class="helper-inline">auto · total − down</span></label><input type="text" id="finFinanced" placeholder="$0" readonly></div>
             <div class="campo"><label>Monthly Payment $ <span class="helper-inline">lo pone el agente</span></label><input type="text" id="finMonthlyInput" placeholder="$0" inputmode="decimal"></div>
           </div>
-          <div style="margin-top:14px;background:#e9f4f0;border:1px solid #1d9e75;border-radius:10px;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;">
-            <span style="color:#0f6e56;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;">Monthly Payment <span style="opacity:.7">· auto</span></span>
-            <span id="finMonthly" style="color:#002F3D;font-size:22px;font-weight:800;">$0</span>
+          <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:210px;background:#002F3D;border-radius:12px;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 6px 18px -10px rgba(0,47,61,.5);">
+              <span style="color:#a8d4cf;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;">Down Payment</span>
+              <span id="finDownDueBanner" style="color:#fff;font-size:24px;font-weight:800;">$0</span>
+            </div>
+            <div style="flex:1;min-width:210px;background:#229A82;border-radius:12px;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 6px 18px -10px rgba(34,154,130,.55);">
+              <span style="color:#d9f2ea;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;">Monthly Payment</span>
+              <span id="finMonthly" style="color:#fff;font-size:24px;font-weight:800;">$0</span>
+            </div>
           </div>
         </div>
       </details>
@@ -3224,14 +3230,17 @@
           y=doc.lastAutoTable.finalY+12;
         }
         function finLine(lbl,val){ if(!val) return; ensure(15); doc.setFont("courier","bold");doc.setFontSize(8);doc.setTextColor.apply(doc,FAINT); doc.text(String(lbl).toUpperCase(),M,y+6); doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor.apply(doc,INK); doc.text(String(val),PW-M,y+6,{align:"right"}); y+=15; }
-        finLine("Premium (coverages)",d.fin.premium); finLine("Policy Fees",d.fin.fees); finLine("Agency (AG) Fees",d.fin.ag); finLine("Taxes",d.fin.taxes);
+        finLine("Premium (coverages)",d.fin.premium); finLine("Policy Fees",d.fin.fees); finLine("Contributory Fees",d.fin.ag); finLine("Taxes",d.fin.taxes);
         if(d.fin.total){ ensure(28); doc.setFillColor.apply(doc,NAVY); doc.roundedRect(M,y+2,CW,22,4,4,"F");
           doc.setFont("courier","bold");doc.setFontSize(8.5);doc.setTextColor(168,212,207); doc.text("TOTAL POLICY PREMIUM",M+12,y+16);
           doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(255,255,255); doc.text(String(d.fin.total),PW-M-12,y+17,{align:"right"}); y+=34; }
-        finLine("Down Payment",d.fin.down); finLine("Down Payment Due (incl. AG)",d.fin.downDue); finLine("Finance Charge",d.fin.charge); finLine("Number of Payments",d.fin.np); finLine("Amount Financed",d.fin.financed);
-        if(d.fin.monthly){ ensure(28); doc.setFillColor.apply(doc,TEALSOFT); doc.setDrawColor.apply(doc,TEAL); doc.setLineWidth(0.8); doc.roundedRect(M,y+2,CW,22,4,4,"FD");
-          doc.setFont("courier","bold");doc.setFontSize(8.5);doc.setTextColor.apply(doc,TEAL2); doc.text("MONTHLY PAYMENT",M+12,y+16);
-          doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor.apply(doc,NAVY); doc.text(String(d.fin.monthly),PW-M-12,y+17,{align:"right"}); y+=34; }
+        finLine("Finance Charge",d.fin.charge); finLine("Number of Payments",d.fin.np); finLine("Amount Financed",d.fin.financed);
+        if(d.fin.downDue){ ensure(28); doc.setFillColor.apply(doc,NAVY); doc.roundedRect(M,y+2,CW,22,4,4,"F");
+          doc.setFont("courier","bold");doc.setFontSize(8.5);doc.setTextColor(168,212,207); doc.text("DOWN PAYMENT",M+12,y+16);
+          doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(255,255,255); doc.text(String(d.fin.downDue),PW-M-12,y+17,{align:"right"}); y+=34; }
+        if(d.fin.monthly){ ensure(28); doc.setFillColor.apply(doc,TEAL); doc.roundedRect(M,y+2,CW,22,4,4,"F");
+          doc.setFont("courier","bold");doc.setFontSize(8.5);doc.setTextColor(217,242,234); doc.text("MONTHLY PAYMENT",M+12,y+16);
+          doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(255,255,255); doc.text(String(d.fin.monthly),PW-M-12,y+17,{align:"right"}); y+=34; }
       }
 
       if(d.pkg.length||d.docs.length||d.link){
@@ -3364,6 +3373,7 @@
       setv('finPremium', prem>0?fmt(prem):"");
       setv('finFinanced', total>0?fmt(financed):"");
       setv('finDownDue', downDue>0?fmt(downDue):"");
+      var fdb=document.getElementById('finDownDueBanner'); if(fdb) fdb.textContent= downDue>0?fmt(downDue):"$0";
       var ft=document.getElementById('finTotal'); if(ft) ft.textContent= total>0?fmt(total):"$0";
       var fm=document.getElementById('finMonthly');
       if(fm) fm.textContent=(monthlyVal>0)?("$"+monthlyVal.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})):"$0";

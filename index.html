@@ -2024,6 +2024,7 @@
             <div class="campo"><label>Number of Payments</label><input type="text" id="finNPayments" placeholder="e.g. 9" inputmode="numeric"></div>
             <div class="campo"><label>Down Payment Due $ <span class="helper-inline">auto · down + AG</span></label><input type="text" id="finDownDue" placeholder="$0" readonly></div>
             <div class="campo"><label>Amount Financed $ <span class="helper-inline">auto · total − down</span></label><input type="text" id="finFinanced" placeholder="$0" readonly></div>
+            <div class="campo"><label>Monthly Payment $ <span class="helper-inline">lo pone el agente</span></label><input type="text" id="finMonthlyInput" placeholder="$0" inputmode="decimal"></div>
           </div>
           <div style="margin-top:14px;background:#e9f4f0;border:1px solid #1d9e75;border-radius:10px;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;">
             <span style="color:#0f6e56;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;">Monthly Payment <span style="opacity:.7">· auto</span></span>
@@ -3358,7 +3359,7 @@
       var np=parseInt(String((document.getElementById('finNPayments')||{}).value||'').replace(/[^0-9]/g,''),10);
       var financed=total-down; if(financed<0) financed=0;
       var downDue=down+ag;
-      var monthlyVal=(np>0)?(financed+finCharge)/np:0;
+      var mi=document.getElementById('finMonthlyInput'); var monthlyVal=mi?num(mi.value):0;
       function setv(id,v){var e=document.getElementById(id); if(e) e.value=v;}
       setv('finPremium', prem>0?fmt(prem):"");
       setv('finFinanced', total>0?fmt(financed):"");

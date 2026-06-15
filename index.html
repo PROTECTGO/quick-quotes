@@ -2009,6 +2009,7 @@
           <div class="grid" style="margin-top:16px">
             <div class="campo"><label>Premium (coberturas) $ <span class="helper-inline">auto · suma de líneas</span></label><input type="text" id="finPremium" placeholder="$0" readonly></div>
             <div class="campo"><label>Policy Fees $</label><input type="text" id="finFees" placeholder="$0" inputmode="decimal"></div>
+            <div class="campo"><label>Agency (AG) Fees $ <span class="helper-inline">va al down · se itemiza</span></label><input type="text" id="finAg" placeholder="$0" inputmode="decimal"></div>
             <div class="campo"><label>Taxes $</label><input type="text" id="finTaxes" placeholder="$0" inputmode="decimal"></div>
           </div>
           <div style="margin-top:14px;background:#002F3D;border-radius:10px;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;">
@@ -2019,7 +2020,9 @@
           <div class="cov-group-label" style="margin-top:22px">Plan de pagos</div>
           <div class="grid">
             <div class="campo"><label>Down Payment $</label><input type="text" id="finDown" placeholder="$0" inputmode="decimal"></div>
+            <div class="campo"><label>Finance Charge $ <span class="helper-inline">cargo financiero</span></label><input type="text" id="finCharge" placeholder="$0" inputmode="decimal"></div>
             <div class="campo"><label>Number of Payments</label><input type="text" id="finNPayments" placeholder="e.g. 9" inputmode="numeric"></div>
+            <div class="campo"><label>Down Payment Due $ <span class="helper-inline">auto · down + AG</span></label><input type="text" id="finDownDue" placeholder="$0" readonly></div>
             <div class="campo"><label>Amount Financed $ <span class="helper-inline">auto · total − down</span></label><input type="text" id="finFinanced" placeholder="$0" readonly></div>
           </div>
           <div style="margin-top:14px;background:#e9f4f0;border:1px solid #1d9e75;border-radius:10px;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;">
@@ -3039,7 +3042,7 @@
       var dot=byLabel("#sec-op",/us\s*dot/i)||"";
       function _fv(id){ var e=document.getElementById(id); return e?(e.value||"").trim():""; }
       function _ft(id){ var e=document.getElementById(id); var t=e?(e.textContent||"").trim():""; return (t==="$0"||t==="")?"":t; }
-      var fin={rows:tblRows("#sec-finance",3), premium:_fv("finPremium"), fees:_fv("finFees"), taxes:_fv("finTaxes"), total:_ft("finTotal"), down:_fv("finDown"), np:_fv("finNPayments"), financed:_fv("finFinanced"), monthly:_ft("finMonthly")};
+      var fin={rows:tblRows("#sec-finance",3), premium:_fv("finPremium"), fees:_fv("finFees"), ag:_fv("finAg"), taxes:_fv("finTaxes"), total:_ft("finTotal"), down:_fv("finDown"), charge:_fv("finCharge"), np:_fv("finNPayments"), downDue:_fv("finDownDue"), financed:_fv("finFinanced"), monthly:_ft("finMonthly")};
       return {quote:quote,eff:eff,status:status,ver:ver,prep:prep,applicant:applicant,dot:dot,tags:tags,why:why,
         stats:[["Power Units",kpi("kpiUnits")],["Drivers",kpi("kpiDrivers")],["Radius",kpi("kpiRadius")],["Years in Bus.",kpi("kpiYears")],["Effective",kpi("kpiEffective")]],
         agency:agency,op:op,commodities:commodities,safety:safety,lossKv:lossKv,lossRows:lossRows,
@@ -3220,11 +3223,11 @@
           y=doc.lastAutoTable.finalY+12;
         }
         function finLine(lbl,val){ if(!val) return; ensure(15); doc.setFont("courier","bold");doc.setFontSize(8);doc.setTextColor.apply(doc,FAINT); doc.text(String(lbl).toUpperCase(),M,y+6); doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor.apply(doc,INK); doc.text(String(val),PW-M,y+6,{align:"right"}); y+=15; }
-        finLine("Premium (coverages)",d.fin.premium); finLine("Policy Fees",d.fin.fees); finLine("Taxes",d.fin.taxes);
+        finLine("Premium (coverages)",d.fin.premium); finLine("Policy Fees",d.fin.fees); finLine("Agency (AG) Fees",d.fin.ag); finLine("Taxes",d.fin.taxes);
         if(d.fin.total){ ensure(28); doc.setFillColor.apply(doc,NAVY); doc.roundedRect(M,y+2,CW,22,4,4,"F");
           doc.setFont("courier","bold");doc.setFontSize(8.5);doc.setTextColor(168,212,207); doc.text("TOTAL POLICY PREMIUM",M+12,y+16);
           doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(255,255,255); doc.text(String(d.fin.total),PW-M-12,y+17,{align:"right"}); y+=34; }
-        finLine("Down Payment",d.fin.down); finLine("Number of Payments",d.fin.np); finLine("Amount Financed",d.fin.financed);
+        finLine("Down Payment",d.fin.down); finLine("Down Payment Due (incl. AG)",d.fin.downDue); finLine("Finance Charge",d.fin.charge); finLine("Number of Payments",d.fin.np); finLine("Amount Financed",d.fin.financed);
         if(d.fin.monthly){ ensure(28); doc.setFillColor.apply(doc,TEALSOFT); doc.setDrawColor.apply(doc,TEAL); doc.setLineWidth(0.8); doc.roundedRect(M,y+2,CW,22,4,4,"FD");
           doc.setFont("courier","bold");doc.setFontSize(8.5);doc.setTextColor.apply(doc,TEAL2); doc.text("MONTHLY PAYMENT",M+12,y+16);
           doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor.apply(doc,NAVY); doc.text(String(d.fin.monthly),PW-M-12,y+17,{align:"right"}); y+=34; }
@@ -3347,17 +3350,22 @@
       var t=document.querySelector('#sec-finance [data-rtable]'); var prem=0;
       if(t){ t.querySelectorAll('.rt-row').forEach(function(r){ var ins=r.querySelectorAll('input'); if(ins[2]) prem+=num(ins[2].value); }); }
       var fees=num((document.getElementById('finFees')||{}).value);
+      var ag=num((document.getElementById('finAg')||{}).value);
       var taxes=num((document.getElementById('finTaxes')||{}).value);
       var total=prem+fees+taxes;
       var down=num((document.getElementById('finDown')||{}).value);
+      var finCharge=num((document.getElementById('finCharge')||{}).value);
       var np=parseInt(String((document.getElementById('finNPayments')||{}).value||'').replace(/[^0-9]/g,''),10);
       var financed=total-down; if(financed<0) financed=0;
+      var downDue=down+ag;
+      var monthlyVal=(np>0)?(financed+finCharge)/np:0;
       function setv(id,v){var e=document.getElementById(id); if(e) e.value=v;}
       setv('finPremium', prem>0?fmt(prem):"");
       setv('finFinanced', total>0?fmt(financed):"");
+      setv('finDownDue', downDue>0?fmt(downDue):"");
       var ft=document.getElementById('finTotal'); if(ft) ft.textContent= total>0?fmt(total):"$0";
       var fm=document.getElementById('finMonthly');
-      if(fm) fm.textContent=(np>0&&financed>0)?("$"+(financed/np).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})):"$0";
+      if(fm) fm.textContent=(monthlyVal>0)?("$"+monthlyVal.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})):"$0";
     }
     function recompAll(){ recompLoss(); recompTiv(); recompFinance(); }
     document.addEventListener("input", recompAll);

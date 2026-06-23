@@ -3527,6 +3527,7 @@
       document.querySelectorAll(".cov").forEach(function(c,i){ if(c.classList.contains("on")) s.covOn.push(i); });
       document.querySelectorAll(".pkg-key").forEach(function(c,i){ if(c.classList.contains("on")) s.pkgKeyOn.push(i); });
       document.querySelectorAll(".pkg-bx").forEach(function(c,i){ if(c.classList.contains("on")) s.pkgBxOn.push(i); });
+      s.symOn=[]; document.querySelectorAll(".sym-check input[type=checkbox]").forEach(function(e,i){ if(e.checked) s.symOn.push(i); });
       return s;
     }
     function restore(s){
@@ -3546,6 +3547,7 @@
       var covs=document.querySelectorAll(".cov"); covs.forEach(function(c){c.classList.remove("on");}); (s.covOn||[]).forEach(function(i){ if(covs[i]) covs[i].classList.add("on"); });
       var pk=document.querySelectorAll(".pkg-key"); pk.forEach(function(c){c.classList.remove("on");}); (s.pkgKeyOn||[]).forEach(function(i){ if(pk[i]) pk[i].classList.add("on"); });
       var pb=document.querySelectorAll(".pkg-bx"); pb.forEach(function(c){c.classList.remove("on");}); (s.pkgBxOn||[]).forEach(function(i){ if(pb[i]) pb[i].classList.add("on"); });
+      var se=document.querySelectorAll(".sym-check input[type=checkbox]"); se.forEach(function(e){e.checked=false;}); (s.symOn||[]).forEach(function(i){ if(se[i]) se[i].checked=true; });
       try{ document.dispatchEvent(new Event("input",{bubbles:true})); document.dispatchEvent(new Event("change",{bubbles:true})); }catch(e){}
       if(window.__recalcProgreso) window.__recalcProgreso();
     }

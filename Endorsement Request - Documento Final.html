@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Endorsement Request · ProtectGo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+    /* =====================================================================
+       SISTEMA DE DISEÑO — Endorsement Request (END) · ProtectGo
+       Mismo sistema visual que Quick Quote v2.
+       ===================================================================== */
+    :root {
+      --navy:        #002F3D;
+      --navy-2:      #0a5b54;
+      --teal:        #229A82;
+      --teal-2:      #1a7a68;
+      --mint:        #BADFCE;
+      --mint-soft:   #E4F2EB;
+      --mint-ghost:  #F2F8F5;
+      --amber:       #FFB400;
+      --amber-soft:  #fff7e0;
+      --papel:       #FAF9F5;
+      --surface:     #ffffff;
+      --ink:         #0D141A;
+      --muted:       #5a6a6e;
+      --faint:       #8a989a;
+      --hairline:    #d8e0de;
+      --line:        #e6ebe9;
+      --line-2:      #eef2f2;
+      --danger:      #c0392b;
+      --danger-soft: #fdeceb;
+      --purple:      #7c3aed;
+      --purple-soft: #f3effe;
+
+      --grad: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%);
+      --grad-amber: linear-gradient(90deg, #d97706 0%, var(--amber) 100%);
+
+      --r-xs: 6px;
+      --r-sm: 10px;
+      --r-md: 14px;
+      --r-lg: 20px;
+      --r-pill: 999px;
+
+      --t-fast: 140ms;
+      --t-base: 220ms;
+      --ease:   cubic-bezier(.2,.7,.2,1);
+
+      --shadow-1: 0 1px 2px rgba(0,47,61,.05);
+      --shadow-2: 0 8px 24px -10px rgba(0,47,61,.14), 0 2px 4px rgba(0,47,61,.04);
+      --shadow-3: 0 28px 60px -28px rgba(0,47,61,.36), 0 8px 20px -8px rgba(0,47,61,.10);
+
+      --font-title: "Montserrat", system-ui, sans-serif;
+      --font-text:  "Inter", system-ui, sans-serif;
+      --font-mono:  "IBM Plex Mono", ui-monospace, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-text);
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--ink);
+      background: #e8eceb;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      min-height: 100vh;
+    }
+    img { max-width: 100%; height: auto; }
+    button { font: inherit; }
+    ::selection { background: var(--mint-soft); color: var(--navy); }
+    a { color: var(--teal); }
+
+    /* =====================================================================
+       LETTERHEAD — inline top/bottom blocks
+       ===================================================================== */
+    .lh-top {
+      position: relative;
+      margin: -56px -64px 36px;
+      padding: 28px 64px 22px;
+      overflow: hidden;
+      background: #fff;
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+    .lh-top::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0;
+      height: 12px;
+      background: linear-gradient(90deg, var(--navy) 0%, var(--navy-2) 50%, var(--teal) 100%);
+    }
+    .lh-top::after {
+      content: ""; position: absolute; top: 12px; right: 0;
+      width: 12%; height: 3px;
+      background: var(--amber);
+    }
+    .lh-arcs {
+      position: absolute; top: -50px; right: -90px;
+      width: 280px; height: 280px;
+      color: var(--teal);
+      opacity: .12;
+      pointer-events: none;
+    }
+    .lh-brand {
+      position: relative; z-index: 2;
+      padding-top: 18px;
+      line-height: 1;
+    }
+    .lh-brand b {
+      display: block;
+      font-family: var(--font-title); font-weight: 900;
+      font-size: 28px; color: var(--navy);
+      letter-spacing: -.015em;
+    }
+    .lh-brand b i { font-style: normal; color: var(--teal); }
+    .lh-brand span {
+      display: block; margin-top: 6px;
+      font-family: var(--font-mono); font-size: 10.5px;
+      letter-spacing: .36em; text-transform: uppercase;
+      color: var(--navy-2); font-weight: 600;
+    }
+    .lh-dots {
+      position: absolute; left: 64px; bottom: 12px;
+      width: 64px; height: 6px;
+      background-image: radial-gradient(circle, var(--teal) 1.4px, transparent 1.6px);
+      background-size: 10px 6px;
+      background-repeat: repeat-x;
+      opacity: .55;
+    }
+
+    .lh-bottom {
+      position: relative;
+      margin: 44px -64px -72px;
+      padding: 22px 64px 22px;
+      overflow: hidden;
+      background: #fff;
+      page-break-before: avoid;
+      page-break-inside: avoid;
+    }
+    .lh-bottom::after {
+      content: ""; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 10px;
+      background: linear-gradient(90deg, var(--teal) 0%, var(--navy-2) 50%, var(--navy) 100%);
+    }
+    .lh-foot-line {
+      padding: 4px 0 14px;
+      border-top: 1px solid var(--hairline);
+      padding-top: 18px;
+      display: flex; align-items: center; flex-wrap: wrap;
+      gap: 8px 14px;
+      font-family: var(--font-mono); font-size: 10.5px;
+      letter-spacing: .03em;
+      color: var(--navy-2);
+    }
+    .lh-foot-line b { color: var(--navy); font-weight: 700; letter-spacing: .05em; }
+    .lh-foot-co { display: inline-flex; align-items: center; gap: 8px; }
+    .lh-foot-co::before {
+      content: ""; width: 6px; height: 6px;
+      border-radius: 50%; background: var(--teal);
+      box-shadow: 0 0 0 3px var(--mint-soft);
+    }
+    .lh-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--hairline); flex: none; }
+
+    /* =====================================================================
+       PAGE — editorial container
+       ===================================================================== */
+    .page {
+      max-width: 8.5in;
+      margin: 24px auto 40px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-3);
+      padding: 56px 64px 72px;
+      position: relative;
+      overflow: hidden;
+    }
+    .page::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0;
+      height: 4px; background: var(--grad);
+      border-top-left-radius: var(--r-lg);
+      border-top-right-radius: var(--r-lg);
+    }
+
+    /* =====================================================================
+       TOOLBAR
+       ===================================================================== */
+    .toolbar {
+      position: sticky; top: 0; z-index: 60;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 1px 0 rgba(0,47,61,.02), 0 6px 18px -14px rgba(0,47,61,.18);
+    }
+    .toolbar .inner {
+      max-width: 8.5in; margin: 0 auto;
+      padding: 12px 0.92in;
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    }
+    .toolbar .lbl {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .16em; text-transform: uppercase;
+      color: var(--faint); font-weight: 600;
+    }
+    @media (max-width: 720px) {
+      .toolbar .inner { padding: 10px 20px; gap: 10px; }
+      .toolbar .lbl { display: none; }
+    }
+    .seg {
+      display: inline-flex; padding: 3px;
+      background: var(--line-2); border: 1px solid var(--line);
+      border-radius: var(--r-pill);
+    }
+    .seg button {
+      font-family: var(--font-text); font-weight: 600; font-size: 12.5px;
+      color: var(--muted); background: transparent; border: 0;
+      padding: 6px 14px; border-radius: var(--r-pill); cursor: pointer;
+      transition: all var(--t-fast) var(--ease);
+    }
+    .seg button:not([aria-pressed="true"]):hover { color: var(--navy); }
+    .seg button[aria-pressed="true"] { background: var(--navy); color: #fff; box-shadow: 0 6px 14px -8px var(--navy); }
+    .toolbar .spacer { flex: 1; }
+    .toolbar .end-id {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--muted); letter-spacing: .04em;
+    }
+    .toolbar .end-id b { color: var(--navy); }
+    .toolbar .btn-action {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: var(--font-text); font-weight: 600; font-size: 12.5px;
+      padding: 7px 16px; border-radius: var(--r-pill);
+      border: 1px solid var(--line); background: var(--surface);
+      color: var(--navy); cursor: pointer;
+      transition: all var(--t-fast) var(--ease);
+    }
+    .toolbar .btn-action:hover { background: var(--mint-soft); border-color: var(--mint); }
+    .toolbar .btn-action svg { width: 14px; height: 14px; }
+
+    /* =====================================================================
+       DOC HEADER
+       ===================================================================== */
+    .docheader { margin-bottom: 36px; }
+    .docheader .eyebrow {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: .22em; text-transform: uppercase;
+      color: var(--teal); font-weight: 600;
+      display: inline-flex; align-items: center; gap: 12px;
+      margin-bottom: 16px;
+    }
+    .docheader .eyebrow::before { content: ""; width: 24px; height: 1px; background: var(--teal); }
+    .docheader h1 {
+      font-family: var(--font-title); font-weight: 800;
+      font-size: clamp(32px, 4vw, 44px);
+      line-height: 1.05; letter-spacing: -.022em;
+      color: var(--navy); margin: 0 0 16px;
+    }
+    .docheader .lead {
+      font-size: 15px; color: var(--muted);
+      max-width: 58ch; margin: 0 0 24px; line-height: 1.55;
+    }
+    .docheader .badges { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .docheader .badge {
+      font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; letter-spacing: .03em;
+      padding: 6px 12px; border-radius: var(--r-pill);
+      border: 1px solid var(--line); background: var(--surface); color: var(--navy-2);
+      display: inline-flex; align-items: center; gap: 7px;
+      transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+    }
+    .docheader .badge .d { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); flex: none; }
+    .docheader .badge--input { cursor: text; }
+    .docheader .badge--input:hover { border-color: var(--mint); }
+    .docheader .badge--input:focus-within {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(34,154,130,.16);
+    }
+    .docheader .badge .badge-pre { color: var(--faint); font-weight: 500; }
+    .docheader .badge input, .docheader .badge select {
+      font: inherit; font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; letter-spacing: .03em;
+      color: var(--navy); background: transparent; border: 0; outline: 0; padding: 0; min-width: 4ch;
+    }
+    .docheader .badge input::placeholder { color: var(--faint); }
+    .docheader .badge input[type="date"] { width: 13ch; font-weight: 700; min-width: 0; }
+    .docheader .badge input[type="date"]::-webkit-calendar-picker-indicator { width: 14px; padding: 0; margin: 0; opacity: .5; cursor: pointer; }
+    .badge--status[data-status="draft"]    { color: #8a5e09; border-color: #f0dcae; background: var(--amber-soft); }
+    .badge--status[data-status="draft"] .d { background: var(--amber); }
+    .badge--status[data-status="submitted"] { color: #1a6bb8; border-color: #cfe1f3; background: #eaf2fb; }
+    .badge--status[data-status="submitted"] .d { background: #2784e6; }
+    .badge--status[data-status="approved"]  { color: var(--teal-2); border-color: #bfe6d6; background: var(--mint-soft); }
+    .badge--status[data-status="approved"] .d { background: var(--teal); }
+    .badge--status[data-status="declined"]  { color: var(--danger); border-color: #f1c4bf; background: var(--danger-soft); }
+    .badge--status[data-status="declined"] .d { background: var(--danger); }
+
+    /* =====================================================================
+       SECTIONS — accordion (details/summary)
+       ===================================================================== */
+    .sec {
+      margin-top: 28px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: var(--shadow-1);
+      transition: box-shadow var(--t-base) var(--ease);
+    }
+    .sec[open] { box-shadow: var(--shadow-2); }
+    .sec-h {
+      display: grid;
+      grid-template-columns: 36px 1fr auto 20px;
+      align-items: center;
+      gap: 0 14px;
+      padding: 18px 22px;
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+      background: var(--surface);
+      transition: background var(--t-fast) var(--ease);
+    }
+    .sec-h::-webkit-details-marker { display: none; }
+    .sec-h:hover { background: var(--mint-ghost); }
+    .sec-h .n {
+      font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+      color: var(--teal); letter-spacing: .08em;
+      background: var(--mint-soft); border-radius: var(--r-xs);
+      padding: 4px 0; text-align: center;
+    }
+    .sec-h .t {
+      font-family: var(--font-title); font-weight: 700; font-size: 15.5px;
+      color: var(--navy);
+    }
+    .sec-h .sub {
+      font-family: var(--font-mono); font-size: 10.5px;
+      color: var(--faint); letter-spacing: .04em;
+    }
+    .sec-h .chev {
+      width: 20px; height: 20px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--faint);
+      transition: transform var(--t-base) var(--ease);
+    }
+    .sec-h .chev::after {
+      content: ""; display: block;
+      width: 8px; height: 8px;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg) translate(-2px, -2px);
+      transition: transform var(--t-base) var(--ease);
+    }
+    .sec[open] .sec-h .chev::after { transform: rotate(-135deg) translate(-2px, -2px); }
+    .sec-c {
+      padding: 22px 22px 26px;
+      border-top: 1px solid var(--line-2);
+    }
+
+    /* =====================================================================
+       ENDORSEMENT TYPE PICKER
+       ===================================================================== */
+    .end-type-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin: 4px 0 8px;
+    }
+    .end-type-card {
+      position: relative;
+      border: 1.5px solid var(--line);
+      border-radius: var(--r-sm);
+      padding: 14px 14px 14px 42px;
+      cursor: pointer;
+      background: var(--surface);
+      transition: all var(--t-fast) var(--ease);
+    }
+    .end-type-card:hover { border-color: var(--mint); background: var(--mint-ghost); }
+    .end-type-card input[type="checkbox"] { position: absolute; opacity: 0; pointer-events: none; }
+    .end-type-card .chk-box {
+      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+      width: 18px; height: 18px; border-radius: 4px;
+      border: 2px solid var(--hairline);
+      background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--t-fast) var(--ease);
+      flex-shrink: 0;
+    }
+    .end-type-card .chk-box svg { width: 10px; height: 10px; opacity: 0; stroke: #fff; transition: opacity var(--t-fast); }
+    .end-type-card.active { border-color: var(--teal); background: var(--mint-soft); }
+    .end-type-card.active .chk-box { background: var(--teal); border-color: var(--teal); }
+    .end-type-card.active .chk-box svg { opacity: 1; }
+    .end-type-card .card-label {
+      font-weight: 600; font-size: 13.5px; color: var(--navy); display: block;
+      line-height: 1.3;
+    }
+    .end-type-card .card-sub {
+      font-size: 11.5px; color: var(--faint); margin-top: 3px; display: block;
+      line-height: 1.35;
+    }
+
+    /* =====================================================================
+       FIELDS & FORMS
+       ===================================================================== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px 16px;
+    }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+    .campo {
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .campo label {
+      font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+    }
+    .campo input, .campo select, .campo textarea {
+      font: inherit; font-family: var(--font-text); font-size: 14px;
+      color: var(--ink); background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-xs);
+      padding: 8px 10px;
+      outline: 0;
+      transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+      width: 100%;
+    }
+    .campo input:focus, .campo select:focus, .campo textarea:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(34,154,130,.14);
+    }
+    .campo textarea { resize: vertical; min-height: 80px; }
+    .campo input[readonly] { background: var(--line-2); color: var(--muted); cursor: default; }
+    .helper-inline {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: .04em;
+      color: var(--faint); font-weight: 500;
+    }
+
+    /* Section label (sub-header inside a sec-c) */
+    .sec-label {
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+      letter-spacing: .18em; text-transform: uppercase;
+      color: var(--teal); margin: 20px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line-2);
+    }
+    .sec-label:first-child { margin-top: 0; }
+
+    /* =====================================================================
+       REPEATING TABLE
+       ===================================================================== */
+    .rtable { border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; }
+    .rt-head {
+      display: grid;
+      background: var(--mint-ghost);
+      border-bottom: 1px solid var(--line);
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+      padding: 0 10px;
+    }
+    .rt-head > div { padding: 10px 6px; }
+    .rt-rows { display: flex; flex-direction: column; }
+    .rt-row {
+      display: grid;
+      align-items: center;
+      border-bottom: 1px solid var(--line-2);
+      padding: 0 10px;
+      gap: 0 6px;
+      background: var(--surface);
+      transition: background var(--t-fast);
+    }
+    .rt-row:last-child { border-bottom: 0; }
+    .rt-row:hover { background: var(--mint-ghost); }
+    .rt-row input, .rt-row select {
+      font: inherit; font-family: var(--font-text); font-size: 13px;
+      color: var(--ink); background: transparent; border: 0; outline: 0;
+      padding: 10px 6px; width: 100%;
+      border-right: 1px solid var(--line-2);
+    }
+    .rt-row input:last-child, .rt-row select:last-child { border-right: 0; }
+    .rt-row input:focus, .rt-row select:focus { background: var(--mint-soft); }
+    .rt-row input::placeholder { color: var(--faint); }
+    .rt-row .del-row {
+      background: transparent; border: 0; cursor: pointer;
+      color: var(--faint); font-size: 18px; line-height: 1;
+      padding: 0 4px; border-radius: var(--r-xs);
+      transition: all var(--t-fast);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .rt-row .del-row:hover { color: var(--danger); background: var(--danger-soft); }
+
+    .add-row {
+      margin-top: 10px;
+      font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      color: var(--teal); background: transparent;
+      border: 1.5px dashed var(--mint);
+      border-radius: var(--r-sm); padding: 8px 16px; cursor: pointer;
+      transition: all var(--t-fast) var(--ease); width: 100%; text-align: center;
+    }
+    .add-row:hover { background: var(--mint-soft); border-color: var(--teal); }
+
+    /* =====================================================================
+       CONDITIONAL SECTION REVEAL
+       ===================================================================== */
+    .cond-block {
+      display: none;
+      margin-top: 20px;
+      padding: 18px;
+      background: var(--mint-ghost);
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+    }
+    .cond-block.visible { display: block; }
+
+    /* =====================================================================
+       SUPPORT DOCS CHECKLIST
+       ===================================================================== */
+    .pkg-key {
+      border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden;
+    }
+    .pkg-row {
+      display: grid;
+      grid-template-columns: 40px 1fr auto;
+      align-items: center;
+      gap: 0;
+      border-bottom: 1px solid var(--line-2);
+      background: var(--surface);
+      transition: background var(--t-fast);
+      cursor: pointer;
+    }
+    .pkg-row:last-child { border-bottom: 0; }
+    .pkg-row:hover { background: var(--mint-ghost); }
+    .pkg-chk {
+      display: flex; align-items: center; justify-content: center;
+      padding: 14px 0;
+      width: 40px;
+    }
+    .pkg-chk .box {
+      width: 18px; height: 18px; border-radius: 4px;
+      border: 2px solid var(--hairline);
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--t-fast) var(--ease);
+    }
+    .pkg-chk .box svg { width: 10px; height: 10px; opacity: 0; stroke: #fff; transition: opacity var(--t-fast); }
+    .pkg-row.done .pkg-chk .box { background: var(--teal); border-color: var(--teal); }
+    .pkg-row.done .pkg-chk .box svg { opacity: 1; }
+    .pkg-row.done .pkg-info .pname { text-decoration: line-through; color: var(--faint); }
+    .pkg-info { padding: 12px 0; }
+    .pkg-info .pname { font-weight: 600; font-size: 13.5px; color: var(--navy); }
+    .pkg-info .psub { font-size: 12px; color: var(--faint); margin-top: 2px; }
+    .pkg-status {
+      padding: 0 16px;
+      font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
+      letter-spacing: .04em;
+    }
+    .pkg-status .st-ok { color: var(--teal); display: none; }
+    .pkg-status .st-no { color: var(--faint); }
+    .pkg-row.done .pkg-status .st-ok { display: block; }
+    .pkg-row.done .pkg-status .st-no { display: none; }
+
+    /* =====================================================================
+       AVISO / ALERT BOXES
+       ===================================================================== */
+    .aviso {
+      padding: 14px 18px;
+      border-radius: var(--r-sm);
+      margin: 16px 0;
+      font-size: 13.5px;
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .aviso .ic { font-size: 17px; flex-shrink: 0; line-height: 1.3; }
+    .aviso--info    { background: var(--mint-soft); color: var(--navy-2); border: 1px solid var(--mint); }
+    .aviso--legal   { background: #eaf0ee; color: #2a4a3e; border: 1px solid #c8ddd6; }
+    .aviso--amber   { background: var(--amber-soft); color: #7a4e00; border: 1px solid #f0d890; }
+    .aviso--danger  { background: var(--danger-soft); color: var(--danger); border: 1px solid #f1c4bf; }
+
+    /* =====================================================================
+       PROGRESS BAR
+       ===================================================================== */
+    .prog-wrap {
+      margin: -20px -22px 24px;
+      padding: 12px 22px;
+      background: var(--mint-ghost);
+      border-bottom: 1px solid var(--line-2);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .prog-bar {
+      flex: 1; height: 5px; background: var(--line);
+      border-radius: var(--r-pill); overflow: hidden;
+    }
+    .prog-fill {
+      height: 100%; background: var(--teal);
+      border-radius: var(--r-pill);
+      transition: width .4s var(--ease);
+    }
+    .prog-label {
+      font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
+      color: var(--teal); letter-spacing: .06em; flex-shrink: 0; min-width: 36px;
+    }
+
+    /* =====================================================================
+       FOOTER ACTIONS
+       ===================================================================== */
+    .doc-actions {
+      margin-top: 36px;
+      padding: 22px 24px;
+      background: var(--mint-ghost);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .doc-actions .spacer { flex: 1; }
+    .doc-actions .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-text); font-weight: 600; font-size: 13px;
+      padding: 9px 20px; border-radius: var(--r-pill);
+      border: 1.5px solid transparent;
+      cursor: pointer; transition: all var(--t-fast) var(--ease);
+    }
+    .doc-actions .btn svg { width: 15px; height: 15px; }
+    .doc-actions .btn-ghost {
+      background: var(--surface); color: var(--muted);
+      border-color: var(--line);
+    }
+    .doc-actions .btn-ghost:hover { color: var(--navy); border-color: var(--mint); }
+    .doc-actions .btn-primary {
+      background: var(--navy); color: #fff;
+      box-shadow: 0 4px 12px -6px var(--navy);
+    }
+    .doc-actions .btn-primary:hover { background: var(--navy-2); }
+    .doc-actions .btn-teal {
+      background: var(--teal); color: #fff;
+      box-shadow: 0 4px 12px -6px var(--teal);
+    }
+    .doc-actions .btn-teal:hover { background: var(--teal-2); }
+
+    /* =====================================================================
+       PRINT / PDF
+       ===================================================================== */
+    @media print {
+      body { background: #fff; font-size: 13px; }
+      .toolbar { display: none !important; }
+      .page {
+        max-width: 100%; margin: 0; padding: 0.55in 0.65in 0.6in;
+        border: none; border-radius: 0; box-shadow: none;
+      }
+      .page::before { display: none; }
+      .sec { box-shadow: none; }
+      .sec-h { padding: 12px 16px; }
+      .doc-actions { display: none !important; }
+      .add-row { display: none !important; }
+      .del-row { display: none !important; }
+      .seg { display: none !important; }
+      details[open] summary .chev { display: none; }
+      details:not([open]) { display: none; }
+    }
+
+    /* =====================================================================
+       PROPOSAL MODE — hide capture-only elements
+       ===================================================================== */
+    body.modo-propuesta .capture-only { display: none !important; }
+    body.modo-propuesta .proposal-only { display: flex !important; }
+    .proposal-only { display: none; }
+
+    /* =====================================================================
+       RESPONSIVE
+       ===================================================================== */
+    @media (max-width: 800px) {
+      .page { padding: 32px 20px 48px; border-radius: var(--r-md); }
+      .lh-top { margin: -32px -20px 28px; padding: 20px 20px 16px; }
+      .lh-bottom { margin: 32px -20px -48px; padding: 18px 20px 20px; }
+      .lh-dots { left: 20px; }
+      .grid { grid-template-columns: 1fr; }
+      .grid-3 { grid-template-columns: 1fr 1fr; }
+      .end-type-grid { grid-template-columns: 1fr 1fr; }
+      .docheader h1 { font-size: 28px; }
+    }
+    @media (max-width: 520px) {
+      .end-type-grid { grid-template-columns: 1fr; }
+      .grid-3 { grid-template-columns: 1fr; }
+      .rt-head, .rt-row { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== TOOLBAR ===== -->
+<div class="toolbar" role="navigation" aria-label="Document tools">
+  <div class="inner">
+    <span class="lbl">View</span>
+    <div class="seg" role="group" aria-label="Document mode">
+      <button id="btn-capture" aria-pressed="true" onclick="setMode('capture')">Capture</button>
+      <button id="btn-propuesta" aria-pressed="false" onclick="setMode('propuesta')">Proposal</button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <span class="end-id">END · <b id="lbl-end-id">—</b></span>
+
+    <button class="btn-action capture-only" onclick="window.print()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="3" y="1" width="10" height="10" rx="1.5"/><path d="M3 5H1.5A1.5 1.5 0 0 0 0 6.5v5A1.5 1.5 0 0 0 1.5 13H3"/><path d="M13 5h1.5A1.5 1.5 0 0 1 16 6.5v5A1.5 1.5 0 0 1 14.5 13H13"/><rect x="3" y="9" width="10" height="6" rx="1"/>
+      </svg>
+      Print / PDF
+    </button>
+
+    <button class="btn-action capture-only" onclick="clearForm()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M2 4h12M5 4V2.5A1.5 1.5 0 0 1 6.5 1h3A1.5 1.5 0 0 1 11 2.5V4M6 7v5M10 7v5"/><rect x="3" y="4" width="10" height="10" rx="1.5"/>
+      </svg>
+      Clear
+    </button>
+  </div>
+</div>
+
+<!-- ===== MAIN PAGE ===== -->
+<div class="page" role="main">
+
+  <!-- Letterhead top -->
+  <div class="lh-top">
+    <svg class="lh-arcs" viewBox="0 0 280 280" fill="none">
+      <circle cx="140" cy="140" r="100" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="140" cy="140" r="130" stroke="currentColor" stroke-width="1"/>
+      <circle cx="140" cy="140" r="75" stroke="currentColor" stroke-width=".8"/>
+    </svg>
+    <div class="lh-brand">
+      <b>Protect<i>Go</i></b>
+      <span>Commercial Auto · Trucking</span>
+    </div>
+    <div class="lh-dots"></div>
+  </div>
+
+  <!-- Document Header -->
+  <div class="docheader">
+    <div class="eyebrow">END · Endorsement Request</div>
+    <h1>Policy Change<br>Request</h1>
+    <p class="lead">Mid-term policy modification submitted to the carrier for approval. Complete all applicable sections and attach required supporting documents.</p>
+
+    <div class="badges">
+      <!-- Policy # -->
+      <label class="badge badge--input" title="Policy number">
+        <span class="d"></span>
+        <span class="badge-pre">Policy&nbsp;</span>
+        <input type="text" id="field-policy" placeholder="—" style="width:14ch" oninput="syncId()" aria-label="Policy number">
+      </label>
+
+      <!-- Named Insured -->
+      <label class="badge badge--input" title="Named Insured">
+        <span class="d"></span>
+        <span class="badge-pre">NI&nbsp;</span>
+        <input type="text" id="field-ni" placeholder="Named Insured" style="width:22ch" aria-label="Named Insured">
+      </label>
+
+      <!-- Effective Date of Change -->
+      <label class="badge badge--input" title="Effective Date of Change">
+        <span class="d"></span>
+        <span class="badge-pre">Eff.&nbsp;</span>
+        <input type="date" id="field-effdate" aria-label="Effective date of change">
+      </label>
+
+      <!-- Status -->
+      <div class="badge badge--status" id="badge-status" data-status="draft">
+        <span class="d"></span>
+        <select id="field-status" aria-label="Status" onchange="updateStatus(this.value)">
+          <option value="draft">DRAFT</option>
+          <option value="submitted">SUBMITTED</option>
+          <option value="approved">APPROVED</option>
+          <option value="declined">DECLINED</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 01 · POLICY INFORMATION ===== -->
+  <details class="sec" open id="sec-policy">
+    <summary class="sec-h">
+      <span class="n">01</span>
+      <span class="t">Policy Information</span>
+      <span class="sub">Carrier, policy period &amp; contact</span>
+      <span class="chev"></span>
+    </summary>
+    <div class="sec-c">
+      <div class="prog-wrap" id="prog-01">
+        <div class="prog-bar"><div class="prog-fill" id="pf-01" style="width:0%"></div></div>
+        <span class="prog-label" id="pl-01">0%</span>
+      </div>
+
+      <div class="grid grid-3">
+        <div class="campo">
+          <label>Named Insured</label>
+          <input type="text" id="pi-ni" placeholder="Legal business name" oninput="mirrorNI(this.value)">
+        </div>
+        <div class="campo">
+          <label>Policy Number</label>
+          <input type="text" id="pi-policy" placeholder="e.g. CAP-123456" oninput="mirrorPolicy(this.value)">
+        </div>
+        <div class="campo">
+          <label>Carrier</label>
+          <input type="text" placeholder="e.g. Progressive Commercial">
+        </div>
+        <div class="campo">
+          <label>MGA / Wholesale Broker</label>
+          <input type="text" placeholder="e.g. Burns &amp; Wilcox">
+        </div>
+        <div class="campo">
+          <label>Policy Effective Date</label>
+          <input type="date">
+        </div>
+        <div class="campo">
+          <label>Policy Expiration Date</label>
+          <input type="date">
+        </div>
+        <div class="campo">
+          <label>Endorsement Effective Date</label>
+          <input type="date" id="pi-effdate" oninput="mirrorEff(this.value)">
+        </div>
+        <div class="campo">
+          <label>Agent / Producer</label>
+          <input type="text" placeholder="Name">
+        </div>
+        <div class="campo">
+          <label>Agent Phone</label>
+          <input type="tel" placeholder="(000) 000-0000">
+        </div>
+      </div>
+
+      <div class="campo" style="margin-top:14px">
+        <label>Reason for Endorsement <span class="helper-inline">— brief, clear description</span></label>
+        <textarea id="pi-reason" placeholder="e.g. Client acquired 2 additional units effective 07/01/2026 and needs to add them to the policy before dispatch."></textarea>
+      </div>
+    </div>
+  </details>
+
+  <!-- ===== 02 · ENDORSEMENT TYPE ===== -->
+  <details class="sec" open id="sec-type">
+    <summary class="sec-h">
+      <span class="n">02</span>
+      <span class="t">Endorsement Type</span>
+      <span class="sub">Select all that apply to this request</span>
+      <span class="chev"></span>
+    </summary>
+    <div class="sec-c">
+      <div class="aviso aviso--amber" style="margin-top:0">
+        <span class="ic">⚡</span>
+        <span>Selecting an endorsement type will reveal the corresponding data entry section below.</span>
+      </div>
+      <div class="end-type-grid" role="group" aria-label="Endorsement types">
+
+        <label class="end-type-card" data-target="cond-add-unit" onclick="toggleType(this)">
+          <input type="checkbox" name="end_type" value="add_unit" aria-label="Add Unit(s)">
+          <span class="chk-box"><svg viewBox="0 0 12 12" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
+          <span class="card-label">Add Unit(s)</span>
+          <span class="card-sub">New trucks, tractors or trailers</span>
+        </label>
+
+        <label class="end-type-card" data-target="cond-rem-unit" onclick="toggleType(this)">
+          <input type="checkbox" name="end_type" value="remove_unit" aria-label="Remove Unit(s)">
+          <span class="chk-box"><svg viewBox="0 0 12 12" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
+          <span class="card-label">Remove Unit(s)</span>
+          <span class="card-sub">Sold, totaled or out of service</span>
+        </label>
+
+        <label class="end-type-card" data-target="cond-add-driver" onclick="toggleType(this)">
+          <input type="checkbox" name="end_type" value="add_driver" aria-label="Add Driver(s)">
+          <span class="chk-box"><svg viewBox="0 0 12 12" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
+          <span class="card-label">Add Driver(s)</span>
+          <span class="card-sub">New hires or previously excluded</span>
+        </label>
+
+        <label class="end-type-card" data-target="cond-rem-driver" onclick="toggleType(this)">
+          <input type="checkbox" name="end_type" value="remove_driver" aria-label="Remove/Exclude Driver">
+          <span class="chk-box"><svg viewBox="0 0 12 12" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
+          <span class="card-label">Remove / Exclude Driver</span>
+          <span class="card-sub">Terminated or excluded by request</span>
+        </label>
+
+        <label class="end-type-card" data-target="cond-coverage" onclick="toggleType(this)">
+          <input type="checkbox" name="end_type" value="coverage" aria-label="Coverage Change">
+          <span class="chk-box"><svg viewBox="0 0 12 12" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
+          <span class="card-label">Coverage Change</span>
+          <span class="card-sub">Limits, deductibles, or new coverage</span>
+        </label>
+
+        <label class="end-type-card" data-target="cond-address" onclick="toggleType(this)">
+          <input type="checkbox" name="end_type" value="address" aria-label="Address Change">
+          <span class="chk-box"><svg viewBox="0 0 12 12" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
+          <span class="card-label">Address Change</span>
+          <span class="card-sub">Principal garaging or business address</span>
+        </label>
+
+        <label class="end-type-card" data-target="cond-named-ins" onclick="toggleType(this)">
+          <input type="checkbox" name="end_type" value="named_ins" aria-label="Named Insured Change">
+          <span class="chk-box"><svg viewBox="0 0 12 12" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
+          <span class="card-label">Named Insured Change</span>
+          <span class="card-sub">Entity rename or DBA update</span>
+        </label>
+
+        <label class="end-type-card" data-target="cond-cert" onclick="toggleType(this)">
+          <input type="checkbox" name="end_type" value="cert" aria-label="Certificate of Insurance">
+          <span class="chk-box"><svg viewBox="0 0 12 12" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
+          <span class="card-label">Certificate of Insurance</span>
+          <span class="card-sub">ACORD 25 / additional insured</span>
+        </label>
+
+        <label class="end-type-card" data-target="cond-filing" onclick="toggleType(this)">
+          <input type="checkbox" name="end_type" value="filing" aria-label="Filing / MCS-90">
+          <span class="chk-box"><svg viewBox="0 0 12 12" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
+          <span class="card-label">Filing / MCS-90</span>
+          <span class="card-sub">FMCSA / state regulatory filings</span>
+        </label>
+
+        <label class="end-type-card" data-target="cond-uiia" onclick="toggleType(this)">
+          <input type="checkbox" name="end_type" value="uiia" aria-label="UIIA">
+          <span class="chk-box"><svg viewBox="0 0 12 12" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
+          <span class="card-label">UIIA</span>
+          <span class="card-sub">Intermodal interchange agreement</span>
+        </label>
+
+        <label class="end-type-card" data-target="cond-suspension" onclick="toggleType(this)">
+          <input type="checkbox" name="end_type" value="suspension" aria-label="Suspension / Reinstatement">
+          <span class="chk-box"><svg viewBox="0 0 12 12" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
+          <span class="card-label">Suspension / Reinstatement</span>
+          <span class="card-sub">Temporary stop or restart of coverage</span>
+        </label>
+
+        <label class="end-type-card" data-target="cond-other" onclick="toggleType(this)">
+          <input type="checkbox" name="end_type" value="other" aria-label="Other">
+          <span class="chk-box"><svg viewBox="0 0 12 12" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
+          <span class="card-label">Other</span>
+          <span class="card-sub">Any endorsement not listed above</span>
+        </label>
+      </div>
+    </div>
+  </details>
+
+  <!-- ===== 03 · CHANGE DETAILS (conditional blocks) ===== -->
+  <details class="sec" id="sec-details">
+    <summary class="sec-h">
+      <span class="n">03</span>
+      <span class="t">Change Details</span>
+      <span class="sub">Fill the sections matching your selections above</span>
+      <span class="chev"></span>
+    </summary>
+    <div class="sec-c">
+
+      <!-- ADD UNITS -->
+      <div id="cond-add-unit" class="cond-block">
+        <div class="sec-label">Add Units</div>
+        <div class="rtable" data-rtable="add-units">
+          <div class="rt-head" style="grid-template-columns:.5fr .7fr 1.5fr .8fr .6fr .65fr .75fr .8fr 32px">
+            <div>Year</div><div>Make</div><div>VIN #</div><div>Body Type</div><div>GVWR</div><div>Own/Lease</div><div>Stated Value</div><div>Eff. Date</div><div></div>
+          </div>
+          <div class="rt-rows" id="rows-add-units"></div>
+        </div>
+        <button type="button" class="add-row" onclick="addRow('add-units')">+ add unit</button>
+      </div>
+
+      <!-- REMOVE UNITS -->
+      <div id="cond-rem-unit" class="cond-block">
+        <div class="sec-label">Remove Units</div>
+        <div class="aviso aviso--amber">
+          <span class="ic">⚠️</span>
+          <span>Confirm the unit is no longer in service. If sold, attach Bill of Sale. If totaled, attach claim documentation.</span>
+        </div>
+        <div class="rtable" data-rtable="rem-units">
+          <div class="rt-head" style="grid-template-columns:.5fr .7fr 1.5fr 1fr 1.1fr 32px">
+            <div>Year</div><div>Make</div><div>VIN #</div><div>Eff. Date</div><div>Reason</div><div></div>
+          </div>
+          <div class="rt-rows" id="rows-rem-units"></div>
+        </div>
+        <button type="button" class="add-row" onclick="addRow('rem-units')">+ add unit to remove</button>
+      </div>
+
+      <!-- ADD DRIVERS -->
+      <div id="cond-add-driver" class="cond-block">
+        <div class="sec-label">Add Drivers</div>
+        <div class="rtable" data-rtable="add-drivers">
+          <div class="rt-head" style="grid-template-columns:1.4fr .85fr 1.2fr .9fr .6fr .85fr .8fr 32px">
+            <div>Full Name</div><div>DOB</div><div>CDL / DL #</div><div>State</div><div>Exp (yrs)</div><div>Date of Hire</div><div>Eff. Date</div><div></div>
+          </div>
+          <div class="rt-rows" id="rows-add-drivers"></div>
+        </div>
+        <button type="button" class="add-row" onclick="addRow('add-drivers')">+ add driver</button>
+      </div>
+
+      <!-- REMOVE / EXCLUDE DRIVERS -->
+      <div id="cond-rem-driver" class="cond-block">
+        <div class="sec-label">Remove / Exclude Drivers</div>
+        <div class="rtable" data-rtable="rem-drivers">
+          <div class="rt-head" style="grid-template-columns:1.6fr 1fr 1fr 1fr 32px">
+            <div>Full Name</div><div>CDL / DL #</div><div>Eff. Date</div><div>Reason</div><div></div>
+          </div>
+          <div class="rt-rows" id="rows-rem-drivers"></div>
+        </div>
+        <button type="button" class="add-row" onclick="addRow('rem-drivers')">+ add driver to remove</button>
+      </div>
+
+      <!-- COVERAGE CHANGE -->
+      <div id="cond-coverage" class="cond-block">
+        <div class="sec-label">Coverage Change</div>
+        <div class="grid grid-3">
+          <div class="campo">
+            <label>Coverage Line</label>
+            <select>
+              <option value="">— Select —</option>
+              <option>Auto Liability</option>
+              <option>Physical Damage (Comp/Collision)</option>
+              <option>Motor Truck Cargo</option>
+              <option>General Liability</option>
+              <option>Umbrella / Excess</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label>Current Limit / Deductible</label>
+            <input type="text" placeholder="e.g. $1M / $1,000 ded">
+          </div>
+          <div class="campo">
+            <label>Requested Limit / Deductible</label>
+            <input type="text" placeholder="e.g. $1M / $2,500 ded">
+          </div>
+          <div class="campo span-3">
+            <label>Explanation</label>
+            <textarea placeholder="Reason for the coverage change — be specific."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADDRESS CHANGE -->
+      <div id="cond-address" class="cond-block">
+        <div class="sec-label">Address Change</div>
+        <div class="grid grid-2">
+          <div>
+            <div class="sec-label" style="margin-top:0;margin-bottom:10px">Current Address</div>
+            <div class="grid">
+              <div class="campo span-2"><label>Street</label><input type="text" placeholder="Current street address"></div>
+              <div class="campo"><label>City</label><input type="text"></div>
+              <div class="campo"><label>State</label><input type="text" style="width:6ch"></div>
+              <div class="campo"><label>ZIP</label><input type="text" style="width:8ch"></div>
+            </div>
+          </div>
+          <div>
+            <div class="sec-label" style="margin-top:0;margin-bottom:10px">New Address</div>
+            <div class="grid">
+              <div class="campo span-2"><label>Street</label><input type="text" placeholder="New street address"></div>
+              <div class="campo"><label>City</label><input type="text"></div>
+              <div class="campo"><label>State</label><input type="text" style="width:6ch"></div>
+              <div class="campo"><label>ZIP</label><input type="text" style="width:8ch"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NAMED INSURED CHANGE -->
+      <div id="cond-named-ins" class="cond-block">
+        <div class="sec-label">Named Insured Change</div>
+        <div class="grid grid-2">
+          <div class="campo"><label>Current Named Insured</label><input type="text" placeholder="Current legal name"></div>
+          <div class="campo"><label>New Named Insured</label><input type="text" placeholder="New legal name"></div>
+          <div class="campo"><label>EIN / Federal Tax ID</label><input type="text" placeholder="XX-XXXXXXX"></div>
+          <div class="campo"><label>Reason for Change</label><input type="text" placeholder="e.g. Corporate restructuring, DBA update"></div>
+        </div>
+      </div>
+
+      <!-- CERTIFICATE OF INSURANCE -->
+      <div id="cond-cert" class="cond-block">
+        <div class="sec-label">Certificate of Insurance</div>
+        <div class="grid grid-2">
+          <div class="campo"><label>Certificate Holder Name</label><input type="text" placeholder="Name as it should appear"></div>
+          <div class="campo"><label>Certificate Holder Address</label><input type="text" placeholder="Full address"></div>
+          <div class="campo"><label>Additional Insured?</label>
+            <select>
+              <option value="">— Select —</option>
+              <option>Yes — add as Additional Insured</option>
+              <option>No — certificate holder only</option>
+            </select>
+          </div>
+          <div class="campo"><label>Description of Operations</label><input type="text" placeholder="e.g. All operations as required by contract"></div>
+          <div class="campo"><label>Special Wording / Notes</label><input type="text" placeholder="e.g. 30-day notice of cancellation"></div>
+          <div class="campo"><label>Email to Send Certificate</label><input type="email" placeholder="recipient@company.com"></div>
+        </div>
+      </div>
+
+      <!-- FILING / MCS-90 -->
+      <div id="cond-filing" class="cond-block">
+        <div class="sec-label">Filing / MCS-90</div>
+        <div class="aviso aviso--info">
+          <span class="ic">ℹ️</span>
+          <span>MCS-90 filings must match the policy's BI limit. Confirm the MC/DOT number is active on FMCSA before submitting.</span>
+        </div>
+        <div class="grid grid-3">
+          <div class="campo"><label>Filing Type</label>
+            <select>
+              <option value="">— Select —</option>
+              <option>MCS-90 (Federal)</option>
+              <option>State BMC-91X</option>
+              <option>FMCSA Form E</option>
+              <option>Other State Filing</option>
+            </select>
+          </div>
+          <div class="campo"><label>MC Number</label><input type="text" placeholder="MC-XXXXXX"></div>
+          <div class="campo"><label>DOT Number</label><input type="text" placeholder="USDOT XXXXXXXX"></div>
+          <div class="campo"><label>State(s) Requiring Filing</label><input type="text" placeholder="e.g. TX, CA, FL"></div>
+          <div class="campo"><label>Filing Effective Date</label><input type="date"></div>
+          <div class="campo"><label>Notes</label><input type="text" placeholder="Any carrier-specific instructions"></div>
+        </div>
+      </div>
+
+      <!-- UIIA -->
+      <div id="cond-uiia" class="cond-block">
+        <div class="sec-label">UIIA — Intermodal Interchange</div>
+        <div class="aviso aviso--info">
+          <span class="ic">🔗</span>
+          <span>UIIA endorsement extends liability to cover interchange equipment. Confirm the intermodal operator is listed on the UIIA equipment provider list.</span>
+        </div>
+        <div class="grid grid-3">
+          <div class="campo"><label>Intermodal Operator</label><input type="text" placeholder="e.g. BNSF, CSX, Maersk"></div>
+          <div class="campo"><label>Equipment Type</label><input type="text" placeholder="e.g. 20' ISO containers"></div>
+          <div class="campo"><label>UIIA Effective Date</label><input type="date"></div>
+          <div class="campo span-3"><label>Additional Instructions</label><textarea placeholder="Any UIIA-specific wording or operator requirements."></textarea></div>
+        </div>
+      </div>
+
+      <!-- SUSPENSION / REINSTATEMENT -->
+      <div id="cond-suspension" class="cond-block">
+        <div class="sec-label">Suspension / Reinstatement</div>
+        <div class="aviso aviso--danger">
+          <span class="ic">🚫</span>
+          <span>Suspended vehicles may not be operated. Reinstatement must be confirmed in writing by the carrier before dispatch resumes.</span>
+        </div>
+        <div class="grid grid-3">
+          <div class="campo"><label>Action</label>
+            <select>
+              <option value="">— Select —</option>
+              <option>Suspend Coverage</option>
+              <option>Reinstate Coverage</option>
+            </select>
+          </div>
+          <div class="campo"><label>Effective Date</label><input type="date"></div>
+          <div class="campo"><label>Units Affected</label><input type="text" placeholder="VINs or 'All units'"></div>
+          <div class="campo span-3"><label>Reason</label><textarea placeholder="Reason for suspension or reinstatement (e.g. seasonal operations, dispute resolution)."></textarea></div>
+        </div>
+      </div>
+
+      <!-- OTHER -->
+      <div id="cond-other" class="cond-block">
+        <div class="sec-label">Other Endorsement</div>
+        <div class="grid">
+          <div class="campo span-3"><label>Description</label><textarea placeholder="Describe the endorsement change in detail. Include any form numbers or specific carrier instructions."></textarea></div>
+        </div>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- ===== 04 · SUPPORTING DOCUMENTS ===== -->
+  <details class="sec" id="sec-docs">
+    <summary class="sec-h">
+      <span class="n">04</span>
+      <span class="t">Supporting Documents</span>
+      <span class="sub">Check off documents received / attached</span>
+      <span class="chev"></span>
+    </summary>
+    <div class="sec-c">
+      <div class="aviso aviso--info" style="margin-top:0">
+        <span class="ic">📎</span>
+        <span>Click each row to mark as received. Attach actual files to the submission email or upload to the client folder.</span>
+      </div>
+
+      <div class="pkg-key" id="docs-list">
+        <div class="pkg-row" onclick="toggleDoc(this)">
+          <div class="pkg-chk"><div class="box"><svg viewBox="0 0 12 12" stroke="#fff" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></div></div>
+          <div class="pkg-info"><div class="pname">Signed Endorsement Request Form</div><div class="psub">This document, signed by the insured or authorized representative</div></div>
+          <div class="pkg-status"><span class="st-ok">✓ Received</span><span class="st-no">Pending</span></div>
+        </div>
+        <div class="pkg-row" onclick="toggleDoc(this)">
+          <div class="pkg-chk"><div class="box"><svg viewBox="0 0 12 12" stroke="#fff" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></div></div>
+          <div class="pkg-info"><div class="pname">Copy of Current Declarations Page</div><div class="psub">Most recent policy dec page to verify coverage details</div></div>
+          <div class="pkg-status"><span class="st-ok">✓ Received</span><span class="st-no">Pending</span></div>
+        </div>
+        <div class="pkg-row" onclick="toggleDoc(this)">
+          <div class="pkg-chk"><div class="box"><svg viewBox="0 0 12 12" stroke="#fff" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></div></div>
+          <div class="pkg-info"><div class="pname">Vehicle Title / Bill of Sale</div><div class="psub">Required for add/remove unit endorsements</div></div>
+          <div class="pkg-status"><span class="st-ok">✓ Received</span><span class="st-no">Pending</span></div>
+        </div>
+        <div class="pkg-row" onclick="toggleDoc(this)">
+          <div class="pkg-chk"><div class="box"><svg viewBox="0 0 12 12" stroke="#fff" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></div></div>
+          <div class="pkg-info"><div class="pname">Driver's License (front &amp; back)</div><div class="psub">Required for add driver endorsements — all new drivers</div></div>
+          <div class="pkg-status"><span class="st-ok">✓ Received</span><span class="st-no">Pending</span></div>
+        </div>
+        <div class="pkg-row" onclick="toggleDoc(this)">
+          <div class="pkg-chk"><div class="box"><svg viewBox="0 0 12 12" stroke="#fff" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></div></div>
+          <div class="pkg-info"><div class="pname">MVR (Motor Vehicle Report)</div><div class="psub">Required for each new driver — pulled from state DMV</div></div>
+          <div class="pkg-status"><span class="st-ok">✓ Received</span><span class="st-no">Pending</span></div>
+        </div>
+        <div class="pkg-row" onclick="toggleDoc(this)">
+          <div class="pkg-chk"><div class="box"><svg viewBox="0 0 12 12" stroke="#fff" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></div></div>
+          <div class="pkg-info"><div class="pname">Appraisal / Stated Value Evidence</div><div class="psub">For units with stated value over $100K or physical damage change</div></div>
+          <div class="pkg-status"><span class="st-ok">✓ Received</span><span class="st-no">Pending</span></div>
+        </div>
+        <div class="pkg-row" onclick="toggleDoc(this)">
+          <div class="pkg-chk"><div class="box"><svg viewBox="0 0 12 12" stroke="#fff" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></div></div>
+          <div class="pkg-info"><div class="pname">Proof of FMCSA Registration (SAFER)</div><div class="psub">Required for MCS-90 / filing endorsements</div></div>
+          <div class="pkg-status"><span class="st-ok">✓ Received</span><span class="st-no">Pending</span></div>
+        </div>
+        <div class="pkg-row" onclick="toggleDoc(this)">
+          <div class="pkg-chk"><div class="box"><svg viewBox="0 0 12 12" stroke="#fff" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></div></div>
+          <div class="pkg-info"><div class="pname">ACORD 36 / Endorsement Application</div><div class="psub">Carrier-specific endorsement form if required</div></div>
+          <div class="pkg-status"><span class="st-ok">✓ Received</span><span class="st-no">Pending</span></div>
+        </div>
+      </div>
+
+      <div class="sec-label" style="margin-top:20px">Client folder link</div>
+      <div class="campo">
+        <label>Google Drive / Shared Folder URL</label>
+        <input type="url" placeholder="https://drive.google.com/drive/folders/…">
+      </div>
+    </div>
+  </details>
+
+  <!-- ===== 05 · UNDERWRITER NOTES ===== -->
+  <details class="sec" id="sec-notes">
+    <summary class="sec-h">
+      <span class="n">05</span>
+      <span class="t">Underwriter Notes</span>
+      <span class="sub">Agent commentary for the carrier review</span>
+      <span class="chev"></span>
+    </summary>
+    <div class="sec-c">
+      <div class="aviso aviso--legal">
+        <span class="ic">📝</span>
+        <span>Use this section to explain any risk factors, context about the change, or to proactively address underwriting concerns. A well-written note speeds up approval.</span>
+      </div>
+      <div class="campo" style="margin-top:12px">
+        <label>Agent / Producer Notes</label>
+        <textarea style="min-height:120px" placeholder="e.g. Client has operated without incidents for 3 years. The two units being added replace older equipment that was recently sold. New VINs are 2022 models with anti-roll and lane assist. Dispatch radius remains under 500 miles. MVRs are clean."></textarea>
+      </div>
+      <div class="grid grid-2" style="margin-top:12px">
+        <div class="campo">
+          <label>Priority / Urgency</label>
+          <select>
+            <option value="">— Select —</option>
+            <option>🟢 Standard (3–5 business days)</option>
+            <option>🟡 Elevated (24–48 hrs)</option>
+            <option>🔴 Urgent — unit dispatching today</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label>Estimated Premium Impact</label>
+          <input type="text" placeholder="e.g. +$420/mo or TBD">
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- ===== 06 · AUTHORIZATION ===== -->
+  <details class="sec" id="sec-auth">
+    <summary class="sec-h">
+      <span class="n">06</span>
+      <span class="t">Authorization</span>
+      <span class="sub">Prepared by &amp; insured signature line</span>
+      <span class="chev"></span>
+    </summary>
+    <div class="sec-c">
+      <div class="grid grid-3">
+        <div class="campo">
+          <label>Prepared by</label>
+          <input type="text" placeholder="Agent / CSR name">
+        </div>
+        <div class="campo">
+          <label>Date Prepared</label>
+          <input type="date">
+        </div>
+        <div class="campo">
+          <label>ProtectGo Internal Ref.</label>
+          <input type="text" id="pg-ref" placeholder="e.g. END-2026-0147">
+        </div>
+      </div>
+
+      <div class="aviso aviso--legal" style="margin-top:18px">
+        <span class="ic">⚖️</span>
+        <span><strong>Policyholder attestation:</strong> By signing this request, the authorized representative of the Named Insured confirms that the information provided is accurate and complete, and authorizes ProtectGo Services to submit this endorsement request to the carrier on their behalf. Changes are not effective until confirmed in writing by the carrier.</span>
+      </div>
+
+      <div class="grid grid-3" style="margin-top:18px">
+        <div class="campo span-2">
+          <label>Insured Authorized Signature</label>
+          <input type="text" placeholder="Type full legal name as electronic signature">
+        </div>
+        <div class="campo">
+          <label>Date Signed</label>
+          <input type="date">
+        </div>
+        <div class="campo span-3">
+          <label>Title / Position</label>
+          <input type="text" placeholder="e.g. Owner, Fleet Manager">
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- ===== ACTIONS ===== -->
+  <div class="doc-actions">
+    <button class="btn btn-ghost capture-only" onclick="clearForm()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4h12M5 4V2.5A1.5 1.5 0 0 1 6.5 1h3A1.5 1.5 0 0 1 11 2.5V4"/><rect x="3" y="4" width="10" height="10" rx="1.5"/></svg>
+      Clear Form
+    </button>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost" onclick="window.print()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="1" width="10" height="10" rx="1.5"/><path d="M3 5H1.5A1.5 1.5 0 0 0 0 6.5v5A1.5 1.5 0 0 0 1.5 13H3"/><path d="M13 5h1.5A1.5 1.5 0 0 1 16 6.5v5A1.5 1.5 0 0 1 14.5 13H13"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+      Print / PDF
+    </button>
+    <button class="btn btn-teal" onclick="setMode('propuesta')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 8h12M9 3l5 5-5 5"/></svg>
+      View Proposal
+    </button>
+  </div>
+
+  <!-- Letterhead bottom -->
+  <div class="lh-bottom">
+    <div class="lh-foot-line">
+      <span class="lh-foot-co"><b>ProtectGo Services</b></span>
+      <span class="lh-sep"></span>
+      <span>Commercial Auto · Trucking</span>
+      <span class="lh-sep"></span>
+      <span>Endorsement Request — END Module</span>
+      <span class="lh-sep"></span>
+      <span>v1.0.0</span>
+    </div>
+  </div>
+
+</div><!-- /.page -->
+
+<!-- =====================================================================
+     JAVASCRIPT
+     ===================================================================== -->
+<script>
+/* -----------------------------------------------------------------------
+   MODE TOGGLE (Capture ↔ Proposal)
+   --------------------------------------------------------------------- */
+function setMode(mode) {
+  document.body.classList.toggle('modo-propuesta', mode === 'propuesta');
+  document.getElementById('btn-capture').setAttribute('aria-pressed', mode === 'capture');
+  document.getElementById('btn-propuesta').setAttribute('aria-pressed', mode === 'propuesta');
+  if (mode === 'propuesta') {
+    document.querySelectorAll('details.sec').forEach(d => d.open = true);
+  }
+}
+
+/* -----------------------------------------------------------------------
+   STATUS BADGE
+   --------------------------------------------------------------------- */
+function updateStatus(val) {
+  document.getElementById('badge-status').dataset.status = val;
+}
+
+/* -----------------------------------------------------------------------
+   BADGE SYNC — header badges mirror section inputs
+   --------------------------------------------------------------------- */
+function mirrorNI(v)     { document.getElementById('field-ni').value = v; }
+function mirrorPolicy(v) {
+  document.getElementById('field-policy').value = v;
+  syncId();
+}
+function mirrorEff(v)    { document.getElementById('field-effdate').value = v; }
+function syncId() {
+  const p = document.getElementById('pi-policy').value || document.getElementById('field-policy').value;
+  document.getElementById('lbl-end-id').textContent = p || '—';
+  if (!document.getElementById('pg-ref').value && p) {
+    const y = new Date().getFullYear();
+    document.getElementById('pg-ref').placeholder = `END-${y}-${Math.floor(Math.random()*900+100)}`;
+  }
+}
+
+/* -----------------------------------------------------------------------
+   ENDORSEMENT TYPE TOGGLE — show/hide conditional blocks & open sec-details
+   --------------------------------------------------------------------- */
+function toggleType(card) {
+  card.classList.toggle('active');
+  const targetId = card.dataset.target;
+  const block = document.getElementById(targetId);
+  if (block) {
+    block.classList.toggle('visible', card.classList.contains('active'));
+    // auto-open details section
+    const detailsSec = document.getElementById('sec-details');
+    if (card.classList.contains('active') && detailsSec) {
+      detailsSec.open = true;
+    }
+  }
+  // Check if any block is visible
+  const anyVisible = document.querySelectorAll('.cond-block.visible').length > 0;
+  if (!anyVisible && document.getElementById('sec-details')) {
+    // keep it open if user manually opened it
+  }
+}
+
+/* -----------------------------------------------------------------------
+   REPEATING TABLE ROWS
+   --------------------------------------------------------------------- */
+const ROW_TEMPLATES = {
+  'add-units': [
+    { ph: 'Year', w: '.5fr' },
+    { ph: 'Make', w: '.7fr' },
+    { ph: 'VIN #', w: '1.5fr' },
+    { ph: 'Body Type', w: '.8fr' },
+    { ph: 'GVWR', w: '.6fr' },
+    { ph: 'Own/Lease', w: '.65fr', type: 'select', opts: ['Owned','Leased','Financed'] },
+    { ph: '$', w: '.75fr' },
+    { ph: 'mm/dd/yyyy', w: '.8fr', type: 'date' },
+  ],
+  'rem-units': [
+    { ph: 'Year', w: '.5fr' },
+    { ph: 'Make', w: '.7fr' },
+    { ph: 'VIN #', w: '1.5fr' },
+    { ph: 'mm/dd/yyyy', w: '1fr', type: 'date' },
+    { ph: 'Reason', w: '1.1fr', type: 'select', opts: ['Sold','Totaled','Out of Service','Other'] },
+  ],
+  'add-drivers': [
+    { ph: 'Full Name', w: '1.4fr' },
+    { ph: 'mm/dd/yyyy', w: '.85fr', type: 'date' },
+    { ph: 'CDL / DL #', w: '1.2fr' },
+    { ph: 'ST', w: '.9fr' },
+    { ph: '0', w: '.6fr', type: 'number' },
+    { ph: 'mm/dd/yyyy', w: '.85fr', type: 'date' },
+    { ph: 'mm/dd/yyyy', w: '.8fr', type: 'date' },
+  ],
+  'rem-drivers': [
+    { ph: 'Full Name', w: '1.6fr' },
+    { ph: 'CDL / DL #', w: '1fr' },
+    { ph: 'mm/dd/yyyy', w: '1fr', type: 'date' },
+    { ph: 'Reason', w: '1fr', type: 'select', opts: ['Terminated','Excluded by Request','License Revoked','Other'] },
+  ]
+};
+
+function buildCols(kind) {
+  const cols = ROW_TEMPLATES[kind];
+  if (!cols) return '';
+  return cols.map(c => c.w).join(' ') + ' 32px';
+}
+
+function addRow(kind) {
+  const cols = ROW_TEMPLATES[kind];
+  if (!cols) return;
+  const container = document.getElementById('rows-' + kind);
+  if (!container) return;
+
+  const colStr = buildCols(kind);
+  const row = document.createElement('div');
+  row.className = 'rt-row';
+  row.style.gridTemplateColumns = colStr;
+
+  let cells = cols.map(c => {
+    if (c.type === 'select') {
+      const opts = c.opts.map(o => `<option value="${o}">${o}</option>`).join('');
+      return `<select aria-label="${c.ph}"><option value="">—</option>${opts}</select>`;
+    } else if (c.type === 'date') {
+      return `<input type="date" aria-label="${c.ph}">`;
+    } else if (c.type === 'number') {
+      return `<input type="number" min="0" placeholder="${c.ph}" aria-label="${c.ph}">`;
+    } else {
+      return `<input type="text" placeholder="${c.ph}" aria-label="${c.ph}">`;
+    }
+  }).join('');
+
+  cells += `<button class="del-row" type="button" title="Remove row" onclick="this.closest('.rt-row').remove()">×</button>`;
+  row.innerHTML = cells;
+  container.appendChild(row);
+}
+
+/* -----------------------------------------------------------------------
+   SUPPORT DOCS TOGGLE
+   --------------------------------------------------------------------- */
+function toggleDoc(row) {
+  row.classList.toggle('done');
+}
+
+/* -----------------------------------------------------------------------
+   CLEAR FORM
+   --------------------------------------------------------------------- */
+function clearForm() {
+  if (!confirm('Clear all fields? This cannot be undone.')) return;
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    if (el.tagName === 'SELECT') el.selectedIndex = 0;
+    else el.value = '';
+  });
+  document.querySelectorAll('.end-type-card.active').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.cond-block.visible').forEach(b => b.classList.remove('visible'));
+  document.querySelectorAll('.pkg-row.done').forEach(r => r.classList.remove('done'));
+  document.querySelectorAll('.rt-rows').forEach(r => r.innerHTML = '');
+  document.getElementById('badge-status').dataset.status = 'draft';
+  document.getElementById('lbl-end-id').textContent = '—';
+  setMode('capture');
+}
+
+/* -----------------------------------------------------------------------
+   INIT — add one blank row to each table on load
+   --------------------------------------------------------------------- */
+document.addEventListener('DOMContentLoaded', () => {
+  // Generate a default reference number
+  const y = new Date().getFullYear();
+  const n = String(Math.floor(Math.random() * 900) + 100).padStart(4,'0');
+  document.getElementById('pg-ref').placeholder = `END-${y}-${n}`;
+});
+</script>
+</body>
+</html>

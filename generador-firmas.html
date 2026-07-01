@@ -160,5 +160,47 @@ function copySignature(){const d=read();copyHTML(buildSignature(d,'export'),d.ph
 function downloadSig(){const html='<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>'+buildSignature(read(),'export')+'</body></html>';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));a.download='firma-'+(read().name.toLowerCase().replace(/\s+/g,'-'))+'.html';a.click();}
 render();
 </script>
+
+<!-- Auto-relleno por correo (usa la sesion de Supabase del portal, mismo dominio) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+  var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+  var BASE="https://protectgo.github.io/quick-quotes/fotos/";
+  var C_EN="GO Sales Executive", C_ES="Especialista de ventas GABI";
+  var PROFILES={
+    "german.ochoa@protectgoservices.com":{n:"German Ochoa",en:C_EN,es:C_ES,f:"german.ochoa.jpg"},
+    "jhon.cano@protectgoservices.com":{n:"Jhon Cano",en:C_EN,es:C_ES,f:"jhon.cano.jpg"},
+    "juliana.raigosa@protectgoservices.com":{n:"Juliana Raigosa",en:C_EN,es:C_ES,f:"juliana.raigosa.jpg"},
+    "juliana.restrepo@protectgoservices.com":{n:"Juliana Restrepo",en:C_EN,es:C_ES,f:"juliana.restrepo.jpg"},
+    "lucero.hincapie@protectgoservices.com":{n:"Lucero Hincapie",en:C_EN,es:C_ES,f:"lucero.hincapie.jpg"},
+    "mariana.bedoya@protectgoservices.com":{n:"Mariana Bedoya",en:C_EN,es:C_ES,f:"mariana.bedoya.jpg"},
+    "salome.orozco@protectgoservices.com":{n:"Salome Orozco",en:C_EN,es:C_ES,f:"salome.orozco.jpg"},
+    "valeria.bedoya@protectgoservices.com":{n:"Valeria Bedoya",en:C_EN,es:C_ES,f:"valeria.bedoya.jpg"}
+  };
+  function set(id,v){var e=document.getElementById(id); if(e) e.value=v;}
+  function apply(email){
+    var p=PROFILES[(email||"").toLowerCase()]; if(!p) return false;
+    set("name",p.n); set("titleEn",p.en); set("titleEs",p.es);
+    set("email",email.toLowerCase()); set("photoUrl",BASE+p.f);
+    if(typeof render==="function") render();
+    if(typeof toast==="function") toast("Ficha de "+p.n+" cargada");
+    return true;
+  }
+  try{ var q=new URLSearchParams(location.search).get("u"); if(q && apply(q.trim())) return; }catch(e){}
+  function init(){
+    if(!(window.supabase&&window.supabase.createClient)) return;
+    var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    sb.auth.getSession().then(function(r){
+      var em=r&&r.data&&r.data.session&&r.data.session.user?r.data.session.user.email:"";
+      if(em) apply(em);
+    });
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){setTimeout(init,80);});
+  else setTimeout(init,80);
+})();
+</script>
+
 </body>
 </html>

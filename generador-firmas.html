@@ -173,15 +173,30 @@ render();
   var BASE="https://protectgo.github.io/quick-quotes/fotos/";
   var C_EN="GO Sales Executive", C_ES="Especialista de ventas";
   var PROFILES={
-    "german.ochoa@protectgoservices.com":{n:"German Ochoa",en:C_EN,es:C_ES,f:"german.ochoa.jpg"},
-    "jhon.cano@protectgoservices.com":{n:"Jhon Cano",en:C_EN,es:C_ES,f:"jhon.cano.jpg"},
-    "juliana.raigosa@protectgoservices.com":{n:"Juliana Raigosa",en:C_EN,es:C_ES,f:"juliana.raigosa.jpg"},
-    "juliana.restrepo@protectgoservices.com":{n:"Juliana Restrepo",en:C_EN,es:C_ES,f:"juliana.restrepo.jpg"},
-    "lucero.hincapie@protectgoservices.com":{n:"Lucero Hincapie",en:C_EN,es:C_ES,f:"lucero.hincapie.jpg"},
-    "mariana.bedoya@protectgoservices.com":{n:"Mariana Bedoya",en:C_EN,es:C_ES,f:"mariana.bedoya.jpg"},
-    "salome.orozco@protectgoservices.com":{n:"Salome Orozco",en:C_EN,es:C_ES,f:"salome.orozco.jpg"},
-    "valeria.bedoya@protectgoservices.com":{n:"Valeria Bedoya",en:C_EN,es:C_ES,f:"valeria.bedoya.jpg"}
-  };
+      "german.ochoa@protectgoservices.com":{n:"German Ochoa",en:"GO Sales Executive",es:"Especialista de ventas",f:"german.ochoa.jpg"},
+      "jhon.cano@protectgoservices.com":{n:"Jhon Cano",en:"GO Sales Executive",es:"Especialista de ventas",f:"jhon.cano.jpg"},
+      "juliana.raigosa@protectgoservices.com":{n:"Juliana Raigosa",en:"GO Sales Executive",es:"Especialista de ventas",f:"juliana.raigosa.jpg"},
+      "juliana.restrepo@protectgoservices.com":{n:"Juliana Restrepo",en:"GO Sales Executive",es:"Especialista de ventas",f:"juliana.restrepo.jpg"},
+      "lucero.hincapie@protectgoservices.com":{n:"Lucero Hincapie",en:"GO Sales Executive",es:"Especialista de ventas",f:"lucero.hincapie.jpg"},
+      "mariana.bedoya@protectgoservices.com":{n:"Mariana Bedoya",en:"GO Sales Executive",es:"Especialista de ventas",f:"mariana.bedoya.jpg"},
+      "salome.orozco@protectgoservices.com":{n:"Salome Orozco",en:"GO Sales Executive",es:"Especialista de ventas",f:"salome.orozco.jpg"},
+      "valeria.bedoya@protectgoservices.com":{n:"Valeria Bedoya",en:"GO Sales Executive",es:"Especialista de ventas",f:"valeria.bedoya.jpg"},
+      "ana.aguirre@protectgoservices.com":{n:"Ana Aguirre",en:"Customer Loyalty Executive",es:"Ejecutivo de fidelización",f:"ana.aguirre.jpg"},
+      "yenifer.rangel@protectgoservices.com":{n:"Yenifer Rangel",en:"Customer Loyalty Executive",es:"Ejecutivo de fidelización",f:"yenifer.rangel.jpg"},
+      "valentina.londono@protectgoservices.com":{n:"Valentina Londoño",en:"GO Sales Executive",es:"Especialista de ventas",f:"valentina.londono.jpg"},
+      "juan.baquero@protectgoservices.com":{n:"Juan Baquero",en:"GO Sales Executive",es:"Especialista de ventas",f:"juan.baquero.jpg"},
+      "valeria.valencia@protectgoservices.com":{n:"Valeria Valencia",en:"GO Sales Executive",es:"Especialista de ventas",f:"valeria.valencia.jpg"},
+      "milena.estrada@protectgoservices.com":{n:"Milena Estrada",en:"GO Sales Executive",es:"Especialista de ventas",f:"milena.estrada.jpg"},
+      "victor.amaro@protectgoservices.com":{n:"Victor Amaro",en:"GO Sales Executive",es:"Especialista de ventas",f:"victor.amaro.jpg"},
+      "sandra.bolivar@protectgoservices.com":{n:"Sandra Bolivar",en:"GO Sales Executive",es:"Especialista de ventas",f:"sandra.bolivar.jpg"},
+      "samuel.pulgarin@protectgoservices.com":{n:"Samuel Pulgarin",en:"GO Sales Executive",es:"Especialista de ventas",f:"samuel.pulgarin.jpg"},
+      "dayanna.jaramillo@protectgoservices.com":{n:"Dayanna Jaramillo",en:"GO Sales Executive",es:"Especialista de ventas",f:"dayanna.jaramillo.jpg"},
+      "luis.ascanio@protectgoservices.com":{n:"Luis Ascanio",en:"GO Sales Executive",es:"Especialista de ventas",f:"luis.ascanio.jpg"},
+      "simon.restrepo@protectgoservices.com":{n:"Simon Restrepo",en:"Key Account Manager",es:"Gerente de Cuenta",f:"simon.restrepo.jpg"},
+      "karen.suaza@protectgoservices.com":{n:"Karen Suaza",en:"Key Account Manager Senior",es:"Gerente de Cuenta Grandes",f:"karen.suaza.jpg"},
+      "angelica.paez@protectgoservices.com":{n:"Angelica Paez",en:"",es:"",f:"angelica.paez.jpg"}
+    };
+  
   function set(id,v){var e=document.getElementById(id); if(e) e.value=v;}
   function apply(email){
     var p=PROFILES[(email||"").toLowerCase()]; if(!p) return false;

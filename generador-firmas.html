@@ -185,7 +185,8 @@ render();
       "yenifer.rangel@protectgoservices.com":{n:"Yenifer Rangel",en:"Customer Loyalty Executive",es:"Ejecutivo de fidelización",f:"yenifer.rangel.jpg"},
       "valentina.londono@protectgoservices.com":{n:"Valentina Londoño",en:"GO Sales Executive",es:"Especialista de ventas",f:"valentina.londono.jpg"},
       "juan.baquero@protectgoservices.com":{n:"Juan Baquero",en:"GO Sales Executive",es:"Especialista de ventas",f:"juan.baquero.jpg"},
-      "valeria.valencia@protectgoservices.com":{n:"Valeria Valencia",en:"GO Sales Executive",es:"Especialista de ventas",f:"valeria.valencia.jpg"},
+      "valeria.valencia@protectgoservices.com":{n:"Valeria Valencia",en:"GO Sales Executive",es:"Especialista de ventas",f:"valeria.valencia.jpg",any:1},
+    "alejandra.garcia@protectgoservices.com":{n:"Maria Garcia",en:"GO Sales Executive",es:"Especialista de ventas",f:"alejandra.garcia.jpg",any:1},
       "milena.estrada@protectgoservices.com":{n:"Milena Estrada",en:"GO Sales Executive",es:"Especialista de ventas",f:"milena.estrada.jpg"},
       "victor.amaro@protectgoservices.com":{n:"Victor Amaro",en:"GO Sales Executive",es:"Especialista de ventas",f:"victor.amaro.jpg"},
       "sandra.bolivar@protectgoservices.com":{n:"Sandra Bolivar",en:"GO Sales Executive",es:"Especialista de ventas",f:"sandra.bolivar.jpg"},
@@ -194,14 +195,14 @@ render();
       "luis.ascanio@protectgoservices.com":{n:"Luis Ascanio",en:"GO Sales Executive",es:"Especialista de ventas",f:"luis.ascanio.jpg"},
       "simon.restrepo@protectgoservices.com":{n:"Simon Restrepo",en:"Key Account Manager",es:"Gerente de Cuenta",f:"simon.restrepo.jpg"},
       "karen.suaza@protectgoservices.com":{n:"Karen Suaza",en:"Key Account Manager Senior",es:"Gerente de Cuenta Grandes",f:"karen.suaza.jpg"},
-      "angelica.paez@protectgoservices.com":{n:"Angelica Paez",en:"",es:"",f:"angelica.paez.jpg"}
+      "angelica.paez@protectgoservices.com":{n:"Angelica Paez",en:"Renewals Director & Appointments Liaison",es:"Directora de Renovación y Citas",f:"angelica.paez.jpg",em:"renewal@protectgoservices.com"}
     };
   
   function set(id,v){var e=document.getElementById(id); if(e) e.value=v;}
   function apply(email){
     var p=PROFILES[(email||"").toLowerCase()]; if(!p) return false;
     set("name",p.n); set("titleEn",p.en); set("titleEs",p.es);
-    set("email",email.toLowerCase()); set("photoUrl",BASE+p.f.replace(".jpg","-v2.jpg")); set("phone", p.fj?"+1 (210) 291-9015":"");
+    set("email", p.em?p.em:(p.any?"":email.toLowerCase())); set("photoUrl",BASE+p.f.replace(".jpg","-v2.jpg")); set("phone", p.fj?"+1 (210) 291-9015":"");
     if(typeof render==="function") render();
     if(typeof toast==="function") toast("Ficha de "+p.n+" cargada");
     return true;

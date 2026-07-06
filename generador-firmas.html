@@ -186,7 +186,7 @@ render();
   function apply(email){
     var p=PROFILES[(email||"").toLowerCase()]; if(!p) return false;
     set("name",p.n); set("titleEn",p.en); set("titleEs",p.es);
-    set("email",email.toLowerCase()); set("photoUrl",BASE+p.f+"?v=2");
+    set("email",email.toLowerCase()); set("photoUrl",BASE+p.f.replace(".jpg","-v2.jpg"));
     if(typeof render==="function") render();
     if(typeof toast==="function") toast("Ficha de "+p.n+" cargada");
     return true;

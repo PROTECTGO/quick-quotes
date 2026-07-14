@@ -4583,3 +4583,37 @@
               if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go();
              })();
 </script>
+
+<!-- PV-UX-FIX: presets de financiamiento robustos + scroll automatico al panel verde -->
+<script id="pv-ux-fix">
+  (function(){"use strict";
+              var st=document.createElement("style");
+              st.textContent=".pv-side{z-index:9999!important;pointer-events:auto!important}.pv-flash{outline:3px solid #FFB400!important;outline-offset:4px;transition:outline .2s}";
+              document.head.appendChild(st);
+              function $(id){return document.getElementById(id);}
+              function fire(el,t){try{el.dispatchEvent(new Event(t,{bubbles:true}));}catch(e){}}
+              function setv(id,v){var e=$(id);if(e){e.value=v;fire(e,"input");}}
+              function setchk(id,v){var e=$(id);if(e&&e.checked!==v){e.checked=v;fire(e,"change");}}
+              function focusPanel(){var p=document.querySelector(".pv-fincfg");if(!p)return;p.scrollIntoView({behavior:"smooth",block:"center"});p.classList.add("pv-flash");setTimeout(function(){p.classList.remove("pv-flash");},1600);}
+              function aplicar(kind){
+                if(kind==="std"||kind==="std9"){setchk("pvStar1",false);setv("pvN1",kind==="std9"?"9":"10");var w=$("pvWhat1");if(w&&!w.value){w.value="Full package";fire(w,"input");}}
+                if(kind==="star"||kind==="starpkg"){var s=$("pvSegs1");if(s&&!(s.value||"").trim())s.value="5|;4|";var w1=$("pvWhat1");if(w1){w1.value="Liability";fire(w1,"input");}setchk("pvStar1",true);}
+                if(kind==="starpkg"){var c2=$("pvCard2");if(c2)c2.classList.remove("pv-hide");var w2=$("pvWhat2");if(w2){w2.value="Cargo";fire(w2,"input");}setchk("pvStar2",false);setv("pvN2","10");}
+                fire($("proposal-view")||document.body,"input");
+                focusPanel();
+              }
+              var MAP={pvPresetStd:"std",pvPresetStd9:"std9",pvPresetStar:"star",pvPresetStarPkg:"starpkg"};
+              document.addEventListener("click",function(e){
+                var t=e.target&&e.target.closest?e.target.closest(".pv-preset"):null;
+                if(t&&MAP[t.id]) setTimeout(function(){aplicar(MAP[t.id]);},0);
+              },true);
+              ["pvCfgDefer","pvCfgAuth"].forEach(function(id){
+                var c=$(id); if(!c) return;
+                c.addEventListener("change",function(){
+                  if(!c.checked) return;
+                  var sec=$(id==="pvCfgDefer"?"pvSecDefer":"pvSecAuth");
+                  if(sec) setTimeout(function(){sec.scrollIntoView({behavior:"smooth",block:"center"});},100);
+                });
+              });
+             })();
+</script>

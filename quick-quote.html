@@ -3015,7 +3015,7 @@
     }
   </style>
 
-  <!-- ===== PV-THEME v5 — rediseño visual Insurance Proposal (solo presentación) ===== -->
+  <!-- ===== PV-THEME v5.1 — rediseño visual Insurance Proposal (solo presentación) ===== -->
   <style id="pv-theme">
 /* =====================================================================
    PV-THEME v5 — Insurance Proposal · ProtectGo
@@ -3092,13 +3092,17 @@
   font-size:8.5px; letter-spacing:.1em; color:var(--faint);
 }
 .pv-snap .s .v{ font-size:15px; letter-spacing:-.01em; }
-/* Total premium: dark section de la web, número en ámbar */
-.pv-snap .s:last-child{ background:var(--navy); border-color:var(--navy); }
-.pv-snap .s:last-child::before{
-  background:linear-gradient(90deg, var(--amber), #FFD166);
+/* Total premium: tono claro menta/teal — amigable, sin asustar.
+   El protagonismo fuerte de la plata queda abajo, en el plan de pago. */
+.pv-snap .s:last-child{
+  background:linear-gradient(135deg, var(--mint-soft) 0%, #ffffff 100%);
+  border-color:rgba(45,191,163,.45);
 }
-.pv-snap .s:last-child .k{ color:rgba(255,255,255,.72); }
-.pv-snap .s:last-child .v{ color:var(--amber); font-size:16px; }
+.pv-snap .s:last-child::before{
+  background:linear-gradient(90deg, #2DBFA3, var(--mint));
+}
+.pv-snap .s:last-child .k{ color:var(--teal-2); }
+.pv-snap .s:last-child .v{ color:var(--navy); font-size:16px; }
 
 /* ---------- 5 · Pitch: tarjeta menta degradada + eyebrow con punto ---------- */
 .pv-pitch{

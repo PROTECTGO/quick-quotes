@@ -734,7 +734,7 @@
       transition: max-height var(--t-slow) var(--ease);
     }
     .cov.on .cov-det {
-      max-height: 1400px;
+      max-height: 600px;
       border-top: 1px solid rgba(34,154,130,.18);
     }
     .cov-det .inner {
@@ -745,81 +745,6 @@
       .cov-det .inner { grid-template-columns: 1fr; }
     }
     .cov-det .campo { margin: 0; }
-
-    /* --- Sub-sections dentro de cov-det (símbolos + endorsements) --- */
-    .cov-det .inner .full { grid-column: span 2; }
-    .cov-sub-hd {
-      font-family: var(--font-mono); font-size: 10px;
-      letter-spacing: .12em; text-transform: uppercase;
-      color: var(--muted); font-weight: 700;
-      padding: 6px 0 4px; margin-top: 6px;
-      border-bottom: 1px solid var(--line-2);
-    }
-    .cov-sym-row {
-      display: grid;
-      grid-template-columns: 26px 1fr 130px;
-      align-items: center;
-      gap: 10px;
-    }
-    .sym-badge {
-      display: grid; place-items: center;
-      width: 22px; height: 22px;
-      background: var(--mint-soft);
-      border-radius: 5px;
-      font-family: var(--font-mono); font-size: 10.5px;
-      font-weight: 700; color: var(--navy-2);
-      flex: none;
-    }
-    .sym-label {
-      font-size: 13px; font-weight: 500; color: var(--navy);
-    }
-    .cov-sym-row .campo { margin: 0; }
-    .cov-sym-row .campo label { font-size: 10px; }
-    .endors-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      align-items: start;
-      gap: 12px;
-    }
-    .endors-chk {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 13px; font-weight: 500; color: var(--navy);
-      cursor: pointer; padding-top: 20px;
-    }
-    .endors-chk input[type="checkbox"] {
-      width: 16px; height: 16px;
-      accent-color: var(--teal);
-      flex: none; cursor: pointer;
-    }
-    .endors-row .campo { margin: 0; }
-
-    /* --- Symbol checkboxes (pills) dentro de cov-det --- */
-    .sym-checks {
-      display: flex; flex-wrap: wrap; gap: 7px;
-      grid-column: span 2; padding-top: 2px;
-    }
-    .sym-check {
-      display: flex; align-items: center; gap: 5px;
-      padding: 4px 10px; border: 1.5px solid var(--line);
-      border-radius: var(--r-pill); cursor: pointer;
-      font-size: 12px; font-weight: 600; color: var(--muted);
-      background: var(--surface);
-      transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
-      user-select: none;
-    }
-    .sym-check input[type="checkbox"] {
-      width: 13px; height: 13px; accent-color: var(--teal);
-      cursor: pointer; flex: none;
-    }
-    .sym-check:has(input:checked) {
-      border-color: var(--teal); background: var(--mint-soft); color: var(--navy);
-    }
-    .sym-checks-label {
-      grid-column: span 2;
-      font-family: var(--font-mono); font-size: 9.5px;
-      letter-spacing: .1em; text-transform: uppercase;
-      color: var(--faint); font-weight: 600; margin-top: 6px;
-    }
 
     /* ----- Repeatable tables ----- */
     .rtable {
@@ -1405,17 +1330,11 @@
       }
 
       /* Coberturas: solo las marcadas, compactas */
-      .cov.on .cov-det { max-height: none !important; overflow: visible !important; }
       .cov:not(.on) { display: none !important; }
       .cov-list { gap: 6px !important; }
       .cov.on { page-break-inside: avoid; margin: 0 0 6px !important; }
       .cov.on .cov-top { padding: 8px 14px !important; }
       .cov.on .cov-det .inner { padding: 6px 14px 10px !important; gap: 6px 18px !important; }
-      /* Símbolos: ocultar los no marcados; mostrar los marcados con color exacto */
-      .sym-check:not(:has(input:checked)) { display: none !important; }
-      .sym-check { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .sym-check input[type="checkbox"] { display: none !important; }
-      .sym-checks-label { display: none !important; }
       .cov-group-label { margin: 12px 0 6px !important; }
       .pkg-key { page-break-inside: avoid; padding: 12px 14px !important; margin-bottom: 8px !important; }
       .firma { page-break-inside: avoid; page-break-before: avoid; gap: 36px !important; margin-top: 22px !important; }
@@ -1540,8 +1459,15 @@
       <div class="grp">
         <span class="lbl">View</span>
         <div class="seg" data-seg="vista">
-          <button type="button" data-view="captura" aria-pressed="true">Capture</button>
-          <button type="button" data-view="propuesta" aria-pressed="false">Proposal</button>
+          <button type="button" data-view="captura" aria-pressed="true">App MGA</button>
+          <button type="button" data-view="propuesta" aria-pressed="false">Insurance Proposal</button>
+        </div>
+      </div>
+      <div class="grp">
+        <span class="lbl">Line</span>
+        <div class="seg grad" data-seg="producto">
+          <button type="button" data-prod="auto" aria-pressed="true">Commercial Auto</button>
+          <button type="button" data-prod="biz" aria-pressed="false">Business</button>
         </div>
       </div>
       <div class="spacer"></div>
@@ -1815,15 +1741,7 @@
                 <span class="tag">primary</span>
               </div>
               <div class="cov-det"><div class="inner">
-                <div class="campo full"><label>Limit</label><input type="text" placeholder="$"></div>
-                <div class="sym-checks-label">Applies to</div>
-                <div class="sym-checks">
-                  <label class="sym-check"><input type="checkbox"><span>1 · Any Auto</span></label>
-                  <label class="sym-check"><input type="checkbox"><span>2 · All Owned</span></label>
-                  <label class="sym-check"><input type="checkbox"><span>7 · Scheduled</span></label>
-                  <label class="sym-check"><input type="checkbox"><span>8 · Hired</span></label>
-                  <label class="sym-check"><input type="checkbox"><span>9 · Non-Owned</span></label>
-                </div>
+                <div class="campo"><label>Limit</label><input type="text" placeholder="$"></div>
               </div></div>
             </div>
             <div class="cov">
@@ -1857,27 +1775,6 @@
               <div class="cov-det"><div class="inner">
                 <div class="campo"><label>Limit</label><input type="text" placeholder="$"></div>
                 <div class="campo"><label>Deductible</label><input type="text" placeholder="$"></div>
-              </div></div>
-            </div>
-            <div class="cov">
-              <div class="cov-top">
-                <span class="chk"><svg viewBox="0 0 12 12" stroke="#fff" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
-                <span class="name">PIP · Personal Injury Protection</span>
-                <span class="tag">primary</span>
-              </div>
-              <div class="cov-det"><div class="inner">
-                <div class="campo full"><label>Limit</label><input type="text" placeholder="$"></div>
-              </div></div>
-            </div>
-            <div class="cov">
-              <div class="cov-top">
-                <span class="chk"><svg viewBox="0 0 12 12" stroke="#fff" stroke-width="2.4" fill="none"><path d="M2 6.5 5 9.5 10 3"/></svg></span>
-                <span class="name">UM / UIM · Uninsured &amp; Underinsured Motorist</span>
-                <span class="tag">primary</span>
-              </div>
-              <div class="cov-det"><div class="inner">
-                <div class="campo"><label>UM Bodily Injury Limit</label><input type="text" placeholder="$"></div>
-                <div class="campo"><label>UIM Bodily Injury Limit</label><input type="text" placeholder="$"></div>
               </div></div>
             </div>
             <div class="cov">
@@ -2092,60 +1989,15 @@
         </div>
       </details>
 
-      <!-- ===== 08 · QUOTE & FINANCE ===== -->
-      <details class="sec" id="sec-finance">
-        <summary class="sec-h">
-          <span class="n">08</span>
-          <span class="t">Quote &amp; Finance Proposal</span>
-          <span class="sub">Built from checked coverages &amp; rating engine</span>
-          <span class="chev"></span>
-        </summary>
-        <div class="sec-c">
-          <p class="helper">Quote Proposal builds from the checked coverages. Premiums &amp; payment plan are produced by the rating engine (pending).</p>
-          <div class="rtable" data-rtable>
-            <div class="rt-head" style="grid-template-columns:1.6fr 1fr 1fr 36px">
-              <div>Coverage</div><div>Limit</div><div>Premium</div><div></div>
-            </div>
-            <div class="rt-rows"></div>
-          </div>
-          <button type="button" class="add-row">add line</button>
-          <div class="grid" style="margin-top:16px">
-            <div class="campo"><label>Premium (coberturas) $ <span class="helper-inline">auto · suma de líneas</span></label><input type="text" id="finPremium" placeholder="$0" readonly></div>
-            <div class="campo"><label>Policy Fees $</label><input type="text" id="finFees" placeholder="$0" inputmode="decimal"></div>
-            <div class="campo"><label>Contributory Fees $ <span class="helper-inline">va al down · se itemiza</span></label><input type="text" id="finAg" placeholder="$0" inputmode="decimal"></div>
-            <div class="campo"><label>Taxes $</label><input type="text" id="finTaxes" placeholder="$0" inputmode="decimal"></div>
-          </div>
-          <div style="margin-top:14px;background:#002F3D;border-radius:10px;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;">
-            <span style="color:#a8d4cf;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;">Total Policy Premium</span>
-            <span id="finTotal" style="color:#fff;font-size:22px;font-weight:800;">$0</span>
-          </div>
-
-          <div class="cov-group-label" style="margin-top:22px">Plan de pagos</div>
-          <div class="grid">
-            <div class="campo"><label>Down Payment $</label><input type="text" id="finDown" placeholder="$0" inputmode="decimal"></div>
-            <div class="campo"><label>Finance Charge $ <span class="helper-inline">cargo financiero</span></label><input type="text" id="finCharge" placeholder="$0" inputmode="decimal"></div>
-            <div class="campo"><label>Number of Payments</label><input type="text" id="finNPayments" placeholder="e.g. 9" inputmode="numeric"></div>
-            <div class="campo"><label>Down Payment Due $ <span class="helper-inline">auto · down + AG</span></label><input type="text" id="finDownDue" placeholder="$0" readonly></div>
-            <div class="campo"><label>Amount Financed $ <span class="helper-inline">auto · total − down</span></label><input type="text" id="finFinanced" placeholder="$0" readonly></div>
-            <div class="campo"><label>Monthly Payment $ <span class="helper-inline">lo pone el agente</span></label><input type="text" id="finMonthlyInput" placeholder="$0" inputmode="decimal"></div>
-          </div>
-          <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
-            <div style="flex:1;min-width:210px;background:#002F3D;border-radius:12px;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 6px 18px -10px rgba(0,47,61,.5);">
-              <span style="color:#a8d4cf;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;">Down Payment</span>
-              <span id="finDownDueBanner" style="color:#fff;font-size:24px;font-weight:800;">$0</span>
-            </div>
-            <div style="flex:1;min-width:210px;background:#229A82;border-radius:12px;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 6px 18px -10px rgba(34,154,130,.55);">
-              <span style="color:#d9f2ea;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;">Monthly Payment</span>
-              <span id="finMonthly" style="color:#fff;font-size:24px;font-weight:800;">$0</span>
-            </div>
-          </div>
-        </div>
-      </details>
+      <!-- Sección 08 (Quote & Finance Proposal) retirada — la captura financiera
+           vive ahora en la vista Insurance Proposal (panel del agente).
+           Los campos del panel usan .campo con id pv* para que el snapshot
+           de Supabase los guarde/restaure automáticamente. -->
 
       <!-- ===== 09 · DISCLOSURES & SIGNATURE ===== -->
       <details class="sec" id="sec-signature" open>
         <summary class="sec-h">
-          <span class="n">09</span>
+          <span class="n">08</span>
           <span class="t">Disclosures &amp; Signature</span>
           <span class="sub">Terms to bind</span>
           <span class="chev"></span>
@@ -2168,6 +2020,14 @@
       </details>
 
     </div><!-- /auto -->
+
+    <!-- ============== BUSINESS PRODUCT GROUP ============== -->
+    <div data-prod-group="biz">
+      <div class="biz-block">
+        <p class="big">Business — in definition</p>
+        <p class="sub">The business-services line has different conditions and fields. The switch is ready; fields will be defined as the line is launched.</p>
+      </div>
+    </div>
 
     <!-- Actions -->
     <div class="acciones">
@@ -2732,6 +2592,7 @@
       function inicializarAcciones() {
         var wasCapture = false;
         window.addEventListener("beforeprint", function () {
+          if (document.body.classList.contains("view-proposal")) return; /* la Insurance Proposal imprime lo suyo */
           wasCapture = !document.body.classList.contains("modo-propuesta");
           if (wasCapture) {
             document.body.classList.add("modo-propuesta");
@@ -2971,10 +2832,715 @@
 
     document.addEventListener("DOMContentLoaded",function(){
       var vista=document.querySelector("[data-seg='vista']");
-      if(vista){ vista.addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b) return; setDocMode(b.getAttribute("data-view")==="propuesta"); }); }
+      if(vista){ vista.addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b) return;
+        var prop=b.getAttribute("data-view")==="propuesta";
+        setDocMode(false);
+        document.body.classList.toggle("view-proposal",prop);
+        if(prop && typeof window.__buildProposal==="function") window.__buildProposal();
+      }); }
       var wasDoc=false;
-      window.addEventListener("beforeprint",function(){ wasDoc=document.body.classList.contains("modo-doc"); if(!wasDoc) setDocMode(true); else buildDoc(); });
-      window.addEventListener("afterprint",function(){ if(!wasDoc) setDocMode(false); });
+      window.addEventListener("beforeprint",function(){ if(document.body.classList.contains("view-proposal")) return; wasDoc=document.body.classList.contains("modo-doc"); if(!wasDoc) setDocMode(true); else buildDoc(); });
+      window.addEventListener("afterprint",function(){ if(document.body.classList.contains("view-proposal")) return; if(!wasDoc) setDocMode(false); });
+    });
+  })();
+  </script>
+
+  <!-- ============================================================
+       INSURANCE PROPOSAL — propuesta del cliente (vista "propuesta").
+       Panel del agente (no se imprime) + documento formal para el
+       asegurado: precios y plan de pago, sin información técnica.
+       Persistencia: los campos pv* usan .campo para viajar en el
+       snapshot de Supabase. Los datos de pago del cliente (tarjeta,
+       cuenta) NO se persisten por seguridad.
+       ============================================================ -->
+  <style>
+    #proposal-view{display:none;background:#e8eceb;padding:16px 0 60px;color:var(--ink);font-family:"Inter",system-ui,sans-serif;font-size:13px;line-height:1.5;}
+    body.view-proposal #proposal-view{display:block;}
+    body.view-proposal .page{display:none !important;}
+    body.view-proposal .toolbar .seg[data-seg="producto"]{opacity:.5;pointer-events:none;}
+    .pv-hide{display:none !important;}
+
+    .pv-side{position:fixed;right:18px;top:120px;width:236px;background:var(--navy);border-radius:12px;padding:14px 16px;z-index:60;box-shadow:0 14px 30px -18px rgba(0,47,61,.6);}
+    .pv-side .ttl{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#a8d4cf;font-weight:700;margin:0 0 9px;}
+    #proposal-view .pv-sw{display:flex;flex-direction:row;align-items:center;gap:7px;font-size:11.5px;color:#d9f2ea;cursor:pointer;user-select:none;margin:0 0 7px;}
+    #proposal-view .pv-sw input{accent-color:var(--teal);width:14px;height:14px;margin:0;flex:none;}
+    #proposal-view .pv-sw span{font-weight:500;}
+    .pv-side .sep{height:1px;background:rgba(255,255,255,.15);margin:11px 0;}
+    .pv-preset{display:block;width:100%;text-align:left;font:inherit;font-size:11px;font-weight:600;color:#d9f2ea;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:6px 10px;margin:0 0 6px;cursor:pointer;}
+    .pv-preset:hover{background:rgba(255,255,255,.14);color:#fff;}
+    .pv-printbtn{display:block;width:100%;background:var(--teal);border:0;color:#fff;font:inherit;font-weight:700;font-size:12px;border-radius:7px;padding:9px;cursor:pointer;}
+    .pv-printbtn:hover{background:var(--teal-2);}
+    @media(max-width:1280px){ .pv-side{position:static;width:auto;max-width:8.5in;margin:0 auto 14px;} }
+
+    .pv-sheet{max-width:8.5in;margin:0 auto;background:#fff;padding:.65in .75in .55in;box-shadow:0 24px 60px -28px rgba(0,47,61,.35);position:relative;overflow:hidden;}
+    .pv-arcs{position:absolute;left:-60px;bottom:-70px;width:300px;height:300px;color:var(--teal);opacity:.14;pointer-events:none;}
+    #proposal-view .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;}
+
+    .pv-lh{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:14px;border-bottom:2px solid var(--navy);position:relative;}
+    .pv-lh::after{content:"";position:absolute;left:0;bottom:-2px;width:18%;height:2px;background:var(--amber,#FFB400);}
+    .pv-lh .brand b{font-family:'Montserrat',system-ui,sans-serif;font-weight:800;font-size:24px;color:var(--navy);display:block;line-height:1;}
+    .pv-lh .brand b i{font-style:normal;color:var(--teal);}
+    .pv-lh .brand span{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.34em;text-transform:uppercase;color:var(--teal-2);font-weight:600;}
+    .pv-lh .doc{text-align:right;}
+    .pv-lh .doc .t{font-family:'Montserrat',system-ui,sans-serif;font-weight:700;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--navy);}
+    .pv-lh .doc .m{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:5px;line-height:1.7;}
+    .pv-lh .doc .m b{color:var(--navy);}
+    .pv-lh .doc .st{display:inline-block;margin-top:4px;padding:1px 8px;border:1px solid #f0dcae;background:#fff7e0;color:#8a5e09;border-radius:999px;font-weight:600;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;}
+
+    .pv-appl{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin:20px 0 4px;}
+    .pv-appl h1{font-family:'Montserrat',system-ui,sans-serif;font-weight:800;font-size:22px;color:var(--navy);margin:0;}
+    .pv-appl .tags{margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
+    .pv-appl .tags b{color:var(--teal-2);}
+    .pv-appl .prep{text-align:right;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--faint);line-height:1.7;}
+    .pv-appl .prep b{color:var(--muted);font-weight:600;}
+    .pv-snap{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:16px 0 0;}
+    .pv-snap .s{flex:1;padding:9px 12px;border-left:1px solid var(--line-2);}
+    .pv-snap .s:first-child{border-left:0;}
+    .pv-snap .s .k{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;}
+    .pv-snap .s .v{font-family:'Montserrat',system-ui,sans-serif;font-weight:700;font-size:14px;color:var(--navy);margin-top:3px;}
+
+    .pv-pitch{margin:20px 0 0;padding:14px 16px 14px 18px;border-left:3px solid var(--amber,#FFB400);background:#fff7e0;border-radius:0 8px 8px 0;}
+    .pv-pitch .k{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#8a5e09;font-weight:700;}
+    .pv-pitch ul{margin:8px 0 0;padding:0 0 0 16px;}
+    .pv-pitch li{margin:5px 0;font-size:12.5px;}
+    .pv-pitch li b{color:var(--navy);}
+    #proposal-view [contenteditable]:hover{outline:1px dashed var(--mint);outline-offset:2px;}
+    #proposal-view [contenteditable]:focus{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
+
+    .pv-dsec{margin:26px 0 0;}
+    .pv-dsec>h2{font-family:'Montserrat',system-ui,sans-serif;font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--navy);margin:0 0 10px;padding-bottom:5px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:10px;}
+    .pv-dsec>h2 .n{font-family:'IBM Plex Mono',monospace;color:var(--teal);font-weight:600;}
+    .pv-dsec>h2 .sub{margin-left:auto;font-weight:400;font-size:9.5px;letter-spacing:.02em;text-transform:none;color:var(--faint);}
+    .pv-dsec.off, .pv-defer.off, #pvSecAuth.off{display:none !important;}
+
+    #proposal-view table.pvt{width:100%;border-collapse:collapse;font-size:12px;}
+    #proposal-view table.pvt th{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;text-align:left;padding:6px 10px;background:var(--mint-ghost);border-bottom:1px solid var(--line);}
+    #proposal-view table.pvt td{padding:7px 10px;border-bottom:1px solid var(--line-2);vertical-align:middle;}
+    #proposal-view table.pvt tr:last-child td{border-bottom:0;}
+    #proposal-view table.pvt .num{text-align:right;font-family:'IBM Plex Mono',monospace;}
+    #proposal-view table.pvt tfoot td{border-top:1.5px solid var(--navy);font-weight:700;color:var(--navy);}
+
+    .pv-carr{display:flex;align-items:center;gap:8px;}
+    .pv-carr .val{flex:1;}
+    .pv-carr[data-anon="1"] .val{color:var(--teal-2);font-weight:600;}
+    #proposal-view .csw{flex:none;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--hairline);background:#fff;color:var(--faint);border-radius:999px;padding:2px 8px;cursor:pointer;}
+    #proposal-view .csw:hover{border-color:var(--teal);color:var(--teal-2);}
+    #proposal-view .csw.on{background:var(--mint-soft);border-color:var(--teal);color:var(--teal-2);font-weight:600;}
+
+    .pv-fincfg{border:1.5px dashed var(--teal);background:var(--mint-ghost);border-radius:10px;padding:12px 14px;margin:0 0 14px;}
+    .pv-fincfg .fc-title{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal-2);font-weight:700;margin-bottom:10px;}
+    .pv-card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px 10px;margin-bottom:8px;}
+    .pv-card-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:4px;}
+    .pv-card-head .campo{max-width:280px;flex:1;}
+    #proposal-view .pv-star{display:inline-flex;flex-direction:row;align-items:center;gap:6px;font-size:11px;color:var(--navy-2);cursor:pointer;margin:0 0 6px;}
+    #proposal-view .pv-star input{width:13px;height:13px;accent-color:var(--teal);margin:0;}
+    .pv-grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+    .pv-segments{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);}
+    .pv-segrow{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin-bottom:6px;}
+    .pv-segrow input{width:80px;font:inherit;font-size:12px;padding:5px 8px;border:1px solid var(--hairline);border-radius:6px;}
+    .pv-segrow input.sn{width:56px;}
+    .pv-segdel{border:0;background:transparent;color:var(--faint);cursor:pointer;font-size:12px;padding:0 3px;}
+    .pv-segdel:hover{color:#c0392b;}
+    .pv-segadd{border:1px dashed var(--hairline);background:transparent;color:var(--teal-2);font-size:10px;font-weight:600;border-radius:6px;padding:3px 9px;cursor:pointer;}
+    .pv-segadd:hover{border-color:var(--teal);}
+    .pv-rm{border:1px solid var(--hairline);background:#fff;color:var(--faint);font-size:10.5px;border-radius:6px;padding:5px 10px;cursor:pointer;}
+    .pv-rm:hover{border-color:#c0392b;color:#c0392b;background:#fdeceb;}
+    .pv-addfin{border:1px solid var(--teal);background:#fff;color:var(--teal-2);font-weight:600;font-size:11.5px;border-radius:7px;padding:7px 13px;cursor:pointer;}
+    .pv-addfin:hover{background:var(--mint-soft);}
+
+    .pv-combined{background:var(--navy);border-radius:10px;margin:2px 0 14px;overflow:hidden;page-break-inside:avoid;}
+    .pv-combined .cp-head{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#a8d4cf;font-weight:700;padding:11px 16px 0;}
+    .pv-combined .cp-grid{display:flex;}
+    .pv-combined .cp-grid .c{flex:1;padding:9px 16px 14px;border-left:1px solid rgba(255,255,255,.12);}
+    .pv-combined .cp-grid .c:first-child{border-left:0;}
+    .pv-combined .k{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#7fb5ad;font-weight:600;}
+    .pv-combined .v{font-family:'Montserrat',system-ui,sans-serif;font-weight:700;font-size:17px;color:#fff;margin-top:3px;}
+    #pvCpSched .ln{display:block;font-size:13.5px;line-height:1.45;}
+    #pvCpSched .ln i{font-style:normal;font-weight:400;font-size:10px;color:#a8d4cf;}
+    .pv-cpbrk{padding:9px 16px 12px;border-top:1px dashed rgba(255,255,255,.18);font-size:10px;color:#a8d4cf;line-height:1.5;}
+
+    .pv-defer{border:1px dashed var(--teal);background:var(--mint-ghost);border-radius:10px;padding:12px 16px;margin:2px 0 0;page-break-inside:avoid;}
+    .pv-defer .k{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-2);font-weight:700;}
+    .pv-defer p{margin:5px 0 8px;font-size:11.5px;color:var(--muted);}
+    .pv-defer .row{display:flex;gap:12px;}
+    .pv-defer .box{flex:1;background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 12px;}
+    .pv-defer .box .bk{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;}
+    .pv-defer .box .bv{font-family:'Montserrat',system-ui,sans-serif;font-weight:700;font-size:15px;color:var(--navy);margin-top:2px;}
+    .pv-defer .note{margin:8px 0 0;font-size:9.5px;color:var(--faint);font-style:italic;}
+
+    .pv-disc{margin:22px 0 0;padding:11px 14px;border:1px solid var(--line);border-radius:8px;background:#FAF9F5;font-size:10px;color:var(--muted);line-height:1.65;}
+    .pv-disc b{color:var(--navy-2);}
+    .pv-ack{margin:26px 0 0;page-break-inside:avoid;}
+    .pv-ack p{font-size:11px;color:var(--muted);margin:6px 0;}
+    .pv-siggrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 26px;margin-top:16px;}
+    .pv-sig .sl{border-bottom:1px solid var(--ink);min-height:26px;font-family:'Montserrat',system-ui,sans-serif;font-weight:600;font-size:13px;color:var(--navy);padding:2px 2px 3px;}
+    .pv-sig .sk{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;margin-top:4px;}
+    .pv-sig.wide{grid-column:span 2;}
+    .pv-sig .sl.tall{min-height:52px;}
+
+    .pv-authkv{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 22px;margin-top:8px;}
+    .pv-authkv .f .l{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:600;}
+    .pv-authkv .f .v{font-size:12.5px;color:var(--ink);margin-top:2px;border-bottom:1px dotted var(--hairline);padding-bottom:3px;min-height:18px;}
+    .pv-authkv .f.c2{grid-column:span 2;}
+    .pv-authkv .f.c3{grid-column:span 3;}
+    .pv-authpend{margin:0 0 10px;padding:9px 12px;border:1px dashed #f0dcae;background:#fff7e0;color:#8a5e09;border-radius:8px;font-size:11px;font-weight:500;}
+    .pv-authpend b{font-weight:700;}
+    .pv-authnote{margin-top:14px;padding:11px 13px;border:1px solid var(--line);border-radius:8px;background:#FAF9F5;font-size:9.5px;color:var(--muted);line-height:1.7;}
+    .pv-authnote b{color:var(--navy-2);}
+    .pv-pmrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+    .pv-pmopt{border:1px solid var(--hairline);border-radius:999px;padding:3px 12px;font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600;user-select:none;}
+    .pv-pmopt:hover{border-color:var(--teal);}
+    .pv-pmopt.on{background:var(--mint-soft);border-color:var(--teal);color:var(--teal-2);}
+    .pv-pmopt.on::before{content:"✓ ";}
+    .pv-pmfields{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);}
+    .pv-pmfields[hidden]{display:none !important;}
+
+    .pv-foot{margin-top:30px;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:18px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--faint);line-height:1.7;}
+    .pv-foot b{color:var(--navy-2);font-weight:600;}
+
+    @media print{
+      body.view-proposal #doc-output{display:none !important;}
+      body.view-proposal #proposal-view{display:block !important;background:#fff !important;padding:0 !important;}
+      body.view-proposal .pv-side,
+      body.view-proposal .pv-fincfg,
+      body.view-proposal #proposal-view .csw,
+      body.view-proposal #proposal-view .pv-segdel,
+      body.view-proposal #proposal-view .pv-segadd,
+      body.view-proposal #proposal-view .pv-addfin,
+      body.view-proposal #proposal-view .pv-rm,
+      body.view-proposal #proposal-view .pv-authpend,
+      body.view-proposal #proposal-view .btn-copia{display:none !important;}
+      body.view-proposal .pv-sheet{box-shadow:none !important;max-width:none !important;padding:.4in .55in !important;}
+      body.view-proposal .pv-dsec,body.view-proposal .pv-snap,body.view-proposal .pv-siggrid,body.view-proposal #proposal-view table{page-break-inside:avoid;}
+    }
+  </style>
+
+  <section id="proposal-view" aria-label="Insurance Proposal (cliente)">
+    <aside class="pv-side" aria-label="Proposal setup">
+      <div class="ttl">Generate in this proposal</div>
+      <label class="campo pv-sw"><input type="checkbox" id="pvCfgPremium" checked> <span>Premium by coverage</span></label>
+      <label class="campo pv-sw"><input type="checkbox" id="pvCfgDefer"> <span>Deferred down (80/20)</span></label>
+      <label class="campo pv-sw"><input type="checkbox" id="pvCfgSched" checked> <span>Schedules (drivers/units)</span></label>
+      <label class="campo pv-sw"><input type="checkbox" id="pvCfgAuth"> <span>🔒 Payment authorization</span></label>
+      <div class="sep"></div>
+      <div class="ttl">Quick setup — financing</div>
+      <button type="button" class="pv-preset" id="pvPresetStd">Standard · down + 10 payments</button>
+      <button type="button" class="pv-preset" id="pvPresetStd9">Standard · down + 9 payments</button>
+      <button type="button" class="pv-preset" id="pvPresetStar">STAR Mutual · down + 9 (5 + 4)</button>
+      <button type="button" class="pv-preset" id="pvPresetStarPkg">STAR liability + financed cargo</button>
+      <div class="sep"></div>
+      <button type="button" id="pvPrint" class="pv-printbtn">Print / PDF</button>
+    </aside>
+
+    <div class="pv-sheet">
+      <svg class="pv-arcs" viewBox="0 0 320 320" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+        <circle cx="40" cy="280" r="60"/><circle cx="40" cy="280" r="100"/><circle cx="40" cy="280" r="140"/><circle cx="40" cy="280" r="180"/><circle cx="40" cy="280" r="220"/>
+      </svg>
+
+      <header class="pv-lh">
+        <div class="brand"><b>Protect<i>GO</i></b><span>Services · Commercial Insurance</span></div>
+        <div class="doc">
+          <div class="t">Insurance Proposal</div>
+          <div class="m"><b id="pvQuote">—</b> · Prepared <span id="pvDate"></span> · Valid 30 days</div>
+          <span class="st">Proposed terms — coverage not bound</span>
+        </div>
+      </header>
+
+      <div class="pv-appl">
+        <div>
+          <h1 id="pvName" contenteditable="true">—</h1>
+          <div class="tags" id="pvTags" contenteditable="true"></div>
+        </div>
+        <div class="prep">
+          Prepared by <b id="pvPrep">ProtectGo Services LLC</b><br>
+          +1 (210) 961-9194 · admin@protectgoservices.com
+        </div>
+      </div>
+      <div class="pv-snap">
+        <div class="s"><div class="k">Effective date</div><div class="v" id="pvEff" contenteditable="true">—</div></div>
+        <div class="s"><div class="k">Power units</div><div class="v" id="pvUnits" contenteditable="true">—</div></div>
+        <div class="s"><div class="k">Drivers</div><div class="v" id="pvDrvs" contenteditable="true">—</div></div>
+        <div class="s"><div class="k">Total premium</div><div class="v" id="pvSnapPrem">—</div></div>
+      </div>
+
+      <div class="pv-pitch">
+        <div class="k">Why this is the right fit for you</div>
+        <ul>
+          <li contenteditable="true"><b>Strong core limits.</b> Coverage built around your operation and your contracts.</li>
+          <li contenteditable="true"><b>Covered from day one.</b> Protected the moment the carrier confirms and issues the binder.</li>
+          <li contenteditable="true"><b>Clear payment plan.</b> One down payment and predictable installments — no surprises.</li>
+        </ul>
+      </div>
+
+      <section class="pv-dsec">
+        <h2><span class="n">01</span> Coverages &amp; Limits <span class="sub">Selection does not guarantee approval</span></h2>
+        <table class="pvt">
+          <thead><tr><th style="width:34%">Coverage</th><th style="width:22%">Limit</th><th style="width:14%">Deductible</th><th>Carrier</th></tr></thead>
+          <tbody id="pvCovBody"></tbody>
+        </table>
+      </section>
+
+      <section class="pv-dsec" id="pvSecPremium">
+        <h2><span class="n">02</span> Premium by Coverage</h2>
+        <table class="pvt">
+          <thead><tr><th>Coverage</th><th class="num" style="width:26%">Annual premium</th></tr></thead>
+          <tbody id="pvPremBody"></tbody>
+          <tfoot><tr><td>Total policy premium</td><td class="num" id="pvPremSum">$0.00</td></tr></tfoot>
+        </table>
+      </section>
+
+      <section class="pv-dsec">
+        <h2><span class="n">03</span> Your Payment Plan <span class="sub">Amounts include agency handling &amp; processing</span></h2>
+
+        <div class="pv-fincfg">
+          <div class="fc-title">Agent setup — this does not print</div>
+
+          <div class="pv-card" id="pvCard1">
+            <div class="pv-card-head">
+              <div class="campo"><label>What does this financing cover?</label>
+                <select id="pvWhat1"><option value="">—</option><option>Full package</option><option>Liability</option><option>Cargo</option><option>Physical Damage</option><option>Other</option></select>
+              </div>
+              <label class="campo pv-star"><input type="checkbox" id="pvStar1"> <span>Unequal payments (STAR Mutual–type financing)</span></label>
+            </div>
+            <div class="pv-grid5">
+              <div class="campo"><label>Down payment $</label><input type="text" id="pvDown1" inputmode="decimal" placeholder="0.00"></div>
+              <div class="campo" data-simple="1"><label># of payments</label><input type="text" id="pvN1" inputmode="numeric" placeholder="10"></div>
+              <div class="campo" data-simple="1"><label>Monthly payment $</label><input type="text" id="pvAmt1" inputmode="decimal" placeholder="0.00"></div>
+              <div class="campo"><label>Taxes &amp; fees $</label><input type="text" id="pvTax1" inputmode="decimal" placeholder="0.00"></div>
+              <div class="campo"><label>Contributory fees $ <span class="helper-inline">agency</span></label><input type="text" id="pvAg1" inputmode="decimal" placeholder="0.00"></div>
+            </div>
+            <div class="pv-segments" id="pvSegWrap1" hidden><div id="pvSegRows1"></div><button type="button" class="pv-segadd" data-card="1">+ Another segment</button></div>
+            <div class="campo pv-hide"><label>PV Segs 1</label><input type="text" id="pvSegs1"></div>
+          </div>
+
+          <div class="pv-card pv-hide" id="pvCard2">
+            <div class="pv-card-head">
+              <div class="campo"><label>What does this financing cover?</label>
+                <select id="pvWhat2"><option value="">—</option><option>Full package</option><option>Liability</option><option>Cargo</option><option>Physical Damage</option><option>Other</option></select>
+              </div>
+              <label class="campo pv-star"><input type="checkbox" id="pvStar2"> <span>Unequal payments (STAR Mutual–type financing)</span></label>
+              <button type="button" class="pv-rm" id="pvRm2">Remove</button>
+            </div>
+            <div class="pv-grid5">
+              <div class="campo"><label>Down payment $</label><input type="text" id="pvDown2" inputmode="decimal" placeholder="0.00"></div>
+              <div class="campo" data-simple="2"><label># of payments</label><input type="text" id="pvN2" inputmode="numeric" placeholder="10"></div>
+              <div class="campo" data-simple="2"><label>Monthly payment $</label><input type="text" id="pvAmt2" inputmode="decimal" placeholder="0.00"></div>
+              <div class="campo"><label>Taxes &amp; fees $</label><input type="text" id="pvTax2" inputmode="decimal" placeholder="0.00"></div>
+              <div class="campo"><label>Contributory fees $ <span class="helper-inline">agency</span></label><input type="text" id="pvAg2" inputmode="decimal" placeholder="0.00"></div>
+            </div>
+            <div class="pv-segments" id="pvSegWrap2" hidden><div id="pvSegRows2"></div><button type="button" class="pv-segadd" data-card="2">+ Another segment</button></div>
+            <div class="campo pv-hide"><label>PV Segs 2</label><input type="text" id="pvSegs2"></div>
+          </div>
+
+          <button type="button" class="pv-addfin" id="pvAddFin">+ Add another financing</button>
+          <div class="campo pv-hide"><label>PV Premiums JSON</label><input type="text" id="pvPremJson"></div>
+          <div class="campo pv-hide"><label>PV Carriers JSON</label><input type="text" id="pvCarrJson"></div>
+        </div>
+
+        <div class="pv-combined">
+          <div class="cp-head">Your payment plan — what you pay</div>
+          <div class="cp-grid">
+            <div class="c"><div class="k">Down payment · at signing</div><div class="v" id="pvCpDown">$0.00</div></div>
+            <div class="c"><div class="k">Payment schedule</div><div class="v" id="pvCpSched"><span class="ln">—</span></div></div>
+            <div class="c"><div class="k">Approx. total investment</div><div class="v" id="pvCpTotal">$0.00</div></div>
+          </div>
+          <div class="pv-cpbrk" id="pvCpFees" hidden></div>
+        </div>
+
+        <div class="pv-defer off" id="pvSecDefer">
+          <div class="k">Deferred down payment — 80 / 20 option</div>
+          <p contenteditable="true">Prefer to keep more cash at signing? Pay <b>80%</b> of your down payment now and defer the remaining <b>20%</b> — the agency advances it so your effective date stays on track. Your monthly installments stay exactly the same.</p>
+          <div class="row">
+            <div class="box"><div class="bk">First payment · at signing (80%)</div><div class="bv" id="pvDefFirst" contenteditable="true">$0.00</div></div>
+            <div class="box"><div class="bk">Deferred portion (20%)</div><div class="bv" id="pvDefSecond" contenteditable="true">$0.00</div></div>
+          </div>
+          <p class="note">Deferred option subject to review and approval by our finance department.</p>
+        </div>
+      </section>
+
+      <section class="pv-dsec" id="pvSecSched">
+        <h2><span class="n">04</span> Quoted Schedules <span class="sub">Changes may impact eligibility and pricing</span></h2>
+        <table class="pvt" style="margin-bottom:12px">
+          <thead><tr><th style="width:44%">Driver</th><th>DOB</th><th>License</th></tr></thead>
+          <tbody id="pvDrvBody"></tbody>
+        </table>
+        <table class="pvt">
+          <thead><tr><th style="width:12%">Year</th><th style="width:22%">Make</th><th style="width:22%">Body</th><th>VIN</th></tr></thead>
+          <tbody id="pvUnitBody"></tbody>
+        </table>
+      </section>
+
+      <div class="pv-disc">
+        <b>Coverage is not bound.</b> This proposal is an initial operational estimate based on preliminary information and does not bind coverage. Coverage does not begin upon payment; it only takes effect once the carrier approves the risk and issues an official binder. All amounts are estimates and may vary after full underwriting review. The selection of coverages shown does not guarantee approval; the carrier may modify, adjust, or decline any coverage during underwriting. This policy may carry a 25% minimum earned premium. All fees are fully earned at binding. No flat cancellations. This quote is valid for 30 days.
+      </div>
+
+      <section class="pv-dsec pv-ack">
+        <h2><span class="n">05</span> Client Acknowledgment &amp; Signature</h2>
+        <p>I, the undersigned, acknowledge that I have reviewed and understand the terms described in this proposal. I understand this document is an initial estimate and not a final quote or a bind of coverage. I authorize ProtectGo Services LLC to initiate the underwriting and processing procedures described.</p>
+        <p>I certify that all information provided is true and complete to the best of my knowledge, and I agree that coverage does not begin upon payment and that final approval is subject to carrier underwriting and issuance of an official binder.</p>
+        <div class="pv-siggrid">
+          <div class="pv-sig"><div class="sl" contenteditable="true"></div><div class="sk">Client full name</div></div>
+          <div class="pv-sig"><div class="sl" contenteditable="true"></div><div class="sk">Position / Company</div></div>
+          <div class="pv-sig wide"><div class="sl tall"></div><div class="sk">Signature</div></div>
+          <div class="pv-sig"><div class="sl" contenteditable="true"></div><div class="sk">Date</div></div>
+          <div class="pv-sig"><div class="sl" contenteditable="true"></div><div class="sk">Representative — ProtectGo Services</div></div>
+        </div>
+      </section>
+
+      <section class="pv-dsec pv-ack off" id="pvSecAuth">
+        <h2><span class="n">06</span> Down Payment Authorization <span class="sub">Only when the client authorizes the charge</span></h2>
+        <div class="pv-authpend">🔒 Interno — este cobro queda <b>pendiente de autorización del área financiera</b>. Se procesa solo después de la firma del cliente y el visto bueno de FAM. Esta nota no se imprime.</div>
+        <p>I authorize <b>ProtectGo Services LLC</b> to process a one-time charge to the payment method below for the amount indicated, as payment toward the insurance program described in this proposal, under the disclosures stated in this section. <b>No charge is processed until the client signs this authorization.</b></p>
+        <div class="pv-authkv">
+          <div class="f c2"><div class="l">Charge type</div><div class="pv-pmrow" id="pvCtRow"><span class="pv-pmopt on" data-mode="down">Estimated down payment</span><span class="pv-pmopt" data-mode="full">Paid in full · total investment</span><span class="pv-pmopt" data-mode="other">Other amount</span></div></div>
+          <div class="f"><div class="l">Amount to charge</div><div class="v mono" id="pvAuthAmt">$0.00</div></div>
+          <div class="f c2"><div class="l">Payment method</div><div class="pv-pmrow" id="pvPmRow"><span class="pv-pmopt on" data-pm="pvPfCard">Credit / Debit card</span><span class="pv-pmopt" data-pm="pvPfAch">ACH</span><span class="pv-pmopt" data-pm="pvPfWire">Wire</span><span class="pv-pmopt" data-pm="pvPfZelle">Zelle</span></div></div>
+          <div class="f"><div class="l">Charge date</div><div class="v" contenteditable="true"></div></div>
+        </div>
+        <div class="pv-authkv pv-pmfields" id="pvPfCard">
+          <div class="f c2"><div class="l">Cardholder name</div><div class="v" contenteditable="true"></div></div>
+          <div class="f"><div class="l">Card type · Visa / MC / Amex / Discover</div><div class="v" contenteditable="true"></div></div>
+          <div class="f c2"><div class="l">Card number</div><div class="v mono" contenteditable="true"></div></div>
+          <div class="f"><div class="l">Exp. date · Security code</div><div class="v mono" contenteditable="true"></div></div>
+          <div class="f c2"><div class="l">Billing address</div><div class="v" contenteditable="true"></div></div>
+          <div class="f"><div class="l">Billing ZIP</div><div class="v" contenteditable="true"></div></div>
+        </div>
+        <div class="pv-authkv pv-pmfields" id="pvPfAch" hidden>
+          <div class="f c2"><div class="l">Account holder name</div><div class="v" contenteditable="true"></div></div>
+          <div class="f"><div class="l">Account type · Checking / Savings</div><div class="v" contenteditable="true"></div></div>
+          <div class="f"><div class="l">Bank name</div><div class="v" contenteditable="true"></div></div>
+          <div class="f"><div class="l">Routing number</div><div class="v mono" contenteditable="true"></div></div>
+          <div class="f"><div class="l">Account number</div><div class="v mono" contenteditable="true"></div></div>
+          <div class="f c2"><div class="l">Billing address</div><div class="v" contenteditable="true"></div></div>
+          <div class="f"><div class="l">Billing ZIP</div><div class="v" contenteditable="true"></div></div>
+        </div>
+        <div class="pv-authkv pv-pmfields" id="pvPfWire" hidden>
+          <div class="f c2"><div class="l">Account holder name</div><div class="v" contenteditable="true"></div></div>
+          <div class="f"><div class="l">Originating bank</div><div class="v" contenteditable="true"></div></div>
+          <div class="f c2"><div class="l">Wire reference / confirmation #</div><div class="v mono" contenteditable="true"></div></div>
+          <div class="f"><div class="l">Date sent</div><div class="v" contenteditable="true"></div></div>
+          <div class="f c3"><div class="l">Note</div><div class="v">Wire instructions are provided by the agency. The charge date corresponds to the date funds are received.</div></div>
+        </div>
+        <div class="pv-authkv pv-pmfields" id="pvPfZelle" hidden>
+          <div class="f c2"><div class="l">Sender name</div><div class="v" contenteditable="true"></div></div>
+          <div class="f"><div class="l">Zelle email / phone</div><div class="v mono" contenteditable="true"></div></div>
+          <div class="f c2"><div class="l">Confirmation #</div><div class="v mono" contenteditable="true"></div></div>
+          <div class="f"><div class="l">Date sent</div><div class="v" contenteditable="true"></div></div>
+          <div class="f c3"><div class="l">Note</div><div class="v">Zelle payments are sent to the agency account provided by your representative. The charge date corresponds to the date funds are received.</div></div>
+        </div>
+        <div class="pv-authnote">
+          <b>Payment disclosures.</b> <b>(1) Basis of the charge.</b> The amount authorized is the estimated payment for the program described in this proposal, calculated from preliminary information provided by the client; final amounts are determined by the carrier after full underwriting review and may vary. <b>(2) No coverage is bound by this payment.</b> Coverage takes effect only when the carrier approves the risk and issues an official binder. <b>(3) Agency responsibility.</b> ProtectGo Services LLC receives these funds solely to remit them to the carrier and/or premium finance company as required to bind the program, and will safeguard the payment information provided, using it exclusively for this transaction. <b>(4) Refunds.</b> If the program is not bound, is declined by the carrier, or the client withdraws before binding, the agency will refund all unearned amounts; <b>refund processing by the agency may take up to thirty (30) days</b>. <b>(5)</b> Fees fully earned at binding are non-refundable. <b>(6)</b> By signing, the client certifies that they are authorized to use the payment method provided and accepts these terms.
+        </div>
+        <div class="pv-siggrid">
+          <div class="pv-sig wide"><div class="sl tall"></div><div class="sk">Client signature — payment authorization</div></div>
+          <div class="pv-sig"><div class="sl" contenteditable="true"></div><div class="sk">Date</div></div>
+          <div class="pv-sig"><div class="sl" contenteditable="true"></div><div class="sk">Client full name</div></div>
+        </div>
+      </section>
+
+      <div class="pv-foot">
+        <div><b>ProtectGo Services LLC</b><br>17685 Senior Rd, Unit 5 · Von Ormy TX 78073-4279</div>
+        <div style="text-align:right">+1 (210) 961-9194 · admin@protectgoservices.com<br>www.protectgoservices.com</div>
+      </div>
+    </div>
+  </section>
+  <style>
+    @media print{
+      body.view-proposal{padding-top:0 !important;}
+      body.view-proposal .qq-bar{display:none !important;}
+    }
+  </style>
+  <script>
+  (function(){
+    "use strict";
+    var RATING="A-rated carrier — confirmed at binding";
+    function $(id){ return document.getElementById(id); }
+    function money(s){ var n=parseFloat(String(s==null?"":s).replace(/[^0-9.\-]/g,"")); return isNaN(n)?0:n; }
+    function fmt(n){ return "$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+    function fval(el){ if(!el) return ""; if(el.tagName==="SELECT"){var o=el.options[el.selectedIndex];return o&&o.value?o.text.trim():"";} return (el.value||"").trim(); }
+    function labelOf(c){ var l=c.querySelector("label"); if(!l) return ""; var n=l.childNodes[0]?l.childNodes[0].nodeValue:null; return (n||l.textContent||"").trim(); }
+    function byLabel(scope,re){ var found=""; document.querySelectorAll(scope+" .campo").forEach(function(c){ if(found) return; if(re.test(labelOf(c))){ var v=fval(c.querySelector("input,select,textarea")); if(v) found=v; } }); return found; }
+    function kpiTxt(id){ var e=$(id); var v=e?e.textContent.trim():""; return (!v||v==="—")?"—":v; }
+    function jget(id){ try{ return JSON.parse($(id).value||"{}"); }catch(e){ return {}; } }
+    function jset(id,obj){ var e=$(id); if(e) e.value=JSON.stringify(obj); }
+
+    var pvDefManual=false, lastDown=0, lastTotal=0;
+
+    /* ---- Tramos (pagos desiguales) ---- */
+    function segRow(card, txt, n, amt){
+      var r=document.createElement("div");
+      r.className="pv-segrow";
+      r.innerHTML='<span>'+txt+'</span><input class="sn" inputmode="numeric" value="'+esc(n)+'"><span>payments of $</span><input class="sa" inputmode="decimal" value="'+esc(amt)+'"><button type="button" class="pv-segdel" title="Remove segment">✕</button>';
+      r.querySelector(".pv-segdel").addEventListener("click",function(){ r.remove(); syncSegs(card); pvRecalc(); });
+      r.querySelectorAll("input").forEach(function(i){ i.addEventListener("input",function(){ syncSegs(card); pvRecalc(); }); });
+      return r;
+    }
+    function syncSegs(card){
+      var rows=[]; document.querySelectorAll("#pvSegRows"+card+" .pv-segrow").forEach(function(r){
+        rows.push([(r.querySelector(".sn").value||"").trim(),(r.querySelector(".sa").value||"").trim()]);
+      });
+      var e=$("pvSegs"+card); if(e) e.value=rows.map(function(s){return s[0]+"|"+s[1];}).join(";");
+    }
+    function loadSegs(card){
+      var wrap=$("pvSegRows"+card); if(!wrap) return; wrap.innerHTML="";
+      var raw=($("pvSegs"+card)||{}).value||"";
+      var rows=raw?raw.split(";"):[];
+      rows.forEach(function(s,i){ var p=s.split("|"); wrap.appendChild(segRow(card, i===0?"First":"Then", p[0]||"", p[1]||"")); });
+      if(!rows.length){ wrap.appendChild(segRow(card,"First","5","")); wrap.appendChild(segRow(card,"Then","4","")); syncSegs(card); }
+    }
+    function applyStar(card){
+      var on=$("pvStar"+card).checked;
+      var w=$("pvSegWrap"+card); if(w) w.hidden=!on;
+      document.querySelectorAll('#pvCard'+card+' [data-simple="'+card+'"]').forEach(function(c){ c.style.display=on?"none":""; });
+      if(on && !document.querySelector("#pvSegRows"+card+" .pv-segrow")) loadSegs(card);
+    }
+
+    /* ---- Recalcular: plan combinado + diferido + autorización ---- */
+    function cardActive(card){ return card===1 || !$("pvCard2").classList.contains("pv-hide"); }
+    function pvRecalc(){
+      var down=0, tax=0, ag=0, months=[];
+      [1,2].forEach(function(c){
+        if(!cardActive(c)) return;
+        down+=money(($("pvDown"+c)||{}).value);
+        tax+=money(($("pvTax"+c)||{}).value);
+        ag+=money(($("pvAg"+c)||{}).value);
+        var mi=0;
+        if($("pvStar"+c) && $("pvStar"+c).checked){
+          document.querySelectorAll("#pvSegRows"+c+" .pv-segrow").forEach(function(r){
+            var n=parseInt((r.querySelector(".sn").value||"").replace(/[^0-9]/g,""),10)||0;
+            var a=money(r.querySelector(".sa").value);
+            for(var i=0;i<n;i++){ months[mi]=(months[mi]||0)+a; mi++; }
+          });
+        } else {
+          var n=parseInt((($("pvN"+c)||{}).value||"").replace(/[^0-9]/g,""),10)||0;
+          var a=money(($("pvAmt"+c)||{}).value);
+          for(var i=0;i<n;i++){ months[mi]=(months[mi]||0)+a; mi++; }
+        }
+      });
+      var segs=[],i=0;
+      while(i<months.length){ var j=i; while(j+1<months.length && Math.abs(months[j+1]-months[i])<0.005) j++; segs.push({n:j-i+1,amt:months[i]}); i=j+1; }
+      var totalPay=months.reduce(function(a,b){return a+b;},0);
+      var downDue=down+ag;
+      lastDown=downDue; lastTotal=downDue+totalPay;
+      if($("pvCpDown")) $("pvCpDown").textContent=fmt(downDue);
+      var sc=$("pvCpSched");
+      if(sc) sc.innerHTML = segs.length ? segs.map(function(s){ return '<span class="ln">'+s.n+' × '+fmt(s.amt)+' <i>/ month</i></span>'; }).join("") : '<span class="ln">—</span>';
+      if($("pvCpTotal")) $("pvCpTotal").textContent=fmt(lastTotal);
+      var brk=$("pvCpFees");
+      if(brk){ var parts=[]; if(tax>0) parts.push(fmt(tax)+" in taxes & fees"); if(ag>0) parts.push(fmt(ag)+" in agency contributory fees, collected with your down payment"); brk.hidden=!parts.length; brk.textContent=parts.length?("Includes "+parts.join(" · ")+"."):""; }
+      if(!pvDefManual){ if($("pvDefFirst")) $("pvDefFirst").textContent=fmt(downDue*0.8); if($("pvDefSecond")) $("pvDefSecond").textContent=fmt(downDue*0.2); }
+      updateAuthAmt();
+      sumPremiums();
+    }
+    function sumPremiums(){
+      var t=0; document.querySelectorAll("#pvPremBody [data-prem]").forEach(function(td){ t+=money(td.textContent); });
+      if($("pvPremSum")) $("pvPremSum").textContent=t>0?fmt(t):"$0.00";
+      if($("pvSnapPrem")) $("pvSnapPrem").textContent=t>0?fmt(t):"—";
+    }
+
+    /* ---- Autorización: tipo de cobro + método ---- */
+    function updateAuthAmt(){
+      var aa=$("pvAuthAmt"); if(!aa) return;
+      var sel=document.querySelector("#pvCtRow .pv-pmopt.on");
+      var m=sel?sel.getAttribute("data-mode"):"down";
+      if(m==="down"){ aa.textContent=fmt(lastDown); aa.removeAttribute("contenteditable"); }
+      else if(m==="full"){ aa.textContent=fmt(lastTotal); aa.removeAttribute("contenteditable"); }
+      else { aa.setAttribute("contenteditable","true"); }
+    }
+    function updatePmFields(){
+      var sel=document.querySelector("#pvPmRow .pv-pmopt.on");
+      var target=sel?sel.getAttribute("data-pm"):"pvPfCard";
+      document.querySelectorAll("#pvSecAuth .pv-pmfields").forEach(function(g){ g.hidden=(g.id!==target); });
+    }
+
+    /* ---- Toggles de secciones ---- */
+    function applyToggles(){
+      if($("pvSecPremium")) $("pvSecPremium").classList.toggle("off", !$("pvCfgPremium").checked);
+      if($("pvSecDefer")) $("pvSecDefer").classList.toggle("off", !$("pvCfgDefer").checked);
+      if($("pvSecSched")) $("pvSecSched").classList.toggle("off", !$("pvCfgSched").checked);
+      if($("pvSecAuth")) $("pvSecAuth").classList.toggle("off", !$("pvCfgAuth").checked);
+    }
+
+    /* ---- Carrier: rating-only vs nombre ---- */
+    function paintCarr(cell){
+      var anon=cell.getAttribute("data-anon")==="1";
+      var val=cell.querySelector(".val"); var b=cell.querySelector(".csw");
+      if(anon){ val.textContent=RATING; val.removeAttribute("contenteditable"); }
+      else { val.textContent=cell.getAttribute("data-name")||""; val.setAttribute("contenteditable","true"); }
+      if(b){ b.textContent=anon?"Rating":"Name"; b.classList.toggle("on",anon); }
+    }
+    function saveCarrJson(){
+      var map={};
+      document.querySelectorAll("#pvCovBody .pv-carr").forEach(function(cell){
+        map[cell.getAttribute("data-cov")||""]={n:cell.getAttribute("data-name")||"",a:cell.getAttribute("data-anon")||"1"};
+      });
+      jset("pvCarrJson",map);
+    }
+    function savePremJson(){
+      var map={};
+      document.querySelectorAll("#pvPremBody [data-prem]").forEach(function(td){ map[td.getAttribute("data-prem")]=td.textContent.trim(); });
+      jset("pvPremJson",map);
+    }
+
+    /* ---- Construcción: arrastra datos del App MGA ---- */
+    function collectCoverages(){
+      var out=[];
+      document.querySelectorAll("#sec-cov .cov.on").forEach(function(cov){
+        var name=((cov.querySelector(".name")||{}).textContent||"").trim();
+        var limit="",deds=[];
+        cov.querySelectorAll(".cov-det .campo").forEach(function(d){
+          var lab=labelOf(d).toLowerCase(); var v=fval(d.querySelector("input")); if(!v) return;
+          if(/ded|comprehensive|collision/.test(lab)){ deds.push(v); } else { limit=v; }
+        });
+        out.push({name:name,limit:limit||"—",ded:deds.join(" / ")||"—"});
+      });
+      return out;
+    }
+    function tableRows(scope){
+      var out=[];
+      document.querySelectorAll(scope+" .rt-rows .rt-row").forEach(function(r){
+        var vals=[],any=false;
+        r.querySelectorAll("input").forEach(function(i){ var v=(i.value||"").trim(); if(v) any=true; vals.push(v); });
+        if(any) out.push(vals);
+      });
+      return out;
+    }
+
+    function buildProposal(){
+      try{
+        var applicant=byLabel("#sec-agency",/account name/i)||"—";
+        $("pvName").textContent=applicant;
+        var tags=[]; document.querySelectorAll("#opTags .t").forEach(function(t){ tags.push(t.textContent.trim()); });
+        $("pvTags").textContent=tags.join(" · ");
+        $("pvQuote").textContent=fval($("metaQuote"))||"—";
+        $("pvDate").textContent=new Date().toLocaleDateString("en-US");
+        var prep=fval($("metaPreparedBy")); $("pvPrep").textContent=prep||"ProtectGo Services LLC";
+        $("pvEff").textContent=kpiTxt("kpiEffective");
+        $("pvUnits").textContent=kpiTxt("kpiUnits");
+        $("pvDrvs").textContent=kpiTxt("kpiDrivers");
+
+        var covs=collectCoverages();
+        var carrMap=jget("pvCarrJson");
+        var cb=$("pvCovBody"); cb.innerHTML="";
+        covs.forEach(function(c){
+          var st=carrMap[c.name]||{n:"",a:"1"};
+          var tr=document.createElement("tr");
+          tr.innerHTML='<td><b>'+esc(c.name)+'</b></td><td class="num">'+esc(c.limit)+'</td><td class="num">'+esc(c.ded)+'</td>'
+            +'<td><div class="pv-carr" data-cov="'+esc(c.name)+'" data-name="'+esc(st.n)+'" data-anon="'+esc(st.a||"1")+'"><span class="val"></span><button type="button" class="csw"></button></div></td>';
+          cb.appendChild(tr);
+          var cell=tr.querySelector(".pv-carr");
+          paintCarr(cell);
+          cell.querySelector(".csw").addEventListener("click",function(){
+            cell.setAttribute("data-anon", cell.getAttribute("data-anon")==="1"?"0":"1");
+            paintCarr(cell); saveCarrJson();
+          });
+          cell.querySelector(".val").addEventListener("input",function(){
+            if(cell.getAttribute("data-anon")==="0"){ cell.setAttribute("data-name",cell.querySelector(".val").textContent.trim()); saveCarrJson(); }
+          });
+        });
+        if(!covs.length) cb.innerHTML='<tr><td colspan="4" style="color:#8a989a">No coverages selected yet — check them in App MGA.</td></tr>';
+
+        var premMap=jget("pvPremJson");
+        var pb=$("pvPremBody"); pb.innerHTML="";
+        covs.forEach(function(c){
+          var tr=document.createElement("tr");
+          tr.innerHTML='<td>'+esc(c.name)+'</td><td class="num" contenteditable="true" data-prem="'+esc(c.name)+'">'+esc(premMap[c.name]||"")+'</td>';
+          pb.appendChild(tr);
+        });
+
+        var db=$("pvDrvBody"); db.innerHTML="";
+        tableRows("#sec-drivers").forEach(function(v){
+          var lic=(v[2]||"")+((v[3])?" ("+v[3]+")":"");
+          db.innerHTML+='<tr><td>'+esc(v[0]||"")+'</td><td>'+esc(v[1]||"")+'</td><td>'+esc(lic)+'</td></tr>';
+        });
+        var ub=$("pvUnitBody"); ub.innerHTML="";
+        tableRows("#sec-units").concat(tableRows("#sec-trailers")).forEach(function(v){
+          ub.innerHTML+='<tr><td>'+esc(v[0]||"")+'</td><td>'+esc(v[1]||"")+'</td><td>'+esc(v[3]||"")+'</td><td class="mono">'+esc(v[2]||"")+'</td></tr>';
+        });
+
+        var c2Used=["pvWhat2","pvDown2","pvN2","pvAmt2","pvTax2","pvAg2","pvSegs2"].some(function(id){ var e=$(id); return e && (e.value||"").trim()!==""; }) || ($("pvStar2")&&$("pvStar2").checked);
+        $("pvCard2").classList.toggle("pv-hide", !c2Used);
+        [1,2].forEach(function(c){ if($("pvStar"+c)&&$("pvStar"+c).checked){ loadSegs(c); } applyStar(c); });
+        applyToggles();
+        pvRecalc();
+      }catch(e){ console.warn("[buildProposal]",e); }
+    }
+    window.__buildProposal=buildProposal;
+
+    /* ---- Eventos ---- */
+    document.addEventListener("DOMContentLoaded",function(){
+      var root=$("proposal-view"); if(!root) return;
+      root.addEventListener("input",function(e){
+        var t=e.target;
+        if(t.closest && t.closest("#pvPremBody")){ savePremJson(); }
+        if(t.id==="pvDefFirst"||t.id==="pvDefSecond"){ pvDefManual=true; return; }
+        pvRecalc();
+      });
+      ["pvStar1","pvStar2"].forEach(function(id,idx){
+        var e=$(id); if(e) e.addEventListener("change",function(){ applyStar(idx+1); pvRecalc(); });
+      });
+      ["pvCfgPremium","pvCfgDefer","pvCfgSched","pvCfgAuth"].forEach(function(id){
+        var e=$(id); if(e) e.addEventListener("change",applyToggles);
+      });
+      document.querySelectorAll(".pv-segadd").forEach(function(b){
+        b.addEventListener("click",function(){
+          var c=b.getAttribute("data-card");
+          $("pvSegRows"+c).appendChild(segRow(c,"Then","",""));
+          syncSegs(c); pvRecalc();
+        });
+      });
+      var add=$("pvAddFin"); if(add) add.addEventListener("click",function(){ $("pvCard2").classList.remove("pv-hide"); pvRecalc(); });
+      var rm=$("pvRm2"); if(rm) rm.addEventListener("click",function(){
+        if(!confirm("Remove this financing?")) return;
+        ["pvWhat2","pvDown2","pvN2","pvAmt2","pvTax2","pvAg2","pvSegs2"].forEach(function(id){ var e=$(id); if(e) e.value=""; });
+        if($("pvStar2")) $("pvStar2").checked=false;
+        $("pvSegRows2").innerHTML="";
+        $("pvCard2").classList.add("pv-hide"); pvRecalc();
+      });
+      function chipRow(id,cb){
+        var row=$(id); if(!row) return;
+        row.addEventListener("click",function(e){
+          var c=e.target.closest(".pv-pmopt"); if(!c) return;
+          row.querySelectorAll(".pv-pmopt").forEach(function(x){ x.classList.remove("on"); });
+          c.classList.add("on"); if(cb) cb();
+        });
+      }
+      chipRow("pvCtRow",updateAuthAmt);
+      chipRow("pvPmRow",updatePmFields);
+      updatePmFields();
+      var pr=$("pvPrint"); if(pr) pr.addEventListener("click",function(){ window.print(); });
+
+      /* Quick setup: el sistema configura solo el financiamiento */
+      function preset(kind){
+        var s1=$("pvStar1"), w1=$("pvWhat1");
+        if(kind==="std"||kind==="std9"){
+          if(s1) s1.checked=false;
+          applyStar(1);
+          if($("pvN1")) $("pvN1").value=(kind==="std9")?"9":"10";
+          if(w1 && !w1.value) w1.value="Full package";
+        }
+        if(kind==="star"){
+          if(s1) s1.checked=true;
+          if($("pvSegs1")) $("pvSegs1").value="5|;4|";
+          loadSegs(1);
+          applyStar(1);
+          if(w1) w1.value="Liability";
+        }
+        if(kind==="starpkg"){
+          preset("star");
+          $("pvCard2").classList.remove("pv-hide");
+          if($("pvWhat2")) $("pvWhat2").value="Cargo";
+          if($("pvStar2")) $("pvStar2").checked=false;
+          applyStar(2);
+          if($("pvN2")) $("pvN2").value="10";
+        }
+        pvRecalc();
+      }
+      var PRE={pvPresetStd:"std",pvPresetStd9:"std9",pvPresetStar:"star",pvPresetStarPkg:"starpkg"};
+      Object.keys(PRE).forEach(function(id){
+        var b=$(id); if(b) b.addEventListener("click",function(){ preset(PRE[id]); });
+      });
     });
   })();
   </script>
@@ -3512,7 +4078,6 @@
       document.querySelectorAll(".cov").forEach(function(c,i){ if(c.classList.contains("on")) s.covOn.push(i); });
       document.querySelectorAll(".pkg-key").forEach(function(c,i){ if(c.classList.contains("on")) s.pkgKeyOn.push(i); });
       document.querySelectorAll(".pkg-bx").forEach(function(c,i){ if(c.classList.contains("on")) s.pkgBxOn.push(i); });
-      s.symOn=[]; document.querySelectorAll(".sym-check input[type=checkbox]").forEach(function(e,i){ if(e.checked) s.symOn.push(i); });
       return s;
     }
     function restore(s){
@@ -3532,7 +4097,6 @@
       var covs=document.querySelectorAll(".cov"); covs.forEach(function(c){c.classList.remove("on");}); (s.covOn||[]).forEach(function(i){ if(covs[i]) covs[i].classList.add("on"); });
       var pk=document.querySelectorAll(".pkg-key"); pk.forEach(function(c){c.classList.remove("on");}); (s.pkgKeyOn||[]).forEach(function(i){ if(pk[i]) pk[i].classList.add("on"); });
       var pb=document.querySelectorAll(".pkg-bx"); pb.forEach(function(c){c.classList.remove("on");}); (s.pkgBxOn||[]).forEach(function(i){ if(pb[i]) pb[i].classList.add("on"); });
-      var se=document.querySelectorAll(".sym-check input[type=checkbox]"); se.forEach(function(e){e.checked=false;}); (s.symOn||[]).forEach(function(i){ if(se[i]) se[i].checked=true; });
       try{ document.dispatchEvent(new Event("input",{bubbles:true})); document.dispatchEvent(new Event("change",{bubbles:true})); }catch(e){}
       if(window.__recalcProgreso) window.__recalcProgreso();
     }
@@ -3582,7 +4146,7 @@
       document.head.appendChild(css);
 
       bar=el("div",{"class":"qq-bar"});
-      bar.innerHTML='<a href="index.html" class="qq-logo" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:7px">&#8249; Protect<i>Go</i> · Quick Quotes</a>'+
+      bar.innerHTML='<span class="qq-logo">Protect<i>Go</i> · Quick Quotes</span>'+
         '<button class="qq-b alt" data-act="list">Mis Quotes</button>'+
         '<button class="qq-b" data-act="new">Nueva</button>'+
         '<button class="qq-b save" data-act="save">Guardar</button>'+
@@ -3604,14 +4168,17 @@
         '<label>Contraseña</label><input id="qqPass" type="password" autocomplete="current-password">'+
         '<button class="qq-b" data-act="login">Entrar</button>'+
         '<button class="qq-link" data-act="signup">Crear cuenta nueva</button>'+
+        '<button class="qq-link" data-act="skiplogin">Seguir sin ingresar</button>'+
         '<div class="qq-msg" id="qqMsg"></div></div>';
       document.body.appendChild(overlay);
 
       toast=el("div",{"class":"qq-toast"}); document.body.appendChild(toast);
 
       document.addEventListener("click",function(e){ var b=e.target.closest("[data-act]"); if(!b) return; var a=b.getAttribute("data-act");
-        if(a==="login") doLogin(); else if(a==="signup") doSignup(); else if(a==="logout") doLogout();
-        else if(a==="list"){ if(panel.classList.contains("open")) panel.classList.remove("open"); else openPanel(); } else if(a==="closepanel"){ panel.classList.remove("open"); }
+        if(a==="login") doLogin(); else if(a==="signup") doSignup();
+        else if(a==="logout"){ if(currentUserId) doLogout(); else requireLogin(); }
+        else if(a==="skiplogin"){ overlay.style.display="none"; }
+        else if(a==="list"){ if(!currentUserId){ requireLogin(); } else if(panel.classList.contains("open")) panel.classList.remove("open"); else openPanel(); } else if(a==="closepanel"){ panel.classList.remove("open"); }
         else if(a==="new"){ if(confirm("¿Empezar una quote nueva? Se limpiará el formulario.")){ clearForm(); currentId=null; showToast("Quote nueva"); } }
         else if(a==="save") doSave();
       });
@@ -3622,9 +4189,19 @@
     function onAuthed(session){
       userEmail=session&&session.user?session.user.email:""; currentUserId=session&&session.user?session.user.id:null;
       var u=document.getElementById("qqUser"); if(u) u.textContent=userEmail;
+      var lo=bar.querySelector('[data-act="logout"]'); if(lo) lo.textContent="Salir";
       overlay.style.display="none"; bar.style.display="flex";
     }
-    function onSignedOut(){ bar.style.display="none"; panel.classList.remove("open"); overlay.style.display="flex"; }
+    /* Sin sesión NO se bloquea: el documento queda usable y el login
+       solo aparece al Guardar / Mis Quotes / botón Entrar. */
+    function onSignedOut(){
+      userEmail=""; currentUserId=null; currentId=null;
+      var u=document.getElementById("qqUser"); if(u) u.textContent="sin sesión";
+      var lo=bar.querySelector('[data-act="logout"]'); if(lo) lo.textContent="Entrar";
+      panel.classList.remove("open");
+      overlay.style.display="none"; bar.style.display="flex";
+    }
+    function requireLogin(){ msg("Ingresa para guardar y ver tus quotes.",""); overlay.style.display="flex"; }
 
     function doLogin(){ var em=document.getElementById("qqEmail").value.trim(), pw=document.getElementById("qqPass").value;
       if(!em||!pw){ msg("Escribe email y contraseña.","err"); return; } msg("Entrando…");
@@ -3635,6 +4212,7 @@
     function doLogout(){ sb.auth.signOut(); }
 
     function doSave(){
+      if(!currentUserId){ requireLogin(); return; }
       var snap=snapshot(); var row={account_name:accountName(),quote_number:(document.getElementById("metaQuote")||{}).value||"",status:(document.getElementById("metaStatus")||{}).value||"Draft",data:snap};
       var q;
       if(currentId){ q=sb.from("quick_quotes").update(row).eq("id",currentId).select("id").single(); }
@@ -3661,13 +4239,58 @@
 
     function init(){
       buildUI();
-      if(!(window.supabase&&window.supabase.createClient)){ msg("No se pudo cargar Supabase (revisa tu conexión a internet).","err"); overlay.style.display="flex"; return; }
+      if(!(window.supabase&&window.supabase.createClient)){ console.warn("[QQ] Supabase no cargó; el documento sigue usable sin guardar."); onSignedOut(); return; }
       sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
       sb.auth.getSession().then(function(r){ if(r.data&&r.data.session) onAuthed(r.data.session); else onSignedOut(); });
       sb.auth.onAuthStateChange(function(evt,session){ if(session) onAuthed(session); else onSignedOut(); });
     }
-    if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(init,60); });
+    var REVIEW=/(^|[#?&])review/.test(location.hash+location.search);
+    if(REVIEW){ console.info("[QQ] Modo revisión: login desactivado."); }
+    else if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(init,60); });
     else setTimeout(init,60);
+  })();
+  </script>
+
+  <!-- MODO REVISIÓN (#review): sin login + datos de ejemplo. No corre en uso normal. -->
+  <script>
+  (function(){
+    if(!/(^|[#?&])review/.test(location.hash+location.search)) return;
+    function fire(el){ try{ el.dispatchEvent(new Event("input",{bubbles:true})); el.dispatchEvent(new Event("change",{bubbles:true})); }catch(e){} }
+    function labelOf(c){ var l=c.querySelector("label"); if(!l) return ""; var n=l.childNodes[0]?l.childNodes[0].nodeValue:null; return (n||l.textContent||"").trim(); }
+    function setByLabel(scope,re,val){
+      var done=false;
+      document.querySelectorAll(scope+" .campo").forEach(function(c){
+        if(done) return;
+        if(re.test(labelOf(c))){ var i=c.querySelector("input,textarea"); if(i){ i.value=val; fire(i); done=true; } }
+      });
+    }
+    function addRow(secSel,vals){
+      var sec=document.querySelector(secSel); if(!sec) return;
+      var btn=sec.querySelector(".add-row"); if(btn) btn.click();
+      var rows=sec.querySelectorAll(".rt-rows .rt-row"); var r=rows[rows.length-1]; if(!r) return;
+      var ins=r.querySelectorAll("input");
+      vals.forEach(function(v,i){ if(ins[i]){ ins[i].value=v; fire(ins[i]); } });
+    }
+    window.addEventListener("load",function(){ setTimeout(function(){
+      try{
+        setByLabel("#sec-agency",/account name/i,"DCN TRANSPORT LLC");
+        setByLabel("#sec-agency",/contact|representative/i,"REYNALDO GONZALEZ");
+        setByLabel("#sec-op",/us\s*dot/i,"3629211");
+        var eff=document.getElementById("metaEffective");
+        if(eff){ eff.value = (eff.type==="date")?"2026-06-28":"06/28/2026"; fire(eff); }
+        var q=document.getElementById("metaQuote"); if(q && !q.value){ q.value="QC-2026-0142"; fire(q); }
+        document.querySelectorAll("#sec-cov .cov").forEach(function(cov){
+          var nm=((cov.querySelector(".name")||{}).textContent||"").toLowerCase();
+          function put(re,val){ cov.querySelectorAll(".cov-det .campo").forEach(function(d){ var lab=labelOf(d).toLowerCase(); var i=d.querySelector("input"); if(!i||i.value) return; if(re.test(lab)) { i.value=val; fire(i); } }); }
+          if(/auto liability/.test(nm)){ cov.classList.add("on"); put(/^(?!.*ded)/,"$1,000,000"); }
+          if(/cargo/.test(nm)){ cov.classList.add("on"); put(/ded/,"$2,500"); put(/^(?!.*ded)/,"$100,000"); }
+        });
+        addRow("#sec-drivers",["REYNALDO GONZALEZ","05/22/1970","18892554","RI"]);
+        addRow("#sec-units",["2013","VOLVO","4V4NC9EH2DN151192","Tractor"]);
+        try{ document.dispatchEvent(new Event("input",{bubbles:true})); }catch(e){}
+        if(window.__recalcProgreso) window.__recalcProgreso();
+      }catch(e){ console.warn("[review demo]",e); }
+    },500); });
   })();
   </script>
 

@@ -4565,3 +4565,13 @@
 
 </body>
 </html>
+
+<!-- PV-MEMBRETE v5.2: membrete y pie de contacto en CADA página impresa de la Insurance Proposal -->
+<script id="pv-membrete">
+  (function(){"use strict";
+              var css=".pv-mem{width:100%;border-collapse:collapse}.pv-mem td{padding:0}.pv-memhead{padding-bottom:16px}.pv-memfootcell{padding-top:16px}.pv-memfoot{border-top:1.5px solid #002F3D;padding-top:7px;text-align:center;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:7.6px;letter-spacing:.04em;color:#8a989a;white-space:nowrap}.pv-memfoot b{color:#0a5b54;font-weight:600}@media screen{.pv-memfoot{display:none}.pv-memhead{padding-bottom:0}}@media print{.pv-foot{display:none!important}@page{size:Letter;margin:.42in .55in}body.view-proposal .pv-sheet{padding:0!important}.pv-mem thead{display:table-header-group}.pv-mem tfoot{display:table-footer-group}}";
+              var st=document.createElement("style");st.id="pv-membrete-css";st.textContent=css;document.head.appendChild(st);
+              function wrap(){var sheet=document.querySelector("#proposal-view .pv-sheet");if(!sheet||sheet.querySelector(".pv-mem"))return;var lh=sheet.querySelector(".pv-lh");if(!lh)return;var arcs=sheet.querySelector(".pv-arcs");var kids=[];Array.prototype.slice.call(sheet.children).forEach(function(n){if(n!==arcs)kids.push(n);});var tbl=document.createElement("table");tbl.className="pv-mem";tbl.innerHTML='<thead><tr><td class="pv-memhead"></td></tr></thead><tbody><tr><td class="pv-membody"></td></tr></tbody><tfoot><tr><td class="pv-memfootcell"><div class="pv-memfoot"><span><b>ProtectGo Services LLC</b> · 17685 Senior Rd Unit 5, Von Ormy TX 78073 · +1 (210) 961-9194 · admin@protectgoservices.com · <b>protectgoservices.com</b></span></div></td></tr></tfoot>';sheet.appendChild(tbl);tbl.querySelector(".pv-memhead").appendChild(lh);var body=tbl.querySelector(".pv-membody");kids.forEach(function(n){if(n!==lh&&n!==tbl)body.appendChild(n);});}
+              if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",wrap);else wrap();
+             })();
+</script>

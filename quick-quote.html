@@ -4620,3 +4620,25 @@
 
 <!-- PV-FIX-CAMPOS: los campos del panel del agente no se ocultan por estar vacios -->
 <style id="pv-fix-campos">#proposal-view .campo.is-empty{display:block!important}</style>
+
+<!-- PV-STAR3: preset "STAR liability + financed cargo" = una sola tarjeta con 3 tramos (5, 4 y 1 mensualidad) -->
+<script id="pv-star3">
+  (function(){"use strict";
+              function fire(el,t){try{el.dispatchEvent(new Event(t,{bubbles:true}));}catch(e){}}
+              document.addEventListener("click",function(e){
+                var b=e.target&&e.target.closest?e.target.closest("#pvPresetStarPkg"):null;
+                if(!b) return;
+                setTimeout(function(){
+                  var s=document.getElementById("pvSegs1"); if(s) s.value="5|;4|;1|";
+                  var rows=document.getElementById("pvSegRows1"); if(rows) rows.innerHTML="";
+                  var chk=document.getElementById("pvStar1"); if(chk){ chk.checked=true; fire(chk,"change"); }
+                  if(rows) rows.querySelectorAll(".pv-segrow > span:first-child").forEach(function(sp){ sp.textContent=""; });
+                  var c2=document.getElementById("pvCard2"); if(c2) c2.classList.add("pv-hide");
+                  ["pvWhat2","pvDown2","pvN2","pvAmt2","pvTax2","pvAg2"].forEach(function(id){var e2=document.getElementById(id); if(e2) e2.value="";});
+                  var st2=document.getElementById("pvStar2"); if(st2) st2.checked=false;
+                  var w1=document.getElementById("pvWhat1"); if(w1){ w1.value="Full package"; fire(w1,"input"); }
+                  fire(document.getElementById("proposal-view")||document.body,"input");
+                },120);
+              },true);
+             })();
+</script>

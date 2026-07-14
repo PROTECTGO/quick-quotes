@@ -4642,3 +4642,10 @@
               },true);
              })();
 </script>
+
+<!-- PV-FIX-INPUTS: en la vista Proposal los campos del panel del agente son escribibles (el modo propuesta los volvia texto estatico) -->
+<style id="pv-fix-inputs">
+  body.modo-propuesta #proposal-view .campo input,
+  body.modo-propuesta #proposal-view .campo select{display:block!important}
+  body.modo-propuesta #proposal-view .campo .vd{display:none!important}
+  </style>

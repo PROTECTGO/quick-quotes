@@ -4575,3 +4575,11 @@
               if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",wrap);else wrap();
              })();
 </script>
+
+<!-- PV-LOGO-APP: logo real de ProtectGO en el membrete del dashboard App MGA (reusa el PNG embebido del tema) -->
+<script id="pv-logo-app">
+  (function(){"use strict";
+              function go(){var s=document.querySelector(".pv-lh .brand b");var d=document.querySelector(".lh-brand b");if(!s||!d)return;var bg=getComputedStyle(s).backgroundImage;if(!bg||bg.indexOf("data:image")<0)return;d.style.backgroundImage=bg;d.style.backgroundRepeat="no-repeat";d.style.backgroundSize="contain";d.style.backgroundPosition="left center";d.style.color="transparent";d.style.display="block";d.style.width="192px";d.style.height="64px";var i=d.querySelector("i");if(i)i.style.color="transparent";}
+              if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go();
+             })();
+</script>

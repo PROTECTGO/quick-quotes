@@ -216,3 +216,19 @@
   </script>
 </body>
 </html>
+
+<!-- PG-LOGO-PORTAL: logo real de ProtectGO en el hero (lo toma del PNG embebido de quick-quote.html) -->
+<script id="pg-logo-portal">
+  (function(){"use strict";
+              fetch("quick-quote.html").then(function(r){return r.text();}).then(function(t){
+                var m=t.match(/url\((['"]?)(data:image\/png;base64,[A-Za-z0-9+\/=]+)\1\)/);
+                if(!m) return;
+                var hero=document.querySelector(".hero");
+                if(!hero||document.getElementById("pg-logo-real")) return;
+                var img=document.createElement("img");
+                img.id="pg-logo-real"; img.src=m[2]; img.alt="ProtectGO Services";
+                img.style.cssText="display:block;height:72px;margin:0 0 18px;";
+                hero.insertBefore(img,hero.firstChild);
+              }).catch(function(){});
+             })();
+</script>

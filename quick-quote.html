@@ -4705,9 +4705,41 @@ document.addEventListener("blur",function(e){
   t.value=n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
   try{ t.dispatchEvent(new Event("input",{bubbles:true})); }catch(_){}
 },true);
+
+/* ---------- editor de premium por cobertura (sección 01) ---------- */
+function sumPrem(){
+  var tot=0;
+  document.querySelectorAll("#pvPremBody tr").forEach(function(tr){
+    var inp=tr.querySelector("input");
+    tot+=num(inp?inp.value:(tr.children[1]?tr.children[1].textContent:""));
+  });
+  if(tot>0){ var s=money(tot);
+    var ps=$("pvPremSum"); if(ps) ps.textContent=s;
+    var sp=$("pvSnapPrem"); if(sp) sp.textContent=s; }
+}
+function ensurePremRows(){
+  var cov=$("pvCovBody"), pb=$("pvPremBody"); if(!cov||!pb) return;
+  var have=Array.prototype.map.call(pb.querySelectorAll("tr td:first-child"),function(td){return td.textContent.trim();});
+  cov.querySelectorAll("tr").forEach(function(tr){
+    var td=tr.children[0]; if(!td) return;
+    var n=td.textContent.trim(); if(!n||have.indexOf(n)>=0) return;
+    have.push(n);
+    var fila=document.createElement("tr");
+    var c1=document.createElement("td"); c1.textContent=n;
+    var c2=document.createElement("td"); c2.style.textAlign="right";
+    var inp=document.createElement("input"); inp.type="text"; inp.placeholder="$ 0.00"; inp.className="pv-prem-in";
+    inp.style.cssText="width:110px;border:none;border-bottom:1px solid #BADFCE;background:transparent;font:600 13px Inter,sans-serif;color:#0D3040;text-align:right;outline:none;display:inline-block";
+    inp.addEventListener("input",sumPrem);
+    inp.addEventListener("blur",function(){ var v=num(inp.value); if(v){ inp.value=money(v); } sumPrem(); });
+    c2.appendChild(inp); fila.appendChild(c1); fila.appendChild(c2); pb.appendChild(fila);
+  });
+}
+setInterval(ensurePremRows,2000); ensurePremRows();
 function frame(d){
+  /* marco con tope partido: no cruza el logo del membrete (x 172-436) */
   d.setDrawColor(LINE[0],LINE[1],LINE[2]); d.setLineWidth(0.9);
-  d.roundedRect(40,44,W-80,H-88,8,8,"S");
+  d.line(40,44,40,748); d.line(572,44,572,748); d.line(40,748,572,748);
+  d.line(40,44,172,44); d.line(436,44,572,44);
   d.setDrawColor(TEAL[0],TEAL[1],TEAL[2]); d.setLineWidth(2.4); d.line(56,44,150,44);
 }
 function band(d){
@@ -4829,7 +4861,13 @@ window.__pvExportPDF = function(save){
   d.text(sub.join("   ·   "),W/2,y,{align:"center"});
   y+=16;
   y = secBar(d,"Coverages & premium",y);
-  var prem={}; rows("pvPremBody",2).forEach(function(r){ prem[r[0]]=r[1]||""; });
+  var prem={};
+  document.querySelectorAll("#pvPremBody tr").forEach(function(tr){
+    var n=tr.children[0]?tr.children[0].textContent.trim():""; if(!n) return;
+    var inp=tr.querySelector("input");
+    var v=inp?inp.value:(tr.children[1]?tr.children[1].textContent.trim():"");
+    if(v&&v!=="—") prem[n]=v;
+  });
   var covBody=rows("pvCovBody",4).map(function(r){ return [r[0]||"",r[1]||"—",r[2]||"—",prem[r[0]]||"—"]; });
   y = tabla(d,["Coverage","Limit","Deductible","Premium"],covBody,y+2,{rightBold:3});
   y+=8;

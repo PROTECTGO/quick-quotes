@@ -1742,6 +1742,7 @@
               </div>
               <div class="cov-det"><div class="inner">
                 <div class="campo"><label>Limit</label><input type="text" placeholder="$"></div>
+              <div class="campo"><label>Coverage symbols · 1 Any auto · 7 Scheduled · 8 Hired · 9 Non-owned</label><input type="text" placeholder="e.g. 1, 8, 9"></div>
               </div></div>
             </div>
             <div class="cov">
@@ -4938,6 +4939,8 @@ window.__pvExportPDF = function(save){
   });
   var covBody=rows("pvCovBody",4).map(function(r){ return [r[0]||"",r[3]||"A-rated carrier — confirmed at binding",r[1]||"—",r[2]||"—",prem[r[0]]||"—"]; });
   y = tabla(d,["Coverage","Carrier","Limit","Deductible","Premium"],covBody,y+2,{rightBold:4});
+  var covSyms=campoPorLabel(/coverage symbols/i);
+  if(covSyms){ d.setFont("helvetica","italic"); d.setFontSize(8); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]); d.text("Auto Liability — covered auto symbols: "+covSyms,M,y+11); y+=16; }
   y+=8;
   d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(1.1); d.line(M,y,W-M,y);
   y+=12;
@@ -5259,6 +5262,8 @@ window.__pvExportBinder = function(save){
   var reales=window.__pvCarrierReal||{};
   var covBody=rows("pvCovBody",4).map(function(r){ return [r[0], reales[r[0]]||"________________", r[1]||"—", r[2]||"—", prem[r[0]]||"—"]; });
   y = tabla(d,["Coverage","Carrier / MGA","Limit","Ded.","Premium"],covBody,y+2,{carrCol:1,rightBold:4});
+  var covSyms=""; document.querySelectorAll(".campo").forEach(function(c2){ var l2=c2.querySelector("label"); if(!l2||covSyms) return; if(/coverage symbols/i.test(l2.textContent)){ var i2=c2.querySelector("input"); if(i2&&i2.value) covSyms=i2.value; } });
+  if(covSyms){ d.setFont("helvetica","italic"); d.setFontSize(8); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]); d.text("Auto Liability — covered auto symbols: "+covSyms,M,y+11); y+=16; }
   y+=8;
   d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(1.1); d.line(M,y,W-M,y); y+=12;
   d.setFont("helvetica","bold"); d.setFontSize(9); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]); d.setCharSpace(0.8);

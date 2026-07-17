@@ -4719,6 +4719,22 @@ function sumPrem(){
 }
 function ensurePremRows(){
   var cov=$("pvCovBody"), pb=$("pvPremBody"); if(!cov||!pb) return;
+  window.__pvPremVals=window.__pvPremVals||{};
+  /* retrofit: filas existentes (creadas por la pagina) sin casilla de premium */
+  pb.querySelectorAll("tr").forEach(function(tr){
+    if(tr.querySelector("input.pv-prem-in")) return;
+    var td0=tr.children[0], td1=tr.children[1]; if(!td0||!td1) return;
+    var n0=(td0.childNodes[0]?td0.childNodes[0].textContent:td0.textContent).trim();
+    if(!n0||/^no coverages/i.test(n0)) return;
+    var est=td1.textContent.trim();
+    if(!window.__pvPremVals[n0] && /\d/.test(est)) window.__pvPremVals[n0]=est;
+    var inp0=document.createElement("input"); inp0.type="text"; inp0.placeholder="$ 0.00"; inp0.className="pv-prem-in";
+    inp0.style.cssText="width:110px;border:none;border-bottom:1px solid #BADFCE;background:transparent;font:600 13px Inter,sans-serif;color:#0D3040;text-align:right;outline:none";
+    if(window.__pvPremVals[n0]) inp0.value=window.__pvPremVals[n0];
+    inp0.addEventListener("input",function(){ window.__pvPremVals[n0]=inp0.value; sumPrem(); });
+    inp0.addEventListener("blur",function(){ var v0=num(inp0.value); if(v0){ inp0.value=money(v0); } window.__pvPremVals[n0]=inp0.value; sumPrem(); });
+    td1.textContent=""; td1.style.textAlign="right"; td1.appendChild(inp0);
+  });
   var have=Array.prototype.map.call(pb.querySelectorAll("tr td:first-child"),function(td){return (td.childNodes[0]?td.childNodes[0].textContent:td.textContent).trim();});
   cov.querySelectorAll("tr").forEach(function(tr){
     var td=tr.children[0]; if(!td) return;

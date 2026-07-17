@@ -188,6 +188,17 @@
   </div>
 </div>
 
+<!-- ===== BLOQUEO: solo Área Financiera ===== -->
+<div class="ov" id="ovBlock" style="display:none">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">FAM</span></div>
+    <h2>Acceso restringido</h2>
+    <p>Este dashboard es exclusivo del <b>Área Financiera (FAM)</b>. Tu cuenta <b id="ovBlockMail"></b> no tiene acceso.</p>
+    <button class="btn-l" data-act="logout">Salir e ingresar con otra cuenta</button>
+    <a href="index.html" style="display:block;text-align:center;margin-top:13px;color:var(--teal-2);font-weight:600;font-size:13px;text-decoration:none">&#8592; Volver al portal</a>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -530,13 +541,20 @@ function doLogin(){
   msg('Entrando…');
   sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){if(r.error)msg(r.error.message,'err');else msg('');});
 }
+var PERMITIDOS=['fam@protectgoservices.com'];
 function onAuthed(session){
-  var email=session&&session.user?session.user.email:'';
+  var email=(session&&session.user?session.user.email:'')||'';
+  if(PERMITIDOS.indexOf(email.toLowerCase())<0){
+    $('app').style.display='none';$('ov').style.display='none';
+    $('ovBlockMail').textContent=email;$('ovBlock').style.display='flex';
+    return;
+  }
+  $('ovBlock').style.display='none';
   $('pgUser').textContent=email;
   $('ov').style.display='none';$('app').style.display='block';
   pintarDocs();cargarQuotes();
 }
-function onSignedOut(){$('app').style.display='none';$('ov').style.display='flex';}
+function onSignedOut(){$('app').style.display='none';$('ovBlock').style.display='none';$('ov').style.display='flex';}
 function init(){
   if(DEMO){$('ov').style.display='none';$('app').style.display='block';$('pgUser').textContent='fam@protectgoservices.com (demo)';pintarDocs();cargarQuotes();return;}
   if(!(window.supabase&&window.supabase.createClient)){msg('No se pudo cargar Supabase (revisa tu conexión).','err');$('ov').style.display='flex';return;}

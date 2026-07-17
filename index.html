@@ -130,8 +130,8 @@
         <div class="foot"><span class="chip soon">Pendiente</span></div>
       </div>
 
-      <!-- FAM · Área Financiera -->
-      <a class="card on" href="fam.html">
+      <!-- FAM · Área Financiera (solo visible para la cuenta FAM) -->
+      <a class="card on" href="fam.html" id="card-fam" style="display:none">
         <div class="top">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1 1.1-1.7 2.5-1.7s2.5.7 2.5 1.7c0 2.6-5 1.6-5 4.3 0 1 1.1 1.7 2.5 1.7s2.5-.7 2.5-1.7"/></svg></div>
           <span class="tag">FAM</span>
@@ -190,6 +190,8 @@
     function onAuthed(session){
       var email=session&&session.user?session.user.email:"";
       var u=document.getElementById("pgUser"); if(u) u.textContent=email;
+      var famCard=document.getElementById("card-fam");
+      if(famCard) famCard.style.display = (String(email).toLowerCase()==="fam@protectgoservices.com") ? "" : "none";
       ov.style.display="none"; app.style.display="block";
     }
     function onSignedOut(){ app.style.display="none"; ov.style.display="flex"; }

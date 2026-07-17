@@ -4710,7 +4710,7 @@ document.addEventListener("blur",function(e){
 function sumPrem(){
   var tot=0;
   document.querySelectorAll("#pvPremBody tr").forEach(function(tr){
-    var inp=tr.querySelector("input");
+    var inp=tr.querySelector("input.pv-prem-in")||tr.querySelector("td:nth-child(2) input");
     tot+=num(inp?inp.value:(tr.children[1]?tr.children[1].textContent:""));
   });
   if(tot>0){ var s=money(tot);
@@ -4719,10 +4719,11 @@ function sumPrem(){
 }
 function ensurePremRows(){
   var cov=$("pvCovBody"), pb=$("pvPremBody"); if(!cov||!pb) return;
-  var have=Array.prototype.map.call(pb.querySelectorAll("tr td:first-child"),function(td){return td.textContent.trim();});
+  var have=Array.prototype.map.call(pb.querySelectorAll("tr td:first-child"),function(td){return (td.childNodes[0]?td.childNodes[0].textContent:td.textContent).trim();});
   cov.querySelectorAll("tr").forEach(function(tr){
     var td=tr.children[0]; if(!td) return;
-    var n=td.textContent.trim(); if(!n||have.indexOf(n)>=0) return;
+    var n=(td.childNodes[0]?td.childNodes[0].textContent:td.textContent).trim();
+    if(!n||/^no coverages/i.test(n)||have.indexOf(n)>=0) return;
     have.push(n);
     var fila=document.createElement("tr");
     var c1=document.createElement("td"); c1.textContent=n;
@@ -4735,6 +4736,39 @@ function ensurePremRows(){
   });
 }
 setInterval(ensurePremRows,2000); ensurePremRows();
+
+/* ---------- carrier real + mascara por cobertura ---------- */
+var MASCARAS=["A-rated carrier","RRG carrier","Mutual carrier","Surplus lines carrier","Admitted carrier","MGA program"];
+window.__pvCarrierReal = window.__pvCarrierReal || {};
+window.__pvCarrierMask = window.__pvCarrierMask || {};
+function syncMask(nombre,mask){
+  var cov=$("pvCovBody"); if(!cov) return;
+  cov.querySelectorAll("tr").forEach(function(tr){
+    var td=tr.children[0]; if(!td||td.textContent.trim()!==nombre) return;
+    var c=tr.children[3]; if(c) c.textContent=mask+" — confirmed at binding";
+  });
+}
+function ensureCarrierRows(){
+  var pb=$("pvPremBody"); if(!pb) return;
+  pb.querySelectorAll("tr").forEach(function(tr){
+    if(tr.querySelector(".pv-carr-in")) return;
+    var td0=tr.children[0]; if(!td0) return;
+    var nombre=(td0.childNodes[0]?td0.childNodes[0].textContent:td0.textContent).trim();
+    if(!nombre||/^no coverages/i.test(nombre)) return;
+    var wrap=document.createElement("div");
+    wrap.style.cssText="margin-top:4px;display:flex;gap:6px;align-items:center";
+    var inp=document.createElement("input"); inp.type="text"; inp.placeholder="Carrier real"; inp.className="pv-carr-in";
+    inp.style.cssText="flex:1;min-width:90px;border:none;border-bottom:1px dashed #BADFCE;background:transparent;font:500 11px Inter,sans-serif;color:#0a5b54;outline:none";
+    var sel=document.createElement("select"); sel.className="pv-mask-sel";
+    sel.style.cssText="border:1px solid #E4F2EB;border-radius:6px;background:#F2F8F5;font:600 10px Inter,sans-serif;color:#0D3040;padding:2px 4px;outline:none";
+    MASCARAS.forEach(function(m){ var o=document.createElement("option"); o.textContent=m; sel.appendChild(o); });
+    inp.addEventListener("input",function(){ window.__pvCarrierReal[nombre]=inp.value; });
+    sel.addEventListener("change",function(){ window.__pvCarrierMask[nombre]=sel.value; syncMask(nombre,sel.value); });
+    window.__pvCarrierMask[nombre]=window.__pvCarrierMask[nombre]||sel.value;
+    wrap.appendChild(inp); wrap.appendChild(sel); td0.appendChild(wrap);
+  });
+}
+setInterval(ensureCarrierRows,2000); ensureCarrierRows();
 function frame(d){
   /* marco con tope partido: no cruza el logo del membrete (x 172-436) */
   d.setDrawColor(LINE[0],LINE[1],LINE[2]); d.setLineWidth(0.9);
@@ -4863,13 +4897,13 @@ window.__pvExportPDF = function(save){
   y = secBar(d,"Coverages & premium",y);
   var prem={};
   document.querySelectorAll("#pvPremBody tr").forEach(function(tr){
-    var n=tr.children[0]?tr.children[0].textContent.trim():""; if(!n) return;
-    var inp=tr.querySelector("input");
+    var n=tr.children[0]?(tr.children[0].childNodes[0]?tr.children[0].childNodes[0].textContent:tr.children[0].textContent).trim():""; if(!n) return;
+    var inp=tr.querySelector("input.pv-prem-in")||tr.querySelector("input");
     var v=inp?inp.value:(tr.children[1]?tr.children[1].textContent.trim():"");
     if(v&&v!=="—") prem[n]=v;
   });
-  var covBody=rows("pvCovBody",4).map(function(r){ return [r[0]||"",r[1]||"—",r[2]||"—",prem[r[0]]||"—"]; });
-  y = tabla(d,["Coverage","Limit","Deductible","Premium"],covBody,y+2,{rightBold:3});
+  var covBody=rows("pvCovBody",4).map(function(r){ return [r[0]||"",r[3]||"A-rated carrier — confirmed at binding",r[1]||"—",r[2]||"—",prem[r[0]]||"—"]; });
+  y = tabla(d,["Coverage","Carrier","Limit","Deductible","Premium"],covBody,y+2,{rightBold:4});
   y+=8;
   d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(1.1); d.line(M,y,W-M,y);
   y+=12;
@@ -5052,5 +5086,199 @@ window.__pvExportPDF = function(save){
   }
   return d;
 };
+})();
+
+/* ============ BINDER CONFIRMATION · boton verde (cliente firma al activar) ============ */
+(function(){
+"use strict";
+var NAVY=[13,48,64], TEAL=[34,154,130], TEAL2=[10,91,84], MINT=[214,238,233],
+    MINTG=[240,247,245], GRAY=[110,124,126], AMBER=[255,180,0], LINE=[206,220,218],
+    ZEBRA=[245,250,248], INK=[60,76,80], M=88, W=612, H=792, CW=W-2*M;
+function $(id){ return document.getElementById(id); }
+function txt(id){ var e=$(id); if(!e) return ""; var v=(e.value!==undefined&&e.value!=="")?e.value:(e.textContent||""); return String(v).replace(/\s+/g," ").trim(); }
+function vis(id){ var e=$(id); return !!(e && e.offsetParent!==null); }
+function num(s){ var n=parseFloat(String(s).replace(/[^0-9.\-]/g,"")); return isNaN(n)?0:n; }
+function money(n){ return "$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function rows(id,take){ var b=$(id); if(!b) return [];
+  return Array.prototype.slice.call(b.querySelectorAll("tr")).map(function(tr){
+    return Array.prototype.slice.call(tr.children).map(function(td){ return (td.childNodes[0]?td.childNodes[0].textContent:td.textContent).replace(/\s+/g," ").trim(); }).slice(0,take||9);
+  }).filter(function(r){ return r.join("")!==""; });
+}
+function frame(d){
+  d.setDrawColor(LINE[0],LINE[1],LINE[2]); d.setLineWidth(0.9);
+  d.line(40,44,40,748); d.line(572,44,572,748); d.line(40,748,572,748);
+  d.line(40,44,172,44); d.line(436,44,572,44);
+  d.setDrawColor(AMBER[0],AMBER[1],AMBER[2]); d.setLineWidth(2.4); d.line(56,44,150,44);
+}
+function band(d){
+  d.setFillColor(MINTG[0],MINTG[1],MINTG[2]); d.roundedRect(56,112,W-112,36,4,4,"F");
+  var cols=[[64,"NAMED INSURED",(txt("pvName")||"—").toUpperCase()],
+            [270,"AGENT",(txt("pvPrep")||"ProtectGo Services LLC")],
+            [430,"QUOTE / TERM",(txt("pvQuote")||"—")+(txt("pvEff")?" · "+txt("pvEff"):"")]];
+  cols.forEach(function(c){
+    d.setFont("helvetica","bold"); d.setFontSize(6.6); d.setTextColor(TEAL2[0],TEAL2[1],TEAL2[2]); d.setCharSpace(0.6);
+    d.text(c[1],c[0],125); d.setCharSpace(0);
+    d.setFont("helvetica","bold"); d.setFontSize(8.6); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]);
+    d.text(String(c[2]).slice(0,34),c[0],137);
+  });
+}
+function bg(d,withBand){ if(window.__pvMEMB) d.addImage(window.__pvMEMB,"JPEG",0,0,W,H); frame(d); if(withBand) band(d); }
+function page(d,withBand){ d.addPage(); bg(d,withBand); return withBand?168:130; }
+function title(d,t,y){ d.setFont("helvetica","bold"); d.setFontSize(16.5); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]); d.setCharSpace(1.5); d.text(t,W/2,y,{align:"center"}); d.setCharSpace(0); return y+10; }
+function secBar(d,t,y){ d.setFillColor(AMBER[0],AMBER[1],AMBER[2]); d.rect(M,y,30,3.4,"F"); d.setFont("helvetica","bold"); d.setFontSize(11.5); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]); d.setCharSpace(0.8); d.text(t.toUpperCase(),M,y+16); d.setCharSpace(0); return y+24; }
+function fld(d,x,w,label,val,y){
+  d.setFont("helvetica","normal"); d.setFontSize(9.5); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]);
+  if(val) d.text(String(val).slice(0,44),x,y+12);
+  d.setDrawColor(150,162,164); d.setLineWidth(0.5); d.line(x,y+15,x+w,y+15);
+  d.setFont("helvetica","normal"); d.setFontSize(6.6); d.setTextColor(130,142,144);
+  d.text(label.toUpperCase(),x,y+23);
+}
+function chk(d,x,y,label){
+  d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(0.9); d.rect(x,y-8,9,9,"S");
+  d.setFont("helvetica","normal"); d.setFontSize(8.6); d.setTextColor(INK[0],INK[1],INK[2]);
+  d.text(label,x+15,y);
+}
+function sig(d,x,w,label,y){ d.setDrawColor(90,104,108); d.setLineWidth(0.6); d.line(x,y,x+w,y); d.setFont("helvetica","normal"); d.setFontSize(7); d.setTextColor(130,142,144); d.text(label.toUpperCase(),x,y+9); }
+function tabla(d,head,body,y,opts){
+  opts=opts||{};
+  d.autoTable({
+    head:[head], body:body, startY:y, margin:{left:M,right:M,top:168,bottom:125}, theme:"plain",
+    styles:{font:"helvetica",fontSize:8.2,textColor:INK,cellPadding:{top:4,bottom:4,left:5,right:5},lineWidth:0},
+    headStyles:{fillColor:MINT,textColor:TEAL2,fontStyle:"bold",fontSize:6.6},
+    alternateRowStyles:{fillColor:ZEBRA},
+    willDrawPage:function(data){ if(data.pageNumber>1) bg(d,true); },
+    didParseCell:function(data){
+      if(data.section==="head"){ data.cell.text=data.cell.text.map(function(s){return s.toUpperCase();}); }
+      if(data.section==="body"&&data.column.index===0){ data.cell.styles.fontStyle="bold"; data.cell.styles.textColor=NAVY; }
+      if(opts.carrCol!==undefined&&data.section==="body"&&data.column.index===opts.carrCol){ data.cell.styles.fontStyle="bold"; data.cell.styles.textColor=TEAL2; }
+      if(opts.vinCol!==undefined&&data.section==="body"&&data.column.index===opts.vinCol){ data.cell.styles.font="courier"; }
+      if(opts.rightBold!==undefined&&data.column.index===opts.rightBold){ data.cell.styles.halign="right"; if(data.section==="body"){data.cell.styles.fontStyle="bold";} }
+    }
+  });
+  return d.lastAutoTable.finalY;
+}
+window.__pvExportBinder = function(save){
+  if(!window.jspdf||!window.jspdf.jsPDF){ alert("jsPDF no disponible"); return null; }
+  var d = new window.jspdf.jsPDF({unit:"pt",format:"letter"});
+  var quoteNo=txt("pvQuote")||"—", eff=txt("pvEff")||"";
+  bg(d,false);
+  var y=182;
+  d.setFont("helvetica","bold"); d.setFontSize(13); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]); d.setCharSpace(2.2);
+  d.text("BINDER CONFIRMATION",W/2,y,{align:"center"}); d.setCharSpace(0);
+  y+=26;
+  d.setFont("helvetica","bold"); d.setFontSize(15.5); d.setCharSpace(0.6);
+  d.text((txt("pvName")||"—").toUpperCase(),W/2,y,{align:"center"}); d.setCharSpace(0);
+  y+=20;
+  d.setFont("helvetica","normal"); d.setFontSize(7.8); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]);
+  d.text("Quote / Binder "+quoteNo+(eff?"   ·   Effective "+eff:"")+"   ·   Issued "+new Date().toLocaleDateString("en-US"),W/2,y,{align:"center"});
+  if(txt("pvTags")){ y+=13; d.setFont("helvetica","bold"); d.setFontSize(7.4); d.setTextColor(TEAL2[0],TEAL2[1],TEAL2[2]); d.setCharSpace(0.5);
+    d.text(txt("pvTags"),W/2,y,{align:"center"}); d.setCharSpace(0); }
+  y+=32;
+  d.setFont("helvetica","normal"); d.setFontSize(9.6); d.setTextColor(INK[0],INK[1],INK[2]);
+  var intro=d.splitTextToSize("This document confirms the activation (binding) of your commercial auto insurance program with the carriers listed on the following page. Please review the coverages, payment plan and disclosures, and sign where indicated to complete your activation.",CW-40);
+  intro.forEach(function(l){ d.text(l,W/2,y,{align:"center"}); y+=13.6; });
+  y+=24;
+  fld(d,M,150,"Coverage bound effective",eff,y); fld(d,M+170,150,"Bound by (agent)","",y); fld(d,M+340,96,"Date / time","",y);
+  y+=48;
+  d.setFillColor(MINTG[0],MINTG[1],MINTG[2]); d.roundedRect(M-14,y,CW+28,46,5,5,"F");
+  d.setFont("helvetica","normal"); d.setFontSize(6.9); d.setTextColor(120,134,136);
+  d.text(d.splitTextToSize("Coverage is bound as of the effective date shown, subject to carrier confirmation and receipt of all binding requirements. Final policy documents follow from each carrier. This binder, the signed proposal and the payment authorization form one single activation file.",CW),M,y+13);
+  y = page(d,true);
+  y = title(d,"BOUND QUOTE SUMMARY",y+4)+4;
+  d.setFont("helvetica","bold"); d.setFontSize(7); d.setTextColor(TEAL2[0],TEAL2[1],TEAL2[2]); d.setCharSpace(1.2);
+  d.text("TOTAL ANNUAL PREMIUM · BOUND",W/2,y,{align:"center"}); d.setCharSpace(0);
+  y+=20;
+  var premTotal=txt("pvPremSum")||txt("pvSnapPrem")||"—";
+  d.setFont("helvetica","bold"); d.setFontSize(24); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]);
+  d.text(premTotal,W/2,y,{align:"center"});
+  y+=13;
+  var taxN=num(txt("pvTax1"))+num(txt("pvTax2")), agN=num(txt("pvAg1"))+num(txt("pvAg2"));
+  var sub=[]; if(taxN) sub.push("includes "+money(taxN)+" taxes & fees"); if(agN) sub.push(money(agN)+" contributory fee");
+  sub.push("Binder / Policy #: "+quoteNo);
+  d.setFont("helvetica","normal"); d.setFontSize(8.2); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]);
+  d.text(sub.join("   ·   "),W/2,y,{align:"center"});
+  y+=16;
+  y = secBar(d,"Coverages & carriers",y);
+  var prem={};
+  document.querySelectorAll("#pvPremBody tr").forEach(function(tr){
+    var n=tr.children[0]?(tr.children[0].childNodes[0]?tr.children[0].childNodes[0].textContent.trim():tr.children[0].textContent.trim()):""; if(!n) return;
+    var inp=tr.querySelector("input.pv-prem-in")||tr.querySelector("td:nth-child(2) input");
+    var v=inp?inp.value:(tr.children[1]?tr.children[1].textContent.trim():"");
+    if(v&&v!=="—") prem[n]=v;
+  });
+  var reales=window.__pvCarrierReal||{};
+  var covBody=rows("pvCovBody",4).map(function(r){ return [r[0], reales[r[0]]||"________________", r[1]||"—", r[2]||"—", prem[r[0]]||"—"]; });
+  y = tabla(d,["Coverage","Carrier / MGA","Limit","Ded.","Premium"],covBody,y+2,{carrCol:1,rightBold:4});
+  y+=8;
+  d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(1.1); d.line(M,y,W-M,y); y+=12;
+  d.setFont("helvetica","bold"); d.setFontSize(9); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]); d.setCharSpace(0.8);
+  d.text("TOTAL ANNUAL PREMIUM",M,y); d.setCharSpace(0);
+  d.setFontSize(10.5); d.text(premTotal,W-M,y,{align:"right"});
+  y+=14;
+  y = secBar(d,"Payment plan — bound",y);
+  var schedRaw=(($("pvCpSched")||{}).innerText||"—");
+  var schedLines=schedRaw.split(/\n|\s\+\s/).map(function(s){return s.trim();}).filter(Boolean);
+  var boxH=Math.max(60,34+schedLines.length*15+12);
+  d.setFillColor(NAVY[0],NAVY[1],NAVY[2]); d.roundedRect(M,y,CW,boxH,10,10,"F");
+  var colX=[M+18,M+CW*0.40,M+CW*0.74];
+  [["DOWN PAYMENT",txt("pvCpDown")||"—"],["SCHEDULE",""],["TOTAL INVESTMENT",txt("pvCpTotal")||"—"]].forEach(function(c,i){
+    d.setFont("helvetica","bold"); d.setFontSize(6.2); d.setTextColor(168,212,207); d.setCharSpace(0.6);
+    d.text(c[0],colX[i],y+16); d.setCharSpace(0);
+    if(c[1]){ d.setFont("helvetica","bold"); d.setFontSize(15); d.setTextColor(AMBER[0],AMBER[1],AMBER[2]); d.text(c[1],colX[i],y+36); }
+  });
+  d.setFont("helvetica","bold"); d.setFontSize(schedLines.length>1?10.5:13); d.setTextColor(AMBER[0],AMBER[1],AMBER[2]);
+  schedLines.forEach(function(s,i){ d.text(s,colX[1],y+(schedLines.length>1?30+i*14:36)); });
+  var fees=txt("pvCpFees");
+  if(fees){ d.setFont("helvetica","normal"); d.setFontSize(6.6); d.setTextColor(168,212,207); d.text(d.splitTextToSize(fees,CW-36),M+18,y+boxH-12); }
+  y+=boxH+8;
+  var drv=rows("pvDrvBody",3);
+  if(drv.length){ y = secBar(d,"Drivers",y); y = tabla(d,["Driver","DOB","License"],drv,y+2,{})+8; }
+  var un=rows("pvUnitBody",4);
+  if(un.length){ y = secBar(d,"Power units & trailers",y); y = tabla(d,["Year","Make","Body","VIN"],un,y+2,{vinCol:3})+8; }
+  y = page(d,true);
+  y = title(d,"ACTIVATION & DISCLOSURES",y+4)+16;
+  y = secBar(d,"Finance",y);
+  fld(d,M,160,"Finance company","",y); fld(d,M+180,80,"APR %","",y); fld(d,M+280,70,"Term","",y); fld(d,M+370,66,"Acct #","",y);
+  y+=38;
+  y = secBar(d,"Down payment collected",y);
+  fld(d,M,130,"Method (card/ACH/wire/Zelle)","",y); fld(d,M+150,100,"Amount",txt("pvAuthAmt")||txt("pvCpDown"),y);
+  fld(d,M+270,80,"Date","",y); fld(d,M+370,66,"Ref #","",y);
+  y+=38;
+  y = secBar(d,"Activation checklist",y);
+  var items=["MVR verified (all drivers)","Loss runs received","Unit photos / inspection","Signed proposal on file",
+             "Payment authorization signed","Down payment processed","Binder received from carrier","Filings MCS-90 / BMC-91",
+             "COI issued to client","File complete"];
+  var half=Math.ceil(items.length/2);
+  items.forEach(function(it,i){ chk(d,M+(i<half?0:CW/2+10),y+(i%half)*17,it); });
+  y+=half*17+12;
+  y = secBar(d,"Disclosures — refunds, cancellations & payments",y);
+  d.setFont("helvetica","normal"); d.setFontSize(6.4); d.setTextColor(105,118,120);
+  var disc=[
+"(1) FEES. Agency contributory fees, broker fees and service fees are fully earned at binding and are NOT refundable. Any extraordinary exception must be requested in writing within thirty (30) BUSINESS days of activation and is subject to written agency approval; after that period no request will be processed.",
+"(2) CANCELLATIONS & REFUNDS. Policy cancellations and premium refunds are processed exclusively by the issuing carrier and/or the premium finance company, under their own terms and timelines. ProtectGo Services LLC does not hold, control or return carrier premium; unearned premium, if any, is calculated and returned by the carrier or applied by the finance company to the outstanding balance.",
+"(3) MINIMUM EARNED PREMIUM. This program may carry a minimum earned premium of up to twenty-five percent (25%) of the annual premium: if the policy is cancelled for any reason, the carrier is entitled to retain that portion regardless of the time in force. No flat cancellations. Taxes, filings and inspection costs are non-refundable once incurred.",
+"(4) PAYMENTS, STOP PAYMENTS & CHARGEBACKS. The client confirms that every payment made to ProtectGo Services LLC and/or the premium finance company under this program is voluntary and duly authorized, in exchange for coverage bound and services rendered as of the effective date. The client agrees to contact the agency in writing and allow ten (10) business days for resolution BEFORE initiating any stop payment, ACH reversal or credit card chargeback. Initiating a stop payment or chargeback on an authorized transaction while coverage is or was in force constitutes a breach of this agreement and an improper dispute; the client acknowledges that this signed document, the payment authorization, the certificates of insurance and the carrier binder may be submitted to the financial institution as conclusive evidence of authorization and of services received. Amounts reversed remain due and payable, may accrue collection costs, and may result in cancellation of the policy for non-payment and loss of the filings associated with the client's operating authority.",
+"(5) ACKNOWLEDGMENT. By signing below the client confirms having read and accepted these disclosures at the time of activation, and that the coverages, premiums and payment plan shown in this Binder Confirmation are correct."];
+  disc.forEach(function(t2){
+    var lines=d.splitTextToSize(t2,CW);
+    d.text(lines,M,y);
+    y+=lines.length*7.6+3;
+  });
+  y+=10;
+  sig(d,M,170,"Client signature — activation",y); sig(d,M+200,150,"Agent — ProtectGo Services LLC",y); sig(d,M+380,56,"Date",y);
+  if(save!==false){
+    var nm=(txt("pvName")||"Client").replace(/[^A-Za-z0-9 ]/g,"");
+    d.save("Binder Confirmation - "+nm+".pdf");
+  }
+  return d;
+};
+function wireBinderBtn(){
+  var pb=$("pvPrint");
+  if(!pb||pb.__binderWired) return; pb.__binderWired=true;
+  pb.textContent="Binder PDF · agencia";
+  pb.addEventListener("click",function(e){ e.preventDefault(); e.stopImmediatePropagation(); window.__pvExportBinder(true); },true);
+}
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",wireBinderBtn); else wireBinderBtn();
+setTimeout(wireBinderBtn,1500);
 })();
 </script>

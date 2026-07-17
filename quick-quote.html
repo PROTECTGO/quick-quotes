@@ -4904,16 +4904,26 @@ window.__pvExportPDF = function(save){
   y = page(d,true);
   y = title(d,"QUOTE SUMMARY",y+4)+4;
   d.setFont("helvetica","bold"); d.setFontSize(7); d.setTextColor(TEAL2[0],TEAL2[1],TEAL2[2]); d.setCharSpace(1.2);
-  d.text("TOTAL ANNUAL PREMIUM",W/2,y,{align:"center"}); d.setCharSpace(0);
+  d.text("TOTAL PREMIUMS, TAXES & FEES",W/2,y,{align:"center"}); d.setCharSpace(0);
   y+=20;
-  var premTotal=txt("pvPremSum")||txt("pvSnapPrem")||"—";
+  var prem={};
+  document.querySelectorAll("#pvPremBody tr").forEach(function(tr){
+    var n=tr.children[0]?(tr.children[0].childNodes[0]?tr.children[0].childNodes[0].textContent:tr.children[0].textContent).trim():""; if(!n) return;
+    var inp=tr.querySelector("input.pv-prem-in")||tr.querySelector("input");
+    var v=inp?inp.value:(tr.children[1]?tr.children[1].textContent.trim():"");
+    if(v&&v!=="—") prem[n]=v;
+  });
+  var premBase=0; Object.keys(prem).forEach(function(k){ premBase+=num(prem[k]); });
+  var taxN=num(txt("pvTax1"))+num(txt("pvTax2")), agN=num(txt("pvAg1"))+num(txt("pvAg2"));
+  var totalPTF=premBase+taxN+agN;
+  var premTotal=totalPTF>0?money(totalPTF):(txt("pvPremSum")||txt("pvSnapPrem")||"—");
   d.setFont("helvetica","bold"); d.setFontSize(24); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]);
   d.text(premTotal,W/2,y,{align:"center"});
   y+=13;
-  var taxN=num(txt("pvTax1"))+num(txt("pvTax2")), agN=num(txt("pvAg1"))+num(txt("pvAg2"));
   var sub=[];
-  if(taxN) sub.push("includes "+money(taxN)+" taxes & fees");
-  if(agN) sub.push(money(agN)+" contributory fee");
+  if(premBase) sub.push("Premiums "+money(premBase));
+  if(taxN) sub.push("Taxes & fees "+money(taxN));
+  if(agN) sub.push("Program & agency fees "+money(agN));
   sub.push("Payment plan: "+((num(txt("pvN1"))||txt("pvSegs1"))?"Financed":"Full pay"));
   d.setFont("helvetica","normal"); d.setFontSize(8.2); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]);
   d.text(sub.join("   ·   "),W/2,y,{align:"center"});
@@ -4932,7 +4942,7 @@ window.__pvExportPDF = function(save){
   d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(1.1); d.line(M,y,W-M,y);
   y+=12;
   d.setFont("helvetica","bold"); d.setFontSize(9); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]); d.setCharSpace(0.8);
-  d.text("TOTAL ANNUAL PREMIUM",M,y); d.setCharSpace(0);
+  d.text("TOTAL PREMIUMS, TAXES & FEES",M,y); d.setCharSpace(0);
   d.setFontSize(10.5); d.text(premTotal,W-M,y,{align:"right"});
   y+=14;
   y = secBar(d,"Your payment plan",y);
@@ -4948,8 +4958,12 @@ window.__pvExportPDF = function(save){
   d.setFontSize(15); d.text(txt("pvCpDown")||"—",colX[0],y+36);
   d.setFontSize(schedLines.length>1?10.5:13);
   schedLines.forEach(function(s,i){ d.text(s,colX[1],y+(schedLines.length>1?30+i*14:36)); });
-  d.setFontSize(15); d.text(txt("pvCpTotal")||"—",colX[2],y+36);
-  var fees=txt("pvCpFees");
+  var downN=num(txt("pvCpDown"));
+  var schedN=0; schedLines.forEach(function(s){ var mm=s.match(/(\d+)\s*[x×]\s*\$?([\d,\.]+)/i); if(mm){ schedN+=parseInt(mm[1],10)*num(mm[2]); } });
+  var totalInv=(downN&&schedN)?(downN+schedN):num(txt("pvCpTotal"));
+  d.setFontSize(15); d.text(totalInv?money(totalInv):(txt("pvCpTotal")||"—"),colX[2],y+36);
+  var finChg=(totalInv&&totalPTF&&totalInv>totalPTF)?(totalInv-totalPTF):0;
+  var fees=finChg>0?("Includes premium finance charge of "+money(finChg)+" — financed through a premium finance company."):txt("pvCpFees");
   if(fees){ d.setFont("helvetica","normal"); d.setFontSize(6.6); d.setTextColor(168,212,207);
     d.text(d.splitTextToSize(fees,CW-36),M+18,y+boxH-12); }
   y+=boxH+8;
@@ -5210,14 +5224,26 @@ window.__pvExportBinder = function(save){
   y = page(d,true);
   y = title(d,"BOUND QUOTE SUMMARY",y+4)+4;
   d.setFont("helvetica","bold"); d.setFontSize(7); d.setTextColor(TEAL2[0],TEAL2[1],TEAL2[2]); d.setCharSpace(1.2);
-  d.text("TOTAL ANNUAL PREMIUM · BOUND",W/2,y,{align:"center"}); d.setCharSpace(0);
+  d.text("PREMIUMS, TAXES & FEES · BOUND",W/2,y,{align:"center"}); d.setCharSpace(0);
   y+=20;
-  var premTotal=txt("pvPremSum")||txt("pvSnapPrem")||"—";
+  var prem={};
+  document.querySelectorAll("#pvPremBody tr").forEach(function(tr){
+    var n=tr.children[0]?(tr.children[0].childNodes[0]?tr.children[0].childNodes[0].textContent.trim():tr.children[0].textContent.trim()):""; if(!n) return;
+    var inp=tr.querySelector("input.pv-prem-in")||tr.querySelector("td:nth-child(2) input");
+    var v=inp?inp.value:(tr.children[1]?tr.children[1].textContent.trim():"");
+    if(v&&v!=="—") prem[n]=v;
+  });
+  var premBase=0; Object.keys(prem).forEach(function(k){ premBase+=num(prem[k]); });
+  var taxN=num(txt("pvTax1"))+num(txt("pvTax2")), agN=num(txt("pvAg1"))+num(txt("pvAg2"));
+  var totalPTF=premBase+taxN+agN;
+  var premTotal=totalPTF>0?money(totalPTF):(txt("pvPremSum")||txt("pvSnapPrem")||"—");
   d.setFont("helvetica","bold"); d.setFontSize(24); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]);
   d.text(premTotal,W/2,y,{align:"center"});
   y+=13;
-  var taxN=num(txt("pvTax1"))+num(txt("pvTax2")), agN=num(txt("pvAg1"))+num(txt("pvAg2"));
-  var sub=[]; if(taxN) sub.push("includes "+money(taxN)+" taxes & fees"); if(agN) sub.push(money(agN)+" contributory fee");
+  var sub=[];
+  if(premBase) sub.push("Premiums "+money(premBase));
+  if(taxN) sub.push("Taxes & fees "+money(taxN));
+  if(agN) sub.push("Program & agency fees "+money(agN));
   sub.push("Binder / Policy #: "+quoteNo);
   d.setFont("helvetica","normal"); d.setFontSize(8.2); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]);
   d.text(sub.join("   ·   "),W/2,y,{align:"center"});
@@ -5236,23 +5262,27 @@ window.__pvExportBinder = function(save){
   y+=8;
   d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(1.1); d.line(M,y,W-M,y); y+=12;
   d.setFont("helvetica","bold"); d.setFontSize(9); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]); d.setCharSpace(0.8);
-  d.text("TOTAL ANNUAL PREMIUM",M,y); d.setCharSpace(0);
+  d.text("TOTAL PREMIUMS, TAXES & FEES",M,y); d.setCharSpace(0);
   d.setFontSize(10.5); d.text(premTotal,W-M,y,{align:"right"});
   y+=14;
   y = secBar(d,"Payment plan — bound",y);
   var schedRaw=(($("pvCpSched")||{}).innerText||"—");
   var schedLines=schedRaw.split(/\n|\s\+\s/).map(function(s){return s.trim();}).filter(Boolean);
   var boxH=Math.max(60,34+schedLines.length*15+12);
+  var downN=num(txt("pvCpDown"));
+  var schedN=0; schedLines.forEach(function(s){ var mm=s.match(/(\d+)\s*[x×]\s*\$?([\d,\.]+)/i); if(mm){ schedN+=parseInt(mm[1],10)*num(mm[2]); } });
+  var totalInv=(downN&&schedN)?(downN+schedN):num(txt("pvCpTotal"));
   d.setFillColor(NAVY[0],NAVY[1],NAVY[2]); d.roundedRect(M,y,CW,boxH,10,10,"F");
   var colX=[M+18,M+CW*0.40,M+CW*0.74];
-  [["DOWN PAYMENT",txt("pvCpDown")||"—"],["SCHEDULE",""],["TOTAL INVESTMENT",txt("pvCpTotal")||"—"]].forEach(function(c,i){
+  [["DOWN PAYMENT",txt("pvCpDown")||"—"],["SCHEDULE",""],["TOTAL INVESTMENT",totalInv?money(totalInv):(txt("pvCpTotal")||"—")]].forEach(function(c,i){
     d.setFont("helvetica","bold"); d.setFontSize(6.2); d.setTextColor(168,212,207); d.setCharSpace(0.6);
     d.text(c[0],colX[i],y+16); d.setCharSpace(0);
     if(c[1]){ d.setFont("helvetica","bold"); d.setFontSize(15); d.setTextColor(AMBER[0],AMBER[1],AMBER[2]); d.text(c[1],colX[i],y+36); }
   });
   d.setFont("helvetica","bold"); d.setFontSize(schedLines.length>1?10.5:13); d.setTextColor(AMBER[0],AMBER[1],AMBER[2]);
   schedLines.forEach(function(s,i){ d.text(s,colX[1],y+(schedLines.length>1?30+i*14:36)); });
-  var fees=txt("pvCpFees");
+  var finChg=(totalInv&&totalPTF&&totalInv>totalPTF)?(totalInv-totalPTF):0;
+  var fees=finChg>0?("Includes premium finance charge of "+money(finChg)+" — financed through a premium finance company."):txt("pvCpFees");
   if(fees){ d.setFont("helvetica","normal"); d.setFontSize(6.6); d.setTextColor(168,212,207); d.text(d.splitTextToSize(fees,CW-36),M+18,y+boxH-12); }
   y+=boxH+8;
   var drv=rows("pvDrvBody",3);

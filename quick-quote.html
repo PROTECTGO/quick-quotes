@@ -4752,6 +4752,7 @@ function ensurePremRows(){
     inp.addEventListener("blur",function(){ var v=num(inp.value); if(v){ inp.value=money(v); } window.__pvPremVals[n]=inp.value; sumPrem(); });
     c2.appendChild(inp); fila.appendChild(c1); fila.appendChild(c2); pb.appendChild(fila);
   });
+  sumPrem();
 }
 setInterval(ensurePremRows,2000); ensurePremRows();
 

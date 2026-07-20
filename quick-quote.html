@@ -4871,6 +4871,71 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
   hook(); setInterval(hook,2000);
   try{ new MutationObserver(function(){ fixCovDoc(); }).observe(document.getElementById("doc-output")||document.body,{childList:true}); }catch(_){}
 })();
+
+/* ---------- persistencia de la proposal con la quote (data.pv en Supabase) ---------- */
+(function(){
+  var sb=null;
+  async function getSB(){
+    if(sb) return sb;
+    try{
+      var src=await fetch("quick-quote.html").then(function(r){return r.text();});
+      var k=src.match(/sb_publishable_[A-Za-z0-9_\-]+/);
+      if(k&&window.supabase&&window.supabase.createClient)
+        sb=window.supabase.createClient("https://bwqzypuiqgxzsrtsueab.supabase.co",k[0]);
+    }catch(_){}
+    return sb;
+  }
+  function qNo(){ var t2=document.getElementById("pvQuote"); var v=t2?String(t2.textContent).trim():""; if(v&&v!=="—") return v; var m=(document.title||"").match(/Q[A-Z]*-[\d-]+/); return m?m[0]:""; }
+  var IDS=["pvDown1","pvN1","pvAmt1","pvTax1","pvAg1","pvSegs1","pvWhat1","pvDown2","pvN2","pvAmt2","pvTax2","pvAg2","pvSegs2","pvWhat2"];
+  var CHK=["pvStar1","pvStar2","pvCfgPremium","pvCfgDefer","pvCfgSched","pvCfgAuth"];
+  function collect(){
+    var p={prem:window.__pvPremVals||{},carrReal:window.__pvCarrierReal||{},carrMask:window.__pvCarrierMask||{},panel:{},chk:{}};
+    IDS.forEach(function(id){ var e=document.getElementById(id); if(e&&e.value) p.panel[id]=e.value; });
+    CHK.forEach(function(id){ var e=document.getElementById(id); if(e) p.chk[id]=!!e.checked; });
+    return p;
+  }
+  async function saveExtras(){
+    var q=qNo(); if(!q) return;
+    var c=await getSB(); if(!c) return;
+    try{
+      var r=await c.from("quick_quotes").select("id,data").eq("quote_number",q).limit(1);
+      if(r.error||!r.data||!r.data.length) return;
+      var row=r.data[0]; var d=row.data||{}; d.pv=collect();
+      await c.from("quick_quotes").update({data:d}).eq("id",row.id);
+    }catch(_){}
+  }
+  function hydrate(p){
+    if(!p) return;
+    window.__pvPremVals=p.prem||{}; window.__pvCarrierReal=p.carrReal||{}; window.__pvCarrierMask=p.carrMask||{};
+    IDS.forEach(function(id){ var e=document.getElementById(id); if(e&&p.panel&&p.panel[id]!==undefined&&e.value!==p.panel[id]){ e.value=p.panel[id]; e.dispatchEvent(new Event("input",{bubbles:true})); } });
+    CHK.forEach(function(id){ var e=document.getElementById(id); if(e&&p.chk&&p.chk[id]!==undefined&&e.checked!==p.chk[id]){ e.checked=p.chk[id]; e.dispatchEvent(new Event("change",{bubbles:true})); } });
+    document.querySelectorAll("#pvPremBody tr").forEach(function(tr){
+      var td0=tr.children[0]; if(!td0) return;
+      var n=(td0.childNodes[0]?td0.childNodes[0].textContent:td0.textContent).trim(); if(!n) return;
+      var pi=tr.querySelector("input.pv-prem-in"); if(pi&&p.prem&&p.prem[n]&&pi.value!==p.prem[n]){ pi.value=p.prem[n]; pi.dispatchEvent(new Event("input",{bubbles:true})); }
+      var ci=tr.querySelector(".pv-carr-in"); if(ci&&p.carrReal&&p.carrReal[n]) ci.value=p.carrReal[n];
+      var si=tr.querySelector(".pv-mask-sel"); if(si&&p.carrMask&&p.carrMask[n]&&si.value!==p.carrMask[n]){ si.value=p.carrMask[n]; si.dispatchEvent(new Event("change",{bubbles:true})); }
+    });
+  }
+  async function loadExtras(){
+    var q=qNo(); if(!q||window.__pvHydratedFor===q) return;
+    var c=await getSB(); if(!c) return;
+    try{
+      var r=await c.from("quick_quotes").select("data").eq("quote_number",q).limit(1);
+      if(r.error||!r.data||!r.data.length) return;
+      window.__pvHydratedFor=q;
+      var p=(r.data[0].data||{}).pv; if(!p) return;
+      hydrate(p);
+      setTimeout(function(){ hydrate(p); },2500);
+      setTimeout(function(){ hydrate(p); },6000);
+    }catch(_){}
+  }
+  document.addEventListener("click",function(e){
+    var b=e.target&&e.target.closest?e.target.closest("button"):null;
+    if(b&&/guardar/i.test(b.textContent||"")) setTimeout(saveExtras,3000);
+  },true);
+  setInterval(loadExtras,2500);
+})();
 function frame(d){
   /* marco con tope partido: no cruza el logo del membrete (x 172-436) */
   d.setDrawColor(LINE[0],LINE[1],LINE[2]); d.setLineWidth(0.9);

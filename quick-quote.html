@@ -5108,9 +5108,23 @@ window.__pvExportPDF = function(save){
     d.text(d.splitTextToSize(fees,CW-36),M+18,y+boxH-12); }
   y+=boxH+8;
   if(vis("pvSecDefer")){
-    var d1=txt("pvDefFirst"), d2=txt("pvDefSecond");
-    y = para(d,"Deferred down payment option (80/20): "+(d1||"80%")+" at signing · "+(d2||"20%")+" deferred — subject to finance department approval.",y,8.4,GRAY);
-    y+=4;
+    var d1n=num(txt("pvDefFirst")), d2n=num(txt("pvDefSecond"));
+    var d1=d1n?money(d1n):(txt("pvDefFirst")||"80%"), d2=d2n?money(d2n):(txt("pvDefSecond")||"20%");
+    var dbH=64;
+    d.setFillColor(255,247,224); d.setDrawColor(AMBER[0],AMBER[1],AMBER[2]); d.setLineWidth(1.1);
+    d.roundedRect(M,y,CW,dbH,8,8,"FD");
+    d.setFillColor(AMBER[0],AMBER[1],AMBER[2]); d.rect(M,y+12,3.4,dbH-24,"F");
+    d.setFont("helvetica","bold"); d.setFontSize(7.6); d.setTextColor(120,90,0); d.setCharSpace(0.8);
+    d.text("DEFERRED DOWN PAYMENT · 80/20 OPTION",M+16,y+15); d.setCharSpace(0);
+    d.setFont("helvetica","bold"); d.setFontSize(6.2); d.setTextColor(160,128,45); d.setCharSpace(0.5);
+    d.text("FIRST PAYMENT · AT SIGNING (80%)",M+16,y+29);
+    d.text("DEFERRED PORTION (20%)",M+CW*0.55,y+29); d.setCharSpace(0);
+    d.setFont("helvetica","bold"); d.setFontSize(13.5); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]);
+    d.text(d1,M+16,y+45);
+    d.text(d2,M+CW*0.55,y+45);
+    d.setFont("helvetica","italic"); d.setFontSize(6.6); d.setTextColor(155,132,78);
+    d.text("Your monthly installments stay exactly the same · Deferred option subject to review and approval by our finance department.",M+16,y+57);
+    y+=dbH+10;
   }
   var drv=rows("pvDrvBody",3);
   if(drv.length){ y = secBar(d,"Drivers",y);

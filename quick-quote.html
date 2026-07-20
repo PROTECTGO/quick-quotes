@@ -1745,9 +1745,15 @@
               <div class="campo campo-symbols"><label>Coverage symbols</label><input type="text" style="display:none">
                 <div class="sym-row">
                   <label class="sym-chk"><input type="checkbox" value="1"> 1 · Any auto</label>
-                  <label class="sym-chk"><input type="checkbox" value="7"> 7 · Scheduled</label>
-                  <label class="sym-chk"><input type="checkbox" value="8"> 8 · Hired</label>
-                  <label class="sym-chk"><input type="checkbox" value="9"> 9 · Non-owned</label>
+                  <label class="sym-chk"><input type="checkbox" value="2"> 2 · Owned autos only</label>
+                  <label class="sym-chk"><input type="checkbox" value="3"> 3 · Owned private passenger</label>
+                  <label class="sym-chk"><input type="checkbox" value="4"> 4 · Owned other than private</label>
+                  <label class="sym-chk"><input type="checkbox" value="5"> 5 · Owned subject to no-fault</label>
+                  <label class="sym-chk"><input type="checkbox" value="6"> 6 · Owned subject to UM</label>
+                  <label class="sym-chk"><input type="checkbox" value="7"> 7 · Specifically described</label>
+                  <label class="sym-chk"><input type="checkbox" value="8"> 8 · Hired autos</label>
+                  <label class="sym-chk"><input type="checkbox" value="9"> 9 · Non-owned autos</label>
+                  <label class="sym-chk"><input type="checkbox" value="19"> 19 · Mobile equipment</label>
                 </div></div>
               </div></div>
             </div>
@@ -4821,7 +4827,7 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
         }); });
       }
       if(c.__last!==txtIn.value){ c.__last=txtIn.value;
-        var v2=txtIn.value||"";
+        var v2=(txtIn.value||"").split(/\s*,\s*/);
         cbs.forEach(function(cb){ cb.checked=v2.indexOf(cb.value)>=0; });
       }
     });

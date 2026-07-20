@@ -5095,20 +5095,15 @@ window.__pvExportPDF = function(save){
   var schedLines=schedRaw.split(/\n|\s{2,}\+\s{2,}|\s\+\s/).map(function(s){return s.trim();}).filter(Boolean);
   var boxH=Math.max(60,34+schedLines.length*15+12);
   d.setFillColor(NAVY[0],NAVY[1],NAVY[2]); d.roundedRect(M,y,CW,boxH,10,10,"F");
-  var colX=[M+18,M+CW*0.40,M+CW*0.74];
-  var labs=["DOWN PAYMENT · AT SIGNING","PAYMENT SCHEDULE","TOTAL INVESTMENT"];
+  var colX=[M+24,M+CW*0.52];
+  var labs=["DOWN PAYMENT · AT SIGNING","PAYMENT SCHEDULE"];
   labs.forEach(function(l,i){ d.setFont("helvetica","bold"); d.setFontSize(6.2); d.setTextColor(168,212,207); d.setCharSpace(0.6);
     d.text(l,colX[i],y+16); d.setCharSpace(0); });
   d.setFont("helvetica","bold"); d.setTextColor(AMBER[0],AMBER[1],AMBER[2]);
   d.setFontSize(15); d.text(txt("pvCpDown")||"—",colX[0],y+36);
   d.setFontSize(schedLines.length>1?10.5:13);
   schedLines.forEach(function(s,i){ d.text(s,colX[1],y+(schedLines.length>1?30+i*14:36)); });
-  var downN=num(txt("pvCpDown"));
-  var schedN=0; schedLines.forEach(function(s){ var mm=s.match(/(\d+)\s*[x×]\s*\$?([\d,\.]+)/i); if(mm){ schedN+=parseInt(mm[1],10)*num(mm[2]); } });
-  var totalInv=(downN&&schedN)?(downN+schedN):num(txt("pvCpTotal"));
-  d.setFontSize(15); d.text(totalInv?money(totalInv):(txt("pvCpTotal")||"—"),colX[2],y+36);
-  var finChg=(totalInv&&totalPTF&&totalInv>totalPTF)?(totalInv-totalPTF):0;
-  var fees=finChg>0?("Includes premium finance charge of "+money(finChg)+" — financed through a premium finance company."):txt("pvCpFees");
+  var fees=txt("pvCpFees");
   if(fees){ d.setFont("helvetica","normal"); d.setFontSize(6.6); d.setTextColor(168,212,207);
     d.text(d.splitTextToSize(fees,CW-36),M+18,y+boxH-12); }
   y+=boxH+8;

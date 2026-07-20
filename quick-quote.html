@@ -1742,7 +1742,13 @@
               </div>
               <div class="cov-det"><div class="inner">
                 <div class="campo"><label>Limit</label><input type="text" placeholder="$"></div>
-              <div class="campo"><label>Coverage symbols · 1 Any auto · 7 Scheduled · 8 Hired · 9 Non-owned</label><input type="text" placeholder="e.g. 1, 8, 9"></div>
+              <div class="campo campo-symbols"><label>Coverage symbols</label><input type="text" style="display:none">
+                <div class="sym-row">
+                  <label class="sym-chk"><input type="checkbox" value="1"> 1 · Any auto</label>
+                  <label class="sym-chk"><input type="checkbox" value="7"> 7 · Scheduled</label>
+                  <label class="sym-chk"><input type="checkbox" value="8"> 8 · Hired</label>
+                  <label class="sym-chk"><input type="checkbox" value="9"> 9 · Non-owned</label>
+                </div></div>
               </div></div>
             </div>
             <div class="cov">
@@ -1765,6 +1771,8 @@
               <div class="cov-det"><div class="inner">
                 <div class="campo"><label>Limit</label><input type="text" placeholder="$"></div>
                 <div class="campo"><label>Deductible</label><input type="text" placeholder="$"></div>
+              <div class="campo campo-symbols"><label>Reefer breakdown</label><input type="text" style="display:none">
+                <div class="sym-row"><label class="sym-chk"><input type="checkbox" value="Yes"> Include reefer breakdown</label></div></div>
               </div></div>
             </div>
             <div class="cov">
@@ -4794,6 +4802,32 @@ function ensureCarrierRows(){
 setInterval(ensureCarrierRows,800); ensureCarrierRows();
 try{ new MutationObserver(function(){ ensurePremRows(); ensureCarrierRows(); }).observe($("pvPremBody")||document.body,{childList:true}); }catch(_){}
 try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).forEach(function(k){ syncMask(k,window.__pvCarrierMask[k]); }); }).observe($("pvCovBody")||document.body,{childList:true,subtree:true}); }catch(_){}
+
+/* ---------- casillas de seleccion (symbols / reefer) sincronizadas con su input oculto ---------- */
+(function(){
+  var st=document.createElement("style");
+  st.textContent=".sym-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}.sym-chk{display:flex;align-items:center;gap:5px;font:500 12px Inter,sans-serif;color:#0D3040;cursor:pointer}.sym-chk input{accent-color:#229A82;width:14px;height:14px;margin:0}";
+  document.head.appendChild(st);
+  function wire(){
+    document.querySelectorAll(".campo-symbols").forEach(function(c){
+      var txtIn=c.querySelector('input[type="text"]');
+      var cbs=c.querySelectorAll('input[type="checkbox"]');
+      if(!txtIn||!cbs.length) return;
+      if(!c.__wired){ c.__wired=true;
+        cbs.forEach(function(cb){ cb.addEventListener("change",function(){
+          var v=[]; cbs.forEach(function(x){ if(x.checked) v.push(x.value); });
+          txtIn.value=v.join(", "); c.__last=txtIn.value;
+          txtIn.dispatchEvent(new Event("input",{bubbles:true}));
+        }); });
+      }
+      if(c.__last!==txtIn.value){ c.__last=txtIn.value;
+        var v2=txtIn.value||"";
+        cbs.forEach(function(cb){ cb.checked=v2.indexOf(cb.value)>=0; });
+      }
+    });
+  }
+  setInterval(wire,1200); wire();
+})();
 function frame(d){
   /* marco con tope partido: no cruza el logo del membrete (x 172-436) */
   d.setDrawColor(LINE[0],LINE[1],LINE[2]); d.setLineWidth(0.9);

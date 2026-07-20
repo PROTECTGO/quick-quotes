@@ -5251,6 +5251,7 @@ function fld(d,x,w,label,val,y){
   d.setFont("helvetica","normal"); d.setFontSize(6.6); d.setTextColor(130,142,144);
   d.text(label.toUpperCase(),x,y+23);
 }
+function para(d,t,y,size,color,w,x){ d.setFont("helvetica","normal"); d.setFontSize(size||9.5); var c=color||INK; d.setTextColor(c[0],c[1],c[2]); var lines=d.splitTextToSize(t,w||CW); d.text(lines,x||M,y); return y+lines.length*((size||9.5)*1.35); }
 function chk(d,x,y,label){
   d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(0.9); d.rect(x,y-8,9,9,"S");
   d.setFont("helvetica","normal"); d.setFontSize(8.6); d.setTextColor(INK[0],INK[1],INK[2]);

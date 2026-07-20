@@ -4835,6 +4835,42 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
   }
   setInterval(wire,1200); wire();
 })();
+
+/* ---------- App MGA: corregir tabla de coberturas (limite + simbolos + reefer) ---------- */
+(function(){
+  function fixCovDoc(){
+    var out=document.getElementById("doc-output"); if(!out) return;
+    document.querySelectorAll("#sec-cov .cov").forEach(function(cov){
+      var name=(cov.querySelector(".name")||{textContent:""}).textContent.trim(); if(!name) return;
+      var limit="", syms="", reefer="";
+      cov.querySelectorAll(".cov-det .campo").forEach(function(c){
+        var l=(c.querySelector("label")||{textContent:""}).textContent;
+        var i2=c.querySelector("input"); var v=i2?String(i2.value).trim():"";
+        if(/coverage symbols/i.test(l)) syms=v;
+        else if(/reefer/i.test(l)) reefer=v;
+        else if(/deductible/i.test(l)) return;
+        else if(/limit/i.test(l)) limit=v;
+      });
+      out.querySelectorAll("tr").forEach(function(tr){
+        if(tr.children.length<3) return;
+        if(tr.children[0].textContent.indexOf(name)<0) return;
+        var partes=[];
+        if(limit) partes.push(limit);
+        if(syms) partes.push("Symbols: "+syms);
+        if(reefer) partes.push("+ Reefer breakdown");
+        tr.children[1].textContent=partes.length?partes.join(" · "):"—";
+      });
+    });
+  }
+  function hook(){
+    if(!window.__buildDoc||window.__buildDoc.__covFixed) return;
+    var orig=window.__buildDoc;
+    window.__buildDoc=function(){ var r=orig.apply(this,arguments); try{ fixCovDoc(); }catch(_){} return r; };
+    window.__buildDoc.__covFixed=true;
+  }
+  hook(); setInterval(hook,2000);
+  try{ new MutationObserver(function(){ fixCovDoc(); }).observe(document.getElementById("doc-output")||document.body,{childList:true}); }catch(_){}
+})();
 function frame(d){
   /* marco con tope partido: no cruza el logo del membrete (x 172-436) */
   d.setDrawColor(LINE[0],LINE[1],LINE[2]); d.setLineWidth(0.9);
@@ -5311,6 +5347,7 @@ window.__pvExportBinder = function(save){
   d.text("TOTAL PREMIUMS, TAXES & FEES",M,y); d.setCharSpace(0);
   d.setFontSize(10.5); d.text(premTotal,W-M,y,{align:"right"});
   y+=14;
+  if(!vis("pvSecAuth")){
   y = secBar(d,"Payment plan — bound",y);
   var schedRaw=(($("pvCpSched")||{}).innerText||"—");
   var schedLines=schedRaw.split(/\n|\s\+\s/).map(function(s){return s.trim();}).filter(Boolean);
@@ -5331,6 +5368,11 @@ window.__pvExportBinder = function(save){
   var fees=finChg>0?("Includes premium finance charge of "+money(finChg)+" — financed through a premium finance company."):txt("pvCpFees");
   if(fees){ d.setFont("helvetica","normal"); d.setFontSize(6.6); d.setTextColor(168,212,207); d.text(d.splitTextToSize(fees,CW-36),M+18,y+boxH-12); }
   y+=boxH+8;
+  } else {
+    y = secBar(d,"Payment plan",y);
+    y = para(d,"Payment plan and down payment are documented in the client proposal and the signed Down Payment Authorization kept in the client file; financial details are not restated in this binder.",y+2,8.6,GRAY);
+    y+=8;
+  }
   var drv=rows("pvDrvBody",3);
   if(drv.length){ y = secBar(d,"Drivers",y); y = tabla(d,["Driver","DOB","License"],drv,y+2,{})+8; }
   var un=rows("pvUnitBody",4);

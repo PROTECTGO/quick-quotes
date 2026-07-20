@@ -3608,7 +3608,7 @@
       if(sc) sc.innerHTML = segs.length ? segs.map(function(s){ return '<span class="ln">'+s.n+' × '+fmt(s.amt)+' <i>/ month</i></span>'; }).join("") : '<span class="ln">—</span>';
       if($("pvCpTotal")) $("pvCpTotal").textContent=fmt(lastTotal);
       var brk=$("pvCpFees");
-      if(brk){ var parts=[]; if(tax>0) parts.push(fmt(tax)+" in taxes & fees"); if(ag>0) parts.push(fmt(ag)+" in agency contributory fees, collected with your down payment"); brk.hidden=!parts.length; brk.textContent=parts.length?("Includes "+parts.join(" · ")+"."):""; }
+      if(brk){ var parts=[]; if(tax>0) parts.push(fmt(tax)+" in taxes & fees"); if(ag>0) parts.push(fmt(ag)+" in contributory fees, collected with your down payment"); brk.hidden=!parts.length; brk.textContent=parts.length?("Includes "+parts.join(" · ")+"."):""; }
       if(!pvDefManual){ if($("pvDefFirst")) $("pvDefFirst").textContent=fmt(downDue*0.8); if($("pvDefSecond")) $("pvDefSecond").textContent=fmt(downDue*0.2); }
       updateAuthAmt();
       sumPremiums();
@@ -4808,7 +4808,7 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
 /* ---------- casillas de seleccion (symbols / reefer) sincronizadas con su input oculto ---------- */
 (function(){
   var st=document.createElement("style");
-  st.textContent=".sym-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}.sym-chk{display:flex;align-items:center;gap:5px;font:500 12px Inter,sans-serif;color:#0D3040;cursor:pointer}.sym-chk input{accent-color:#229A82;width:14px;height:14px;margin:0}.sym-other{width:120px;border:none;border-bottom:1px dashed #BADFCE;background:transparent;font:500 12px Inter,sans-serif;color:#0a5b54;outline:none}";
+  st.textContent="#pvCpFees{font-size:10px !important;opacity:.55}.sym-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}.sym-chk{display:flex;align-items:center;gap:5px;font:500 12px Inter,sans-serif;color:#0D3040;cursor:pointer}.sym-chk input{accent-color:#229A82;width:14px;height:14px;margin:0}.sym-other{width:120px;border:none;border-bottom:1px dashed #BADFCE;background:transparent;font:500 12px Inter,sans-serif;color:#0a5b54;outline:none}";
   document.head.appendChild(st);
   function wire(){
     document.querySelectorAll(".campo-symbols").forEach(function(c){
@@ -5001,9 +5001,9 @@ window.__pvExportPDF = function(save){
   var sub=[];
   if(premBase) sub.push("Premiums "+money(premBase));
   if(taxN) sub.push("Taxes & fees "+money(taxN));
-  if(agN) sub.push("Program & agency fees "+money(agN));
+  if(agN) sub.push("Contributory fees "+money(agN));
   sub.push("Payment plan: "+((num(txt("pvN1"))||txt("pvSegs1"))?"Financed":"Full pay"));
-  d.setFont("helvetica","normal"); d.setFontSize(8.2); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]);
+  d.setFont("helvetica","normal"); d.setFontSize(6.9); d.setTextColor(158,168,170);
   d.text(sub.join("   ·   "),W/2,y,{align:"center"});
   y+=16;
   y = secBar(d,"Coverages & premium",y);
@@ -5324,9 +5324,9 @@ window.__pvExportBinder = function(save){
   var sub=[];
   if(premBase) sub.push("Premiums "+money(premBase));
   if(taxN) sub.push("Taxes & fees "+money(taxN));
-  if(agN) sub.push("Program & agency fees "+money(agN));
+  if(agN) sub.push("Contributory fees "+money(agN));
   sub.push("Binder / Policy #: "+quoteNo);
-  d.setFont("helvetica","normal"); d.setFontSize(8.2); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]);
+  d.setFont("helvetica","normal"); d.setFontSize(6.9); d.setTextColor(158,168,170);
   d.text(sub.join("   ·   "),W/2,y,{align:"center"});
   y+=16;
   y = secBar(d,"Coverages & carriers",y);

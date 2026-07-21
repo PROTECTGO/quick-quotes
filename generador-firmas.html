@@ -48,13 +48,20 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media(max-width:900px){.grid{grid-template-columns:1fr}}
 
-  /* ---- Tarjeta de presentación (1080x1080) ---- */
-  .tpills{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-  .tpill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;color:var(--muted)}
-  .tpill:hover{border-color:var(--mint)}
-  .tpill.on{background:var(--petrol);border-color:var(--petrol);color:#fff}
-  #tPrevBox{position:relative;width:100%;overflow:hidden;border-radius:14px;border:1px solid var(--line);background:#eef2f5}
-  #tPrev{position:absolute;left:0;top:0;width:1080px;height:1080px;transform-origin:0 0}
+  /* ---- Tarjetas de presentación (galería 1080x1080) ---- */
+  #tOverlay{position:fixed;inset:0;z-index:60;background:rgba(0,30,38,.74);display:none;flex-direction:column;padding:18px}
+  #tOverlay.open{display:flex}
+  .tov-top{display:flex;align-items:center;gap:12px;color:#fff;max-width:1520px;margin:0 auto 12px;width:100%}
+  .tov-top h3{font-family:'Montserrat';font-weight:800;font-size:18px;margin:0}
+  .tov-top .x{margin-left:auto;background:rgba(255,255,255,.14);border:none;color:#fff;border-radius:9px;padding:9px 16px;font:inherit;font-weight:700;cursor:pointer}
+  .tov-top .x:hover{background:rgba(255,255,255,.26)}
+  .tov-grid{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1520px;margin:0 auto;width:100%;align-content:start}
+  @media(max-width:1000px){.tov-grid{grid-template-columns:1fr}}
+  .tov-col{background:#fff;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .tov-col .lbl{font-weight:700;font-size:13px;color:var(--ink);display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .tov-col .lbl .btn{padding:8px 14px;font-size:13px}
+  .tov-box{position:relative;width:100%;overflow:hidden;border-radius:10px;background:#eef2f5;border:1px solid var(--line)}
+  .tov-box>div{position:absolute;left:0;top:0;width:1080px;height:1080px;transform-origin:0 0}
   /* modo captura: html2canvas dibuja mal las sombras difusas y la curva degradada */
   .tExport,.tExport *{box-shadow:none!important}
   .tExport.tcC .band::after{content:none!important}
@@ -226,16 +233,11 @@
 
       <div class="card" style="margin-top:22px" id="tarjetaCard">
         <h2><span class="num">5</span> Tu tarjeta de presentación &nbsp;<span style="font-weight:400;color:var(--muted);font-size:12px">1080×1080 · para compartir por WhatsApp</span></h2>
-        <div class="tpills">
-          <button type="button" class="tpill on" data-tpl="A">A · Elegante</button>
-          <button type="button" class="tpill" data-tpl="B">B · Cercana</button>
-          <button type="button" class="tpill" data-tpl="C">C · Corporativa</button>
+        <p style="margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.55">La firma es para tus correos; la tarjeta es tu presentación. Con tus datos y tu foto de arriba tienes <b>tres opciones de tarjeta</b>: ábrelas, compara y descarga la que más te guste.</p>
+        <div class="actions" style="margin-top:0">
+          <button class="btn" onclick="abrirTarjetas()">Ver mis 3 tarjetas</button>
         </div>
-        <div id="tPrevBox"><div id="tPrev"></div></div>
-        <div class="actions">
-          <button class="btn" onclick="downloadTarjeta()">Descargar tarjeta (PNG)</button>
-        </div>
-        <div class="note"><b>Usa los mismos datos y la misma foto de tu firma</b> (la tratada, por URL). WhatsApp, teléfono y correo son los de tu folio: si tienes línea propia, ponla; si dejas el directo vacío, sale tu WhatsApp. En la vista previa los contactos son clicables (wa.me / tel / mailto); el PNG descargado es imagen. Las tres plantillas conviven; descarga la que prefieras.</div>
+        <div class="note">WhatsApp, teléfono y correo salen de tu folio: si tienes línea propia, ponla arriba; si dejas el directo vacío, sale tu WhatsApp. Las tres plantillas conviven — descarga la que prefieras.</div>
       </div>
 
     </div>
@@ -297,13 +299,20 @@ render();
 
 
 <!-- Tarjetas de presentación 1080x1080 (plantillas A/B/C con variables del folio) -->
+<div id="tOverlay">
+  <div class="tov-top"><h3>Tu tarjeta de presentación — mira las 3 y elige</h3><button class="x" onclick="cerrarTarjetas()">Cerrar ✕</button></div>
+  <div class="tov-grid">
+    <div class="tov-col"><div class="lbl"><span>A · Elegante</span><button class="btn" onclick="downloadTarjeta('A')">Descargar PNG</button></div><div class="tov-box" id="tovBoxA"><div id="tovA"></div></div></div>
+    <div class="tov-col"><div class="lbl"><span>B · Cercana</span><button class="btn" onclick="downloadTarjeta('B')">Descargar PNG</button></div><div class="tov-box" id="tovBoxB"><div id="tovB"></div></div></div>
+    <div class="tov-col"><div class="lbl"><span>C · Corporativa</span><button class="btn" onclick="downloadTarjeta('C')">Descargar PNG</button></div><div class="tov-box" id="tovBoxC"><div id="tovC"></div></div></div>
+  </div>
+</div>
 <script>
 const TCARDS={
 "A": "<div class=\"arcline b1\"></div>\n<div class=\"arcline b2\"></div>\n<div class=\"corner\"></div>\n\n<svg class=\"waves-soft\" viewBox=\"0 0 640 420\" fill=\"none\">\n  <circle cx=\"-60\" cy=\"720\" r=\"420\" stroke=\"#DCE9E6\" stroke-width=\"30\"/>\n  <circle cx=\"-60\" cy=\"720\" r=\"500\" stroke=\"#E5EFEC\" stroke-width=\"26\"/>\n  <circle cx=\"-60\" cy=\"720\" r=\"575\" stroke=\"#B9D3CE\" stroke-width=\"14\" opacity=\".55\"/>\n</svg>\n\n<div class=\"blob\"></div>\n<div class=\"photo-ghost\"></div>\n<div class=\"photo-wrap\"><img class=\"photo\" src=\"{{foto_url}}\"></div>\n\n<div class=\"col\">\n  <img class=\"logo\" src=\"{{logo_url}}\">\n\n  <div class=\"nm\">{{nombre_2lineas}}</div>\n  <div class=\"roles\">\n    <div class=\"role-en\">{{cargo_en}}</div>\n    <div class=\"role-es\">{{cargo_es}}</div>\n  </div>\n\n  <div class=\"hair\"></div>\n\n  <div class=\"svc-title\">Skills &amp; Services</div>\n  <div class=\"svcgrid\">\n    <div class=\"svc\"><b>Commercial Insurance</b> Trucking &amp; fleets</div>\n    <div class=\"svc\"><b>Document Review</b> Contratos y pólizas</div>\n    <div class=\"svc\"><b>Regulatory Permits</b> USDOT · MC · IFTA</div>\n    <div class=\"svc\"><b>Company Formation</b> LLC y permisos</div>\n  </div>\n\n  <div class=\"chips\">\n    <span class=\"chip\">Amazon Specialist</span>\n    <span class=\"chip\">Dispatch Support</span>\n    <span class=\"chip\">ELD Support</span><span class=\"chip\">COI Same-Day</span>\n  </div>\n</div>\n\n<div class=\"footer\">\n  <div class=\"fcell\">\n    <div class=\"flab\">\n      <svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"#5E8E8A\"><path d=\"M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.87 9.87 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2m0 18.03a8.1 8.1 0 0 1-4.13-1.13l-.3-.18-3.07.81.82-3-.2-.31a8.07 8.07 0 0 1-1.24-4.31c0-4.47 3.64-8.11 8.12-8.11 4.47 0 8.11 3.64 8.11 8.11s-3.64 8.12-8.11 8.12m4.45-6.07c-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.77.95-.14.16-.28.18-.53.06-.24-.12-1.03-.38-1.96-1.21-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.02-.37.11-.5.11-.11.24-.28.37-.42.12-.14.16-.24.24-.4.08-.16.04-.31-.02-.43-.06-.12-.55-1.32-.75-1.81-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.31-.22.24-.86.84-.86 2.05 0 1.21.88 2.37 1 2.53.12.16 1.73 2.64 4.19 3.7.59.25 1.05.4 1.4.52.59.19 1.13.16 1.56.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28\"/></svg>\n      WhatsApp\n    </div>\n    <div class=\"fval\"><a class=\"tlk\" href=\"{{whatsapp_link}}\">{{whatsapp}}</a></div>\n  </div>\n  <div class=\"fcell\">\n    <div class=\"flab\">\n      <svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"#5E8E8A\"><path d=\"M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02z\"/></svg>\n      Teléfono\n    </div>\n    <div class=\"fval\"><a class=\"tlk\" href=\"{{telefono_link}}\">{{telefono_directo}}</a></div>\n  </div>\n  <div class=\"fcell\">\n    <div class=\"flab\">\n      <svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#5E8E8A\" stroke-width=\"2\"><rect x=\"2.5\" y=\"5\" width=\"19\" height=\"14\" rx=\"2.5\"/><path d=\"m3.5 6.5 8.5 6.5 8.5-6.5\"/></svg>\n      Email\n    </div>\n    <div class=\"fval small\"><a class=\"tlk\" href=\"mailto:{{correo}}\">{{correo}}</a></div>\n  </div>\n  <div class=\"fcell\">\n    <div class=\"flab\">\n      <svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"#5E8E8A\"><path d=\"M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z\"/></svg>\n      Ubicación\n    </div>\n    <div class=\"fval tiny\">protectgoservices.com<br>17685 Senior Rd, Unit 5, Von Ormy, TX</div>\n  </div>\n</div>",
 "B": "<div class=\"arcline a1\"></div><div class=\"arcline a2\"></div>\n<div class=\"blob\"></div><div class=\"photo-ghost\"></div>\n<div class=\"photo-wrap\"><img class=\"photo\" src=\"{{foto_url}}\"></div>\n<div class=\"col\">\n  <img class=\"logo\" src=\"{{logo_url}}\">\n  <div class=\"hola\">Hola, soy</div>\n  <div class=\"nm\">{{nombre}}</div>\n  <div class=\"roles\"><div class=\"role-en\">{{cargo_en}} · {{cargo_es}}</div></div>\n  <div class=\"msg\">Te ayudo a asegurar tu operación <b>sin enredos</b> — rápido, claro y en tu idioma.</div>\n  <div class=\"ticks\">\n    <div class=\"tk\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#5E8E8A\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m4.5 12.5 5 5 10-11\"/></svg>COI el mismo día</div>\n    <div class=\"tk\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#5E8E8A\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m4.5 12.5 5 5 10-11\"/></svg>Atención en español</div>\n    <div class=\"tk\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#5E8E8A\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m4.5 12.5 5 5 10-11\"/></svg>Compañías A-rated</div>\n  </div>\n  <div class=\"chips\">\n    <span class=\"chip\">Commercial Insurance</span><span class=\"chip\">Amazon Specialist</span>\n    <span class=\"chip\">Dispatch Support</span><span class=\"chip\">ELD Support</span>\n    <span class=\"chip\">Regulatory Permits · USDOT · MC · IFTA</span><span class=\"chip\">Company Formation</span>\n  </div>\n</div>\n<div class=\"cta\"><svg width=\"44\" height=\"44\" viewBox=\"0 0 24 24\" fill=\"#8FD4B8\"><path d=\"M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.87 9.87 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2m0 18.03a8.1 8.1 0 0 1-4.13-1.13l-.3-.18-3.07.81.82-3-.2-.31a8.07 8.07 0 0 1-1.24-4.31c0-4.47 3.64-8.11 8.12-8.11 4.47 0 8.11 3.64 8.11 8.11s-3.64 8.12-8.11 8.12m4.45-6.07c-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.77.95-.14.16-.28.18-.53.06-.24-.12-1.03-.38-1.96-1.21-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.02-.37.11-.5.11-.11.24-.28.37-.42.12-.14.16-.24.24-.4.08-.16.04-.31-.02-.43-.06-.12-.55-1.32-.75-1.81-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.31-.22.24-.86.84-.86 2.05 0 1.21.88 2.37 1 2.53.12.16 1.73 2.64 4.19 3.7.59.25 1.05.4 1.4.52.59.19 1.13.16 1.56.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28\"/></svg><div class=\"txt\"><div class=\"l1\">Escríbeme por WhatsApp</div><div class=\"l2\"><a class=\"tlk\" href=\"{{whatsapp_link}}\">{{whatsapp}}</a></div></div></div>\n<div class=\"sub\"><b><a class=\"tlk\" href=\"{{telefono_link}}\">{{telefono_directo}}</a></b> &nbsp;·&nbsp; <a class=\"tlk\" href=\"mailto:{{correo}}\">{{correo}}</a></div>",
 "C": "<div class=\"band\"></div>\n<div class=\"wmk\">ProtectGO Services</div>\n<div class=\"nmB\">{{nombre}}</div>\n<div class=\"roleB\"><div class=\"en\">{{cargo_en}}</div><div class=\"es\">{{cargo_es}}</div></div>\n<div class=\"pic\"><img src=\"{{foto_url}}\"></div>\n<div class=\"stats\">\n  <div class=\"st\"><div class=\"a\">COI</div><div class=\"b\">El mismo día</div></div>\n  <div class=\"st\"><div class=\"a\">Atención</div><div class=\"b\">100% en español</div></div>\n  <div class=\"st\"><div class=\"a\">Compañías</div><div class=\"b\">A-rated</div></div>\n</div>\n<div class=\"covtitle\">Skills &amp; Services</div>\n<div class=\"covs\">\n  <div class=\"cov\"><span class=\"d\"></span><span><b>Commercial Auto</b> Insurance</span></div>\n  <div class=\"cov\"><span class=\"d\"></span><span><b>Motor Truck Cargo</b> &amp; Physical Damage</span></div>\n  <div class=\"cov\"><span class=\"d\"></span><span><b>Amazon Specialist</b> · Relay</span></div>\n  <div class=\"cov\"><span class=\"d\"></span><span><b>Dispatch</b> Support</span></div>\n  <div class=\"cov\"><span class=\"d\"></span><span><b>ELD</b> Support</span></div>\n  <div class=\"cov\"><span class=\"d\"></span><span><b>Regulatory Permits</b> USDOT · MC · IFTA</span></div>\n</div>\n<div class=\"footer\">\n  <div class=\"fitem\"><svg width=\"30\" height=\"30\" viewBox=\"0 0 24 24\" fill=\"#8FD4B8\"><path d=\"M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.87 9.87 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2m0 18.03a8.1 8.1 0 0 1-4.13-1.13l-.3-.18-3.07.81.82-3-.2-.31a8.07 8.07 0 0 1-1.24-4.31c0-4.47 3.64-8.11 8.12-8.11 4.47 0 8.11 3.64 8.11 8.11s-3.64 8.12-8.11 8.12m4.45-6.07c-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.77.95-.14.16-.28.18-.53.06-.24-.12-1.03-.38-1.96-1.21-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.02-.37.11-.5.11-.11.24-.28.37-.42.12-.14.16-.24.24-.4.08-.16.04-.31-.02-.43-.06-.12-.55-1.32-.75-1.81-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.31-.22.24-.86.84-.86 2.05 0 1.21.88 2.37 1 2.53.12.16 1.73 2.64 4.19 3.7.59.25 1.05.4 1.4.52.59.19 1.13.16 1.56.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28\"/></svg><span><span class=\"lb\">WhatsApp</span><a class=\"tlk\" href=\"{{whatsapp_link}}\">{{whatsapp}}</a></span></div>\n  <div class=\"fitem\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"#9FC3BE\"><path d=\"M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02z\"/></svg><span><span class=\"lb\">Teléfono</span><a class=\"tlk\" href=\"{{telefono_link}}\">{{telefono_directo}}</a></span></div>\n  <div class=\"fitem\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#9FC3BE\" stroke-width=\"2\"><rect x=\"2.5\" y=\"5\" width=\"19\" height=\"14\" rx=\"2.5\"/><path d=\"m3.5 6.5 8.5 6.5 8.5-6.5\"/></svg><span><span class=\"lb\">Email</span><a class=\"tlk\" href=\"mailto:{{correo}}\">{{correo_corto}}</a></span></div>\n</div>\n<div class=\"faddr\">protectgoservices.com · 17685 Senior Rd, Unit 5, Von Ormy, TX 78073</div>"
 };
-let tSel='A';
 function tEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function tSlug(n){return n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'agente';}
 function tData(){
@@ -327,27 +336,44 @@ function tData(){
   };
 }
 function tFill(tpl,data){return tpl.replace(/\{\{(\w+)\}\}/g,(m,k)=>Object.prototype.hasOwnProperty.call(data,k)?data[k]:m);}
-// curva de la plantilla C dibujada como SVG para el modo captura (html2canvas no pinta bien el radial-gradient)
+// curva de la plantilla C dibujada como SVG para el modo captura de respaldo
 const T_CURVA_C='<svg style="position:absolute;left:0;top:258px;width:1080px;height:74px" viewBox="0 0 1080 74" preserveAspectRatio="none"><ellipse cx="540" cy="72" rx="648" ry="35" fill="#F7F9F9"/></svg>';
-function tMarkup(mode){
-  let html=tFill(TCARDS[tSel],tData());
-  if(mode==='export'&&tSel==='C') html=html.replace('<div class="band"></div>','<div class="band"></div>'+T_CURVA_C);
-  return '<div class="'+(mode==='export'?'tExport ':'')+'tc'+tSel+'">'+html+'</div>';
+function tMarkup(t,mode){
+  let html=tFill(TCARDS[t],tData());
+  if(mode==='export'&&t==='C') html=html.replace('<div class="band"></div>','<div class="band"></div>'+T_CURVA_C);
+  return '<div class="'+(mode==='export'?'tExport ':'')+'tc'+t+'">'+html+'</div>';
 }
-function renderTarjeta(){const p=document.getElementById('tPrev');if(p){p.innerHTML=tMarkup();fitTarjeta();}}
-function fitTarjeta(){
-  const box=document.getElementById('tPrevBox'),c=document.getElementById('tPrev');
-  if(!box||!c)return;
-  const w=box.clientWidth||0;if(!w)return;
-  c.style.transform='scale('+(w/1080)+')';
-  box.style.height=w+'px';
+function tOverlayAbierto(){const o=document.getElementById('tOverlay');return o&&o.classList.contains('open');}
+function renderGaleria(){
+  if(!tOverlayAbierto())return;
+  for(const t of ['A','B','C']){
+    const p=document.getElementById('tov'+t);
+    if(p){p.innerHTML=tMarkup(t);}
+  }
+  fitGaleria();
 }
-document.querySelectorAll('.tpill').forEach(b=>b.addEventListener('click',()=>{
-  tSel=b.getAttribute('data-tpl');
-  document.querySelectorAll('.tpill').forEach(x=>x.classList.toggle('on',x===b));
-  renderTarjeta();
-}));
-window.addEventListener('resize',fitTarjeta);
+function fitGaleria(){
+  for(const t of ['A','B','C']){
+    const box=document.getElementById('tovBox'+t),c=document.getElementById('tov'+t);
+    if(!box||!c)continue;
+    const w=box.clientWidth||0;if(!w)continue;
+    c.style.transform='scale('+(w/1080)+')';
+    box.style.height=w+'px';
+  }
+}
+function abrirTarjetas(){
+  const d=tData();
+  if(!d.foto_url){toast('Pon la URL de tu foto tratada (o súbela) para ver tus tarjetas');return;}
+  document.getElementById('tOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  renderGaleria();
+}
+function cerrarTarjetas(){
+  document.getElementById('tOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&tOverlayAbierto())cerrarTarjetas();});
+window.addEventListener('resize',fitGaleria);
 function tLib(src,ok){
   if(ok())return Promise.resolve();
   return new Promise((res,rej)=>{
@@ -360,10 +386,10 @@ function tLib(src,ok){
 async function tWaitImgs(node){
   await Promise.all(Array.from(node.querySelectorAll('img')).map(im=>im.complete?Promise.resolve():new Promise(r=>{im.onload=im.onerror=r;})));
 }
-async function downloadTarjeta(){
+async function downloadTarjeta(t){
   const d=tData();
   if(!d.foto_url){toast('Pon la URL de tu foto tratada (o súbela) para generar la tarjeta');return;}
-  toast('Generando tarjeta…');
+  toast('Generando tarjeta '+t+'…');
   const holder=document.createElement('div');
   holder.style.cssText='position:fixed;left:-2200px;top:0;z-index:-1;';
   document.body.appendChild(holder);
@@ -372,14 +398,14 @@ async function downloadTarjeta(){
     let dataUrl=null;
     try{
       // motor principal: html-to-image (render idéntico al navegador: sombras, curvas, degradados)
-      holder.innerHTML=tMarkup();
+      holder.innerHTML=tMarkup(t);
       await tWaitImgs(holder);
       await new Promise(r=>setTimeout(r,120));
       await tLib('https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js',()=>window.htmlToImage);
       dataUrl=await htmlToImage.toPng(holder.firstElementChild,{width:1080,height:1080,pixelRatio:1,backgroundColor:'#F7F9F9'});
     }catch(e1){
       // respaldo: html2canvas en modo compatibilidad (sin sombras; curva de C como SVG)
-      holder.innerHTML=tMarkup('export');
+      holder.innerHTML=tMarkup(t,'export');
       await tWaitImgs(holder);
       await new Promise(r=>setTimeout(r,120));
       await tLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',()=>window.html2canvas);
@@ -388,15 +414,14 @@ async function downloadTarjeta(){
     }
     const a=document.createElement('a');
     a.href=dataUrl;
-    a.download='tarjeta-'+tSlug(read().name)+'.png';
+    a.download='tarjeta-'+tSlug(read().name)+'-'+t.toLowerCase()+'.png';
     a.click();
-    toast('Tarjeta descargada ✓ Lista para WhatsApp');
+    toast('Tarjeta '+t+' descargada ✓ Lista para WhatsApp');
   }catch(e){
     toast('No se pudo generar el PNG'+(e&&e.message?': '+e.message:''));
   }finally{holder.remove();}
 }
-if(typeof render==='function'){const _tOldRender=render;render=function(){_tOldRender();renderTarjeta();};}
-renderTarjeta();
+if(typeof render==='function'){const _tOldRender=render;render=function(){_tOldRender();renderGaleria();};}
 </script>
 
 <!-- Auto-relleno por correo (usa la sesion de Supabase del portal, mismo dominio) -->

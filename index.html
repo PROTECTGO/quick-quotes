@@ -164,6 +164,29 @@
         <div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
       </a>
 
+    
+      <!-- RRHH (solo rrhh@) -->
+      <a class="card on" id="card-rrhh" href="rrhh.html" style="display:none">
+        <div class="top">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5"/><path d="M16.5 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M17.8 15.2c2 .7 3.3 2.2 3.7 4.8"/></svg></div>
+          <span class="tag">RRHH</span>
+        </div>
+        <h3>Dashboard RRHH</h3>
+        <p>Herramientas de Recursos Humanos: generador de firmas del área con los cargos de RRHH.</p>
+        <div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
+      </a>
+
+      <!-- COI (solo coi@) -->
+      <a class="card on" id="card-coi" href="coi.html" style="display:none">
+        <div class="top">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M9.2 13.2 8 21l4-2.2L16 21l-1.2-7.8"/></svg></div>
+          <span class="tag">COI</span>
+        </div>
+        <h3>Dashboard COI</h3>
+        <p>Certificados de seguro: consulta todas las cotizaciones generadas y crea tu firma del área.</p>
+        <div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
+      </a>
+
     </main>
 
     <div class="pie">ProtectGo Services · Documentos Interactivos (009) · acceso por cuenta Supabase</div>
@@ -237,6 +260,25 @@
     }
     if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(init,60); });
     else setTimeout(init,60);
+  })();
+  </script>
+  <script>
+  (function(){
+    var MAPA={"rrhh@protectgoservices.com":"card-rrhh","coi@protectgoservices.com":"card-coi"};
+    function aplicar(email){
+      Object.keys(MAPA).forEach(function(k){
+        var el=document.getElementById(MAPA[k]);
+        if(el) el.style.display=(email===k)?"flex":"none";
+      });
+    }
+    function arrancar(){
+      if(!(window.supabase&&window.supabase.createClient)) return;
+      var c=window.supabase.createClient("https://bwqzypuiqgxzsrtsueab.supabase.co","sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49");
+      c.auth.getSession().then(function(r){aplicar(r.data&&r.data.session&&r.data.session.user?String(r.data.session.user.email).toLowerCase():"");});
+      c.auth.onAuthStateChange(function(evt,s){aplicar(s&&s.user?String(s.user.email).toLowerCase():"");});
+    }
+    if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(arrancar,150);});
+    else setTimeout(arrancar,150);
   })();
   </script>
 </body>

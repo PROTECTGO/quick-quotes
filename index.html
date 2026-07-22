@@ -276,6 +276,7 @@
         if(c.id==="card-rrhh"||c.id==="card-coi") return;
         var href=(c.getAttribute("href")||"");
         if(externo) c.style.display=(href.indexOf("quick-quote.html")>=0)?"flex":"none";
+        else if(MAPA[email]) c.style.display="none";
         else c.style.display="";
       });
     }

@@ -4836,10 +4836,14 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
   setInterval(wire,1200); wire();
 })();
 
-/* ---------- App MGA: corregir tabla de coberturas (limite + simbolos + reefer) ---------- */
+/* ---------- Coberturas: limite + simbolos (nombre) + reefer, en App y Proposal ---------- */
 (function(){
-  function fixCovDoc(){
-    var out=document.getElementById("doc-output"); if(!out) return;
+  var NOMBRES={"1":"Any auto","2":"Owned autos only","3":"Owned private passenger","4":"Owned other than private","5":"Owned subject to no-fault","6":"Owned subject to UM","7":"Scheduled autos","8":"Hired autos only","9":"Non-owned autos","19":"Mobile equipment"};
+  function nombreSym(v){
+    return v.split(/\s*,\s*/).filter(Boolean).map(function(c){ return NOMBRES[c]?(NOMBRES[c]+" ("+c+")"):c; }).join(" · ");
+  }
+  function datosCov(){
+    var lista=[];
     document.querySelectorAll("#sec-cov .cov").forEach(function(cov){
       var name=(cov.querySelector(".name")||{textContent:""}).textContent.trim(); if(!name) return;
       var limit="", syms="", reefer="";
@@ -4851,25 +4855,38 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
         else if(/deductible/i.test(l)) return;
         else if(/limit/i.test(l)) limit=v;
       });
-      out.querySelectorAll("tr").forEach(function(tr){
-        if(tr.children.length<3) return;
-        if(tr.children[0].textContent.indexOf(name)<0) return;
-        var partes=[];
-        if(limit) partes.push(limit);
-        if(syms) partes.push("Symbols: "+syms);
-        if(reefer) partes.push("+ Reefer breakdown");
-        tr.children[1].textContent=partes.length?partes.join(" · "):"—";
+      lista.push({name:name,limit:limit,syms:syms,reefer:reefer});
+    });
+    return lista;
+  }
+  function celdaLimite(cv){
+    var partes=[];
+    if(cv.limit) partes.push(cv.limit);
+    if(cv.syms) partes.push("Symbols: "+nombreSym(cv.syms));
+    if(cv.reefer) partes.push("Includes Reefer breakdown");
+    return partes.length?partes.join(" · "):"—";
+  }
+  function fixTabla(cont){
+    if(!cont) return;
+    var lista=datosCov();
+    cont.querySelectorAll("tr").forEach(function(tr){
+      if(tr.children.length<3) return;
+      lista.forEach(function(cv){
+        if(tr.children[0].textContent.indexOf(cv.name)<0) return;
+        var nuevo=celdaLimite(cv);
+        if(tr.children[1].textContent!==nuevo) tr.children[1].textContent=nuevo;
       });
     });
   }
+  function fixTodo(){ fixTabla(document.getElementById("doc-output")); fixTabla(document.getElementById("pvCovBody")); }
   function hook(){
     if(!window.__buildDoc||window.__buildDoc.__covFixed) return;
     var orig=window.__buildDoc;
-    window.__buildDoc=function(){ var r=orig.apply(this,arguments); try{ fixCovDoc(); }catch(_){} return r; };
+    window.__buildDoc=function(){ var r=orig.apply(this,arguments); try{ fixTodo(); }catch(_){} return r; };
     window.__buildDoc.__covFixed=true;
   }
   hook(); setInterval(hook,2000);
-  try{ new MutationObserver(function(){ fixCovDoc(); }).observe(document.getElementById("doc-output")||document.body,{childList:true}); }catch(_){}
+  setInterval(function(){ try{ fixTodo(); }catch(_){} },1500);
 })();
 
 /* ---------- persistencia de la proposal con la quote (data.pv en Supabase) ---------- */
@@ -5081,8 +5098,6 @@ window.__pvExportPDF = function(save){
   });
   var covBody=rows("pvCovBody",4).map(function(r){ return [r[0]||"",r[3]||"A-rated carrier — confirmed at binding",r[1]||"—",r[2]||"—",prem[r[0]]||"—"]; });
   y = tabla(d,["Coverage","Carrier","Limit","Deductible","Premium"],covBody,y+2,{rightBold:4});
-  var covSyms=campoPorLabel(/coverage symbols/i);
-  if(covSyms){ d.setFont("helvetica","italic"); d.setFontSize(8); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]); d.text("Auto Liability — covered auto symbols: "+covSyms,M,y+11); y+=16; }
   y+=8;
   d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(1.1); d.line(M,y,W-M,y);
   y+=12;
@@ -5414,8 +5429,6 @@ window.__pvExportBinder = function(save){
   var reales=window.__pvCarrierReal||{};
   var covBody=rows("pvCovBody",4).map(function(r){ return [r[0], reales[r[0]]||"________________", r[1]||"—", r[2]||"—", prem[r[0]]||"—"]; });
   y = tabla(d,["Coverage","Carrier / MGA","Limit","Ded.","Premium"],covBody,y+2,{carrCol:1,rightBold:4});
-  var covSyms=""; document.querySelectorAll(".campo").forEach(function(c2){ var l2=c2.querySelector("label"); if(!l2||covSyms) return; if(/coverage symbols/i.test(l2.textContent)){ var i2=c2.querySelector("input"); if(i2&&i2.value) covSyms=i2.value; } });
-  if(covSyms){ d.setFont("helvetica","italic"); d.setFontSize(8); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]); d.text("Auto Liability — covered auto symbols: "+covSyms,M,y+11); y+=16; }
   y+=8;
   d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(1.1); d.line(M,y,W-M,y); y+=12;
   d.setFont("helvetica","bold"); d.setFontSize(9); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]); d.setCharSpace(0.8);

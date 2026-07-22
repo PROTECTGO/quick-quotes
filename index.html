@@ -265,10 +265,18 @@
   <script>
   (function(){
     var MAPA={"rrhh@protectgoservices.com":"card-rrhh","coi@protectgoservices.com":"card-coi"};
+    var EXTERNOS=["gerencia@leonis-go.com"];
     function aplicar(email){
       Object.keys(MAPA).forEach(function(k){
         var el=document.getElementById(MAPA[k]);
         if(el) el.style.display=(email===k)?"flex":"none";
+      });
+      var externo=EXTERNOS.indexOf(email)>=0;
+      document.querySelectorAll(".grid .card").forEach(function(c){
+        if(c.id==="card-rrhh"||c.id==="card-coi") return;
+        var href=(c.getAttribute("href")||"");
+        if(externo) c.style.display=(href.indexOf("quick-quote.html")>=0)?"flex":"none";
+        else c.style.display="";
       });
     }
     function arrancar(){

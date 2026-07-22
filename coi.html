@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COI · Certificados — ProtectGo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --navy:#002F3D; --navy-2:#0a5b54; --teal:#229A82; --teal-2:#1a7a68;
+    --mint:#BADFCE; --mint-soft:#E4F2EB; --mint-ghost:#F2F8F5;
+    --amber:#FFB400; --amber-soft:#fff7e0; --papel:#FAF9F5; --surface:#fff;
+    --ink:#0D141A; --muted:#5a6a6e; --faint:#8a989a; --hairline:#d8e0de; --line:#e6ebe9;
+    --grad:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%);
+    --r-sm:10px; --r-md:14px; --r-lg:20px; --r-pill:999px;
+    --shadow-2:0 8px 24px -10px rgba(0,47,61,.16),0 2px 4px rgba(0,47,61,.05);
+    --shadow-3:0 28px 60px -28px rgba(0,47,61,.36),0 8px 20px -8px rgba(0,47,61,.10);
+    --font-title:"Montserrat",system-ui,sans-serif; --font-text:"Inter",system-ui,sans-serif; --font-mono:"IBM Plex Mono",monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-height:100vh;}
+
+  .pg-bar{position:sticky;top:0;z-index:40;height:58px;display:flex;align-items:center;gap:12px;padding:0 22px;background:var(--navy);color:#fff;box-shadow:0 2px 14px -6px rgba(0,0,0,.45);}
+  .pg-bar .logo{font-family:var(--font-title);font-weight:800;font-size:16px;letter-spacing:.2px;}
+  .pg-bar .logo i{color:var(--teal);font-style:normal;}
+  .pg-bar .area-tag{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;background:rgba(255,255,255,.12);color:var(--mint);padding:5px 10px;border-radius:var(--r-pill);}
+  .pg-bar .sp{flex:1;}
+  .pg-bar .user{font-family:var(--font-mono);font-size:12px;color:#9fc6bd;}
+  .pg-b{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;padding:8px 14px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;text-decoration:none;display:inline-block;}
+  .pg-b:hover{background:rgba(255,255,255,.08);}
+
+  .wrap{max-width:1220px;margin:0 auto;padding:26px 22px 80px;}
+  .kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-2);font-weight:600;}
+  h1{font-family:var(--font-title);font-weight:800;font-size:28px;line-height:1.12;margin:6px 0 4px;color:var(--navy);}
+  .sub{margin:0 0 22px;color:var(--muted);font-size:14px;max-width:680px;}
+
+  .cols{display:grid;grid-template-columns:390px 1fr;gap:20px;align-items:start;}
+  @media (max-width:900px){.cols{grid-template-columns:1fr;}}
+
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-2);overflow:hidden;}
+  .panel .head{padding:16px 18px 12px;border-bottom:1px solid var(--line);}
+  .panel .head h2{font-family:var(--font-title);font-weight:700;font-size:15px;margin:0;color:var(--navy);display:flex;align-items:center;gap:9px;}
+  .num{background:var(--teal);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;font-family:var(--font-text);}
+  .panel .body{padding:16px 18px 18px;}
+
+  .search{position:relative;margin-bottom:12px;}
+  .search input{width:100%;padding:11px 13px 11px 38px;border:1px solid var(--hairline);border-radius:var(--r-sm);font:inherit;font-size:14px;}
+  .search input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.13);}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--faint);}
+  .qlist{max-height:560px;overflow:auto;display:flex;flex-direction:column;gap:7px;}
+  .qitem{border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;cursor:pointer;transition:border-color .12s, background .12s;}
+  .qitem:hover{border-color:var(--mint);background:var(--mint-ghost);}
+  .qitem.sel{border-color:var(--teal);background:var(--mint-soft);}
+  .qitem .nm{font-weight:700;font-size:13.5px;color:var(--navy);}
+  .qitem .mt{font-family:var(--font-mono);font-size:11px;color:var(--faint);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;}
+  .qempty{color:var(--faint);font-size:13px;text-align:center;padding:26px 0;}
+
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:13px;}
+  .kv b{color:var(--muted);font-weight:600;white-space:nowrap;}
+  .kv span{color:var(--ink);word-break:break-word;}
+
+  .gtitle{font-family:var(--font-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--teal-2);font-weight:600;margin:16px 0 8px;}
+  details.sec{border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:9px;background:#fff;}
+  details.sec summary{cursor:pointer;padding:11px 14px;font-weight:700;font-size:13px;color:var(--navy);list-style:none;display:flex;align-items:center;gap:8px;}
+  details.sec summary::before{content:'▸';color:var(--teal-2);transition:transform .15s;}
+  details.sec[open] summary::before{transform:rotate(90deg);}
+  details.sec .inner{padding:4px 14px 13px;border-top:1px dashed var(--hairline);}
+  .btn-copy{background:none;border:1px solid var(--hairline);border-radius:7px;padding:2px 8px;font-size:11px;cursor:pointer;color:var(--teal-2);font-weight:600;margin-left:6px;}
+  .btn-copy:hover{border-color:var(--teal);}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:99;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .ov{position:fixed;inset:0;z-index:90;background:rgba(0,30,38,.6);display:flex;align-items:center;justify-content:center;padding:18px;}
+  .ov .card-l{background:#fff;border-radius:18px;padding:34px 30px;width:380px;max-width:94vw;box-shadow:0 30px 80px -25px rgba(0,0,0,.55);}
+  .ov .brand{font-family:var(--font-title);font-weight:800;font-size:15px;color:var(--navy);margin-bottom:18px;}
+  .ov .brand i{color:var(--teal);font-style:normal;}
+  .ov h2{font-family:var(--font-title);margin:0 0 4px;color:var(--navy);font-size:22px;}
+  .ov p{margin:0 0 16px;color:var(--muted);font-size:13px;}
+  .ov label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin:13px 0 5px;text-transform:uppercase;letter-spacing:.04em;}
+  .ov input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--hairline);border-radius:10px;font-size:14px;font-family:inherit;}
+  .ov input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.15);}
+  .ov .btn-l{background:var(--navy);color:#fff;width:100%;justify-content:center;margin-top:20px;padding:13px;border:none;border-radius:10px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;}
+  .ov .btn-l:hover{background:var(--navy-2);}
+  .msg{font-size:12.5px;margin-top:12px;min-height:16px;}
+  .msg.err{color:#c0392b;}.msg.ok{color:var(--teal-2);}
+  #app{display:none;}
+  #det{display:none;}
+  #det.on{display:block;}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="pg-bar">
+    <span class="logo">Protect<i>Go</i> · COI</span>
+    <span class="area-tag">◆ CERTIFICATES OF INSURANCE</span>
+    <span class="sp"></span>
+    <a class="pg-b" href="generador-firmas-coi.html">Generador de Firmas</a>
+    <span class="user" id="pgUser"></span>
+    <button class="pg-b" data-act="logout">Salir</button>
+  </header>
+
+  <div class="wrap">
+    <div class="kicker">COI · Consulta de cotizaciones</div>
+    <h1>Cotizaciones generadas</h1>
+    <p class="sub">Busca cualquier cotización del equipo, revisa los datos del asegurado y copia lo que necesites para emitir los certificados. La lista incluye todas las quotes que se generan en el Quick Quote.</p>
+
+    <div class="cols">
+      <div class="panel">
+        <div class="head"><h2><span class="num">1</span> Buscar cotización</h2></div>
+        <div class="body">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="q" type="text" placeholder="Buscar por asegurado o # de quote…" autocomplete="off">
+          </div>
+          <div class="qlist" id="qlist"><div class="qempty">Cargando cotizaciones…</div></div>
+        </div>
+      </div>
+
+      <div class="panel" id="det">
+        <div class="head"><h2><span class="num">2</span> Datos del asegurado — <span id="dnm" style="color:var(--teal-2)"></span></h2></div>
+        <div class="body">
+          <div class="kv" id="clikv"></div>
+          <div class="gtitle">Todos los campos de la quote</div>
+          <div id="secs"><div class="qempty">Elige una cotización a la izquierda.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div class="ov" id="ov">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">COI</span></div>
+    <h2>Certificados</h2>
+    <p>Ingresa con la cuenta de COI para consultar las cotizaciones.</p>
+    <label>Email</label>
+    <input id="email" type="email" autocomplete="username" value="coi@protectgoservices.com">
+    <label>Contraseña</label>
+    <input id="pass" type="password" autocomplete="current-password">
+    <button class="btn-l" data-act="login">Entrar</button>
+    <div class="msg" id="msg"></div>
+  </div>
+</div>
+
+<!-- ===== BLOQUEO: solo COI ===== -->
+<div class="ov" id="ovBlock" style="display:none">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">COI</span></div>
+    <h2>Acceso restringido</h2>
+    <p>Este dashboard es exclusivo de <b>Certificados (COI)</b>. Tu cuenta <b id="ovBlockMail"></b> no tiene acceso.</p>
+    <button class="btn-l" data-act="logout">Salir e ingresar con otra cuenta</button>
+    <a href="index.html" style="display:block;text-align:center;margin-top:13px;color:var(--teal-2);font-weight:600;font-size:13px;text-decoration:none">&#8592; Volver al portal</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var sb=null, quotes=[], selQuote=null;
+var PERMITIDOS=['coi@protectgoservices.com'];
+
+var $=function(id){return document.getElementById(id);};
+function toast(t){var el=$('toast');el.textContent=t;el.classList.add('show');setTimeout(function(){el.classList.remove('show');},2400);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function F(data,key){try{var v=(data.fields||{})[key];return (v==null?'':String(v)).trim();}catch(e){return '';}}
+
+function extraerCliente(row,data){
+  data=data||{};
+  return {
+    insured:F(data,'sec-agency::Account Name::1')||row.account_name||'',
+    owner:F(data,'sec-agency::Owner Name::1'),
+    mailing:F(data,'sec-agency::Mailing Address::1'),
+    parking:F(data,'sec-agency::Parking Address::1'),
+    usdot:F(data,'sec-op::US DOT#::1'),
+    mc:F(data,'#opMC')||F(data,'sec-op::Filing MC::1'),
+    effective:F(data,'#opEffective'),
+    agente:F(data,'sec-agency::Representative::1'),
+    email:F(data,'sec-agency::Email::1'),
+    phone:F(data,'sec-agency::Phone::1'),
+    quoteNum:row.quote_number||''
+  };
+}
+
+/* ============ LISTA ============ */
+function pintarLista(){
+  var t=($('q').value||'').toLowerCase(), box=$('qlist'), html='';
+  var vis=quotes.filter(function(q){
+    return !t||(q.account_name||'').toLowerCase().indexOf(t)>=0||(q.quote_number||'').toLowerCase().indexOf(t)>=0;
+  });
+  if(!vis.length){box.innerHTML='<div class="qempty">Sin resultados.</div>';return;}
+  vis.slice(0,100).forEach(function(q){
+    var f=(q.updated_at||'').slice(0,10);
+    html+='<div class="qitem'+(selQuote&&selQuote.id===q.id?' sel':'')+'" data-id="'+q.id+'">'+
+      '<div class="nm">'+esc(q.account_name||'(sin nombre)')+'</div>'+
+      '<div class="mt"><span>'+esc(q.quote_number||'—')+'</span><span>'+esc(q.status||'')+'</span><span>'+f+'</span></div></div>';
+  });
+  box.innerHTML=html;
+}
+function cargarQuotes(){
+  sb.from('quick_quotes').select('id,account_name,quote_number,status,updated_at').order('updated_at',{ascending:false}).limit(500)
+    .then(function(r){
+      if(r.error){$('qlist').innerHTML='<div class="qempty">Error cargando: '+esc(r.error.message)+'</div>';return;}
+      quotes=r.data||[];pintarLista();
+    });
+}
+function seleccionarQuote(id){
+  var q=quotes.find(function(x){return x.id===id;});if(!q)return;
+  selQuote=q;pintarLista();
+  sb.from('quick_quotes').select('data').eq('id',id).single().then(function(r){
+    var data=(r.data&&r.data.data)||{};
+    pintarDetalle(q,data);
+  });
+}
+
+/* ============ DETALLE ============ */
+function pintarDetalle(q,data){
+  var c=extraerCliente(q,data);
+  $('dnm').textContent=c.insured||q.account_name||'';
+  var rows=[['Asegurado',c.insured],['Dueño',c.owner],['Dirección',c.mailing],['Parqueadero',c.parking],['USDOT',c.usdot],['MC',c.mc],['Efectiva',c.effective],['Quote #',c.quoteNum],['Estado',q.status],['Agente',c.agente],['Email',c.email],['Teléfono',c.phone]];
+  var h='';rows.forEach(function(r){if(r[1])h+='<b>'+esc(r[0])+'</b><span>'+esc(r[1])+' <button class="btn-copy" data-copy="'+esc(r[1])+'">copiar</button></span>';});
+  $('clikv').innerHTML=h||'<b>Ojo</b><span>esta cotización no tiene datos del asegurado diligenciados.</span>';
+
+  /* todos los campos, agrupados por sección */
+  var fields=data.fields||{}, grupos={}, orden=[];
+  Object.keys(fields).forEach(function(k){
+    var v=fields[k];if(v==null||String(v).trim()==='')return;
+    var parts=k.split('::');
+    var g=parts.length>1?parts[0]:'otros';
+    var lbl=parts.length>1?parts[1]+(parts[2]&&parts[2]!=='1'?' ('+parts[2]+')':''):k;
+    if(!grupos[g]){grupos[g]=[];orden.push(g);}
+    grupos[g].push([lbl,String(v)]);
+  });
+  var NOMBRES={'sec-agency':'Agencia / Asegurado','sec-op':'Operación','sec-veh':'Vehículos','sec-drv':'Conductores','sec-cov':'Coberturas','sec-risk':'Riesgos','otros':'Otros campos'};
+  var sh='';
+  orden.forEach(function(g){
+    var inner='';grupos[g].forEach(function(p){inner+='<b>'+esc(p[0])+'</b><span>'+esc(p[1])+'</span>';});
+    sh+='<details class="sec"><summary>'+esc(NOMBRES[g]||g)+' <span style="color:var(--faint);font-weight:500">('+grupos[g].length+')</span></summary><div class="inner"><div class="kv">'+inner+'</div></div></details>';
+  });
+  $('secs').innerHTML=sh||'<div class="qempty">Esta cotización no tiene campos guardados.</div>';
+  $('det').classList.add('on');
+}
+
+/* ============ EVENTOS ============ */
+document.addEventListener('click',function(e){
+  var cp=e.target.closest('.btn-copy');
+  if(cp){navigator.clipboard.writeText(cp.getAttribute('data-copy')||'').then(function(){toast('Copiado ✓');});return;}
+  var qi=e.target.closest('.qitem');if(qi){seleccionarQuote(qi.getAttribute('data-id'));return;}
+  var b=e.target.closest('[data-act]');if(!b)return;
+  var a=b.getAttribute('data-act');
+  if(a==='login')doLogin();else if(a==='logout')sb.auth.signOut();
+});
+document.addEventListener('input',function(e){if(e.target.id==='q')pintarLista();});
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&$('ov').style.display!=='none')doLogin();});
+
+/* ============ AUTH ============ */
+function msg(t,cls){var m=$('msg');if(m){m.textContent=t||'';m.className='msg '+(cls||'');}}
+function doLogin(){
+  var em=$('email').value.trim(),pw=$('pass').value;
+  if(!em||!pw){msg('Escribe email y contraseña.','err');return;}
+  msg('Entrando…');
+  sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){if(r.error)msg(r.error.message,'err');else msg('');});
+}
+function onAuthed(session){
+  var email=(session&&session.user?session.user.email:'')||'';
+  if(PERMITIDOS.indexOf(email.toLowerCase())<0){
+    $('app').style.display='none';$('ov').style.display='none';
+    $('ovBlockMail').textContent=email;$('ovBlock').style.display='flex';
+    return;
+  }
+  $('ovBlock').style.display='none';
+  $('pgUser').textContent=email;
+  $('ov').style.display='none';$('app').style.display='block';
+  cargarQuotes();
+}
+function onSignedOut(){$('app').style.display='none';$('ovBlock').style.display='none';$('ov').style.display='flex';}
+function init(){
+  if(!(window.supabase&&window.supabase.createClient)){msg('No se pudo cargar Supabase (revisa tu conexión).','err');$('ov').style.display='flex';return;}
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  sb.auth.getSession().then(function(r){if(r.data&&r.data.session)onAuthed(r.data.session);else onSignedOut();});
+  sb.auth.onAuthStateChange(function(evt,session){if(session)onAuthed(session);else onSignedOut();});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,60);});
+else setTimeout(init,60);
+})();
+</script>
+</body>
+</html>

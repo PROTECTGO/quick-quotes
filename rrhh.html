@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RRHH · Recursos Humanos — ProtectGo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --navy:#002F3D; --navy-2:#0a5b54; --teal:#229A82; --teal-2:#1a7a68;
+    --mint:#BADFCE; --mint-soft:#E4F2EB; --mint-ghost:#F2F8F5;
+    --amber:#FFB400; --amber-soft:#fff7e0; --papel:#FAF9F5; --surface:#fff;
+    --ink:#0D141A; --muted:#5a6a6e; --faint:#8a989a; --hairline:#d8e0de; --line:#e6ebe9;
+    --grad:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%);
+    --r-sm:10px; --r-md:14px; --r-lg:20px; --r-pill:999px;
+    --shadow-2:0 8px 24px -10px rgba(0,47,61,.16),0 2px 4px rgba(0,47,61,.05);
+    --shadow-3:0 28px 60px -28px rgba(0,47,61,.36),0 8px 20px -8px rgba(0,47,61,.10);
+    --font-title:"Montserrat",system-ui,sans-serif; --font-text:"Inter",system-ui,sans-serif; --font-mono:"IBM Plex Mono",monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-height:100vh;}
+
+  .pg-bar{position:sticky;top:0;z-index:40;height:58px;display:flex;align-items:center;gap:12px;padding:0 22px;background:var(--navy);color:#fff;box-shadow:0 2px 14px -6px rgba(0,0,0,.45);}
+  .pg-bar .logo{font-family:var(--font-title);font-weight:800;font-size:16px;letter-spacing:.2px;}
+  .pg-bar .logo i{color:var(--teal);font-style:normal;}
+  .pg-bar .area-tag{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;background:rgba(255,255,255,.12);color:var(--mint);padding:5px 10px;border-radius:var(--r-pill);}
+  .pg-bar .sp{flex:1;}
+  .pg-bar .user{font-family:var(--font-mono);font-size:12px;color:#9fc6bd;}
+  .pg-b{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;padding:8px 14px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;}
+  .pg-b:hover{background:rgba(255,255,255,.08);}
+
+  .hero{padding:46px 22px 18px;max-width:1080px;margin:0 auto;}
+  .hero .kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-2);font-weight:600;}
+  .hero h1{font-family:var(--font-title);font-weight:800;font-size:34px;line-height:1.1;margin:8px 0 6px;color:var(--navy);}
+  .hero p{margin:0;color:var(--muted);font-size:15px;max-width:620px;}
+
+  .grid{max-width:1080px;margin:0 auto;padding:22px 22px 70px;display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+  @media (max-width:720px){.grid{grid-template-columns:1fr;}.hero h1{font-size:27px;}}
+
+  .card{position:relative;display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px 24px 22px;text-decoration:none;color:inherit;transition:transform .18s,box-shadow .18s,border-color .18s;box-shadow:var(--shadow-2);overflow:hidden;}
+  .card.on:hover{transform:translateY(-4px);box-shadow:var(--shadow-3);border-color:var(--mint);}
+  .card.off{opacity:.62;cursor:not-allowed;}
+  .card::before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:var(--grad);}
+  .card .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .ico{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:var(--mint-ghost);color:var(--teal-2);flex:none;}
+  .ico svg{width:25px;height:25px;}
+  .tag{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.1em;padding:5px 9px;border-radius:var(--r-pill);background:var(--navy);color:#fff;}
+  .card h3{font-family:var(--font-title);font-weight:700;font-size:19px;margin:2px 0 0;color:var(--navy);}
+  .card p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.5;}
+  .foot{display:flex;align-items:center;gap:9px;margin-top:auto;padding-top:6px;}
+  .chip{font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:var(--r-pill);}
+  .chip.ready{background:var(--mint-soft);color:var(--teal-2);}
+  .chip.soon{background:#eef1f1;color:var(--faint);}
+  .go{margin-left:auto;font-size:13px;font-weight:700;color:var(--teal-2);display:inline-flex;align-items:center;gap:5px;}
+  .card.off .go{display:none;}
+
+  .pie{max-width:1080px;margin:0 auto;padding:0 22px 50px;color:var(--faint);font-size:12px;font-family:var(--font-mono);}
+
+  .ov{position:fixed;inset:0;z-index:90;background:rgba(0,30,38,.6);display:flex;align-items:center;justify-content:center;padding:18px;}
+  .ov .card-l{background:#fff;border-radius:18px;padding:34px 30px;width:380px;max-width:94vw;box-shadow:0 30px 80px -25px rgba(0,0,0,.55);}
+  .ov .brand{font-family:var(--font-title);font-weight:800;font-size:15px;color:var(--navy);margin-bottom:18px;}
+  .ov .brand i{color:var(--teal);font-style:normal;}
+  .ov h2{font-family:var(--font-title);margin:0 0 4px;color:var(--navy);font-size:22px;}
+  .ov p{margin:0 0 16px;color:var(--muted);font-size:13px;}
+  .ov label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin:13px 0 5px;text-transform:uppercase;letter-spacing:.04em;}
+  .ov input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--hairline);border-radius:10px;font-size:14px;font-family:inherit;}
+  .ov input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.15);}
+  .ov .btn-l{background:var(--navy);color:#fff;width:100%;justify-content:center;margin-top:20px;padding:13px;border:none;border-radius:10px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;}
+  .ov .btn-l:hover{background:var(--navy-2);}
+  .msg{font-size:12.5px;margin-top:12px;min-height:16px;}
+  .msg.err{color:#c0392b;}.msg.ok{color:var(--teal-2);}
+  #app{display:none;}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="pg-bar">
+    <span class="logo">Protect<i>Go</i> · RRHH</span>
+    <span class="area-tag">◆ RECURSOS HUMANOS</span>
+    <span class="sp"></span>
+    <span class="user" id="pgUser"></span>
+    <button class="pg-b" data-act="logout">Salir</button>
+  </header>
+
+  <section class="hero">
+    <div class="kicker">Recursos Humanos · Herramientas</div>
+    <h1>Bienvenida, equipo de RRHH</h1>
+    <p>Estas son las herramientas del área. Se irán agregando más a medida que se habiliten.</p>
+  </section>
+
+  <main class="grid">
+
+    <!-- Generador de Firmas RRHH -->
+    <a class="card on" href="generador-firmas-rrhh.html">
+      <div class="top">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c3 0 3-9 6-9s2 6 4 6 2-3 5-3"/><path d="M3 21h18"/></svg></div>
+        <span class="tag">RRHH</span>
+      </div>
+      <h3>Generador de Firmas</h3>
+      <p>Crea tu firma de correo con la marca ProtectGo: escribe tu nombre, elige tu cargo (Directora, Subdirectora o Asistente) y cópiala a Gmail.</p>
+      <div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
+    </a>
+
+    <!-- Próximas herramientas -->
+    <div class="card off">
+      <div class="top">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5"/><path d="M16.5 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M17.8 15.2c2 .7 3.3 2.2 3.7 4.8"/></svg></div>
+        <span class="tag">RRHH</span>
+      </div>
+      <h3>Más herramientas del área</h3>
+      <p>Este espacio se irá llenando con las especificaciones puntuales del dashboard de Recursos Humanos.</p>
+      <div class="foot"><span class="chip soon">Pendiente</span></div>
+    </div>
+
+  </main>
+
+  <div class="pie">ProtectGo Services · Dashboard RRHH · acceso exclusivo rrhh@</div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div class="ov" id="ov">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">RRHH</span></div>
+    <h2>Recursos Humanos</h2>
+    <p>Ingresa con la cuenta de RRHH para acceder a las herramientas del área.</p>
+    <label>Email</label>
+    <input id="email" type="email" autocomplete="username" value="rrhh@protectgoservices.com">
+    <label>Contraseña</label>
+    <input id="pass" type="password" autocomplete="current-password">
+    <button class="btn-l" data-act="login">Entrar</button>
+    <div class="msg" id="msg"></div>
+  </div>
+</div>
+
+<!-- ===== BLOQUEO: solo RRHH ===== -->
+<div class="ov" id="ovBlock" style="display:none">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">RRHH</span></div>
+    <h2>Acceso restringido</h2>
+    <p>Este dashboard es exclusivo de <b>Recursos Humanos (RRHH)</b>. Tu cuenta <b id="ovBlockMail"></b> no tiene acceso.</p>
+    <button class="btn-l" data-act="logout">Salir e ingresar con otra cuenta</button>
+    <a href="index.html" style="display:block;text-align:center;margin-top:13px;color:var(--teal-2);font-weight:600;font-size:13px;text-decoration:none">&#8592; Volver al portal</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var sb=null;
+var PERMITIDOS=['rrhh@protectgoservices.com'];
+
+var $=function(id){return document.getElementById(id);};
+function msg(t,cls){var m=$('msg');if(m){m.textContent=t||'';m.className='msg '+(cls||'');}}
+function doLogin(){
+  var em=$('email').value.trim(),pw=$('pass').value;
+  if(!em||!pw){msg('Escribe email y contraseña.','err');return;}
+  msg('Entrando…');
+  sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){if(r.error)msg(r.error.message,'err');else msg('');});
+}
+function onAuthed(session){
+  var email=(session&&session.user?session.user.email:'')||'';
+  if(PERMITIDOS.indexOf(email.toLowerCase())<0){
+    $('app').style.display='none';$('ov').style.display='none';
+    $('ovBlockMail').textContent=email;$('ovBlock').style.display='flex';
+    return;
+  }
+  $('ovBlock').style.display='none';
+  $('pgUser').textContent=email;
+  $('ov').style.display='none';$('app').style.display='block';
+}
+function onSignedOut(){$('app').style.display='none';$('ovBlock').style.display='none';$('ov').style.display='flex';}
+
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');if(!b)return;
+  var a=b.getAttribute('data-act');
+  if(a==='login')doLogin();else if(a==='logout')sb.auth.signOut();
+});
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&$('ov').style.display!=='none')doLogin();});
+
+function init(){
+  if(!(window.supabase&&window.supabase.createClient)){msg('No se pudo cargar Supabase (revisa tu conexión).','err');$('ov').style.display='flex';return;}
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  sb.auth.getSession().then(function(r){if(r.data&&r.data.session)onAuthed(r.data.session);else onSignedOut();});
+  sb.auth.onAuthStateChange(function(evt,session){if(session)onAuthed(session);else onSignedOut();});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,60);});
+else setTimeout(init,60);
+})();
+</script>
+</body>
+</html>

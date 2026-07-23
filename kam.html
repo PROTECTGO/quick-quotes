@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAM · Underwriting — ProtectGo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --navy:#002F3D; --navy-2:#0a5b54; --teal:#229A82; --teal-2:#1a7a68;
+    --mint:#BADFCE; --mint-soft:#E4F2EB; --mint-ghost:#F2F8F5;
+    --amber:#FFB400; --amber-soft:#fff7e0; --papel:#FAF9F5; --surface:#fff;
+    --ink:#0D141A; --muted:#5a6a6e; --faint:#8a989a; --hairline:#d8e0de; --line:#e6ebe9;
+    --grad:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%);
+    --r-sm:10px; --r-md:14px; --r-lg:20px; --r-pill:999px;
+    --shadow-2:0 8px 24px -10px rgba(0,47,61,.16),0 2px 4px rgba(0,47,61,.05);
+    --shadow-3:0 28px 60px -28px rgba(0,47,61,.36),0 8px 20px -8px rgba(0,47,61,.10);
+    --font-title:"Montserrat",system-ui,sans-serif; --font-text:"Inter",system-ui,sans-serif; --font-mono:"IBM Plex Mono",monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-height:100vh;}
+
+  .pg-bar{position:sticky;top:0;z-index:40;height:58px;display:flex;align-items:center;gap:12px;padding:0 22px;background:var(--navy);color:#fff;box-shadow:0 2px 14px -6px rgba(0,0,0,.45);}
+  .pg-bar .logo{font-family:var(--font-title);font-weight:800;font-size:16px;letter-spacing:.2px;}
+  .pg-bar .logo i{color:var(--teal);font-style:normal;}
+  .pg-bar .fam-tag{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;background:rgba(255,255,255,.12);color:var(--mint);padding:5px 10px;border-radius:var(--r-pill);}
+  .pg-bar .sp{flex:1;}
+  .pg-bar .user{font-family:var(--font-mono);font-size:12px;color:#9fc6bd;}
+  .pg-b{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;padding:8px 14px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;}
+  .pg-b:hover{background:rgba(255,255,255,.08);}
+
+  .wrap{max-width:1220px;margin:0 auto;padding:26px 22px 80px;}
+  .kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-2);font-weight:600;}
+  h1{font-family:var(--font-title);font-weight:800;font-size:28px;line-height:1.12;margin:6px 0 4px;color:var(--navy);}
+  .sub{margin:0 0 22px;color:var(--muted);font-size:14px;max-width:640px;}
+
+  .cols{display:grid;grid-template-columns:390px 1fr;gap:20px;align-items:start;}
+  @media (max-width:900px){.cols{grid-template-columns:1fr;}}
+
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-2);overflow:hidden;}
+  .panel .head{padding:16px 18px 12px;border-bottom:1px solid var(--line);}
+  .panel .head h2{font-family:var(--font-title);font-weight:700;font-size:15px;margin:0;color:var(--navy);display:flex;align-items:center;gap:9px;}
+  .num{background:var(--teal);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;font-family:var(--font-text);}
+  .panel .body{padding:16px 18px 18px;}
+
+  .search{position:relative;margin-bottom:12px;}
+  .search input{width:100%;padding:11px 13px 11px 38px;border:1px solid var(--hairline);border-radius:var(--r-sm);font:inherit;font-size:14px;}
+  .search input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.13);}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--faint);}
+  .qlist{max-height:430px;overflow:auto;display:flex;flex-direction:column;gap:7px;}
+  .qitem{border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;cursor:pointer;transition:border-color .12s, background .12s;}
+  .qitem:hover{border-color:var(--mint);background:var(--mint-ghost);}
+  .qitem.sel{border-color:var(--teal);background:var(--mint-soft);}
+  .qitem .nm{font-weight:700;font-size:13.5px;color:var(--navy);}
+  .qitem .mt{font-family:var(--font-mono);font-size:11px;color:var(--faint);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;}
+  .qempty{color:var(--faint);font-size:13px;text-align:center;padding:26px 0;}
+
+  .cli{display:none;margin-top:14px;border-top:1px dashed var(--hairline);padding-top:13px;}
+  .cli.on{display:block;}
+  .cli .t{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-2);font-weight:600;margin-bottom:8px;}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12.5px;}
+  .kv b{color:var(--muted);font-weight:600;white-space:nowrap;}
+  .kv span{color:var(--ink);word-break:break-word;}
+
+  .gtitle{font-family:var(--font-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--teal-2);font-weight:600;margin:4px 0 9px;}
+  .docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px;margin-bottom:16px;}
+  .doc{border:1px solid var(--line);border-radius:var(--r-md);padding:12px 13px;cursor:pointer;background:#fff;transition:.13s;position:relative;}
+  .doc:hover{border-color:var(--mint);box-shadow:var(--shadow-2);transform:translateY(-1px);}
+  .doc.sel{border-color:var(--teal);background:var(--mint-ghost);box-shadow:0 0 0 3px rgba(34,154,130,.14);}
+  .doc .cod{font-family:var(--font-mono);font-size:10px;color:var(--faint);letter-spacing:.06em;}
+  .doc .nm{font-weight:700;font-size:12.8px;color:var(--navy);margin-top:3px;line-height:1.35;}
+  .doc .st{font-size:10.5px;font-weight:600;margin-top:7px;display:inline-block;padding:3px 8px;border-radius:var(--r-pill);}
+  .doc .st.ok{background:var(--mint-soft);color:var(--teal-2);}
+  .doc .st.pend{background:var(--amber-soft);color:#9a6b00;}
+
+  #ffin{display:none;}
+  #ffin.on{display:block;}
+  .frm{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:640px){.frm{grid-template-columns:1fr;}}
+  .fld label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin:0 0 5px;text-transform:uppercase;letter-spacing:.04em;}
+  .fld input,.fld select{width:100%;padding:10px 12px;border:1px solid var(--hairline);border-radius:9px;font:inherit;font-size:14px;background:#fff;}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.13);}
+  .fld.full{grid-column:1 / -1;}
+  .fld .auto{font-size:10px;color:var(--teal-2);font-weight:700;margin-left:6px;letter-spacing:.05em;}
+  .fld.chkrow{display:flex;align-items:center;gap:9px;padding-top:24px;}
+  .fld.chkrow input{width:18px;height:18px;accent-color:var(--teal);}
+  .fld.chkrow label{margin:0;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);font-weight:500;}
+  .acts{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+  .btn{background:var(--navy);color:#fff;border:none;padding:12px 20px;border-radius:10px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;}
+  .btn:hover{background:var(--navy-2);}
+  .btn.sec{background:#fff;border:1px solid var(--hairline);color:var(--ink);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .hint{font-size:12px;color:var(--faint);margin-top:10px;line-height:1.5;}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:99;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .ov{position:fixed;inset:0;z-index:90;background:rgba(0,30,38,.6);display:flex;align-items:center;justify-content:center;padding:18px;}
+  .ov .card-l{background:#fff;border-radius:18px;padding:34px 30px;width:380px;max-width:94vw;box-shadow:0 30px 80px -25px rgba(0,0,0,.55);}
+  .ov .brand{font-family:var(--font-title);font-weight:800;font-size:15px;color:var(--navy);margin-bottom:18px;}
+  .ov .brand i{color:var(--teal);font-style:normal;}
+  .ov h2{font-family:var(--font-title);margin:0 0 4px;color:var(--navy);font-size:22px;}
+  .ov p{margin:0 0 16px;color:var(--muted);font-size:13px;}
+  .ov label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin:13px 0 5px;text-transform:uppercase;letter-spacing:.04em;}
+  .ov input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--hairline);border-radius:10px;font-size:14px;font-family:inherit;}
+  .ov input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.15);}
+  .ov .btn-l{background:var(--navy);color:#fff;width:100%;justify-content:center;margin-top:20px;padding:13px;border:none;border-radius:10px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;}
+  .ov .btn-l:hover{background:var(--navy-2);}
+  .msg{font-size:12.5px;margin-top:12px;min-height:16px;}
+  .msg.err{color:#c0392b;}.msg.ok{color:var(--teal-2);}
+  #app{display:none;}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="pg-bar">
+    <span class="logo">Protect<i>Go</i> · KAM</span>
+    <span class="fam-tag">◆ UNDERWRITING · MGA</span>
+    <span class="sp"></span>
+    <a class="pg-b" href="generador-firmas-kam.html" style="text-decoration:none;display:inline-block">Generador de Firmas</a>
+    <span class="user" id="pgUser"></span>
+    <button class="pg-b" data-act="logout">Salir</button>
+  </header>
+
+  <div class="wrap">
+    <div class="kicker">Underwriting · Paquetes de binder por MGA</div>
+    <h1>Documentos de binder</h1>
+    <p class="sub">Busca la cotización del asegurado que se va a bindear, elige el formulario del MGA / aseguradora, revisa los datos autollenados y genera el documento listo para enviar.</p>
+
+    <div class="cols">
+      <div class="panel">
+        <div class="head"><h2><span class="num">1</span> Asegurado / Cotización</h2></div>
+        <div class="body">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="q" type="text" placeholder="Buscar por asegurado o # de quote…" autocomplete="off">
+          </div>
+          <div class="qlist" id="qlist"><div class="qempty">Cargando cotizaciones…</div></div>
+
+          <div class="cli" id="cli">
+            <div class="t">Datos que se van a usar</div>
+            <div class="kv" id="clikv"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <div class="panel">
+          <div class="head"><h2><span class="num">2</span> ¿Qué formulario necesitas?</h2></div>
+          <div class="body" id="docsWrap">
+            <div class="qempty">El paquete de MGAs está en montaje — los formularios se cargan a medida que lleguen los PDFs de cada compañía.</div>
+          </div>
+        </div>
+
+        <div class="panel" id="ffin">
+          <div class="head"><h2><span class="num">3</span> Datos del binder — <span id="fdoc" style="color:var(--teal-2)"></span></h2></div>
+          <div class="body">
+            <div class="frm" id="frm"></div>
+            <div class="acts">
+              <button class="btn" id="btnGen">Generar documento</button>
+              <button class="btn sec" id="btnLimpiar">Limpiar campos</button>
+            </div>
+            <div class="hint" id="fhint"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="ov">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">KAM</span></div>
+    <h2>Underwriting</h2>
+    <p>Ingresa con la cuenta de KAM para diligenciar los documentos de binder.</p>
+    <label>Email</label>
+    <input id="email" type="email" autocomplete="username" value="kam@protectgoservices.com">
+    <label>Contraseña</label>
+    <input id="pass" type="password" autocomplete="current-password">
+    <button class="btn-l" data-act="login">Entrar</button>
+    <div class="msg" id="msg"></div>
+  </div>
+</div>
+
+<!-- ===== BLOQUEO: solo Underwriting ===== -->
+<div class="ov" id="ovBlock" style="display:none">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">KAM</span></div>
+    <h2>Acceso restringido</h2>
+    <p>Este dashboard es exclusivo de <b>Underwriting (KAM)</b>. Tu cuenta <b id="ovBlockMail"></b> no tiene acceso.</p>
+    <button class="btn-l" data-act="logout">Salir e ingresar con otra cuenta</button>
+    <a href="index.html" style="display:block;text-align:center;margin-top:13px;color:var(--teal-2);font-weight:600;font-size:13px;text-decoration:none">&#8592; Volver al portal</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script>
+/* ===== MAPAS DE LLENADO (generados al calibrar cada PDF) =====
+   Cada entrada: id → { file:'<subcarpeta>/<archivo>.pdf', type:'acroform'|'overlay',
+   fields:[{key,label, pdfField?  ← si el PDF tiene campos rellenables,
+            page,x,y,size,maxWidth? ← si es overlay (PDF plano)}] }        */
+var MAPAS={};
+</script>
+<script>
+(function(){
+"use strict";
+var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PDF_BASE="kam-docs/";
+var DEMO=/[?&]demo=1/.test(location.search);
+var sb=null, quotes=[], selQuote=null, selDoc=null, cliente={};
+
+/* ============ CATÁLOGO ============
+   GRUPOS: un grupo por MGA / aseguradora. key = subcarpeta en kam-docs/.
+   DOCS:   g = key del grupo. Se agregan a medida que lleguen los PDFs.   */
+var GRUPOS=[
+  /* {key:'ejemplo-mga', nm:'Ejemplo MGA — binder & aplicaciones'}, */
+];
+var DOCS=[
+  /* {id:'ej01', g:'ejemplo-mga', cod:'BINDER', nm:'Ejemplo — Binder Application'}, */
+];
+
+/* ============ HELPERS ============ */
+var $=function(id){return document.getElementById(id);};
+function toast(t){var el=$('toast');el.textContent=t;el.classList.add('show');setTimeout(function(){el.classList.remove('show');},2600);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function F(data,key){try{var v=(data.fields||{})[key];return (v==null?'':String(v)).trim();}catch(e){return '';}}
+function fmtFecha(v){ if(!v) return ''; var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v); return m ? (m[2]+'/'+m[3]+'/'+m[1]) : v; }
+function hoyISO(){ var d=new Date(); return d.toISOString().slice(0,10); }
+
+function extraerCliente(row,data){
+  data=data||{};
+  return {
+    insured:F(data,'sec-agency::Account Name::1')||row.account_name||'',
+    owner:F(data,'sec-agency::Owner Name::1'),
+    mailing:F(data,'sec-agency::Mailing Address::1'),
+    parking:F(data,'sec-agency::Parking Address::1'),
+    usdot:F(data,'sec-op::US DOT#::1'),
+    mc:F(data,'#opMC')||F(data,'sec-op::Filing MC::1'),
+    effective:F(data,'#opEffective'),
+    agente:F(data,'sec-agency::Representative::1'),
+    email:F(data,'sec-agency::Email::1'),
+    phone:F(data,'sec-agency::Phone::1'),
+    quoteNum:row.quote_number||''
+  };
+}
+
+/* ============ QUOTES ============ */
+function pintarLista(){
+  var t=($('q').value||'').toLowerCase(), box=$('qlist'), html='';
+  var vis=quotes.filter(function(q){
+    return !t||(q.account_name||'').toLowerCase().indexOf(t)>=0||(q.quote_number||'').toLowerCase().indexOf(t)>=0;
+  });
+  if(!vis.length){box.innerHTML='<div class="qempty">Sin resultados.</div>';return;}
+  vis.slice(0,80).forEach(function(q){
+    var f=(q.updated_at||'').slice(0,10);
+    html+='<div class="qitem'+(selQuote&&selQuote.id===q.id?' sel':'')+'" data-id="'+q.id+'">'+
+      '<div class="nm">'+esc(q.account_name||'(sin nombre)')+'</div>'+
+      '<div class="mt"><span>'+esc(q.quote_number||'—')+'</span><span>'+esc(q.status||'')+'</span><span>'+f+'</span></div></div>';
+  });
+  box.innerHTML=html;
+}
+function cargarQuotes(){
+  if(DEMO){
+    quotes=[{id:'d1',account_name:'BUSY BEE TRANSPORT CORP',quote_number:'QQ-2026-0117',status:'enviada',updated_at:'2026-07-15'},
+            {id:'d2',account_name:'COLLADO SERVICES LLC',quote_number:'QQ-2026-0093',status:'borrador',updated_at:'2026-07-10'}];
+    pintarLista();return;
+  }
+  sb.from('quick_quotes').select('id,account_name,quote_number,status,updated_at').order('updated_at',{ascending:false}).limit(400)
+    .then(function(r){
+      if(r.error){$('qlist').innerHTML='<div class="qempty">Error cargando: '+esc(r.error.message)+'</div>';return;}
+      quotes=r.data||[];pintarLista();
+    });
+}
+function seleccionarQuote(id){
+  var q=quotes.find(function(x){return x.id===id;});if(!q)return;
+  selQuote=q;pintarLista();
+  if(DEMO){
+    cliente={insured:q.account_name,owner:'Pablo Maldonado',mailing:'11403 Fort Bridger, San Antonio TX 78245',parking:'',usdot:'4350214',mc:'MC-1683920',effective:'2026-08-01',agente:'Andrés',email:'',phone:'',quoteNum:q.quote_number};
+    pintarCliente();montarForm();return;
+  }
+  sb.from('quick_quotes').select('data').eq('id',id).single().then(function(r){
+    cliente=extraerCliente(q,(r.data&&r.data.data)||{});
+    pintarCliente();montarForm();
+  });
+}
+function pintarCliente(){
+  var c=cliente,rows=[['Asegurado',c.insured],['Dueño',c.owner],['Dirección',c.mailing],['USDOT',c.usdot],['MC',c.mc],['Efectiva',c.effective],['Quote',c.quoteNum],['Agente',c.agente]];
+  var h='';rows.forEach(function(r){if(r[1])h+='<b>'+r[0]+'</b><span>'+esc(r[1])+'</span>';});
+  $('clikv').innerHTML=h||'<b>Ojo</b><span>esta cotización no tiene datos del asegurado diligenciados.</span>';
+  $('cli').classList.add('on');
+}
+
+/* ============ CATÁLOGO ============ */
+function pintarDocs(){
+  var box=$('docsWrap');
+  if(!DOCS.length){
+    box.innerHTML='<div class="qempty">El paquete de MGAs está en montaje — los formularios se cargan a medida que lleguen los PDFs de cada compañía.</div>';
+    return;
+  }
+  var h='';
+  GRUPOS.forEach(function(g){
+    var cards='';
+    DOCS.filter(function(d){return d.g===g.key;}).forEach(function(d){
+      var listo=!!MAPAS[d.id];
+      cards+='<div class="doc'+(selDoc&&selDoc.id===d.id?' sel':'')+'" data-doc="'+d.id+'">'+
+        '<div class="cod">'+esc(d.cod)+'</div><div class="nm">'+esc(d.nm)+'</div>'+
+        '<span class="st '+(listo?'ok':'pend')+'">'+(listo?'Listo':'En montaje')+'</span></div>';
+    });
+    if(cards)h+='<div class="gtitle">'+esc(g.nm)+'</div><div class="docs">'+cards+'</div>';
+  });
+  box.innerHTML=h||'<div class="qempty">Sin formularios registrados todavía.</div>';
+}
+function seleccionarDoc(id){
+  selDoc=DOCS.find(function(d){return d.id===id;});pintarDocs();montarForm();
+  $('ffin').classList.add('on');
+  $('ffin').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ============ FORMULARIO ============ */
+function fldHTML(id,lbl,tipo,val,auto){
+  var full=(tipo==='full')?' full':'';
+  var t=(tipo==='date')?'date':'text';
+  return '<div class="fld'+full+'"><label>'+esc(lbl)+(auto?' <span class="auto">AUTO</span>':'')+'</label>'+
+    '<input id="'+id+'" type="'+t+'" value="'+esc(val||'')+'"></div>';
+}
+function montarForm(){
+  if(!selDoc)return;
+  $('fdoc').textContent=selDoc.cod+' · '+selDoc.nm;
+  var h='';
+  /* Datos del asegurado — comunes, autollenados y editables */
+  h+=fldHTML('f_insured','Asegurado (Named Insured)','full',cliente.insured,true);
+  h+=fldHTML('f_usdot','USDOT','text',cliente.usdot,true);
+  h+=fldHTML('f_mc','MC','text',cliente.mc,true);
+  h+=fldHTML('f_ref','Referencia / Quote','text',cliente.quoteNum,true);
+  h+=fldHTML('f_signer','Nombre de quien firma (cliente)','full',cliente.owner,true);
+
+  var mapa=MAPAS[selDoc.id];
+  if(mapa){
+    var radios={};
+    mapa.fields.forEach(function(f){
+      if(f.kind==='radio'){ (radios[f.pdfField]=radios[f.pdfField]||[]).push(f); return; }
+      if(/^chk_/.test(f.key)){
+        h+='<div class="fld chkrow"><input type="checkbox" id="f_'+f.key+'"><label for="f_'+f.key+'">'+esc(f.label||f.key)+'</label></div>';
+        return;
+      }
+      if(f.key==='insured'||f.key==='usdot'||f.key==='mc'||f.key==='signer')return; /* ya están arriba */
+      var val='';
+      if(f.key==='entity_name'||f.key==='company') val=cliente.insured||'';
+      if(f.key==='owner'||f.key==='printed_name'||f.key==='account_title') val=cliente.owner||'';
+      if(f.key==='addr'||f.key==='mailing') val=cliente.mailing||'';
+      if(f.key==='parking') val=cliente.parking||'';
+      if(f.key==='effective'||f.key==='effective_date') val=cliente.effective||'';
+      if(f.key==='sign_date'||f.key==='agreement_date'||f.key==='date') val=hoyISO();
+      if(f.key==='email') val=cliente.email||'';
+      if(f.key==='phone') val=cliente.phone||'';
+      if(f.key==='agent'||f.key==='representative') val=cliente.agente||'';
+      h+=fldHTML('f_'+f.key,(f.label||f.key),(/date/.test(f.key)?'date':'text'),val, val!=='' && !/date/.test(f.key));
+    });
+    Object.keys(radios).forEach(function(g){
+      var ops=radios[g].map(function(f){return '<option value="'+esc(f.checkValue)+'">'+esc(f.label||f.key)+'</option>';}).join('');
+      h+='<div class="fld full"><label>'+esc(g)+'</label><select id="f_radio_'+g.replace(/\W/g,'_')+'" data-group="'+esc(g)+'"><option value="">— no marcar —</option>'+ops+'</select></div>';
+    });
+  }
+  $('frm').innerHTML=h;
+  var listo=!!mapa;
+  $('fhint').textContent = listo
+    ? 'Al generar se descarga el PDF oficial del MGA con los datos puestos, y se abre para revisarlo antes de enviar. Las partes técnicas del binder se ajustan a mano sobre los campos de arriba.'
+    : 'Este formulario todavía está en montaje: falta calibrar el PDF del MGA. Los datos del cliente ya quedan listos para cuando esté.';
+  $('btnGen').disabled=!listo;
+}
+function limpiar(){montarForm();toast('Campos restablecidos');}
+
+function valorCampo(id){ var el=$(id); if(!el) return ''; var v=el.value.trim(); return el.type==='date'?fmtFecha(v):v; }
+
+/* ============ GENERAR — PDFs de MGAs ============ */
+async function generarPDF(){
+  var mapa=MAPAS[selDoc.id]; if(!mapa){toast('Formulario en montaje.');return;}
+  toast('Generando PDF…');
+  try{
+    var resp=await fetch(PDF_BASE+mapa.file.split('/').map(encodeURIComponent).join('/'));
+    if(!resp.ok)throw new Error('No se encontró '+mapa.file+' (sube la carpeta kam-docs al repo)');
+    var bytes=await resp.arrayBuffer();
+    var pdf=await PDFLib.PDFDocument.load(bytes,{ignoreEncryption:true});
+    var helv=await pdf.embedFont(PDFLib.StandardFonts.Helvetica);
+    var form=null; try{form=pdf.getForm();}catch(e){}
+    /* limpiar valores viejos que el PDF traiga guardados (datos de clientes anteriores) */
+    if(form){
+      form.getFields().forEach(function(fl){
+        try{
+          if(fl instanceof PDFLib.PDFTextField) fl.setText('');
+          else if(fl instanceof PDFLib.PDFCheckBox) fl.uncheck();
+        }catch(e){}
+      });
+    }
+    var pages=pdf.getPages();
+    var radiosSel={};
+    mapa.fields.forEach(function(f){
+      if(f.kind==='radio'){
+        var sel=document.getElementById('f_radio_'+f.pdfField.replace(/\W/g,'_'));
+        if(sel&&sel.value&&!(f.pdfField in radiosSel)) radiosSel[f.pdfField]=sel.value;
+        return;
+      }
+      var esChk=/^chk_/.test(f.key);
+      var v = esChk ? (document.getElementById('f_'+f.key)&&document.getElementById('f_'+f.key).checked?'X':'') : valorCampo('f_'+f.key);
+      if(!v)return;
+      if(f.pdfField && form){
+        try{
+          if(f.kind==='checkbox'){ form.getCheckBox(f.pdfField).check(); }
+          else { form.getTextField(f.pdfField).setText(String(v)); }
+        }catch(e){ console.warn('campo',f.pdfField,e); }
+      } else if(f.x!=null){
+        var pg=pages[f.page||0]; if(!pg)return;
+        pg.drawText(String(v),{x:f.x,y:f.y,size:f.size||9,font:helv,color:PDFLib.rgb(0.05,0.09,0.13),maxWidth:f.maxWidth||undefined});
+      }
+    });
+    Object.keys(radiosSel).forEach(function(g){
+      try{ form.getRadioGroup(g).select(radiosSel[g].replace(/^\//,'')); }catch(e){ console.warn('radio',g,e); }
+    });
+    if(form){ try{ form.updateFieldAppearances(helv); }catch(e){} }
+    var out=await pdf.save();
+    var nombre=(selDoc.nm.split('—')[0]).trim()+' - '+(valorCampo('f_insured')||'documento')+'.pdf';
+    var blob=new Blob([out],{type:'application/pdf'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download=nombre;document.body.appendChild(a);a.click();a.remove();
+    window.open(url,'_blank');
+    toast('PDF generado ✓');
+  }catch(e){ console.error(e); toast('Error: '+e.message); }
+}
+
+function generar(){
+  if(!selDoc){toast('Elige primero un formulario.');return;}
+  generarPDF();
+}
+
+/* ============ EVENTOS ============ */
+document.addEventListener('click',function(e){
+  var qi=e.target.closest('.qitem');if(qi){seleccionarQuote(qi.getAttribute('data-id'));return;}
+  var dc=e.target.closest('.doc');if(dc){seleccionarDoc(dc.getAttribute('data-doc'));return;}
+  if(e.target.id==='btnGen'){generar();return;}
+  if(e.target.id==='btnLimpiar'){limpiar();return;}
+  var b=e.target.closest('[data-act]');if(!b)return;
+  var a=b.getAttribute('data-act');
+  if(a==='login')doLogin();else if(a==='logout')sb.auth.signOut();
+});
+document.addEventListener('input',function(e){if(e.target.id==='q')pintarLista();});
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&$('ov').style.display!=='none')doLogin();});
+
+/* ============ AUTH ============ */
+function msg(t,cls){var m=$('msg');if(m){m.textContent=t||'';m.className='msg '+(cls||'');}}
+function doLogin(){
+  var em=$('email').value.trim(),pw=$('pass').value;
+  if(!em||!pw){msg('Escribe email y contraseña.','err');return;}
+  msg('Entrando…');
+  sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){if(r.error)msg(r.error.message,'err');else msg('');});
+}
+var PERMITIDOS=['kam@protectgoservices.com'];
+function onAuthed(session){
+  var email=(session&&session.user?session.user.email:'')||'';
+  if(PERMITIDOS.indexOf(email.toLowerCase())<0){
+    $('app').style.display='none';$('ov').style.display='none';
+    $('ovBlockMail').textContent=email;$('ovBlock').style.display='flex';
+    return;
+  }
+  $('ovBlock').style.display='none';
+  $('pgUser').textContent=email;
+  $('ov').style.display='none';$('app').style.display='block';
+  pintarDocs();cargarQuotes();
+}
+function onSignedOut(){$('app').style.display='none';$('ovBlock').style.display='none';$('ov').style.display='flex';}
+function init(){
+  if(DEMO){$('ov').style.display='none';$('app').style.display='block';$('pgUser').textContent='kam@protectgoservices.com (demo)';pintarDocs();cargarQuotes();return;}
+  if(!(window.supabase&&window.supabase.createClient)){msg('No se pudo cargar Supabase (revisa tu conexión).','err');$('ov').style.display='flex';return;}
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  sb.auth.getSession().then(function(r){if(r.data&&r.data.session)onAuthed(r.data.session);else onSignedOut();});
+  sb.auth.onAuthStateChange(function(evt,session){if(session)onAuthed(session);else onSignedOut();});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,60);});
+else setTimeout(init,60);
+})();
+</script>
+</body>
+</html>

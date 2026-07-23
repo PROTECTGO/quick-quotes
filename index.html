@@ -187,6 +187,29 @@
         <div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
       </a>
 
+    
+      <!-- KAM (solo kam@) -->
+      <a class="card on" id="card-kam" href="kam.html" style="display:none">
+        <div class="top">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="2.5"/><path d="M8 8V6.5A2.5 2.5 0 0 1 10.5 4h3A2.5 2.5 0 0 1 16 6.5V8"/><path d="M3 13h18"/></svg></div>
+          <span class="tag">KAM</span>
+        </div>
+        <h3>Dashboard KAM</h3>
+        <p>Underwriting: documentos de binder por MGA con datos autollenados de la quote, y el generador de firmas del área.</p>
+        <div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
+      </a>
+
+      <!-- Firmas Endorsement (solo endorsement@) -->
+      <a class="card on" id="card-end" href="generador-firmas-endorsement.html" style="display:none">
+        <div class="top">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c3 0 3-9 6-9s2 6 4 6 2-3 5-3"/><path d="M3 21h18"/></svg></div>
+          <span class="tag">END</span>
+        </div>
+        <h3>Firmas &middot; Endorsement</h3>
+        <p>Tu firma de correo oficial del equipo de Endorsements, con la tarjeta del área — lista para Gmail.</p>
+        <div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
+      </a>
+
     </main>
 
     <div class="pie">ProtectGo Services · Documentos Interactivos (009) · acceso por cuenta Supabase</div>
@@ -266,14 +289,19 @@
   (function(){
     var MAPA={"rrhh@protectgoservices.com":"card-rrhh","coi@protectgoservices.com":"card-coi"};
     var EXTERNOS=["gerencia@leonis-go.com"];
+    var EXTRA={"kam@protectgoservices.com":"card-kam","endorsement@protectgoservices.com":"card-end"};
     function aplicar(email){
       Object.keys(MAPA).forEach(function(k){
         var el=document.getElementById(MAPA[k]);
         if(el) el.style.display=(email===k)?"flex":"none";
       });
+      Object.keys(EXTRA).forEach(function(k){
+        var el=document.getElementById(EXTRA[k]);
+        if(el) el.style.display=(email===k)?"flex":"none";
+      });
       var externo=EXTERNOS.indexOf(email)>=0;
       document.querySelectorAll(".grid .card").forEach(function(c){
-        if(c.id==="card-rrhh"||c.id==="card-coi") return;
+        if(c.id==="card-rrhh"||c.id==="card-coi"||c.id==="card-kam"||c.id==="card-end") return;
         var href=(c.getAttribute("href")||"");
         if(externo) c.style.display=(href.indexOf("quick-quote.html")>=0)?"flex":"none";
         else if(MAPA[email]) c.style.display="none";

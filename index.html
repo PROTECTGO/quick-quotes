@@ -305,6 +305,7 @@
         var href=(c.getAttribute("href")||"");
         if(externo) c.style.display=(href.indexOf("quick-quote.html")>=0)?"flex":"none";
         else if(MAPA[email]) c.style.display="none";
+        else if(EXTRA[email] && (href.indexOf("generador-firmas.html")>=0||href.indexOf("tarjetas.html")>=0)) c.style.display="none";
         else c.style.display="";
       });
     }

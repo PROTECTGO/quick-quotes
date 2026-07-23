@@ -55,12 +55,8 @@
 
   /* ===== HOJA / VISTA PREVIA ===== */
   .hoja-wrap{background:#e7ebea;border-radius:var(--r-lg);padding:26px;overflow:auto;}
-  .hoja{width:816px;min-height:1056px;margin:0 auto;background:#fff;box-shadow:0 10px 40px -12px rgba(0,0,0,.3);padding:0;position:relative;font-family:'Inter',Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#28323B;background-image:var(--membrete);background-size:816px 1056px;background-repeat:repeat-y;}
-  .doc-tab{width:100%;border-collapse:collapse;}
-  .doc-tab .sp-top{height:175px;}
-  .doc-tab .sp-bot{height:170px;}
-  .doc-tab td.cuerpo{padding:0 64px;vertical-align:top;}
-  #bgPrint{display:none;}
+  .hoja{width:816px;height:1056px;margin:0 auto 26px;background-color:#fff;box-shadow:0 10px 40px -12px rgba(0,0,0,.3);padding:175px 64px 0;box-sizing:border-box;overflow:hidden;position:relative;font-family:'Inter',Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#28323B;background-image:var(--membrete);background-size:816px 1056px;background-repeat:no-repeat;}
+  #measurer{position:absolute;left:-9999px;top:0;width:688px;height:auto;min-height:0;padding:0;margin:0;background:none;box-shadow:none;overflow:visible;}
   .hoja .banda{display:flex;gap:18px;background:#F2F8F5;border-radius:6px;padding:10px 16px;margin-bottom:22px;}
   .hoja .banda div{flex:1;}
   .hoja .banda .lb{font-family:'IBM Plex Mono',monospace;font-size:8.5px;font-weight:600;letter-spacing:.14em;color:#229A82;text-transform:uppercase;margin-bottom:2px;}
@@ -99,17 +95,12 @@
   @media print{
     html{background:#fff;}
     html,body{margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    body,.layout,.hoja-wrap,.hoja{background:transparent !important;}
-    .pg-bar,.layout > .panel,.toast,.ov{display:none !important;}
+    body,.layout,.hoja-wrap{background:transparent !important;}
+    .pg-bar,.layout > .panel,.toast,.ov,#measurer{display:none !important;}
     .layout{display:block;padding:0;max-width:none;}
     .hoja-wrap{padding:0;border-radius:0;overflow:visible;}
-    .hoja{width:auto;min-height:0;box-shadow:none;margin:0;}
-    #bgPrint{display:block;position:fixed;inset:0;width:100%;height:100%;z-index:-1;object-fit:fill;}
-    .doc-tab thead{display:table-header-group;}
-    .doc-tab tfoot{display:table-footer-group;}
-    .doc-tab .sp-top{height:1.85in;}
-    .doc-tab .sp-bot{height:1.75in;}
-    .doc-tab td.cuerpo{padding:0 0.85in;}
+    .hoja{margin:0;box-shadow:none;width:8.5in;height:11in;background-size:8.5in 11in;padding:1.82in 0.67in 0;page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .hoja:last-child{page-break-after:auto;}
     @page{size:letter;margin:0;}
   }
 </style>
@@ -212,18 +203,12 @@
 
     <!-- ===== VISTA PREVIA ===== -->
     <div class="hoja-wrap">
-      <div class="hoja">
-        <table class="doc-tab">
-          <thead><tr><td class="sp-top"></td></tr></thead>
-          <tbody><tr><td class="cuerpo" id="hoja"></td></tr></tbody>
-          <tfoot><tr><td class="sp-bot"></td></tr></tfoot>
-        </table>
-      </div>
+      <div id="hojaPages"></div>
     </div>
   </div>
 </div>
 
-<img id="bgPrint" alt="">
+<div class="hoja" id="measurer" aria-hidden="true"></div>
 
 <div class="toast" id="toast"></div>
 
@@ -365,6 +350,29 @@ function renderCompromiso(){
   h+=pieHoja();
   return h;
 }
+var CONTENT_H=711; // 1056 - 175 (zona logo) - 170 (zona pie)
+function paginar(){
+  var m=$('measurer');
+  var kids=[].slice.call(m.children);
+  if(!kids.length){$('hojaPages').innerHTML='<div class="hoja"></div>';return;}
+  var pages=[],cur=[],startY=kids[0].offsetTop;
+  kids.forEach(function(k){
+    var bot=k.offsetTop+k.offsetHeight;
+    if(bot-startY>CONTENT_H&&cur.length){
+      // no dejar un título de sección huérfano al final de la hoja
+      var arrastra=[];
+      while(cur.length&&/(^|\s)sec-t(\s|$)/.test(cur[cur.length-1].className||'')){arrastra.unshift(cur.pop());}
+      if(cur.length)pages.push(cur);
+      cur=arrastra;
+      startY=(arrastra.length?arrastra[0]:k).offsetTop;
+    }
+    cur.push(k);
+  });
+  if(cur.length)pages.push(cur);
+  $('hojaPages').innerHTML=pages.map(function(list){
+    return '<div class="hoja">'+list.map(function(n){return n.outerHTML;}).join('')+'</div>';
+  }).join('');
+}
 function render(){
   var f=$('fFormato').value;
   $('grpLlamado').style.display=f==='llamado'?'block':'none';
@@ -375,7 +383,11 @@ function render(){
     d.style.display='block';
     d.innerHTML='<b>'+esc(c.nombre)+'</b> · <span class="mono">C.C. '+esc(c.cedula||'—')+'</span><br>'+esc(c.cargo||'Sin cargo')+(c.area?(' · '+esc(c.area)):'')+(c.correo?('<br>'+esc(c.correo)):'');
   } else d.style.display='none';
-  $('hoja').innerHTML=f==='llamado'?renderLlamado():renderCompromiso();
+  var m=$('measurer');
+  m.innerHTML=f==='llamado'?renderLlamado():renderCompromiso();
+  var imgs=[].slice.call(m.querySelectorAll('img')).filter(function(i){return !i.complete;});
+  if(imgs.length){imgs.forEach(function(i){i.onload=paginar;i.onerror=paginar;});}
+  paginar();
 }
 
 // ===== Registro + impresión =====
@@ -441,7 +453,6 @@ document.addEventListener('keydown',function(e){if(e.key==='Enter'&&$('ov').styl
 
 function wire(){
   document.documentElement.style.setProperty('--membrete','url("'+MEMBRETE_B64+'")');
-  $('bgPrint').src=MEMBRETE_B64;
   $('fFecha').value=hoyISO();
   var mesAct=MESES[new Date().getMonth()];
   $('fMes').value=mesAct.charAt(0).toUpperCase()+mesAct.slice(1)+' '+new Date().getFullYear();

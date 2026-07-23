@@ -154,6 +154,16 @@
     <!-- ========== REGISTRAR ========== -->
     <section class="view act" id="sec-reg">
       <div class="card">
+        <h2>Pegar la solicitud del correo <small>se autollena el formulario de abajo</small></h2>
+        <div class="hint" style="margin-bottom:8px">Copia el texto del correo de solicitud y pégalo aquí. El sistema reconoce al colaborador, el tipo, las fechas, las horas y el motivo — tú solo completas quién aprobó y registras.</div>
+        <div class="f"><textarea id="correoTxt" style="min-height:110px" placeholder="Ej:&#10;Solicitud de permiso&#10;Nombre: Santiago Valencia&#10;Tipo: cita médica&#10;Fecha: 5 de agosto&#10;Hora: de 2:00 pm a 4:00 pm&#10;Motivo: cita en SAMEIN&#10;Soporte: sí, adjunto"></textarea></div>
+        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn" id="btnLeer" style="width:auto">Leer y llenar formulario</button>
+          <button class="btn sec" id="btnPlantilla" style="width:auto">Copiar plantilla para el equipo</button>
+        </div>
+        <div class="hint" id="parseRes" style="margin-top:10px"></div>
+      </div>
+      <div class="card">
         <h2>Nuevo registro <small>según la Guía de Permisos v2</small></h2>
         <div class="note amber" id="noCola" style="display:none">Aún no hay colaboradores registrados. Ve a la pestaña <b>Colaboradores</b> y agrégalos primero (nombre y cédula).</div>
         <div class="frm">
@@ -234,6 +244,7 @@
           </div>
         </div>
         <div class="hint" id="tipoHint" style="margin-top:10px"></div>
+        <div id="semaforo" style="display:none;margin-top:14px"></div>
         <div class="tope" id="tope" style="display:none">
           <span>Permisos personales del mes:</span>
           <div class="barw"><div class="barf" id="topeBar" style="width:0%"></div></div>
@@ -389,20 +400,22 @@ var PERMITIDOS=['rrhh@protectgoservices.com','sales@protectgoservices.com'];
 var TOPE_MES=8;
 
 // Catálogo (Guía v2): repone = requiere reposición por defecto; personal = cuenta al tope 8h/mes
+// canasta: 'ley' = preaprobado por regla · 'cond' = preaprobable si cumple condiciones objetivas · 'subj' = criterio del jefe
+// soporteReq = exige soporte para el preaprobado · urgente = exento de anticipación 48h
 var TIPOS={
-  'Cita médica (con soporte)':        {repone:false,personal:false,hint:'Soporte obligatorio (EPS / certificado). No se repone: cubre la cita y el desplazamiento razonable.'},
-  'Cita o diligencia personal':       {repone:true, personal:true, hint:'Sin soporte. Se repone 1:1 y cuenta dentro del tope de 8 h/mes.'},
-  'Salida temprana / llegada tarde':  {repone:true, personal:true, hint:'Motivo personal. Se repone 1:1 y cuenta dentro del tope de 8 h/mes.'},
-  'Incapacidad médica':               {repone:false,personal:false,hint:'Soporte obligatorio (incapacidad EPS/ARL). Se registra como incapacidad, no se repone.'},
-  'Calamidad doméstica':              {repone:false,personal:false,hint:'Situación grave e imprevista debidamente informada. No se repone.'},
-  'Luto':                             {repone:false,personal:false,hint:'Hasta 5 días hábiles en los casos de ley. No se repone.'},
-  'Licencia maternidad / paternidad': {repone:false,personal:false,hint:'Según la legislación vigente. Soporte obligatorio.'},
-  'Cita médica por embarazo':         {repone:false,personal:false,hint:'Por el tiempo necesario. Soporte obligatorio. No se repone.'},
-  'Citación legal / funciones públicas':{repone:false,personal:false,hint:'Soporte obligatorio (citación). No se repone.'},
-  'Día de cumpleaños':                {repone:false,personal:false,hint:'Beneficio ProtectGo: 1 día de descanso remunerado. No se repone ni descuenta vacaciones.'},
-  'Estudios / capacitación':          {repone:false,personal:false,hint:'Se define con el jefe inmediato y RRHH según acuerdo.'},
-  'Permiso no remunerado':            {repone:false,personal:false,hint:'Días sin pago; el contrato continúa vigente. No aplica reposición.'},
-  'Otro':                             {repone:false,personal:false,hint:'Caso no contemplado: se analiza según la normatividad y las políticas internas.'}
+  'Cita médica (con soporte)':        {repone:false,personal:false,canasta:'cond',soporteReq:true, urgente:false,hint:'Soporte obligatorio (EPS / certificado). No se repone: cubre la cita y el desplazamiento razonable.'},
+  'Cita o diligencia personal':       {repone:true, personal:true, canasta:'cond',soporteReq:false,urgente:false,hint:'Sin soporte. Se repone 1:1 y cuenta dentro del tope de 8 h/mes.'},
+  'Salida temprana / llegada tarde':  {repone:true, personal:true, canasta:'cond',soporteReq:false,urgente:false,hint:'Motivo personal. Se repone 1:1 y cuenta dentro del tope de 8 h/mes.'},
+  'Incapacidad médica':               {repone:false,personal:false,canasta:'ley', soporteReq:true, urgente:true, hint:'Soporte obligatorio (incapacidad EPS/ARL). Se registra como incapacidad, no se repone.'},
+  'Calamidad doméstica':              {repone:false,personal:false,canasta:'subj',soporteReq:false,urgente:true, hint:'Situación grave e imprevista debidamente informada. No se repone.'},
+  'Luto':                             {repone:false,personal:false,canasta:'ley', soporteReq:false,urgente:true, hint:'Hasta 5 días hábiles en los casos de ley. No se repone.'},
+  'Licencia maternidad / paternidad': {repone:false,personal:false,canasta:'ley', soporteReq:true, urgente:false,hint:'Según la legislación vigente. Soporte obligatorio.'},
+  'Cita médica por embarazo':         {repone:false,personal:false,canasta:'ley', soporteReq:true, urgente:false,hint:'Por el tiempo necesario. Soporte obligatorio. No se repone.'},
+  'Citación legal / funciones públicas':{repone:false,personal:false,canasta:'ley',soporteReq:true, urgente:false,hint:'Soporte obligatorio (citación). No se repone.'},
+  'Día de cumpleaños':                {repone:false,personal:false,canasta:'ley', soporteReq:false,urgente:false,hint:'Beneficio ProtectGo: 1 día de descanso remunerado. No se repone ni descuenta vacaciones.'},
+  'Estudios / capacitación':          {repone:false,personal:false,canasta:'subj',soporteReq:false,urgente:false,hint:'Se define con el jefe inmediato y RRHH según acuerdo.'},
+  'Permiso no remunerado':            {repone:false,personal:false,canasta:'subj',soporteReq:false,urgente:false,hint:'Días sin pago; el contrato continúa vigente. No aplica reposición.'},
+  'Otro':                             {repone:false,personal:false,canasta:'subj',soporteReq:false,urgente:false,hint:'Caso no contemplado: se analiza según la normatividad y las políticas internas.'}
 };
 
 var colaboradores=[], permisos=[], editColaId=null, gestionId=null;
@@ -509,7 +522,7 @@ function horasPersonalesMes(colaId,mesISO){
 function actualizarTope(){
   var colaId=$('fCola').value,t=$('fTipo').value,cfg=TIPOS[t];
   var box=$('tope');
-  if(!colaId||!cfg||!cfg.personal){box.style.display='none';return;}
+  if(!colaId||!cfg||!cfg.personal){box.style.display='none';evaluarSemaforo();return;}
   var mes=($('fIni').value||hoyISO()).slice(0,7);
   var usadas=horasPersonalesMes(colaId,mes);
   var nuevas=parseFloat($('fHoras').value)||horasCalc()||0;
@@ -518,6 +531,60 @@ function actualizarTope(){
   box.className='tope'+(tot>TOPE_MES?' over':'');
   $('topeBar').style.width=Math.min(100,(tot/TOPE_MES)*100)+'%';
   $('topeTxt').textContent=(Math.round(tot*10)/10)+' / '+TOPE_MES+' h'+(nuevas?' (incluye este)':'');
+  evaluarSemaforo();
+}
+
+// ===== SEMÁFORO DE PREAPROBACIÓN (protocolo v2) =====
+function diasHabilesHasta(iso){
+  if(!iso)return 0;
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  var p=iso.split('-'),f=new Date(+p[0],+p[1]-1,+p[2]);
+  if(f<=hoy)return 0;
+  var n=0,d=new Date(hoy);
+  d.setDate(d.getDate()+1);
+  while(d<f){var dw=d.getDay();if(dw!==0&&dw!==6)n++;d.setDate(d.getDate()+1);}
+  return n;
+}
+function evaluarSemaforo(){
+  var box=$('semaforo');
+  var colaId=$('fCola').value,t=$('fTipo').value,cfg=TIPOS[t],ini=$('fIni').value;
+  if(!colaId||!cfg||!ini){box.style.display='none';return;}
+  var nivel='verde',razones=[];
+  // 1) canasta subjetiva → decisión del jefe
+  if(cfg.canasta==='subj'){nivel='amarillo';razones.push('tipo "'+t+'" es a criterio del jefe inmediato');}
+  // 2) soporte requerido
+  if(cfg.soporteReq&&$('fSop').value!=='si'){
+    if(nivel==='verde')nivel='amarillo';
+    razones.push('falta el soporte obligatorio para este tipo');
+  }
+  // 3) anticipación 48 h hábiles (urgencias exentas)
+  if(!cfg.urgente){
+    var dh=diasHabilesHasta(ini);
+    if(dh<2){nivel='rojo';razones.push('sin anticipación de 48 h hábiles ('+dh+' día(s) hábil(es) de aviso)');}
+  }
+  // 4) tope 8 h/mes en personales
+  if(cfg.personal){
+    var mes=ini.slice(0,7);
+    var tot=horasPersonalesMes(colaId,mes)+(parseFloat($('fHoras').value)||horasCalc()||0);
+    if(tot>TOPE_MES){nivel='rojo';razones.push('excede el tope de '+TOPE_MES+' h/mes de permisos personales ('+(Math.round(tot*10)/10)+' h): el excedente pasa a no remunerado salvo autorización de gerencia');}
+  }
+  box.style.display='block';
+  if(nivel==='verde'){
+    box.className='note mint';
+    box.innerHTML='🟢 <b>PREAPROBADO por protocolo.</b> Cumple tipo, soporte, anticipación y tope. '+(cfg.repone?'El jefe solo acuerda el horario de reposición.':'El jefe inmediato solo se notifica.');
+    if(!$('fAprob').value.trim())$('fAprob').value='Preaprobado por protocolo';
+    if($('fEstado').value==='Solicitado')$('fEstado').value=cfg.repone?'En reposición':'Aprobado';
+  } else if(nivel==='amarillo'){
+    box.className='note amber';
+    box.innerHTML='🟡 <b>REQUIERE DECISIÓN DEL JEFE:</b> '+razones.join(' · ')+'.';
+    if($('fAprob').value==='Preaprobado por protocolo')$('fAprob').value='';
+    $('fEstado').value='Solicitado';
+  } else {
+    box.className='note red';
+    box.innerHTML='🔴 <b>INCUMPLE EL PROTOCOLO:</b> '+razones.join(' · ')+'. Solo procede con autorización expresa del jefe o gerencia.';
+    if($('fAprob').value==='Preaprobado por protocolo')$('fAprob').value='';
+    $('fEstado').value='Solicitado';
+  }
 }
 
 // ---------- GUARDAR PERMISO ----------
@@ -677,6 +744,114 @@ function importarBulk(){
   });
 }
 
+// ---------- LECTOR DE CORREO ----------
+var PLANTILLA_CORREO='ASUNTO: PERMISO | [Tipo] | [Nombre completo] | [Fecha dd/mm]\nPARA: su jefe inmediato · CC: rh@protectgoservices.com\n\nSOLICITUD DE PERMISO\nNombre: [nombre completo]\nTipo: [cita médica / diligencia personal / salida temprana / incapacidad / calamidad / luto / cumpleaños / estudios / no remunerado / otro]\nFecha: [ej: 5 de agosto de 2026 — o: del 3 al 7 de agosto]\nHora: [ej: de 2:00 pm a 5:00 pm — si aplica]\nMotivo: [breve descripción]\nSoporte: [sí — adjunto / no]';
+var MESES_MAP={enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,setiembre:9,octubre:10,noviembre:11,diciembre:12};
+function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function campo(txt,labels){
+  var re=new RegExp('^[\\s>*-]*(?:'+labels+')\\s*[:：]\\s*(.+)$','im');
+  var m=txt.match(re);return m?m[1].trim():null;
+}
+function pad2(n){return (n<10?'0':'')+n;}
+function fechaISO(d,mes,anio){
+  if(!anio){anio=new Date().getFullYear();}
+  return anio+'-'+pad2(mes)+'-'+pad2(d);
+}
+function parseFechas(txt){
+  var n=norm(txt);
+  var m=n.match(/del?\s+(\d{1,2})(?:\s+de\s+([a-z]+))?\s+(?:al|hasta el|hasta|a el|a)\s+(\d{1,2})\s+de\s+([a-z]+)(?:\s+de\s+(\d{4}))?/);
+  if(m&&MESES_MAP[m[4]]){
+    var mes2=MESES_MAP[m[4]],mes1=m[2]&&MESES_MAP[m[2]]?MESES_MAP[m[2]]:mes2;
+    return {ini:fechaISO(+m[1],mes1,m[5]?+m[5]:null),fin:fechaISO(+m[3],mes2,m[5]?+m[5]:null)};
+  }
+  m=n.match(/(\d{1,2})\s+de\s+([a-z]+)(?:\s+de\s+(\d{4}))?/);
+  if(m&&MESES_MAP[m[2]])return {ini:fechaISO(+m[1],MESES_MAP[m[2]],m[3]?+m[3]:null),fin:null};
+  m=n.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if(m)return {ini:m[3]+'-'+pad2(+m[2])+'-'+pad2(+m[1]),fin:null};
+  m=n.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(m)return {ini:m[0],fin:null};
+  m=n.match(/(\d{1,2})[\/\-](\d{1,2})(?![\/\-\d])/);
+  if(m&&+m[2]>=1&&+m[2]<=12)return {ini:fechaISO(+m[1],+m[2],null),fin:null};
+  return null;
+}
+function h24(h,min,ap){
+  h=+h;min=min?+min:0;
+  if(ap&&/p/.test(ap)&&h<12)h+=12;
+  if(ap&&/a/.test(ap)&&h===12)h=0;
+  if(!ap&&h>=1&&h<=6)h+=12; // "de 2 a 5" en jornada laboral → pm
+  return pad2(h)+':'+pad2(min);
+}
+function parseHoras(txt){
+  var n=norm(txt).replace(/\./g,'');
+  var m=n.match(/de\s+(?:las\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*(?:a|hasta)\s+(?:las\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/);
+  if(m)return {ini:h24(m[1],m[2],m[3]||m[6]),fin:h24(m[4],m[5],m[6])};
+  m=n.match(/a\s+las\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/);
+  if(m)return {ini:h24(m[1],m[2],m[3]),fin:null};
+  return null;
+}
+function detectarTipo(txt,tieneSoporte){
+  var n=norm(txt);
+  if(/incapacidad/.test(n))return 'Incapacidad médica';
+  if(/embarazo/.test(n))return 'Cita médica por embarazo';
+  if(/maternidad|paternidad/.test(n))return 'Licencia maternidad / paternidad';
+  if(/luto|fallecimiento|funeral/.test(n))return 'Luto';
+  if(/calamidad/.test(n))return 'Calamidad doméstica';
+  if(/cumplea/.test(n))return 'Día de cumpleaños';
+  if(/juzgado|citacion|audiencia|jurado|fiscalia/.test(n))return 'Citación legal / funciones públicas';
+  if(/estudio|capacitacion|examen academico|universidad/.test(n))return 'Estudios / capacitación';
+  if(/no remunerad|sin remuneracion|viaje/.test(n))return 'Permiso no remunerado';
+  if(/cita medica|cita en|medico|eps|odontolog|samein/.test(n))return tieneSoporte?'Cita médica (con soporte)':'Cita o diligencia personal';
+  if(/salir temprano|salida temprana|llegar tarde|llegada tarde|salir a las/.test(n))return 'Salida temprana / llegada tarde';
+  if(/diligencia|tramite|personal|banco|notaria/.test(n))return 'Cita o diligencia personal';
+  return null;
+}
+function leerCorreo(){
+  var txt=$('correoTxt').value;
+  if(!txt.trim()){toast('Pega primero el texto del correo.');return;}
+  var ok=[],falta=[];
+  // asunto estándar: PERMISO | Tipo | Nombre | Fecha
+  var subj=txt.match(/permiso\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+)/i);
+  // colaborador
+  var nomTxt=campo(txt,'nombre|colaborador|solicitante')||(subj?subj[2]:null);
+  var col=null,nTxt=norm(txt);
+  if(nomTxt){var nn=norm(nomTxt);col=colaboradores.find(function(c){var cn=norm(c.nombre);return cn.indexOf(nn)>=0||nn.indexOf(cn)>=0;});}
+  if(!col){
+    col=colaboradores.find(function(c){
+      var p=norm(c.nombre).split(/\s+/);
+      return p.length>=2&&nTxt.indexOf(p[0]+' '+p[1])>=0;
+    });
+  }
+  if(col){$('fCola').value=col.id;ok.push('colaborador: '+col.nombre);}else falta.push('colaborador');
+  // soporte
+  var sop=/soporte\s*[:：]?\s*(si|sí)|adjunto|certificad|incapacidad/i.test(txt);
+  $('fSop').value=sop?'si':'no';
+  // tipo
+  var tipoTxt=campo(txt,'tipo')||(subj?subj[1]:null);
+  var tipo=(tipoTxt&&detectarTipo(tipoTxt,sop))||detectarTipo(txt,sop);
+  if(tipo){$('fTipo').value=tipo;onTipo();ok.push('tipo: '+tipo);}else falta.push('tipo');
+  // fechas
+  var fTxt=campo(txt,'fecha|fechas|dia|día')||(subj?subj[3]:null)||txt;
+  var f=parseFechas(fTxt)||parseFechas(txt);
+  if(f){$('fIni').value=f.ini;if(f.fin)$('fFin').value=f.fin;ok.push('fecha: '+f.ini+(f.fin?(' → '+f.fin):''));}else falta.push('fecha');
+  // horas
+  var hTxt=campo(txt,'hora|horas|horario');
+  var hh=(hTxt&&parseHoras('de '+hTxt))||parseHoras(hTxt||'')||parseHoras(txt);
+  if(hh&&hh.ini){$('fHIni').value=hh.ini;if(hh.fin)$('fHFin').value=hh.fin;onHoras();ok.push('hora: '+hh.ini+(hh.fin?(' a '+hh.fin):''));}
+  // motivo
+  var mot=campo(txt,'motivo|razon|razón');
+  if(mot){$('fMotivo').value=mot;ok.push('motivo');}
+  onRepo();actualizarTope();
+  falta.push('aprobado por (siempre manual)');
+  $('parseRes').innerHTML='<b style="color:var(--teal-2)">Detectado:</b> '+ok.join(' · ')+(falta.length?('<br><b style="color:var(--amber)">Por completar:</b> '+falta.join(' · ')):'');
+  toast('Formulario diligenciado — revisa y completa');
+}
+function copiarPlantilla(){
+  var done=function(){toast('Plantilla copiada — pégala en el comunicado o compártela al equipo');};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(PLANTILLA_CORREO).then(done,function(){fallback();});}
+  else fallback();
+  function fallback(){var ta=document.createElement('textarea');ta.value=PLANTILLA_CORREO;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);done();}
+}
+
 // ---------- EVENTOS ----------
 document.addEventListener('click',function(e){
   var b=e.target.closest('[data-act]');
@@ -702,11 +877,15 @@ function wire(){
   $('fHFin').addEventListener('change',onHoras);
   $('fHoras').addEventListener('input',onHoras);
   $('fRepo').addEventListener('change',onRepo);
+  $('fSop').addEventListener('change',evaluarSemaforo);
+  $('fFin').addEventListener('change',evaluarSemaforo);
   $('btnSave').addEventListener('click',guardarPermiso);
   $('filMes').addEventListener('change',pintarHist);
   $('filCola').addEventListener('change',pintarHist);
   $('filEstado').addEventListener('change',pintarHist);
   $('filLimpiar').addEventListener('click',function(){$('filMes').value='';$('filCola').value='';$('filEstado').value='';pintarHist();});
+  $('btnLeer').addEventListener('click',leerCorreo);
+  $('btnPlantilla').addEventListener('click',copiarPlantilla);
   $('btnColaSave').addEventListener('click',guardarCola);
   $('btnColaNuevo').addEventListener('click',limpiarCola);
   $('btnBulk').addEventListener('click',importarBulk);

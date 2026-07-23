@@ -82,6 +82,7 @@
           <option value="kam">KAM — Account Management</option>
         </select></div>
         <div class="field"><label>Correo</label><input type="email" id="email" placeholder="tu-correo@protectgoservices.com" value="kam@protectgoservices.com"></div>
+        <div class="field"><label>Teléfono directo (opcional)</label><input type="text" id="phone" placeholder="+1 (___) ___-____"></div>
         <div class="field" style="margin-bottom:0"><label>Web (fijo)</label><div class="locked"><b>protectgoservices.com</b></div></div>
       </div>
     </div>
@@ -122,7 +123,7 @@ const st={photo:AREA_FOTO};
 const $=id=>document.getElementById(id);
 function read(){
   const c=CARGOS[$('cargo').value]||CARGOS.kamsr;
-  return{name:$('name').value.trim()||'Tu Nombre',titleEn:c.en,titleEs:c.es,
+  return{name:$('name').value.trim()||'Tu Nombre',titleEn:c.en,titleEs:c.es,phone:$('phone').value.trim(),
   email:$('email').value.trim()||'kam@protectgoservices.com',
   web:'protectgoservices.com',photoUrl:$('photoUrl').value.trim()};}
 
@@ -142,13 +143,13 @@ function buildSignature(d, mode){
       '<div style="font-style:italic;font-size:12px;color:'+MU+';margin-top:4px">Key accounts, handled with care — every request, every renewal.</div>'+
       '<div style="margin:13px 0 11px">'+logo+'<div style="margin-top:7px"><span style="display:inline-block;background:#002F3D;color:#BADFCE;font:700 10px Arial;letter-spacing:1.5px;padding:4px 11px;border-radius:12px">KEY ACCOUNT MANAGEMENT &middot; KAM</span></div>'+'</div>'+
       '<div style="font-size:12px;line-height:1.75;color:'+TX+'">'+
-        (d.email?'<span style="color:'+MU+';font-weight:700;font-size:10px">E</span>&nbsp;<a href="mailto:'+d.email+'" style="color:'+TX+';text-decoration:none">'+d.email+'</a><br>':'')+
+        (d.phone?'<span style="color:'+MU+';font-weight:700;font-size:10px">T</span>&nbsp;'+d.phone+'&nbsp;&nbsp;&nbsp;':'')+(d.email?'<span style="color:'+MU+';font-weight:700;font-size:10px">E</span>&nbsp;<a href="mailto:'+d.email+'" style="color:'+TX+';text-decoration:none">'+d.email+'</a><br>':'')+
         '<span style="color:'+MU+';font-weight:700;font-size:10px">W</span>&nbsp;<a href="https://'+d.web+'" style="color:'+TX+';text-decoration:none">'+d.web+'</a>'+
       '</div>'+
     '</td></tr></table>';
 }
 function render(){$('preview').innerHTML=buildSignature(read(),'preview');}
-['name','email','photoUrl'].forEach(id=>$(id).addEventListener('input',render));
+['name','phone','email','photoUrl'].forEach(id=>$(id).addEventListener('input',render));
 $('cargo').addEventListener('change',render);
 $('file').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{st.photo=r.result;$('drop').classList.add('has');$('ph').innerHTML='<img src="'+r.result+'">';render();};r.readAsDataURL(f);});
 const drop=$('drop');

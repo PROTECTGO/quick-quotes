@@ -4859,13 +4859,6 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     });
     return lista;
   }
-  function celdaLimite(cv){
-    var partes=[];
-    if(cv.limit) partes.push(cv.limit);
-    if(cv.syms) partes.push("Symbols: "+nombreSym(cv.syms));
-    if(cv.reefer) partes.push("Includes Reefer breakdown");
-    return partes.length?partes.join(" · "):"—";
-  }
   function fixTabla(cont){
     if(!cont) return;
     var lista=datosCov();
@@ -4873,8 +4866,19 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
       if(tr.children.length<3) return;
       lista.forEach(function(cv){
         if(tr.children[0].textContent.indexOf(cv.name)<0) return;
-        var nuevo=celdaLimite(cv);
-        if(tr.children[1].textContent!==nuevo) tr.children[1].textContent=nuevo;
+        var actual=tr.children[1].textContent;
+        /* conservar el limite ya presente en la tabla si el capture no lo tiene */
+        var base=actual.split(/\s*·\s*(?:Symbols:|Includes Reefer)/)[0].trim();
+        if(base==="—") base="";
+        if(/^[\d\s,]+$/.test(base)&&base.length<12) base="";  /* eran solo codigos de simbolos */
+        if(/^yes$/i.test(base)) base="";
+        var limite=cv.limit||base;
+        var partes=[];
+        if(limite) partes.push(limite);
+        if(cv.syms) partes.push("Symbols: "+nombreSym(cv.syms));
+        if(cv.reefer) partes.push("Includes Reefer breakdown");
+        var nuevo=partes.length?partes.join(" · "):"—";
+        if(actual!==nuevo) tr.children[1].textContent=nuevo;
       });
     });
   }

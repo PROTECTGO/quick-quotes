@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Permisos · RRHH — ProtectGo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --navy:#002F3D; --navy-2:#0a5b54; --teal:#229A82; --teal-2:#1a7a68;
+    --mint:#BADFCE; --mint-soft:#E4F2EB; --mint-ghost:#F2F8F5;
+    --amber:#B8841F; --amber-soft:#fff7e0; --rojo:#c0392b; --rojo-soft:#fdeceb;
+    --papel:#FAF9F5; --surface:#fff;
+    --ink:#0D141A; --muted:#5a6a6e; --faint:#8a989a; --hairline:#d8e0de; --line:#e6ebe9;
+    --grad:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%);
+    --r-sm:10px; --r-md:14px; --r-lg:20px; --r-pill:999px;
+    --shadow-2:0 8px 24px -10px rgba(0,47,61,.16),0 2px 4px rgba(0,47,61,.05);
+    --font-title:"Montserrat",system-ui,sans-serif; --font-text:"Inter",system-ui,sans-serif; --font-mono:"IBM Plex Mono",monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-height:100vh;}
+
+  .pg-bar{position:sticky;top:0;z-index:40;height:58px;display:flex;align-items:center;gap:12px;padding:0 22px;background:var(--navy);color:#fff;box-shadow:0 2px 14px -6px rgba(0,0,0,.45);}
+  .pg-bar .logo{font-family:var(--font-title);font-weight:800;font-size:16px;letter-spacing:.2px;white-space:nowrap;}
+  .pg-bar .logo i{color:var(--teal);font-style:normal;}
+  .pg-bar .area-tag{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;background:rgba(255,255,255,.12);color:var(--mint);padding:5px 10px;border-radius:var(--r-pill);white-space:nowrap;}
+  .pg-bar .sp{flex:1;}
+  .pg-bar .user{font-family:var(--font-mono);font-size:12px;color:#9fc6bd;}
+  .pg-b{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;padding:8px 14px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;}
+  .pg-b:hover{background:rgba(255,255,255,.08);}
+  .pg-bar a.back{color:#9fc6bd;text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap;}
+  .pg-bar a.back:hover{color:#fff;}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:26px 22px 80px;}
+  .hero{padding:14px 0 6px;}
+  .hero .kicker{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-2);font-weight:600;}
+  .hero h1{font-family:var(--font-title);font-weight:800;font-size:28px;line-height:1.12;margin:6px 0 4px;color:var(--navy);}
+  .hero p{margin:0;color:var(--muted);font-size:14px;max-width:680px;}
+
+  .tabs{display:flex;gap:8px;margin:20px 0 22px;flex-wrap:wrap;}
+  .tab{font:inherit;font-size:13.5px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-pill);padding:9px 18px;cursor:pointer;}
+  .tab.act{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .tab .n{font-family:var(--font-mono);font-size:11px;background:var(--mint-soft);color:var(--teal-2);border-radius:var(--r-pill);padding:1px 7px;margin-left:6px;}
+  .tab.act .n{background:rgba(255,255,255,.16);color:var(--mint);}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow-2);margin-bottom:20px;}
+  .card h2{font-family:var(--font-title);font-weight:700;font-size:17px;color:var(--navy);margin:0 0 14px;}
+  .card h2 small{font-family:var(--font-text);font-weight:500;font-size:12.5px;color:var(--faint);margin-left:8px;}
+
+  .frm{display:grid;grid-template-columns:repeat(4,1fr);gap:13px 14px;}
+  .f{display:flex;flex-direction:column;gap:5px;}
+  .f.c2{grid-column:span 2;} .f.c4{grid-column:span 4;}
+  .f label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .f input,.f select,.f textarea{width:100%;padding:10px 11px;border:1px solid var(--hairline);border-radius:var(--r-sm);font-size:13.5px;font-family:inherit;background:#fff;color:var(--ink);}
+  .f textarea{resize:vertical;min-height:52px;}
+  .f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(34,154,130,.14);}
+  .hint{font-size:11.5px;color:var(--faint);line-height:1.4;}
+  .hint b{color:var(--teal-2);}
+
+  .btn{font:inherit;font-size:14px;font-weight:700;background:var(--navy);color:#fff;border:none;border-radius:var(--r-sm);padding:12px 22px;cursor:pointer;}
+  .btn:hover{background:var(--navy-2);}
+  .btn.sec{background:var(--mint-soft);color:var(--teal-2);}
+  .btn.sec:hover{background:var(--mint);}
+  .btn.mini{font-size:12px;padding:7px 12px;font-weight:600;}
+  .btn.warn{background:var(--rojo);}
+  .btn[disabled]{opacity:.55;cursor:not-allowed;}
+
+  .note{border-radius:var(--r-md);padding:12px 15px;font-size:13px;line-height:1.5;margin:0 0 16px;}
+  .note.mint{background:var(--mint-ghost);border:1px solid var(--mint);color:var(--ink);}
+  .note.amber{background:var(--amber-soft);border:1px solid #edd9a3;color:#6b5312;}
+  .note.red{background:var(--rojo-soft);border:1px solid #f0b9b3;color:#7c241b;}
+
+  .tope{display:flex;align-items:center;gap:12px;background:var(--mint-ghost);border:1px solid var(--mint);border-radius:var(--r-md);padding:11px 15px;margin:14px 0 0;font-size:13px;}
+  .tope .barw{flex:1;height:8px;border-radius:99px;background:#dcebe4;overflow:hidden;}
+  .tope .barf{height:100%;border-radius:99px;background:var(--teal);}
+  .tope.over .barf{background:var(--rojo);}
+  .tope .num{font-family:var(--font-mono);font-weight:600;color:var(--teal-2);white-space:nowrap;}
+  .tope.over .num{color:var(--rojo);}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:left;padding:9px 10px;border-bottom:2px solid var(--line);white-space:nowrap;}
+  td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:hover td{background:var(--mint-ghost);}
+  td.mono{font-family:var(--font-mono);font-size:12px;white-space:nowrap;}
+  td .sub{display:block;font-size:11.5px;color:var(--faint);margin-top:2px;}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:4px 10px;border-radius:var(--r-pill);white-space:nowrap;}
+  .pill.ok{background:var(--mint-soft);color:var(--teal-2);}
+  .pill.warn{background:var(--amber-soft);color:var(--amber);}
+  .pill.red{background:var(--rojo-soft);color:var(--rojo);}
+  .pill.grey{background:#eef1f1;color:var(--faint);}
+  .pill.navy{background:var(--navy);color:#fff;}
+  .empty{padding:26px;text-align:center;color:var(--faint);font-size:13.5px;}
+
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .filters select,.filters input{padding:8px 10px;border:1px solid var(--hairline);border-radius:var(--r-sm);font-size:13px;font-family:inherit;background:#fff;}
+
+  .guia-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:760px){.frm{grid-template-columns:1fr 1fr;}.f.c2,.f.c4{grid-column:span 2;}.guia-grid{grid-template-columns:1fr;}}
+  .regla{background:var(--mint-ghost);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;}
+  .regla > b{color:var(--navy);display:block;margin-bottom:4px;font-family:var(--font-title);font-size:13.5px;}
+  .regla span b{color:var(--navy);}
+  .regla span{font-size:13px;color:var(--muted);line-height:1.5;}
+
+  .modal-bg{position:fixed;inset:0;z-index:80;background:rgba(0,30,38,.55);display:none;align-items:center;justify-content:center;padding:18px;}
+  .modal{background:#fff;border-radius:18px;padding:26px;width:520px;max-width:96vw;max-height:92vh;overflow:auto;box-shadow:0 30px 80px -25px rgba(0,0,0,.5);}
+  .modal h3{font-family:var(--font-title);color:var(--navy);margin:0 0 14px;font-size:18px;}
+
+  .ov{position:fixed;inset:0;z-index:90;background:rgba(0,30,38,.6);display:flex;align-items:center;justify-content:center;padding:18px;}
+  .ov .card-l{background:#fff;border-radius:18px;padding:34px 30px;width:380px;max-width:94vw;box-shadow:0 30px 80px -25px rgba(0,0,0,.55);}
+  .ov .brand{font-family:var(--font-title);font-weight:800;font-size:15px;color:var(--navy);margin-bottom:18px;}
+  .ov .brand i{color:var(--teal);font-style:normal;}
+  .ov h2{font-family:var(--font-title);margin:0 0 4px;color:var(--navy);font-size:22px;}
+  .ov p{margin:0 0 16px;color:var(--muted);font-size:13px;}
+  .ov label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin:13px 0 5px;text-transform:uppercase;letter-spacing:.04em;}
+  .ov input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--hairline);border-radius:10px;font-size:14px;font-family:inherit;}
+  .ov input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.15);}
+  .ov .btn-l{background:var(--navy);color:#fff;width:100%;justify-content:center;margin-top:20px;padding:13px;border:none;border-radius:10px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;}
+  .ov .btn-l:hover{background:var(--navy-2);}
+  .msg{font-size:12.5px;margin-top:12px;min-height:16px;}
+  .msg.err{color:#c0392b;}.msg.ok{color:var(--teal-2);}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:95;background:var(--navy);color:#fff;font-size:13.5px;font-weight:600;padding:12px 22px;border-radius:var(--r-pill);box-shadow:var(--shadow-2);display:none;}
+  #app{display:none;}
+  .view{display:none;} .view.act{display:block;}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="pg-bar">
+    <span class="logo">Protect<i>Go</i> · RRHH</span>
+    <span class="area-tag">◆ PERMISOS</span>
+    <span class="sp"></span>
+    <a class="back" href="rrhh.html">&#8592; Dashboard</a>
+    <span class="user" id="pgUser"></span>
+    <button class="pg-b" data-act="logout">Salir</button>
+  </header>
+
+  <div class="wrap">
+    <section class="hero">
+      <div class="kicker">Recursos Humanos · Trazabilidad</div>
+      <h1>Registro de Permisos</h1>
+      <p>Cada permiso aprobado se registra aquí: quién, qué tipo, cuándo, quién aprobó y qué horas se reponen. Lo que no está registrado no existe como permiso autorizado.</p>
+    </section>
+
+    <div class="tabs">
+      <button class="tab act" data-tab="reg">Registrar permiso</button>
+      <button class="tab" data-tab="hist">Historial <span class="n" id="nHist">0</span></button>
+      <button class="tab" data-tab="cola">Colaboradores <span class="n" id="nCola">0</span></button>
+      <button class="tab" data-tab="guia">Guía de Permisos</button>
+    </div>
+
+    <!-- ========== REGISTRAR ========== -->
+    <section class="view act" id="sec-reg">
+      <div class="card">
+        <h2>Nuevo registro <small>según la Guía de Permisos v2</small></h2>
+        <div class="note amber" id="noCola" style="display:none">Aún no hay colaboradores registrados. Ve a la pestaña <b>Colaboradores</b> y agrégalos primero (nombre y cédula).</div>
+        <div class="frm">
+          <div class="f c2">
+            <label>Colaborador *</label>
+            <select id="fCola"></select>
+          </div>
+          <div class="f c2">
+            <label>Tipo de permiso *</label>
+            <select id="fTipo"></select>
+          </div>
+          <div class="f">
+            <label>Fecha inicio *</label>
+            <input type="date" id="fIni">
+          </div>
+          <div class="f">
+            <label>Fecha fin</label>
+            <input type="date" id="fFin">
+          </div>
+          <div class="f">
+            <label>Hora inicio</label>
+            <input type="time" id="fHIni">
+          </div>
+          <div class="f">
+            <label>Hora fin</label>
+            <input type="time" id="fHFin">
+          </div>
+          <div class="f c2">
+            <label>Motivo</label>
+            <input type="text" id="fMotivo" placeholder="Ej: cita en SAMEIN, diligencia bancaria…">
+          </div>
+          <div class="f">
+            <label>Horas de permiso</label>
+            <input type="number" id="fHoras" min="0" step="0.5" placeholder="auto">
+          </div>
+          <div class="f">
+            <label>Aprobado por *</label>
+            <input type="text" id="fAprob" placeholder="Jefe inmediato">
+          </div>
+          <div class="f">
+            <label>¿Repone horas?</label>
+            <select id="fRepo"><option value="no">No</option><option value="si">Sí (1:1)</option></select>
+          </div>
+          <div class="f">
+            <label>Horas a reponer</label>
+            <input type="number" id="fHRepo" min="0" step="0.5" value="0">
+          </div>
+          <div class="f">
+            <label>Reposición acordada</label>
+            <input type="text" id="fRepoTxt" placeholder="Ej: mié y jue 6-8 pm">
+          </div>
+          <div class="f">
+            <label>Límite reposición</label>
+            <input type="date" id="fLimite">
+          </div>
+          <div class="f">
+            <label>¿Trae soporte?</label>
+            <select id="fSop"><option value="no">No</option><option value="si">Sí</option></select>
+          </div>
+          <div class="f">
+            <label>Detalle soporte</label>
+            <input type="text" id="fSopTxt" placeholder="Ej: incapacidad EPS 2 días">
+          </div>
+          <div class="f">
+            <label>Estado</label>
+            <select id="fEstado">
+              <option>Aprobado</option><option>Solicitado</option><option>Rechazado</option>
+              <option>En reposición</option><option>Cerrado</option><option>Sin proceso</option>
+            </select>
+          </div>
+          <div class="f">
+            <label>&nbsp;</label>
+            <button class="btn" id="btnSave">Registrar permiso</button>
+          </div>
+          <div class="f c4">
+            <label>Notas</label>
+            <textarea id="fNotas" placeholder="Observaciones adicionales…"></textarea>
+          </div>
+        </div>
+        <div class="hint" id="tipoHint" style="margin-top:10px"></div>
+        <div class="tope" id="tope" style="display:none">
+          <span>Permisos personales del mes:</span>
+          <div class="barw"><div class="barf" id="topeBar" style="width:0%"></div></div>
+          <span class="num" id="topeTxt">0 / 8 h</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== HISTORIAL ========== -->
+    <section class="view" id="sec-hist">
+      <div class="card">
+        <h2>Historial de permisos</h2>
+        <div class="filters">
+          <input type="month" id="filMes">
+          <select id="filCola"><option value="">Todos los colaboradores</option></select>
+          <select id="filEstado">
+            <option value="">Todos los estados</option>
+            <option>Solicitado</option><option>Aprobado</option><option>Rechazado</option>
+            <option>En reposición</option><option>Cerrado</option><option>Sin proceso</option>
+          </select>
+          <button class="btn sec mini" id="filLimpiar">Limpiar</button>
+        </div>
+        <div id="alertVencidos"></div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Fecha</th><th>Colaborador</th><th>Tipo</th><th>Horas</th><th>Reposición</th><th>Aprobó</th><th>Estado</th><th></th>
+            </tr></thead>
+            <tbody id="tbHist"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="emptyHist" style="display:none">No hay permisos registrados con esos filtros.</div>
+      </div>
+    </section>
+
+    <!-- ========== COLABORADORES ========== -->
+    <section class="view" id="sec-cola">
+      <div class="card">
+        <h2>Agregar / editar colaborador</h2>
+        <div class="frm">
+          <div class="f c2"><label>Nombre completo *</label><input type="text" id="cNombre"></div>
+          <div class="f"><label>Cédula</label><input type="text" id="cCedula"></div>
+          <div class="f"><label>Correo</label><input type="email" id="cCorreo"></div>
+          <div class="f"><label>Cargo</label><input type="text" id="cCargo"></div>
+          <div class="f"><label>Área</label><input type="text" id="cArea"></div>
+          <div class="f"><label>Jefe inmediato</label><input type="text" id="cJefe"></div>
+          <div class="f"><label>Fecha ingreso</label><input type="date" id="cIngreso"></div>
+          <div class="f"><label>Cumpleaños</label><input type="date" id="cNace"></div>
+          <div class="f"><label>Activo</label><select id="cActivo"><option value="si">Sí</option><option value="no">No</option></select></div>
+          <div class="f"><label>&nbsp;</label><button class="btn" id="btnColaSave">Guardar</button></div>
+          <div class="f"><label>&nbsp;</label><button class="btn sec" id="btnColaNuevo">Limpiar formulario</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Cargue masivo <small>pega la lista que te pasen — una línea por persona</small></h2>
+        <div class="hint" style="margin-bottom:8px">Formato por línea: <b>Nombre; Cédula; Cargo; Área; Correo</b> — con punto y coma. Cargo, área y correo son opcionales.</div>
+        <div class="f"><textarea id="bulk" style="min-height:90px" placeholder="María Pérez; 1035467890; Asistente RRHH; RRHH; maria@protectgoservices.com&#10;Juan Gómez; 1002345678"></textarea></div>
+        <div style="margin-top:10px"><button class="btn sec" id="btnBulk">Importar lista</button></div>
+      </div>
+      <div class="card">
+        <h2>Equipo</h2>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Nombre</th><th>Cédula</th><th>Cargo / Área</th><th>Jefe</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="tbCola"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="emptyCola" style="display:none">Aún no hay colaboradores. Agrégalos arriba o usa el cargue masivo.</div>
+      </div>
+    </section>
+
+    <!-- ========== GUÍA ========== -->
+    <section class="view" id="sec-guia">
+      <div class="card">
+        <h2>Guía de Permisos Laborales · v2</h2>
+        <div class="note mint">📄 El documento oficial completo está aquí: <a href="guia-permisos-rrhh.pdf" target="_blank" style="color:var(--teal-2);font-weight:700">Abrir la Guía de Permisos (PDF)</a>. Este resumen es la referencia rápida para registrar.</div>
+        <div class="guia-grid">
+          <div class="regla"><b>⏱️ Anticipación</b><span>Permisos programables: mínimo <b>48 h hábiles</b> de anticipación. El jefe responde en máximo 24 h hábiles. Urgencias y calamidades: se avisa lo antes posible.</span></div>
+          <div class="regla"><b>✅ Cadena</b><span>El <b>jefe inmediato aprueba</b> → se remite a rh@ → <b>RRHH registra aquí</b>. Lo que no está registrado no existe como permiso autorizado.</span></div>
+          <div class="regla"><b>🔁 Reposición 1:1</b><span>Solo permisos personales sin soporte. El horario se acuerda <b>al aprobar</b>, se repone en la misma semana o la siguiente, máx. 2 h extra por día.</span></div>
+          <div class="regla"><b>📊 Tope mensual</b><span><b>8 horas al mes</b> de permisos personales con reposición por colaborador. El excedente pasa a no remunerado, salvo autorización de gerencia.</span></div>
+          <div class="regla"><b>⛔ Cierre</b><span>Horas no repuestas en el plazo → descuento de nómina como no remunerado. Ninguna hora queda "en el aire".</span></div>
+          <div class="regla"><b>🎂 Cumpleaños</b><span>Un (1) día de descanso remunerado como beneficio ProtectGo. No se repone y no descuenta vacaciones.</span></div>
+          <div class="regla"><b>🧾 Soportes</b><span>Cita médica, incapacidad, citación legal: soporte <b>obligatorio</b> para no reponer. Cita médica sin soporte cuenta como permiso personal.</span></div>
+          <div class="regla"><b>⚠️ Sin proceso</b><span>Ausencia sin solicitud o aprobación previa se registra como "Sin proceso" y aplica el Reglamento Interno de Trabajo.</span></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="pie" style="max-width:1120px;margin:0 auto;padding:0 22px 40px;color:var(--faint);font-size:12px;font-family:var(--font-mono)">ProtectGo Services · Registro de Permisos RRHH · Guía v2 · acceso exclusivo rrhh@</div>
+</div>
+
+<!-- Modal gestionar -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>Gestionar permiso</h3>
+    <div class="frm" style="grid-template-columns:1fr 1fr">
+      <div class="f"><label>Estado</label>
+        <select id="mEstado">
+          <option>Solicitado</option><option>Aprobado</option><option>Rechazado</option>
+          <option>En reposición</option><option>Cerrado</option><option>Sin proceso</option>
+        </select>
+      </div>
+      <div class="f"><label>Horas repuestas</label><input type="number" id="mHRep" min="0" step="0.5"></div>
+      <div class="f c2"><label>Notas</label><textarea id="mNotas"></textarea></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn" id="mGuardar">Guardar cambios</button>
+      <button class="btn sec" id="mCerrar">Cancelar</button>
+      <span class="sp" style="flex:1"></span>
+      <button class="btn warn mini" id="mEliminar">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== LOGIN ===== -->
+<div class="ov" id="ov">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">RRHH</span></div>
+    <h2>Registro de Permisos</h2>
+    <p>Ingresa con la cuenta de RRHH para acceder al módulo.</p>
+    <label>Email</label>
+    <input id="email" type="email" autocomplete="username" value="rrhh@protectgoservices.com">
+    <label>Contraseña</label>
+    <input id="pass" type="password" autocomplete="current-password">
+    <button class="btn-l" data-act="login">Entrar</button>
+    <div class="msg" id="msg"></div>
+  </div>
+</div>
+
+<!-- ===== BLOQUEO ===== -->
+<div class="ov" id="ovBlock" style="display:none">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">RRHH</span></div>
+    <h2>Acceso restringido</h2>
+    <p>Este módulo es exclusivo de <b>Recursos Humanos</b>. Tu cuenta <b id="ovBlockMail"></b> no tiene acceso.</p>
+    <button class="btn-l" data-act="logout">Salir e ingresar con otra cuenta</button>
+    <a href="rrhh.html" style="display:block;text-align:center;margin-top:13px;color:var(--teal-2);font-weight:600;font-size:13px;text-decoration:none">&#8592; Volver al dashboard</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var sb=null;
+var PERMITIDOS=['rrhh@protectgoservices.com','sales@protectgoservices.com'];
+var TOPE_MES=8;
+
+// Catálogo (Guía v2): repone = requiere reposición por defecto; personal = cuenta al tope 8h/mes
+var TIPOS={
+  'Cita médica (con soporte)':        {repone:false,personal:false,hint:'Soporte obligatorio (EPS / certificado). No se repone: cubre la cita y el desplazamiento razonable.'},
+  'Cita o diligencia personal':       {repone:true, personal:true, hint:'Sin soporte. Se repone 1:1 y cuenta dentro del tope de 8 h/mes.'},
+  'Salida temprana / llegada tarde':  {repone:true, personal:true, hint:'Motivo personal. Se repone 1:1 y cuenta dentro del tope de 8 h/mes.'},
+  'Incapacidad médica':               {repone:false,personal:false,hint:'Soporte obligatorio (incapacidad EPS/ARL). Se registra como incapacidad, no se repone.'},
+  'Calamidad doméstica':              {repone:false,personal:false,hint:'Situación grave e imprevista debidamente informada. No se repone.'},
+  'Luto':                             {repone:false,personal:false,hint:'Hasta 5 días hábiles en los casos de ley. No se repone.'},
+  'Licencia maternidad / paternidad': {repone:false,personal:false,hint:'Según la legislación vigente. Soporte obligatorio.'},
+  'Cita médica por embarazo':         {repone:false,personal:false,hint:'Por el tiempo necesario. Soporte obligatorio. No se repone.'},
+  'Citación legal / funciones públicas':{repone:false,personal:false,hint:'Soporte obligatorio (citación). No se repone.'},
+  'Día de cumpleaños':                {repone:false,personal:false,hint:'Beneficio ProtectGo: 1 día de descanso remunerado. No se repone ni descuenta vacaciones.'},
+  'Estudios / capacitación':          {repone:false,personal:false,hint:'Se define con el jefe inmediato y RRHH según acuerdo.'},
+  'Permiso no remunerado':            {repone:false,personal:false,hint:'Días sin pago; el contrato continúa vigente. No aplica reposición.'},
+  'Otro':                             {repone:false,personal:false,hint:'Caso no contemplado: se analiza según la normatividad y las políticas internas.'}
+};
+
+var colaboradores=[], permisos=[], editColaId=null, gestionId=null;
+
+var $=function(id){return document.getElementById(id);};
+function msg(t,cls){var m=$('msg');if(m){m.textContent=t||'';m.className='msg '+(cls||'');}}
+function toast(t){var el=$('toast');el.textContent=t;el.style.display='block';setTimeout(function(){el.style.display='none';},2600);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function fdate(d){if(!d)return '';var p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+function hoyISO(){var d=new Date();return d.toISOString().slice(0,10);}
+
+// ---------- AUTH ----------
+function doLogin(){
+  var em=$('email').value.trim(),pw=$('pass').value;
+  if(!em||!pw){msg('Escribe email y contraseña.','err');return;}
+  msg('Entrando…');
+  sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){if(r.error)msg(r.error.message,'err');else msg('');});
+}
+function onAuthed(session){
+  var email=(session&&session.user?session.user.email:'')||'';
+  if(PERMITIDOS.indexOf(email.toLowerCase())<0){
+    $('app').style.display='none';$('ov').style.display='none';
+    $('ovBlockMail').textContent=email;$('ovBlock').style.display='flex';
+    return;
+  }
+  $('ovBlock').style.display='none';
+  $('pgUser').textContent=email;
+  $('ov').style.display='none';$('app').style.display='block';
+  cargarTodo();
+}
+function onSignedOut(){$('app').style.display='none';$('ovBlock').style.display='none';$('ov').style.display='flex';}
+
+// ---------- DATA ----------
+function cargarTodo(){
+  Promise.all([
+    sb.from('rrhh_colaboradores').select('*').order('nombre'),
+    sb.from('rrhh_permisos').select('*, colaborador:rrhh_colaboradores(nombre,cedula)').order('fecha_inicio',{ascending:false}).limit(500)
+  ]).then(function(rs){
+    if(rs[0].error||rs[1].error){toast('Error cargando datos: '+((rs[0].error||rs[1].error).message));return;}
+    colaboradores=rs[0].data||[];permisos=rs[1].data||[];
+    pintarSelects();pintarCola();pintarHist();actualizarTope();
+    $('nCola').textContent=colaboradores.filter(function(c){return c.activo;}).length;
+    $('nHist').textContent=permisos.length;
+    $('noCola').style.display=colaboradores.length?'none':'block';
+  });
+}
+function pintarSelects(){
+  var act=colaboradores.filter(function(c){return c.activo;});
+  $('fCola').innerHTML='<option value="">— Selecciona —</option>'+act.map(function(c){return '<option value="'+c.id+'">'+esc(c.nombre)+'</option>';}).join('');
+  $('filCola').innerHTML='<option value="">Todos los colaboradores</option>'+colaboradores.map(function(c){return '<option value="'+c.id+'">'+esc(c.nombre)+'</option>';}).join('');
+  var sel='';var opts=Object.keys(TIPOS).map(function(t){return '<option>'+esc(t)+'</option>';});
+  $('fTipo').innerHTML='<option value="">— Selecciona —</option>'+opts.join('');
+}
+
+// ---------- TIPO / TOPE ----------
+function onTipo(){
+  var t=$('fTipo').value,cfg=TIPOS[t];
+  $('tipoHint').innerHTML=cfg?('<b>'+esc(t)+':</b> '+esc(cfg.hint)):'';
+  if(cfg){
+    $('fRepo').value=cfg.repone?'si':'no';
+    $('fEstado').value=cfg.repone?'En reposición':'Aprobado';
+    onRepo();
+  }
+  actualizarTope();
+}
+function horasCalc(){
+  var hi=$('fHIni').value,hf=$('fHFin').value;
+  if(hi&&hf){
+    var a=hi.split(':'),b=hf.split(':');
+    var h=(+b[0]+ (+b[1])/60)-(+a[0]+ (+a[1])/60);
+    if(h>0)return Math.round(h*2)/2;
+  }
+  return null;
+}
+function onHoras(){
+  var h=horasCalc();
+  if(h!=null&&!$('fHoras').value)$('fHoras').placeholder=h+' h (auto)';
+  if($('fRepo').value==='si'){
+    var hh=parseFloat($('fHoras').value)||h||0;
+    $('fHRepo').value=hh;
+  }
+  actualizarTope();
+}
+function onRepo(){
+  var si=$('fRepo').value==='si';
+  var h=parseFloat($('fHoras').value)||horasCalc()||0;
+  $('fHRepo').value=si?h:0;
+  if(si&&!$('fLimite').value){
+    var d=new Date();d.setDate(d.getDate()+14);
+    $('fLimite').value=d.toISOString().slice(0,10);
+  }
+}
+function horasPersonalesMes(colaId,mesISO){
+  var tot=0;
+  permisos.forEach(function(p){
+    if(p.colaborador_id!==colaId)return;
+    if(!TIPOS[p.tipo]||!TIPOS[p.tipo].personal)return;
+    if((p.fecha_inicio||'').slice(0,7)!==mesISO)return;
+    if(p.estado==='Rechazado')return;
+    tot+=parseFloat(p.horas_permiso||p.horas_a_reponer||0)||0;
+  });
+  return tot;
+}
+function actualizarTope(){
+  var colaId=$('fCola').value,t=$('fTipo').value,cfg=TIPOS[t];
+  var box=$('tope');
+  if(!colaId||!cfg||!cfg.personal){box.style.display='none';return;}
+  var mes=($('fIni').value||hoyISO()).slice(0,7);
+  var usadas=horasPersonalesMes(colaId,mes);
+  var nuevas=parseFloat($('fHoras').value)||horasCalc()||0;
+  var tot=usadas+nuevas;
+  box.style.display='flex';
+  box.className='tope'+(tot>TOPE_MES?' over':'');
+  $('topeBar').style.width=Math.min(100,(tot/TOPE_MES)*100)+'%';
+  $('topeTxt').textContent=(Math.round(tot*10)/10)+' / '+TOPE_MES+' h'+(nuevas?' (incluye este)':'');
+}
+
+// ---------- GUARDAR PERMISO ----------
+function guardarPermiso(){
+  var colaId=$('fCola').value,tipo=$('fTipo').value,ini=$('fIni').value;
+  if(!colaId){toast('Selecciona el colaborador.');return;}
+  if(!tipo){toast('Selecciona el tipo de permiso.');return;}
+  if(!ini){toast('Indica la fecha de inicio.');return;}
+  if(!$('fAprob').value.trim()){toast('Indica quién aprobó el permiso.');return;}
+  var horas=parseFloat($('fHoras').value)||horasCalc();
+  var repone=$('fRepo').value==='si';
+  var row={
+    colaborador_id:colaId, tipo:tipo,
+    motivo:$('fMotivo').value.trim()||null,
+    fecha_inicio:ini, fecha_fin:$('fFin').value||null,
+    hora_inicio:$('fHIni').value||null, hora_fin:$('fHFin').value||null,
+    horas_permiso:horas,
+    requiere_reposicion:repone,
+    horas_a_reponer:repone?(parseFloat($('fHRepo').value)||horas||0):0,
+    horas_repuestas:0,
+    reposicion_acordada:$('fRepoTxt').value.trim()||null,
+    fecha_limite_reposicion:repone?($('fLimite').value||null):null,
+    tiene_soporte:$('fSop').value==='si',
+    soporte_detalle:$('fSopTxt').value.trim()||null,
+    aprobado_por:$('fAprob').value.trim(),
+    estado:$('fEstado').value,
+    notas:$('fNotas').value.trim()||null,
+    registrado_por:$('pgUser').textContent
+  };
+  $('btnSave').disabled=true;
+  sb.from('rrhh_permisos').insert(row).then(function(r){
+    $('btnSave').disabled=false;
+    if(r.error){toast('Error: '+r.error.message);return;}
+    toast('Permiso registrado ✓');
+    ['fMotivo','fFin','fHIni','fHFin','fHoras','fHRepo','fRepoTxt','fLimite','fSopTxt','fNotas'].forEach(function(id){$(id).value='';});
+    $('fHRepo').value=0;$('fSop').value='no';
+    cargarTodo();
+  });
+}
+
+// ---------- HISTORIAL ----------
+function estadoPill(e){
+  var cls={'Aprobado':'ok','Cerrado':'navy','En reposición':'warn','Solicitado':'grey','Rechazado':'red','Sin proceso':'red'}[e]||'grey';
+  return '<span class="pill '+cls+'">'+esc(e)+'</span>';
+}
+function pintarHist(){
+  var mes=$('filMes').value,cola=$('filCola').value,est=$('filEstado').value;
+  var rows=permisos.filter(function(p){
+    if(mes&&(p.fecha_inicio||'').slice(0,7)!==mes)return false;
+    if(cola&&p.colaborador_id!==cola)return false;
+    if(est&&p.estado!==est)return false;
+    return true;
+  });
+  var hoy=hoyISO(),venc=permisos.filter(function(p){return p.estado==='En reposición'&&p.fecha_limite_reposicion&&p.fecha_limite_reposicion<hoy;});
+  $('alertVencidos').innerHTML=venc.length?('<div class="note red">⛔ <b>'+venc.length+'</b> permiso(s) con reposición vencida sin cerrar. Según la guía, pasan a descuento de nómina como no remunerado.</div>'):'';
+  $('tbHist').innerHTML=rows.map(function(p){
+    var n=p.colaborador?p.colaborador.nombre:'—';
+    var fechas=fdate(p.fecha_inicio)+(p.fecha_fin&&p.fecha_fin!==p.fecha_inicio?(' – '+fdate(p.fecha_fin)):'');
+    var horas=p.horas_permiso?(p.horas_permiso+' h'):(p.fecha_fin&&p.fecha_fin!==p.fecha_inicio?'días':'—');
+    var rep=p.requiere_reposicion?((p.horas_repuestas||0)+' / '+(p.horas_a_reponer||0)+' h'+(p.fecha_limite_reposicion?('<span class="sub">límite '+fdate(p.fecha_limite_reposicion)+'</span>'):'')):'—';
+    var vencida=p.estado==='En reposición'&&p.fecha_limite_reposicion&&p.fecha_limite_reposicion<hoy;
+    return '<tr>'+
+      '<td class="mono">'+fechas+'</td>'+
+      '<td><b>'+esc(n)+'</b>'+(p.motivo?('<span class="sub">'+esc(p.motivo)+'</span>'):'')+'</td>'+
+      '<td>'+esc(p.tipo)+(p.tiene_soporte?'<span class="sub">✓ con soporte</span>':'')+'</td>'+
+      '<td class="mono">'+horas+'</td>'+
+      '<td class="mono">'+rep+(vencida?'<span class="sub" style="color:var(--rojo)">VENCIDA</span>':'')+'</td>'+
+      '<td>'+esc(p.aprobado_por||'—')+'</td>'+
+      '<td>'+estadoPill(p.estado)+'</td>'+
+      '<td><button class="btn sec mini" data-gestion="'+p.id+'">Gestionar</button></td>'+
+    '</tr>';
+  }).join('');
+  $('emptyHist').style.display=rows.length?'none':'block';
+}
+
+// ---------- GESTIONAR ----------
+function abrirGestion(id){
+  var p=permisos.find(function(x){return x.id===id;});if(!p)return;
+  gestionId=id;
+  $('mEstado').value=p.estado;
+  $('mHRep').value=p.horas_repuestas||0;
+  $('mNotas').value=p.notas||'';
+  $('modalBg').style.display='flex';
+}
+function guardarGestion(){
+  var upd={estado:$('mEstado').value,horas_repuestas:parseFloat($('mHRep').value)||0,notas:$('mNotas').value.trim()||null};
+  sb.from('rrhh_permisos').update(upd).eq('id',gestionId).then(function(r){
+    if(r.error){toast('Error: '+r.error.message);return;}
+    $('modalBg').style.display='none';toast('Permiso actualizado ✓');cargarTodo();
+  });
+}
+function eliminarGestion(){
+  if(!confirm('¿Eliminar este registro de permiso? Esta acción no se puede deshacer.'))return;
+  sb.from('rrhh_permisos').delete().eq('id',gestionId).then(function(r){
+    if(r.error){toast('Error: '+r.error.message);return;}
+    $('modalBg').style.display='none';toast('Registro eliminado');cargarTodo();
+  });
+}
+
+// ---------- COLABORADORES ----------
+function pintarCola(){
+  $('tbCola').innerHTML=colaboradores.map(function(c){
+    return '<tr>'+
+      '<td><b>'+esc(c.nombre)+'</b>'+(c.correo?('<span class="sub">'+esc(c.correo)+'</span>'):'')+'</td>'+
+      '<td class="mono">'+esc(c.cedula||'—')+'</td>'+
+      '<td>'+esc(c.cargo||'—')+(c.area?('<span class="sub">'+esc(c.area)+'</span>'):'')+'</td>'+
+      '<td>'+esc(c.jefe_inmediato||'—')+'</td>'+
+      '<td>'+(c.activo?'<span class="pill ok">Activo</span>':'<span class="pill grey">Inactivo</span>')+'</td>'+
+      '<td><button class="btn sec mini" data-edit="'+c.id+'">Editar</button></td>'+
+    '</tr>';
+  }).join('');
+  $('emptyCola').style.display=colaboradores.length?'none':'block';
+}
+function editarCola(id){
+  var c=colaboradores.find(function(x){return x.id===id;});if(!c)return;
+  editColaId=id;
+  $('cNombre').value=c.nombre||'';$('cCedula').value=c.cedula||'';$('cCorreo').value=c.correo||'';
+  $('cCargo').value=c.cargo||'';$('cArea').value=c.area||'';$('cJefe').value=c.jefe_inmediato||'';
+  $('cIngreso').value=c.fecha_ingreso||'';$('cNace').value=c.fecha_nacimiento||'';
+  $('cActivo').value=c.activo?'si':'no';
+  $('btnColaSave').textContent='Actualizar colaborador';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function limpiarCola(){
+  editColaId=null;
+  ['cNombre','cCedula','cCorreo','cCargo','cArea','cJefe','cIngreso','cNace'].forEach(function(id){$(id).value='';});
+  $('cActivo').value='si';$('btnColaSave').textContent='Guardar';
+}
+function guardarCola(){
+  var nombre=$('cNombre').value.trim();
+  if(!nombre){toast('El nombre es obligatorio.');return;}
+  var row={
+    nombre:nombre, cedula:$('cCedula').value.trim()||null, correo:$('cCorreo').value.trim()||null,
+    cargo:$('cCargo').value.trim()||null, area:$('cArea').value.trim()||null,
+    jefe_inmediato:$('cJefe').value.trim()||null,
+    fecha_ingreso:$('cIngreso').value||null, fecha_nacimiento:$('cNace').value||null,
+    activo:$('cActivo').value==='si'
+  };
+  var q=editColaId?sb.from('rrhh_colaboradores').update(row).eq('id',editColaId):sb.from('rrhh_colaboradores').insert(row);
+  q.then(function(r){
+    if(r.error){toast('Error: '+r.error.message);return;}
+    toast(editColaId?'Colaborador actualizado ✓':'Colaborador agregado ✓');
+    limpiarCola();cargarTodo();
+  });
+}
+function importarBulk(){
+  var lineas=$('bulk').value.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  if(!lineas.length){toast('Pega la lista primero.');return;}
+  var rows=lineas.map(function(l){
+    var p=l.split(';').map(function(x){return x.trim();});
+    return {nombre:p[0]||'',cedula:p[1]||null,cargo:p[2]||null,area:p[3]||null,correo:p[4]||null,activo:true};
+  }).filter(function(r){return r.nombre;});
+  if(!rows.length){toast('No se reconoció ninguna línea válida.');return;}
+  sb.from('rrhh_colaboradores').insert(rows).then(function(r){
+    if(r.error){toast('Error: '+r.error.message);return;}
+    toast(rows.length+' colaborador(es) importados ✓');$('bulk').value='';cargarTodo();
+  });
+}
+
+// ---------- EVENTOS ----------
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');
+  if(b){var a=b.getAttribute('data-act');if(a==='login')doLogin();else if(a==='logout')sb.auth.signOut();return;}
+  var tab=e.target.closest('[data-tab]');
+  if(tab){
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('act');});
+    document.querySelectorAll('.view').forEach(function(s){s.classList.remove('act');});
+    tab.classList.add('act');$('sec-'+tab.getAttribute('data-tab')).classList.add('act');
+    return;
+  }
+  var g=e.target.closest('[data-gestion]');if(g){abrirGestion(g.getAttribute('data-gestion'));return;}
+  var ed=e.target.closest('[data-edit]');if(ed){editarCola(ed.getAttribute('data-edit'));return;}
+  if(e.target.id==='modalBg')$('modalBg').style.display='none';
+});
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&$('ov').style.display!=='none')doLogin();});
+
+function wire(){
+  $('fTipo').addEventListener('change',onTipo);
+  $('fCola').addEventListener('change',actualizarTope);
+  $('fIni').addEventListener('change',actualizarTope);
+  $('fHIni').addEventListener('change',onHoras);
+  $('fHFin').addEventListener('change',onHoras);
+  $('fHoras').addEventListener('input',onHoras);
+  $('fRepo').addEventListener('change',onRepo);
+  $('btnSave').addEventListener('click',guardarPermiso);
+  $('filMes').addEventListener('change',pintarHist);
+  $('filCola').addEventListener('change',pintarHist);
+  $('filEstado').addEventListener('change',pintarHist);
+  $('filLimpiar').addEventListener('click',function(){$('filMes').value='';$('filCola').value='';$('filEstado').value='';pintarHist();});
+  $('btnColaSave').addEventListener('click',guardarCola);
+  $('btnColaNuevo').addEventListener('click',limpiarCola);
+  $('btnBulk').addEventListener('click',importarBulk);
+  $('mGuardar').addEventListener('click',guardarGestion);
+  $('mCerrar').addEventListener('click',function(){$('modalBg').style.display='none';});
+  $('mEliminar').addEventListener('click',eliminarGestion);
+  $('fIni').value=hoyISO();
+}
+
+function init(){
+  if(!(window.supabase&&window.supabase.createClient)){msg('No se pudo cargar Supabase (revisa tu conexión).','err');$('ov').style.display='flex';return;}
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  wire();
+  sb.auth.getSession().then(function(r){if(r.data&&r.data.session)onAuthed(r.data.session);else onSignedOut();});
+  sb.auth.onAuthStateChange(function(evt,session){if(session)onAuthed(session);else onSignedOut();});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,60);});
+else setTimeout(init,60);
+})();
+</script>
+</body>
+</html>

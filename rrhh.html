@@ -104,6 +104,28 @@
       <div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
     </a>
 
+    <!-- Registro de Permisos -->
+    <a class="card on" href="rrhh-permisos.html">
+      <div class="top">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="M9 15.5l2 2 4-4"/></svg></div>
+        <span class="tag">RRHH</span>
+      </div>
+      <h3>Registro de Permisos</h3>
+      <p>Registra cada permiso aprobado: colaborador, tipo, fechas, quién aprobó y horas a reponer. Con historial, filtros y control del tope mensual de 8 horas.</p>
+      <div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
+    </a>
+
+    <!-- Guía de Permisos -->
+    <a class="card on" href="guia-permisos-rrhh.pdf" target="_blank" rel="noopener">
+      <div class="top">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 21V4.5A1.5 1.5 0 0 1 6.5 3z"/><path d="M15 3v5h5"/><path d="M9 12h7M9 16h7"/></svg></div>
+        <span class="tag">RRHH</span>
+      </div>
+      <h3>Guía de Permisos Laborales</h3>
+      <p>El protocolo oficial v2: tipos de permiso, reglas de reposición 1:1, tope mensual, anticipación de 48 h y estados. Documento de respaldo del registro.</p>
+      <div class="foot"><span class="chip ready">PDF oficial</span><span class="go">Abrir &#8594;</span></div>
+    </a>
+
     <!-- Próximas herramientas -->
     <div class="card off">
       <div class="top">
@@ -111,7 +133,7 @@
         <span class="tag">RRHH</span>
       </div>
       <h3>Más herramientas del área</h3>
-      <p>Este espacio se irá llenando con las especificaciones puntuales del dashboard de Recursos Humanos.</p>
+      <p>Vacaciones, nóminas y contratos se irán sumando aquí a medida que se habiliten.</p>
       <div class="foot"><span class="chip soon">Pendiente</span></div>
     </div>
 
@@ -153,7 +175,7 @@
 var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var sb=null;
-var PERMITIDOS=['rrhh@protectgoservices.com'];
+var PERMITIDOS=['rrhh@protectgoservices.com','sales@protectgoservices.com'];
 
 var $=function(id){return document.getElementById(id);};
 function msg(t,cls){var m=$('msg');if(m){m.textContent=t||'';m.className='msg '+(cls||'');}}

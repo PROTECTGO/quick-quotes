@@ -4891,6 +4891,9 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
   }
   hook(); setInterval(hook,2000);
   setInterval(function(){ try{ fixTodo(); }catch(_){} },1500);
+  window.addEventListener("beforeprint",function(){ try{ fixTodo(); }catch(_){} });
+  var origPrint=window.print;
+  window.print=function(){ try{ fixTodo(); }catch(_){} return origPrint.apply(this,arguments); };
 })();
 
 /* ---------- persistencia de la proposal con la quote (data.pv en Supabase) ---------- */

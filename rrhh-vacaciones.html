@@ -192,6 +192,14 @@
             <input type="checkbox" id="fOficio">
             <label for="fOficio">Vacaciones fijadas de oficio por la empresa (Art. 187)</label>
           </div>
+          <div class="f chk">
+            <input type="checkbox" id="fExcepcion">
+            <label for="fExcepcion">⭐ Excepción de gerencia (adelanto / fuera de protocolo)</label>
+          </div>
+          <div class="f c2">
+            <label>Motivo de la excepción</label>
+            <input type="text" id="fMotivoExc" placeholder="Obligatorio si marcas la excepción — ej: reconocimiento, aún no cumple periodo de prueba">
+          </div>
           <div class="f">
             <label>Promedio devengado últimos 12 m *</label>
             <input type="number" id="fProm" min="0" step="1000" placeholder="$ / mes">
@@ -487,29 +495,50 @@ function evaluarSemaforo(){
   var dias=parseFloat($('fDias').value)||diasHabilesRango(ini,fin);
   var comp=parseFloat($('fCompDias').value)||0;
   var oficio=$('fOficio').checked;
-  var nivel='verde',razones=[];
+  var excepcion=$('fExcepcion').checked;
+  var nivel='verde',razones=[],excRazones=[];
+
   if(!cola.fecha_ingreso){
-    nivel='amarillo';razones.push('el colaborador no tiene fecha de ingreso registrada — no se puede calcular el saldo legal');
+    if(excepcion){excRazones.push('sin fecha de ingreso registrada — no se pudo calcular el saldo legal');}
+    else{nivel='amarillo';razones.push('el colaborador no tiene fecha de ingreso registrada — no se puede calcular el saldo legal');}
   }
+  // el tope del 50% en dinero (Art. 189) es un límite legal duro: la excepción de gerencia NO lo puede saltar
   if(comp>0){
     if(nivel==='verde')nivel='amarillo';
     razones.push('incluye compensación en dinero — siempre requiere autorización expresa y por escrito');
-    if(comp>dias*0.5){nivel='rojo';razones.push('la compensación en dinero ('+comp+' día(s)) supera el 50% permitido de esta solicitud ('+dias+' día(s), Art. 189)');}
+    if(comp>dias*0.5){nivel='rojo';razones.push('la compensación en dinero ('+comp+' día(s)) supera el 50% permitido de esta solicitud ('+dias+' día(s), Art. 189) — este límite no se puede exceptuar');}
   }
   if(!oficio){
     var dc=diasCalendarioHasta(ini);
-    if(dc<AVISO_DIAS){nivel='rojo';razones.push('sin los '+AVISO_DIAS+' días mínimos de anticipación ('+dc+' día(s) de aviso, Art. 187)');}
+    if(dc<AVISO_DIAS){
+      if(excepcion){excRazones.push('sin los '+AVISO_DIAS+' días mínimos de anticipación ('+dc+' día(s) de aviso)');}
+      else{nivel='rojo';razones.push('sin los '+AVISO_DIAS+' días mínimos de anticipación ('+dc+' día(s) de aviso, Art. 187)');}
+    }
   }
   if(cola.fecha_ingreso){
     var saldo=saldoColaborador(cola);
-    if(dias>saldo){nivel='rojo';razones.push('excede el saldo disponible del colaborador ('+saldo+' día(s) causados y no tomados)');}
+    if(dias>saldo){
+      if(excepcion){excRazones.push('adelanta '+(Math.round((dias-saldo)*10)/10)+' día(s) sobre el saldo causado ('+saldo+' día(s) disponibles)');}
+      else{nivel='rojo';razones.push('excede el saldo disponible del colaborador ('+saldo+' día(s) causados y no tomados)');}
+    }
   }
-  ultimoNivel=nivel;ultimasRazones=razones;
+  if(excepcion&&!$('fMotivoExc').value.trim()){
+    if(nivel==='verde'||nivel==='excepcion')nivel='amarillo';
+    razones.push('marcaste la excepción de gerencia pero falta el motivo — indícalo para registrar la autorización');
+  }else if(excepcion&&excRazones.length&&nivel==='verde'){
+    nivel='excepcion';
+  }
+
+  ultimoNivel=nivel;ultimasRazones=(nivel==='excepcion'?excRazones:razones);
   box.style.display='block';
   if(nivel==='verde'){
     box.className='note mint';
     box.innerHTML='🟢 <b>PREAPROBADO por protocolo.</b> Cumple anticipación, saldo disponible y no incluye compensación en dinero. El jefe solo confirma la cobertura de cartera.';
     if(!$('fAprob').value.trim())$('fAprob').value='Preaprobado por protocolo';
+    if($('fEstado').value==='Solicitado')$('fEstado').value='Aprobada';
+  }else if(nivel==='excepcion'){
+    box.className='note mint';
+    box.innerHTML='⭐ <b>EXCEPCIÓN AUTORIZADA POR GERENCIA.</b> Fuera del protocolo estándar: '+excRazones.join(' · ')+'. Queda registrada como decisión de gerencia — el motivo indicado es el respaldo, no incumplimiento.';
     if($('fEstado').value==='Solicitado')$('fEstado').value='Aprobada';
   }else if(nivel==='amarillo'){
     box.className='note amber';
@@ -532,6 +561,7 @@ function guardarVacacion(){
   if(fin<ini){toast('La fecha fin no puede ser anterior a la fecha inicio.');return;}
   if(!$('fCobertura').value.trim()){toast('Indica quién cubre su cartera mientras está fuera.');return;}
   if(!$('fAprob').value.trim()){toast('Indica quién aprobó las vacaciones.');return;}
+  if($('fExcepcion').checked&&!$('fMotivoExc').value.trim()){toast('Indica el motivo de la excepción de gerencia.');return;}
   var dias=parseFloat($('fDias').value)||diasHabilesRango(ini,fin);
   var comp=parseFloat($('fCompDias').value)||0;
   var disfrute=Math.max(0,dias-comp);
@@ -545,6 +575,8 @@ function guardarVacacion(){
     promedio_devengado:prom, valor_dia:valorDia, valor_total:valorTotal,
     aprobado_por:$('fAprob').value.trim(),
     nivel_semaforo:ultimoNivel||null, motivo_semaforo:ultimasRazones.join(' · ')||null,
+    excepcion_gerencia:$('fExcepcion').checked,
+    motivo_excepcion:$('fExcepcion').checked?$('fMotivoExc').value.trim():null,
     estado:$('fEstado').value,
     notas:$('fNotas').value.trim()||null,
     registrado_por:$('pgUser').textContent
@@ -554,8 +586,8 @@ function guardarVacacion(){
     $('btnSave').disabled=false;
     if(r.error){toast('Error: '+r.error.message);return;}
     toast('Vacaciones registradas ✓');
-    ['fFin','fDias','fCompDias','fCobertura','fProm','fValorDia','fValorTotal','fNotas'].forEach(function(id){$(id).value='';});
-    $('fOficio').checked=false;$('fCompDias').value=0;
+    ['fFin','fDias','fCompDias','fCobertura','fProm','fValorDia','fValorTotal','fMotivoExc','fNotas'].forEach(function(id){$(id).value='';});
+    $('fOficio').checked=false;$('fExcepcion').checked=false;$('fCompDias').value=0;
     $('semaforo').style.display='none';
     cargarTodo();
   });
@@ -582,7 +614,7 @@ function pintarHist(){
     var dias=(v.dias_habiles||0)+' d'+(v.dias_compensados?('<span class="sub">'+v.dias_disfrute+' descanso · '+v.dias_compensados+' $ </span>'):'');
     return '<tr>'+
       '<td class="mono">'+fechas+'</td>'+
-      '<td><b>'+esc(n)+'</b></td>'+
+      '<td><b>'+esc(n)+'</b>'+(v.excepcion_gerencia?('<span class="sub">⭐ excepción de gerencia'+(v.motivo_excepcion?(': '+esc(v.motivo_excepcion)):'')+'</span>'):'')+'</td>'+
       '<td class="mono">'+dias+'</td>'+
       '<td>'+esc(v.cobertura_cartera||'—')+'</td>'+
       '<td class="mono">'+money(v.valor_total)+'</td>'+
@@ -745,6 +777,8 @@ function wire(){
   $('fCompDias').addEventListener('input',function(){actualizarPago();evaluarSemaforo();});
   $('fProm').addEventListener('input',actualizarPago);
   $('fOficio').addEventListener('change',evaluarSemaforo);
+  $('fExcepcion').addEventListener('change',evaluarSemaforo);
+  $('fMotivoExc').addEventListener('input',evaluarSemaforo);
   $('btnSave').addEventListener('click',guardarVacacion);
   $('filMes').addEventListener('change',pintarHist);
   $('filCola').addEventListener('change',pintarHist);

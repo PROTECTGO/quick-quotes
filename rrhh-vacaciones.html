@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vacaciones · RRHH — ProtectGo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --navy:#002F3D; --navy-2:#0a5b54; --teal:#229A82; --teal-2:#1a7a68;
+    --mint:#BADFCE; --mint-soft:#E4F2EB; --mint-ghost:#F2F8F5;
+    --amber:#B8841F; --amber-soft:#fff7e0; --rojo:#c0392b; --rojo-soft:#fdeceb;
+    --papel:#FAF9F5; --surface:#fff;
+    --ink:#0D141A; --muted:#5a6a6e; --faint:#8a989a; --hairline:#d8e0de; --line:#e6ebe9;
+    --grad:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%);
+    --r-sm:10px; --r-md:14px; --r-lg:20px; --r-pill:999px;
+    --shadow-2:0 8px 24px -10px rgba(0,47,61,.16),0 2px 4px rgba(0,47,61,.05);
+    --font-title:"Montserrat",system-ui,sans-serif; --font-text:"Inter",system-ui,sans-serif; --font-mono:"IBM Plex Mono",monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-height:100vh;}
+
+  .pg-bar{position:sticky;top:0;z-index:40;height:58px;display:flex;align-items:center;gap:12px;padding:0 22px;background:var(--navy);color:#fff;box-shadow:0 2px 14px -6px rgba(0,0,0,.45);}
+  .pg-bar .logo{font-family:var(--font-title);font-weight:800;font-size:16px;letter-spacing:.2px;white-space:nowrap;}
+  .pg-bar .logo i{color:var(--teal);font-style:normal;}
+  .pg-bar .area-tag{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;background:rgba(255,255,255,.12);color:var(--mint);padding:5px 10px;border-radius:var(--r-pill);white-space:nowrap;}
+  .pg-bar .sp{flex:1;}
+  .pg-bar .user{font-family:var(--font-mono);font-size:12px;color:#9fc6bd;}
+  .pg-b{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;padding:8px 14px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;}
+  .pg-b:hover{background:rgba(255,255,255,.08);}
+  .pg-bar a.back{color:#9fc6bd;text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap;}
+  .pg-bar a.back:hover{color:#fff;}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:26px 22px 80px;}
+  .hero{padding:14px 0 6px;}
+  .hero .kicker{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-2);font-weight:600;}
+  .hero h1{font-family:var(--font-title);font-weight:800;font-size:28px;line-height:1.12;margin:6px 0 4px;color:var(--navy);}
+  .hero p{margin:0;color:var(--muted);font-size:14px;max-width:680px;}
+
+  .tabs{display:flex;gap:8px;margin:20px 0 22px;flex-wrap:wrap;}
+  .tab{font:inherit;font-size:13.5px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-pill);padding:9px 18px;cursor:pointer;}
+  .tab.act{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .tab .n{font-family:var(--font-mono);font-size:11px;background:var(--mint-soft);color:var(--teal-2);border-radius:var(--r-pill);padding:1px 7px;margin-left:6px;}
+  .tab.act .n{background:rgba(255,255,255,.16);color:var(--mint);}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow-2);margin-bottom:20px;}
+  .card h2{font-family:var(--font-title);font-weight:700;font-size:17px;color:var(--navy);margin:0 0 14px;}
+  .card h2 small{font-family:var(--font-text);font-weight:500;font-size:12.5px;color:var(--faint);margin-left:8px;}
+
+  .frm{display:grid;grid-template-columns:repeat(4,1fr);gap:13px 14px;}
+  .f{display:flex;flex-direction:column;gap:5px;}
+  .f.c2{grid-column:span 2;} .f.c4{grid-column:span 4;}
+  .f label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .f input,.f select,.f textarea{width:100%;padding:10px 11px;border:1px solid var(--hairline);border-radius:var(--r-sm);font-size:13.5px;font-family:inherit;background:#fff;color:var(--ink);}
+  .f input[readonly]{background:var(--mint-ghost);color:var(--teal-2);font-family:var(--font-mono);font-weight:600;}
+  .f textarea{resize:vertical;min-height:52px;}
+  .f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(34,154,130,.14);}
+  .f.chk{flex-direction:row;align-items:center;gap:8px;padding-top:18px;}
+  .f.chk input{width:auto;}
+  .f.chk label{text-transform:none;font-size:12.5px;letter-spacing:0;}
+  .hint{font-size:11.5px;color:var(--faint);line-height:1.4;}
+  .hint b{color:var(--teal-2);}
+
+  .btn{font:inherit;font-size:14px;font-weight:700;background:var(--navy);color:#fff;border:none;border-radius:var(--r-sm);padding:12px 22px;cursor:pointer;}
+  .btn:hover{background:var(--navy-2);}
+  .btn.sec{background:var(--mint-soft);color:var(--teal-2);}
+  .btn.sec:hover{background:var(--mint);}
+  .btn.mini{font-size:12px;padding:7px 12px;font-weight:600;}
+  .btn.warn{background:var(--rojo);}
+  .btn[disabled]{opacity:.55;cursor:not-allowed;}
+
+  .note{border-radius:var(--r-md);padding:12px 15px;font-size:13px;line-height:1.5;margin:0 0 16px;}
+  .note.mint{background:var(--mint-ghost);border:1px solid var(--mint);color:var(--ink);}
+  .note.amber{background:var(--amber-soft);border:1px solid #edd9a3;color:#6b5312;}
+  .note.red{background:var(--rojo-soft);border:1px solid #f0b9b3;color:#7c241b;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:left;padding:9px 10px;border-bottom:2px solid var(--line);white-space:nowrap;}
+  td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:hover td{background:var(--mint-ghost);}
+  td.mono{font-family:var(--font-mono);font-size:12px;white-space:nowrap;}
+  td .sub{display:block;font-size:11.5px;color:var(--faint);margin-top:2px;}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:4px 10px;border-radius:var(--r-pill);white-space:nowrap;}
+  .pill.ok{background:var(--mint-soft);color:var(--teal-2);}
+  .pill.warn{background:var(--amber-soft);color:var(--amber);}
+  .pill.red{background:var(--rojo-soft);color:var(--rojo);}
+  .pill.grey{background:#eef1f1;color:var(--faint);}
+  .pill.navy{background:var(--navy);color:#fff;}
+  .empty{padding:26px;text-align:center;color:var(--faint);font-size:13.5px;}
+
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .filters select,.filters input{padding:8px 10px;border:1px solid var(--hairline);border-radius:var(--r-sm);font-size:13px;font-family:inherit;background:#fff;}
+
+  .guia-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:760px){.frm{grid-template-columns:1fr 1fr;}.f.c2,.f.c4{grid-column:span 2;}.guia-grid{grid-template-columns:1fr;}}
+  .regla{background:var(--mint-ghost);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;}
+  .regla > b{color:var(--navy);display:block;margin-bottom:4px;font-family:var(--font-title);font-size:13.5px;}
+  .regla span b{color:var(--navy);}
+  .regla span{font-size:13px;color:var(--muted);line-height:1.5;}
+
+  .modal-bg{position:fixed;inset:0;z-index:80;background:rgba(0,30,38,.55);display:none;align-items:center;justify-content:center;padding:18px;}
+  .modal{background:#fff;border-radius:18px;padding:26px;width:520px;max-width:96vw;max-height:92vh;overflow:auto;box-shadow:0 30px 80px -25px rgba(0,0,0,.5);}
+  .modal h3{font-family:var(--font-title);color:var(--navy);margin:0 0 14px;font-size:18px;}
+
+  .ov{position:fixed;inset:0;z-index:90;background:rgba(0,30,38,.6);display:flex;align-items:center;justify-content:center;padding:18px;}
+  .ov .card-l{background:#fff;border-radius:18px;padding:34px 30px;width:380px;max-width:94vw;box-shadow:0 30px 80px -25px rgba(0,0,0,.55);}
+  .ov .brand{font-family:var(--font-title);font-weight:800;font-size:15px;color:var(--navy);margin-bottom:18px;}
+  .ov .brand i{color:var(--teal);font-style:normal;}
+  .ov h2{font-family:var(--font-title);margin:0 0 4px;color:var(--navy);font-size:22px;}
+  .ov p{margin:0 0 16px;color:var(--muted);font-size:13px;}
+  .ov label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin:13px 0 5px;text-transform:uppercase;letter-spacing:.04em;}
+  .ov input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--hairline);border-radius:10px;font-size:14px;font-family:inherit;}
+  .ov input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.15);}
+  .ov .btn-l{background:var(--navy);color:#fff;width:100%;justify-content:center;margin-top:20px;padding:13px;border:none;border-radius:10px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;}
+  .ov .btn-l:hover{background:var(--navy-2);}
+  .msg{font-size:12.5px;margin-top:12px;min-height:16px;}
+  .msg.err{color:#c0392b;}.msg.ok{color:var(--teal-2);}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:95;background:var(--navy);color:#fff;font-size:13.5px;font-weight:600;padding:12px 22px;border-radius:var(--r-pill);box-shadow:var(--shadow-2);display:none;}
+  #app{display:none;}
+  .view{display:none;} .view.act{display:block;}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="pg-bar">
+    <span class="logo">Protect<i>Go</i> · RRHH</span>
+    <span class="area-tag">◆ VACACIONES</span>
+    <span class="sp"></span>
+    <a class="back" href="rrhh.html">&#8592; Dashboard</a>
+    <span class="user" id="pgUser"></span>
+    <button class="pg-b" data-act="logout">Salir</button>
+  </header>
+
+  <div class="wrap">
+    <section class="hero">
+      <div class="kicker">Recursos Humanos · Trazabilidad</div>
+      <h1>Registro de Vacaciones</h1>
+      <p>Toda vacación programada se registra aquí: quién, cuándo, cuántos días, quién cubre su cartera y cuánto se le liquida. El saldo legal de cada colaborador se calcula solo — así se ve quién está por vencer su período y hay que programarle la fecha.</p>
+    </section>
+
+    <div class="tabs">
+      <button class="tab act" data-tab="reg">Registrar vacaciones</button>
+      <button class="tab" data-tab="hist">Historial <span class="n" id="nHist">0</span></button>
+      <button class="tab" data-tab="cola">Saldo por colaborador <span class="n" id="nCola">0</span></button>
+      <button class="tab" data-tab="guia">Guía de Vacaciones</button>
+    </div>
+
+    <!-- ========== REGISTRAR ========== -->
+    <section class="view act" id="sec-reg">
+      <div class="card">
+        <h2>Pegar la solicitud del correo <small>se autollena el formulario de abajo</small></h2>
+        <div class="hint" style="margin-bottom:8px">Copia el texto del correo de solicitud y pégalo aquí. El sistema reconoce al colaborador, las fechas, la cobertura de cartera y si pide compensación en dinero — tú solo completas quién aprobó y registras.</div>
+        <div class="f"><textarea id="correoTxt" style="min-height:110px" placeholder="Ej:&#10;Solicitud de vacaciones&#10;Nombre: Santiago Valencia&#10;Fecha inicio: 10 de agosto de 2026&#10;Fecha fin: 14 de agosto de 2026&#10;Cobertura: Yenifer Galván cubre mis clientes&#10;Compensar en dinero: no"></textarea></div>
+        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn" id="btnLeer" style="width:auto">Leer y llenar formulario</button>
+          <button class="btn sec" id="btnPlantilla" style="width:auto">Copiar plantilla para el equipo</button>
+        </div>
+        <div class="hint" id="parseRes" style="margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <h2>Nueva solicitud <small>según el Protocolo de Vacaciones</small></h2>
+        <div class="note amber" id="noCola" style="display:none">Aún no hay colaboradores registrados. Ve al módulo de <b>Permisos → Colaboradores</b> y agrégalos primero.</div>
+        <div class="frm">
+          <div class="f c2">
+            <label>Colaborador *</label>
+            <select id="fCola"></select>
+          </div>
+          <div class="f">
+            <label>Fecha inicio *</label>
+            <input type="date" id="fIni">
+          </div>
+          <div class="f">
+            <label>Fecha fin *</label>
+            <input type="date" id="fFin">
+          </div>
+          <div class="f">
+            <label>Días hábiles</label>
+            <input type="number" id="fDias" min="0" step="1">
+          </div>
+          <div class="f">
+            <label>Compensar en dinero (días)</label>
+            <input type="number" id="fCompDias" min="0" step="0.5" value="0">
+          </div>
+          <div class="f c2">
+            <label>Cobertura de cartera / clientes *</label>
+            <input type="text" id="fCobertura" placeholder="Quién cubre sus clientes/pólizas mientras está fuera">
+          </div>
+          <div class="f chk">
+            <input type="checkbox" id="fOficio">
+            <label for="fOficio">Vacaciones fijadas de oficio por la empresa (Art. 187)</label>
+          </div>
+          <div class="f">
+            <label>Promedio devengado últimos 12 m *</label>
+            <input type="number" id="fProm" min="0" step="1000" placeholder="$ / mes">
+          </div>
+          <div class="f">
+            <label>Valor día</label>
+            <input type="text" id="fValorDia" readonly>
+          </div>
+          <div class="f">
+            <label>Valor total a liquidar</label>
+            <input type="text" id="fValorTotal" readonly>
+          </div>
+          <div class="f">
+            <label>Aprobado por *</label>
+            <input type="text" id="fAprob" placeholder="Jefe inmediato">
+          </div>
+          <div class="f">
+            <label>Estado</label>
+            <select id="fEstado">
+              <option>Solicitado</option><option>Aprobada</option><option>Programada de oficio</option>
+              <option>Disfrutada</option><option>Rechazada</option><option>Cerrada</option>
+            </select>
+          </div>
+          <div class="f">
+            <label>&nbsp;</label>
+            <button class="btn" id="btnSave">Registrar vacaciones</button>
+          </div>
+          <div class="f c4">
+            <label>Notas</label>
+            <textarea id="fNotas" placeholder="Observaciones adicionales…"></textarea>
+          </div>
+        </div>
+        <div id="semaforo" style="display:none;margin-top:14px"></div>
+      </div>
+    </section>
+
+    <!-- ========== HISTORIAL ========== -->
+    <section class="view" id="sec-hist">
+      <div class="card">
+        <h2>Historial de vacaciones</h2>
+        <div class="filters">
+          <input type="month" id="filMes">
+          <select id="filCola"><option value="">Todos los colaboradores</option></select>
+          <select id="filEstado">
+            <option value="">Todos los estados</option>
+            <option>Solicitado</option><option>Aprobada</option><option>Programada de oficio</option>
+            <option>Disfrutada</option><option>Rechazada</option><option>Cerrada</option>
+          </select>
+          <button class="btn sec mini" id="filLimpiar">Limpiar</button>
+        </div>
+        <div id="alertVencidos"></div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Fechas</th><th>Colaborador</th><th>Días</th><th>Cobertura</th><th>Pago</th><th>Aprobó</th><th>Estado</th><th></th>
+            </tr></thead>
+            <tbody id="tbHist"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="emptyHist" style="display:none">No hay vacaciones registradas con esos filtros.</div>
+      </div>
+    </section>
+
+    <!-- ========== SALDO POR COLABORADOR ========== -->
+    <section class="view" id="sec-cola">
+      <div class="card">
+        <h2>Salario base / promedio mensual <small>para el cálculo de liquidación (Art. 192 — promedio si tiene comisiones)</small></h2>
+        <div class="frm">
+          <div class="f c2"><label>Colaborador</label><select id="sCola"></select></div>
+          <div class="f"><label>Salario / promedio mensual</label><input type="number" id="sSalario" min="0" step="1000"></div>
+          <div class="f"><label>&nbsp;</label><button class="btn" id="btnSalGuardar">Guardar</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Saldo de vacaciones por colaborador</h2>
+        <div class="hint" style="margin-bottom:10px">Causación legal: <b>15 días hábiles por cada año trabajado</b> (≈1.25 días/mes). Saldo mayor a 15 días = ya hay un período completo sin programar: riesgo de incumplir el plazo legal de un año para concederlas.</div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Nombre</th><th>Cédula</th><th>Antigüedad</th><th>Causados</th><th>Tomados</th><th>Saldo</th><th>Salario base</th><th>Alerta</th></tr></thead>
+            <tbody id="tbCola"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="emptyCola" style="display:none">Aún no hay colaboradores. Agrégalos en el módulo de Permisos.</div>
+      </div>
+    </section>
+
+    <!-- ========== GUÍA ========== -->
+    <section class="view" id="sec-guia">
+      <div class="card">
+        <h2>Guía de Vacaciones · v1</h2>
+        <div class="note mint">📄 El documento oficial completo está aquí: <a href="guia-vacaciones-rrhh.pdf" target="_blank" style="color:var(--teal-2);font-weight:700">Abrir la Guía de Vacaciones (PDF)</a>. Este resumen es la referencia rápida para registrar.</div>
+        <div class="guia-grid">
+          <div class="regla"><b>📅 Causación</b><span><b>15 días hábiles</b> por cada año trabajado (Art. 186 CST) — equivale a ≈1.25 días por mes de antigüedad.</span></div>
+          <div class="regla"><b>⏱️ Programación</b><span>Toda vacación se avisa con mínimo <b>15 días de anticipación</b>. Si el colaborador no la solicita a tiempo, <b>la empresa puede fijar la fecha de oficio</b> (Art. 187) con ese mismo aviso.</span></div>
+          <div class="regla"><b>⛔ Plazo legal</b><span>Las vacaciones causadas deben concederse <b>a más tardar dentro del año siguiente</b> a su causación. Un saldo mayor a 15 días es señal de que ya hay un período vencido o por vencer.</span></div>
+          <div class="regla"><b>💰 Compensación en dinero</b><span>Solo se puede pagar en dinero hasta <b>el 50% del período solicitado</b>, y únicamente con solicitud escrita del colaborador. El otro 50% se disfruta como descanso real — nunca 100% en dinero mientras el contrato sigue activo.</span></div>
+          <div class="regla"><b>🧮 Liquidación</b><span>Salario fijo: se paga con el salario del mes. Con comisiones: se paga con el <b>promedio de lo devengado en los últimos 12 meses</b> (Art. 192) — así nadie "pierde" sus comisiones por descansar.</span></div>
+          <div class="regla"><b>💼 Cobertura de cartera</b><span>Toda solicitud debe indicar <b>quién cubre sus clientes/pólizas</b> mientras está fuera. Sin esto no se aprueba.</span></div>
+          <div class="regla"><b>✅ Cadena</b><span>El colaborador solicita (o RRHH la programa de oficio) → jefe inmediato aprueba → <b>RRHH registra aquí</b>. Lo que no está registrado no existe como vacación autorizada.</span></div>
+          <div class="regla"><b>🔚 Retiro</b><span>Si el colaborador se retira, las vacaciones causadas y no disfrutadas se pagan al <b>100%</b> en la liquidación final — el tope del 50% solo aplica en contrato activo.</span></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="pie" style="max-width:1120px;margin:0 auto;padding:0 22px 40px;color:var(--faint);font-size:12px;font-family:var(--font-mono)">ProtectGo Services · Registro de Vacaciones RRHH · Guía v1 · acceso exclusivo rrhh@</div>
+</div>
+
+<!-- Modal gestionar -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>Gestionar vacaciones</h3>
+    <div class="frm" style="grid-template-columns:1fr 1fr">
+      <div class="f"><label>Estado</label>
+        <select id="mEstado">
+          <option>Solicitado</option><option>Aprobada</option><option>Programada de oficio</option>
+          <option>Disfrutada</option><option>Rechazada</option><option>Cerrada</option>
+        </select>
+      </div>
+      <div class="f"><label>Valor total liquidado</label><input type="number" id="mValor" min="0" step="1000"></div>
+      <div class="f c2"><label>Notas</label><textarea id="mNotas"></textarea></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn" id="mGuardar">Guardar cambios</button>
+      <button class="btn sec" id="mCerrar">Cancelar</button>
+      <span class="sp" style="flex:1"></span>
+      <button class="btn warn mini" id="mEliminar">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== LOGIN ===== -->
+<div class="ov" id="ov">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">RRHH</span></div>
+    <h2>Registro de Vacaciones</h2>
+    <p>Ingresa con la cuenta de RRHH para acceder al módulo.</p>
+    <label>Email</label>
+    <input id="email" type="email" autocomplete="username" value="rrhh@protectgoservices.com">
+    <label>Contraseña</label>
+    <input id="pass" type="password" autocomplete="current-password">
+    <button class="btn-l" data-act="login">Entrar</button>
+    <div class="msg" id="msg"></div>
+  </div>
+</div>
+
+<!-- ===== BLOQUEO ===== -->
+<div class="ov" id="ovBlock" style="display:none">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">RRHH</span></div>
+    <h2>Acceso restringido</h2>
+    <p>Este módulo es exclusivo de <b>Recursos Humanos</b>. Tu cuenta <b id="ovBlockMail"></b> no tiene acceso.</p>
+    <button class="btn-l" data-act="logout">Salir e ingresar con otra cuenta</button>
+    <a href="rrhh.html" style="display:block;text-align:center;margin-top:13px;color:var(--teal-2);font-weight:600;font-size:13px;text-decoration:none">&#8592; Volver al dashboard</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var sb=null;
+var PERMITIDOS=['rrhh@protectgoservices.com','sales@protectgoservices.com'];
+var AVISO_DIAS=15; // Art. 187 CST: 15 días de anticipación
+
+var colaboradores=[], vacaciones=[], gestionId=null;
+var ultimoNivel='', ultimasRazones=[];
+
+var $=function(id){return document.getElementById(id);};
+function msg(t,cls){var m=$('msg');if(m){m.textContent=t||'';m.className='msg '+(cls||'');}}
+function toast(t){var el=$('toast');el.textContent=t;el.style.display='block';setTimeout(function(){el.style.display='none';},2600);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function fdate(d){if(!d)return '';var p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+function hoyISO(){var d=new Date();return d.toISOString().slice(0,10);}
+function money(n){if(n==null||n==='')return '—';return '$ '+Math.round(n).toLocaleString('es-CO');}
+
+// ---------- AUTH ----------
+function doLogin(){
+  var em=$('email').value.trim(),pw=$('pass').value;
+  if(!em||!pw){msg('Escribe email y contraseña.','err');return;}
+  msg('Entrando…');
+  sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){if(r.error)msg(r.error.message,'err');else msg('');});
+}
+function onAuthed(session){
+  var email=(session&&session.user?session.user.email:'')||'';
+  if(PERMITIDOS.indexOf(email.toLowerCase())<0){
+    $('app').style.display='none';$('ov').style.display='none';
+    $('ovBlockMail').textContent=email;$('ovBlock').style.display='flex';
+    return;
+  }
+  $('ovBlock').style.display='none';
+  $('pgUser').textContent=email;
+  $('ov').style.display='none';$('app').style.display='block';
+  cargarTodo();
+}
+function onSignedOut(){$('app').style.display='none';$('ovBlock').style.display='none';$('ov').style.display='flex';}
+
+// ---------- DATA ----------
+function cargarTodo(){
+  Promise.all([
+    sb.from('rrhh_colaboradores').select('*').order('nombre'),
+    sb.from('rrhh_vacaciones').select('*, colaborador:rrhh_colaboradores(nombre,cedula)').order('fecha_inicio',{ascending:false}).limit(500)
+  ]).then(function(rs){
+    if(rs[0].error||rs[1].error){toast('Error cargando datos: '+((rs[0].error||rs[1].error).message));return;}
+    colaboradores=rs[0].data||[];vacaciones=rs[1].data||[];
+    pintarSelects();pintarSaldos();pintarHist();
+    $('nCola').textContent=colaboradores.filter(function(c){return c.activo;}).length;
+    $('nHist').textContent=vacaciones.length;
+    $('noCola').style.display=colaboradores.length?'none':'block';
+  });
+}
+function pintarSelects(){
+  var act=colaboradores.filter(function(c){return c.activo;});
+  var opts=act.map(function(c){return '<option value="'+c.id+'">'+esc(c.nombre)+'</option>';}).join('');
+  $('fCola').innerHTML='<option value="">— Selecciona —</option>'+opts;
+  $('sCola').innerHTML='<option value="">— Selecciona —</option>'+opts;
+  $('filCola').innerHTML='<option value="">Todos los colaboradores</option>'+colaboradores.map(function(c){return '<option value="'+c.id+'">'+esc(c.nombre)+'</option>';}).join('');
+}
+
+// ---------- CÁLCULO DE SALDO (Art. 186: 15 días hábiles / año ≈ 1.25 días/mes) ----------
+function mesesAntiguedad(fechaIngresoISO){
+  if(!fechaIngresoISO)return 0;
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  var p=fechaIngresoISO.split('-');
+  var ing=new Date(+p[0],+p[1]-1,+p[2]);
+  if(ing>hoy)return 0;
+  var meses=(hoy.getFullYear()-ing.getFullYear())*12+(hoy.getMonth()-ing.getMonth());
+  if(hoy.getDate()<ing.getDate())meses--;
+  return Math.max(0,meses);
+}
+function diasCausados(fechaIngresoISO){
+  return Math.floor(mesesAntiguedad(fechaIngresoISO)*1.25);
+}
+function diasUsados(colaId,excludeId){
+  var tot=0;
+  vacaciones.forEach(function(v){
+    if(v.colaborador_id!==colaId)return;
+    if(excludeId&&v.id===excludeId)return;
+    if(v.estado==='Rechazada'||v.estado==='Solicitado')return; // no consume saldo hasta que se aprueba/programa
+    tot+=parseFloat(v.dias_habiles||0)||0;
+  });
+  return tot;
+}
+function saldoColaborador(cola,excludeId){
+  return diasCausados(cola.fecha_ingreso)-diasUsados(cola.id,excludeId);
+}
+
+// ---------- FECHAS ----------
+function diasHabilesRango(iniISO,finISO){
+  if(!iniISO)return 0;
+  var fin=finISO||iniISO;
+  var p1=iniISO.split('-'),p2=fin.split('-');
+  var d1=new Date(+p1[0],+p1[1]-1,+p1[2]),d2=new Date(+p2[0],+p2[1]-1,+p2[2]);
+  if(d2<d1)return 0;
+  var n=0,d=new Date(d1);
+  while(d<=d2){var dw=d.getDay();if(dw!==0&&dw!==6)n++;d.setDate(d.getDate()+1);}
+  return n;
+}
+function diasCalendarioHasta(iso){
+  if(!iso)return 0;
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  var p=iso.split('-'),f=new Date(+p[0],+p[1]-1,+p[2]);
+  return Math.round((f-hoy)/86400000);
+}
+
+// ---------- FORM: días, pago, semáforo ----------
+function onFechas(){
+  var ini=$('fIni').value,fin=$('fFin').value;
+  if(ini&&fin)$('fDias').value=diasHabilesRango(ini,fin);
+  actualizarPago();evaluarSemaforo();
+}
+function onCola(){
+  var c=colaboradores.find(function(x){return x.id===$('fCola').value;});
+  if(c&&c.salario_base&&!$('fProm').value)$('fProm').value=c.salario_base;
+  actualizarPago();evaluarSemaforo();
+}
+function actualizarPago(){
+  var prom=parseFloat($('fProm').value)||0;
+  var dias=parseFloat($('fDias').value)||0;
+  var valorDia=prom?Math.round(prom/30):0;
+  $('fValorDia').value=valorDia?money(valorDia):'';
+  $('fValorTotal').value=valorDia?money(valorDia*dias):'';
+}
+function evaluarSemaforo(){
+  var box=$('semaforo');
+  var colaId=$('fCola').value,ini=$('fIni').value,fin=$('fFin').value;
+  var cola=colaboradores.find(function(c){return c.id===colaId;});
+  if(!colaId||!ini||!fin||!cola){box.style.display='none';return;}
+  var dias=parseFloat($('fDias').value)||diasHabilesRango(ini,fin);
+  var comp=parseFloat($('fCompDias').value)||0;
+  var oficio=$('fOficio').checked;
+  var nivel='verde',razones=[];
+  if(!cola.fecha_ingreso){
+    nivel='amarillo';razones.push('el colaborador no tiene fecha de ingreso registrada — no se puede calcular el saldo legal');
+  }
+  if(comp>0){
+    if(nivel==='verde')nivel='amarillo';
+    razones.push('incluye compensación en dinero — siempre requiere autorización expresa y por escrito');
+    if(comp>dias*0.5){nivel='rojo';razones.push('la compensación en dinero ('+comp+' día(s)) supera el 50% permitido de esta solicitud ('+dias+' día(s), Art. 189)');}
+  }
+  if(!oficio){
+    var dc=diasCalendarioHasta(ini);
+    if(dc<AVISO_DIAS){nivel='rojo';razones.push('sin los '+AVISO_DIAS+' días mínimos de anticipación ('+dc+' día(s) de aviso, Art. 187)');}
+  }
+  if(cola.fecha_ingreso){
+    var saldo=saldoColaborador(cola);
+    if(dias>saldo){nivel='rojo';razones.push('excede el saldo disponible del colaborador ('+saldo+' día(s) causados y no tomados)');}
+  }
+  ultimoNivel=nivel;ultimasRazones=razones;
+  box.style.display='block';
+  if(nivel==='verde'){
+    box.className='note mint';
+    box.innerHTML='🟢 <b>PREAPROBADO por protocolo.</b> Cumple anticipación, saldo disponible y no incluye compensación en dinero. El jefe solo confirma la cobertura de cartera.';
+    if(!$('fAprob').value.trim())$('fAprob').value='Preaprobado por protocolo';
+    if($('fEstado').value==='Solicitado')$('fEstado').value='Aprobada';
+  }else if(nivel==='amarillo'){
+    box.className='note amber';
+    box.innerHTML='🟡 <b>REQUIERE DECISIÓN / FIRMA:</b> '+razones.join(' · ')+'.';
+    if($('fAprob').value==='Preaprobado por protocolo')$('fAprob').value='';
+    $('fEstado').value='Solicitado';
+  }else{
+    box.className='note red';
+    box.innerHTML='🔴 <b>INCUMPLE EL PROTOCOLO:</b> '+razones.join(' · ')+'. Solo procede con autorización expresa de gerencia.';
+    if($('fAprob').value==='Preaprobado por protocolo')$('fAprob').value='';
+    $('fEstado').value='Solicitado';
+  }
+}
+
+// ---------- GUARDAR ----------
+function guardarVacacion(){
+  var colaId=$('fCola').value,ini=$('fIni').value,fin=$('fFin').value;
+  if(!colaId){toast('Selecciona el colaborador.');return;}
+  if(!ini||!fin){toast('Indica fecha de inicio y fin.');return;}
+  if(fin<ini){toast('La fecha fin no puede ser anterior a la fecha inicio.');return;}
+  if(!$('fCobertura').value.trim()){toast('Indica quién cubre su cartera mientras está fuera.');return;}
+  if(!$('fAprob').value.trim()){toast('Indica quién aprobó las vacaciones.');return;}
+  var dias=parseFloat($('fDias').value)||diasHabilesRango(ini,fin);
+  var comp=parseFloat($('fCompDias').value)||0;
+  var disfrute=Math.max(0,dias-comp);
+  var prom=parseFloat($('fProm').value)||null;
+  var valorDia=prom?Math.round(prom/30):null;
+  var valorTotal=valorDia?Math.round(valorDia*dias):null;
+  var row={
+    colaborador_id:colaId, fecha_inicio:ini, fecha_fin:fin,
+    dias_habiles:dias, dias_disfrute:disfrute, dias_compensados:comp,
+    cobertura_cartera:$('fCobertura').value.trim(),
+    promedio_devengado:prom, valor_dia:valorDia, valor_total:valorTotal,
+    aprobado_por:$('fAprob').value.trim(),
+    nivel_semaforo:ultimoNivel||null, motivo_semaforo:ultimasRazones.join(' · ')||null,
+    estado:$('fEstado').value,
+    notas:$('fNotas').value.trim()||null,
+    registrado_por:$('pgUser').textContent
+  };
+  $('btnSave').disabled=true;
+  sb.from('rrhh_vacaciones').insert(row).then(function(r){
+    $('btnSave').disabled=false;
+    if(r.error){toast('Error: '+r.error.message);return;}
+    toast('Vacaciones registradas ✓');
+    ['fFin','fDias','fCompDias','fCobertura','fProm','fValorDia','fValorTotal','fNotas'].forEach(function(id){$(id).value='';});
+    $('fOficio').checked=false;$('fCompDias').value=0;
+    $('semaforo').style.display='none';
+    cargarTodo();
+  });
+}
+
+// ---------- HISTORIAL ----------
+function estadoPill(e){
+  var cls={'Aprobada':'ok','Programada de oficio':'warn','Disfrutada':'navy','Solicitado':'grey','Rechazada':'red','Cerrada':'navy'}[e]||'grey';
+  return '<span class="pill '+cls+'">'+esc(e)+'</span>';
+}
+function pintarHist(){
+  var mes=$('filMes').value,cola=$('filCola').value,est=$('filEstado').value;
+  var rows=vacaciones.filter(function(v){
+    if(mes&&(v.fecha_inicio||'').slice(0,7)!==mes)return false;
+    if(cola&&v.colaborador_id!==cola)return false;
+    if(est&&v.estado!==est)return false;
+    return true;
+  });
+  var riesgo=colaboradores.filter(function(c){return c.activo&&c.fecha_ingreso&&saldoColaborador(c)>15;});
+  $('alertVencidos').innerHTML=riesgo.length?('<div class="note red">⛔ <b>'+riesgo.length+'</b> colaborador(es) con más de 15 días de vacaciones sin programar — riesgo de incumplir el plazo legal de un año. Revisa la pestaña <b>Saldo por colaborador</b> y prográmales la fecha de oficio.</div>'):'';
+  $('tbHist').innerHTML=rows.map(function(v){
+    var n=v.colaborador?v.colaborador.nombre:'—';
+    var fechas=fdate(v.fecha_inicio)+' – '+fdate(v.fecha_fin);
+    var dias=(v.dias_habiles||0)+' d'+(v.dias_compensados?('<span class="sub">'+v.dias_disfrute+' descanso · '+v.dias_compensados+' $ </span>'):'');
+    return '<tr>'+
+      '<td class="mono">'+fechas+'</td>'+
+      '<td><b>'+esc(n)+'</b></td>'+
+      '<td class="mono">'+dias+'</td>'+
+      '<td>'+esc(v.cobertura_cartera||'—')+'</td>'+
+      '<td class="mono">'+money(v.valor_total)+'</td>'+
+      '<td>'+esc(v.aprobado_por||'—')+'</td>'+
+      '<td>'+estadoPill(v.estado)+'</td>'+
+      '<td><button class="btn sec mini" data-gestion="'+v.id+'">Gestionar</button></td>'+
+    '</tr>';
+  }).join('');
+  $('emptyHist').style.display=rows.length?'none':'block';
+}
+
+// ---------- GESTIONAR ----------
+function abrirGestion(id){
+  var v=vacaciones.find(function(x){return x.id===id;});if(!v)return;
+  gestionId=id;
+  $('mEstado').value=v.estado;
+  $('mValor').value=v.valor_total||0;
+  $('mNotas').value=v.notas||'';
+  $('modalBg').style.display='flex';
+}
+function guardarGestion(){
+  var upd={estado:$('mEstado').value,valor_total:parseFloat($('mValor').value)||null,notas:$('mNotas').value.trim()||null};
+  sb.from('rrhh_vacaciones').update(upd).eq('id',gestionId).then(function(r){
+    if(r.error){toast('Error: '+r.error.message);return;}
+    $('modalBg').style.display='none';toast('Registro actualizado ✓');cargarTodo();
+  });
+}
+function eliminarGestion(){
+  if(!confirm('¿Eliminar este registro de vacaciones? Esta acción no se puede deshacer.'))return;
+  sb.from('rrhh_vacaciones').delete().eq('id',gestionId).then(function(r){
+    if(r.error){toast('Error: '+r.error.message);return;}
+    $('modalBg').style.display='none';toast('Registro eliminado');cargarTodo();
+  });
+}
+
+// ---------- SALDO POR COLABORADOR ----------
+function pintarSaldos(){
+  $('tbCola').innerHTML=colaboradores.map(function(c){
+    var m=mesesAntiguedad(c.fecha_ingreso);
+    var caus=diasCausados(c.fecha_ingreso);
+    var usados=diasUsados(c.id);
+    var saldo=caus-usados;
+    var alerta=!c.fecha_ingreso?'<span class="pill grey">Sin fecha ingreso</span>':(saldo>15?'<span class="pill red">🔴 vencido/por vencer</span>':(saldo>=8?'<span class="pill warn">🟡 programar pronto</span>':'<span class="pill ok">🟢 al día</span>'));
+    return '<tr>'+
+      '<td><b>'+esc(c.nombre)+'</b></td>'+
+      '<td class="mono">'+esc(c.cedula||'—')+'</td>'+
+      '<td class="mono">'+(c.fecha_ingreso?(Math.floor(m/12)+'a '+(m%12)+'m'):'—')+'</td>'+
+      '<td class="mono">'+caus+'</td>'+
+      '<td class="mono">'+usados+'</td>'+
+      '<td class="mono"><b>'+saldo+'</b></td>'+
+      '<td class="mono">'+(c.salario_base?money(c.salario_base):'—')+'</td>'+
+      '<td>'+alerta+'</td>'+
+    '</tr>';
+  }).join('');
+  $('emptyCola').style.display=colaboradores.length?'none':'block';
+}
+function guardarSalario(){
+  var id=$('sCola').value,val=parseFloat($('sSalario').value);
+  if(!id){toast('Selecciona un colaborador.');return;}
+  if(!val){toast('Indica el salario / promedio mensual.');return;}
+  sb.from('rrhh_colaboradores').update({salario_base:val}).eq('id',id).then(function(r){
+    if(r.error){toast('Error: '+r.error.message);return;}
+    toast('Salario base guardado ✓');$('sSalario').value='';cargarTodo();
+  });
+}
+
+// ---------- LECTOR DE CORREO ----------
+var PLANTILLA_CORREO='ASUNTO: VACACIONES | [Nombre completo] | [Fecha inicio] – [Fecha fin]\nPARA: su jefe inmediato · CC: rh@protectgoservices.com\n\nSOLICITUD DE VACACIONES\nNombre: [nombre completo]\nFecha inicio: [ej: 10 de agosto de 2026]\nFecha fin: [ej: 14 de agosto de 2026]\nCobertura: [quién cubre tus clientes/cartera mientras estás fuera]\nCompensar en dinero: [no / sí — cuántos días, máximo la mitad del período]';
+var MESES_MAP={enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,setiembre:9,octubre:10,noviembre:11,diciembre:12};
+function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function campo(txt,labels){
+  var re=new RegExp('^[\\s>*-]*(?:'+labels+')\\s*[:：]\\s*(.+)$','im');
+  var m=txt.match(re);return m?m[1].trim():null;
+}
+function pad2(n){return (n<10?'0':'')+n;}
+function fechaISO(d,mes,anio){
+  if(!anio){anio=new Date().getFullYear();}
+  return anio+'-'+pad2(mes)+'-'+pad2(d);
+}
+function parseFecha1(txt){
+  var n=norm(txt);
+  var m=n.match(/(\d{1,2})\s+de\s+([a-z]+)(?:\s+de\s+(\d{4}))?/);
+  if(m&&MESES_MAP[m[2]])return fechaISO(+m[1],MESES_MAP[m[2]],m[3]?+m[3]:null);
+  m=n.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(m)return m[0];
+  m=n.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if(m)return m[3]+'-'+pad2(+m[2])+'-'+pad2(+m[1]);
+  return null;
+}
+function parseRango(txt){
+  var n=norm(txt);
+  var m=n.match(/del?\s+(\d{1,2})(?:\s+de\s+([a-z]+))?\s+(?:al|hasta el|hasta|a el|a)\s+(\d{1,2})\s+de\s+([a-z]+)(?:\s+de\s+(\d{4}))?/);
+  if(m&&MESES_MAP[m[4]]){
+    var mes2=MESES_MAP[m[4]],mes1=m[2]&&MESES_MAP[m[2]]?MESES_MAP[m[2]]:mes2;
+    return {ini:fechaISO(+m[1],mes1,m[5]?+m[5]:null),fin:fechaISO(+m[3],mes2,m[5]?+m[5]:null)};
+  }
+  return null;
+}
+function detectarComp(txt){
+  var n=norm(txt);
+  var m=n.match(/compensa[a-z]*[^.\n]*?(\d+(?:[.,]\d+)?)\s*d[ií]a/);
+  if(m)return parseFloat(m[1].replace(',','.'));
+  if(/compensar[^.\n]*\bno\b|dinero[^.\n]*\bno\b/.test(n))return 0;
+  return 0;
+}
+function leerCorreo(){
+  var txt=$('correoTxt').value;
+  if(!txt.trim()){toast('Pega primero el texto del correo.');return;}
+  var ok=[],falta=[];
+  var subj=txt.match(/vacaciones\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+)/i);
+  var nomTxt=campo(txt,'nombre|colaborador|solicitante')||(subj?subj[1]:null);
+  var col=null,nTxt=norm(txt);
+  if(nomTxt){var nn=norm(nomTxt);col=colaboradores.find(function(c){var cn=norm(c.nombre);return cn.indexOf(nn)>=0||nn.indexOf(cn)>=0;});}
+  if(!col){col=colaboradores.find(function(c){var p=norm(c.nombre).split(/\s+/);return p.length>=2&&nTxt.indexOf(p[0]+' '+p[1])>=0;});}
+  if(col){$('fCola').value=col.id;onCola();ok.push('colaborador: '+col.nombre);}else falta.push('colaborador');
+  var iniTxt=campo(txt,'fecha inicio|desde|inicio');
+  var finTxt=campo(txt,'fecha fin|hasta|fin');
+  var ini=iniTxt?parseFecha1(iniTxt):null, fin=finTxt?parseFecha1(finTxt):null;
+  if(!ini||!fin){var rng=parseRango(subj?subj[2]:txt)||parseRango(txt);if(rng){ini=ini||rng.ini;fin=fin||rng.fin;}}
+  if(ini){$('fIni').value=ini;ok.push('inicio: '+ini);}else falta.push('fecha inicio');
+  if(fin){$('fFin').value=fin;ok.push('fin: '+fin);}else falta.push('fecha fin');
+  if(ini&&fin)onFechas();
+  var cob=campo(txt,'cobertura|cubre|reemplazo');
+  if(cob){$('fCobertura').value=cob;ok.push('cobertura');}else falta.push('cobertura de cartera');
+  var comp=detectarComp(txt);
+  if(comp){$('fCompDias').value=comp;ok.push('compensación: '+comp+' día(s)');}
+  evaluarSemaforo();
+  falta.push('aprobado por (siempre manual)');
+  $('parseRes').innerHTML='<b style="color:var(--teal-2)">Detectado:</b> '+ok.join(' · ')+(falta.length?('<br><b style="color:var(--amber)">Por completar:</b> '+falta.join(' · ')):'');
+  toast('Formulario diligenciado — revisa y completa');
+}
+function copiarPlantilla(){
+  var done=function(){toast('Plantilla copiada — compártela con el equipo');};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(PLANTILLA_CORREO).then(done,function(){fallback();});}
+  else fallback();
+  function fallback(){var ta=document.createElement('textarea');ta.value=PLANTILLA_CORREO;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);done();}
+}
+
+// ---------- EVENTOS ----------
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');
+  if(b){var a=b.getAttribute('data-act');if(a==='login')doLogin();else if(a==='logout')sb.auth.signOut();return;}
+  var tab=e.target.closest('[data-tab]');
+  if(tab){
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('act');});
+    document.querySelectorAll('.view').forEach(function(s){s.classList.remove('act');});
+    tab.classList.add('act');$('sec-'+tab.getAttribute('data-tab')).classList.add('act');
+    return;
+  }
+  var g=e.target.closest('[data-gestion]');if(g){abrirGestion(g.getAttribute('data-gestion'));return;}
+  if(e.target.id==='modalBg')$('modalBg').style.display='none';
+});
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&$('ov').style.display!=='none')doLogin();});
+
+function wire(){
+  $('fCola').addEventListener('change',onCola);
+  $('fIni').addEventListener('change',onFechas);
+  $('fFin').addEventListener('change',onFechas);
+  $('fDias').addEventListener('input',function(){actualizarPago();evaluarSemaforo();});
+  $('fCompDias').addEventListener('input',function(){actualizarPago();evaluarSemaforo();});
+  $('fProm').addEventListener('input',actualizarPago);
+  $('fOficio').addEventListener('change',evaluarSemaforo);
+  $('btnSave').addEventListener('click',guardarVacacion);
+  $('filMes').addEventListener('change',pintarHist);
+  $('filCola').addEventListener('change',pintarHist);
+  $('filEstado').addEventListener('change',pintarHist);
+  $('filLimpiar').addEventListener('click',function(){$('filMes').value='';$('filCola').value='';$('filEstado').value='';pintarHist();});
+  $('btnLeer').addEventListener('click',leerCorreo);
+  $('btnPlantilla').addEventListener('click',copiarPlantilla);
+  $('btnSalGuardar').addEventListener('click',guardarSalario);
+  $('mGuardar').addEventListener('click',guardarGestion);
+  $('mCerrar').addEventListener('click',function(){$('modalBg').style.display='none';});
+  $('mEliminar').addEventListener('click',eliminarGestion);
+  $('fIni').value=hoyISO();
+}
+
+function init(){
+  if(!(window.supabase&&window.supabase.createClient)){msg('No se pudo cargar Supabase (revisa tu conexión).','err');$('ov').style.display='flex';return;}
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  wire();
+  sb.auth.getSession().then(function(r){if(r.data&&r.data.session)onAuthed(r.data.session);else onSignedOut();});
+  sb.auth.onAuthStateChange(function(evt,session){if(session)onAuthed(session);else onSignedOut();});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,60);});
+else setTimeout(init,60);
+})();
+</script>
+</body>
+</html>

@@ -98,7 +98,7 @@
     <main class="grid">
 
       <!-- Quick Quote -->
-      <a class="card on" href="quick-quote.html">
+      <a class="card on" href="quick-quote.html?v=782">
         <div class="top">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7h6M9 11h6M9 15h4"/><rect x="4" y="3" width="16" height="18" rx="2.5"/></svg></div>
           <span class="tag">NV</span>
@@ -303,7 +303,7 @@
       document.querySelectorAll(".grid .card").forEach(function(c){
         if(c.id==="card-rrhh"||c.id==="card-coi"||c.id==="card-kam"||c.id==="card-end") return;
         var href=(c.getAttribute("href")||"");
-        if(externo) c.style.display=(href.indexOf("quick-quote.html")>=0)?"flex":"none";
+        if(externo) c.style.display=(href.indexOf("quick-quote.html?v=782")>=0)?"flex":"none";
         else if(MAPA[email]) c.style.display="none";
         else if(EXTRA[email] && (href.indexOf("generador-firmas.html")>=0||href.indexOf("tarjetas.html")>=0)) c.style.display="none";
         else c.style.display="";

@@ -556,7 +556,7 @@ function onAuthed(session){
 }
 function onSignedOut(){$('app').style.display='none';$('ovBlock').style.display='none';$('ov').style.display='flex';}
 function init(){
-  if(DEMO){$('ov').style.display='none';$('app').style.display='block';$('pgUser').textContent='fam@protectgoservices.com (demo)';pintarDocs();cargarQuotes();return;}
+  
   if(!(window.supabase&&window.supabase.createClient)){msg('No se pudo cargar Supabase (revisa tu conexión).','err');$('ov').style.display='flex';return;}
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
   sb.auth.getSession().then(function(r){if(r.data&&r.data.session)onAuthed(r.data.session);else onSignedOut();});

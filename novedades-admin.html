@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Novedades · Admin — ProtectGo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --navy:#002F3D; --navy-2:#0a5b54; --teal:#229A82; --teal-2:#1a7a68;
+    --mint:#BADFCE; --mint-soft:#E4F2EB; --mint-ghost:#F2F8F5;
+    --amber:#FFB400; --amber-soft:#fff7e0; --papel:#FAF9F5; --surface:#fff;
+    --ink:#0D141A; --muted:#5a6a6e; --faint:#8a989a; --hairline:#d8e0de; --line:#e6ebe9;
+    --grad:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%);
+    --r-sm:10px; --r-md:14px; --r-lg:20px; --r-pill:999px;
+    --shadow-2:0 8px 24px -10px rgba(0,47,61,.16),0 2px 4px rgba(0,47,61,.05);
+    --font-title:"Montserrat",system-ui,sans-serif; --font-text:"Inter",system-ui,sans-serif; --font-mono:"IBM Plex Mono",monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-height:100vh;}
+
+  .pg-bar{position:sticky;top:0;z-index:40;height:58px;display:flex;align-items:center;gap:12px;padding:0 22px;background:var(--navy);color:#fff;box-shadow:0 2px 14px -6px rgba(0,0,0,.45);}
+  .pg-bar .logo{font-family:var(--font-title);font-weight:800;font-size:16px;letter-spacing:.2px;}
+  .pg-bar .logo i{color:var(--teal);font-style:normal;}
+  .pg-bar .area-tag{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;background:rgba(255,255,255,.12);color:var(--mint);padding:5px 10px;border-radius:var(--r-pill);}
+  .pg-bar .sp{flex:1;}
+  .pg-bar .user{font-family:var(--font-mono);font-size:12px;color:#9fc6bd;}
+  .pg-b{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;padding:8px 14px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;}
+  .pg-b:hover{background:rgba(255,255,255,.08);}
+
+  .hero{padding:36px 22px 10px;max-width:820px;margin:0 auto;}
+  .hero .kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-2);font-weight:600;}
+  .hero h1{font-family:var(--font-title);font-weight:800;font-size:30px;line-height:1.1;margin:8px 0 6px;color:var(--navy);}
+  .hero p{margin:0;color:var(--muted);font-size:14px;max-width:620px;}
+
+  .wrap{max-width:820px;margin:0 auto;padding:14px 22px 70px;}
+  .pg-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px 24px;box-shadow:var(--shadow-2);margin-bottom:20px;}
+  .pg-card h2{font-family:var(--font-title);font-size:16px;margin:0 0 4px;color:var(--navy);}
+  .h2sub{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+  .field{margin-bottom:13px;}
+  .field label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+  .field select,.field input,.field textarea{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid var(--hairline);border-radius:9px;font-size:13.5px;font-family:inherit;}
+  .field textarea{resize:vertical;min-height:80px;}
+  .field select:focus,.field input:focus,.field textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.15);}
+  .pg-btn{background:var(--navy);color:#fff;border:none;border-radius:10px;padding:12px 18px;font:inherit;font-weight:700;font-size:13.5px;cursor:pointer;}
+  .pg-btn:hover{background:var(--navy-2);}
+  .pg-btn.alt{background:transparent;color:#c0392b;border:1px solid #e3b7ae;}
+  .pg-btn.alt:hover{background:#fdf1ef;}
+
+  .nov-row{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+  .nov-row .nrow-top{display:flex;align-items:center;gap:10px;justify-content:space-between;}
+  .nov-tag{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--mint-soft);color:var(--teal-2);padding:4px 9px;border-radius:var(--r-pill);}
+  .nov-titulo{font-weight:700;font-size:14px;color:var(--navy);margin:6px 0 3px;}
+  .nov-cuerpo{font-size:12.5px;color:var(--muted);white-space:pre-wrap;margin-bottom:8px;}
+  .nov-meta{font-size:11px;color:var(--faint);font-family:var(--font-mono);}
+  .nov-inactivo{opacity:.5;}
+
+  .ov{position:fixed;inset:0;z-index:90;background:rgba(0,30,38,.6);display:flex;align-items:center;justify-content:center;padding:18px;}
+  .ov .card-l{background:#fff;border-radius:18px;padding:34px 30px;width:380px;max-width:94vw;box-shadow:0 30px 80px -25px rgba(0,0,0,.55);}
+  .ov .brand{font-family:var(--font-title);font-weight:800;font-size:15px;color:var(--navy);margin-bottom:18px;}
+  .ov .brand i{color:var(--teal);font-style:normal;}
+  .ov h2{font-family:var(--font-title);margin:0 0 4px;color:var(--navy);font-size:22px;}
+  .ov p{margin:0 0 16px;color:var(--muted);font-size:13px;}
+  .ov label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin:13px 0 5px;text-transform:uppercase;letter-spacing:.04em;}
+  .ov input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--hairline);border-radius:10px;font-size:14px;font-family:inherit;}
+  .ov input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.15);}
+  .ov .btn-l{background:var(--navy);color:#fff;width:100%;justify-content:center;margin-top:20px;padding:13px;border:none;border-radius:10px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;}
+  .ov .btn-l:hover{background:var(--navy-2);}
+  .msg{font-size:12.5px;margin-top:12px;min-height:16px;}
+  .msg.err{color:#c0392b;}.msg.ok{color:var(--teal-2);}
+  #app{display:none;}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;display:none;box-shadow:0 10px 30px -10px rgba(0,0,0,.4);}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="pg-bar">
+    <span class="logo">Protect<i>Go</i> · <span style="color:var(--teal)">Novedades</span></span>
+    <span class="area-tag">◆ ADMIN</span>
+    <span class="sp"></span>
+    <span class="user" id="pgUser"></span>
+    <button class="pg-b" data-act="logout">Salir</button>
+  </header>
+
+  <section class="hero">
+    <div class="kicker">Panel de anuncios</div>
+    <h1>Novedades</h1>
+    <p>Publica un aviso para una herramienta o para todas ("general"). A cada usuario le aparece una sola vez, bloqueado hasta que confirme que lo leyó — sin comunicados.</p>
+  </section>
+
+  <div class="wrap">
+    <div class="pg-card">
+      <h2>Publicar novedad</h2>
+      <div class="h2sub">"General" aparece en Quick Quote y Endorsement. Las demás áreas solo le aparecen a esa herramienta.</div>
+      <div class="field">
+        <label>Área</label>
+        <select id="nvArea">
+          <option value="general">General (Quick Quote + Endorsement)</option>
+          <option value="fam">FAM</option>
+          <option value="rrhh">RRHH</option>
+          <option value="kam">KAM</option>
+          <option value="coi">COI</option>
+          <option value="amazon">Amazon Relay</option>
+        </select>
+      </div>
+      <div class="field"><label>Título</label><input id="nvTitulo" placeholder="Ej: Nuevo formato de invoice"></div>
+      <div class="field"><label>Mensaje</label><textarea id="nvCuerpo" placeholder="Explica el cambio en pocas líneas…"></textarea></div>
+      <button class="pg-btn" onclick="publicar()">Publicar novedad</button>
+    </div>
+
+    <div class="pg-card">
+      <h2>Novedades publicadas</h2>
+      <div class="h2sub">Las más recientes primero. Puedes desactivar una si ya no aplica.</div>
+      <div id="lista">Cargando…</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="ov" id="ov">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">Novedades</span></div>
+    <h2>Acceso administrador</h2>
+    <p>Ingresa con la cuenta admin para publicar novedades.</p>
+    <label>Email</label>
+    <input id="email" type="email" autocomplete="username" value="sales@protectgoservices.com">
+    <label>Contraseña</label>
+    <input id="pass" type="password" autocomplete="current-password">
+    <button class="btn-l" data-act="login">Entrar</button>
+    <div class="msg" id="msg"></div>
+  </div>
+</div>
+
+<!-- BLOQUEO: solo admin -->
+<div class="ov" id="ovBlock" style="display:none">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">Novedades</span></div>
+    <h2>Acceso restringido</h2>
+    <p>Este panel es exclusivo del administrador. Tu cuenta <b id="ovBlockMail"></b> no tiene acceso.</p>
+    <button class="btn-l" data-act="logout">Salir e ingresar con otra cuenta</button>
+    <a href="index.html" style="display:block;text-align:center;margin-top:13px;color:var(--teal-2);font-weight:600;font-size:13px;text-decoration:none">&#8592; Volver al portal</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var sb=null;
+var PERMITIDOS=['sales@protectgoservices.com'];
+var AREA_LBL={general:'General',fam:'FAM',rrhh:'RRHH',kam:'KAM',coi:'COI',amazon:'Amazon Relay'};
+
+var $=function(id){return document.getElementById(id);};
+function toast(m){var t=$('toast');t.textContent=m;t.style.display='block';setTimeout(function(){t.style.display='none';},2600);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function msg(t,cls){var m=$('msg');if(m){m.textContent=t||'';m.className='msg '+(cls||'');}}
+
+function doLogin(){
+  var em=$('email').value.trim(),pw=$('pass').value;
+  if(!em||!pw){msg('Escribe email y contraseña.','err');return;}
+  msg('Entrando…');
+  sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){if(r.error)msg(r.error.message,'err');else msg('');});
+}
+function onAuthed(session){
+  var email=(session&&session.user?session.user.email:'')||'';
+  if(PERMITIDOS.indexOf(email.toLowerCase())<0){
+    $('app').style.display='none';$('ov').style.display='none';
+    $('ovBlockMail').textContent=email;$('ovBlock').style.display='flex';
+    return;
+  }
+  $('ovBlock').style.display='none';
+  $('pgUser').textContent=email;
+  $('ov').style.display='none';$('app').style.display='block';
+  cargarLista();
+}
+function onSignedOut(){$('app').style.display='none';$('ovBlock').style.display='none';$('ov').style.display='flex';}
+
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');if(!b)return;
+  var a=b.getAttribute('data-act');
+  if(a==='login')doLogin();else if(a==='logout')sb.auth.signOut();
+});
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&$('ov').style.display!=='none')doLogin();});
+
+async function publicar(){
+  var area=$('nvArea').value,titulo=$('nvTitulo').value.trim(),cuerpo=$('nvCuerpo').value.trim();
+  if(!titulo||!cuerpo){toast('Falta título o mensaje');return;}
+  var {error}=await sb.from('novedades').insert({area:area,titulo:titulo,cuerpo:cuerpo,created_by:'sales@protectgoservices.com'});
+  if(error){toast('Error: '+error.message);return;}
+  $('nvTitulo').value='';$('nvCuerpo').value='';
+  toast('Novedad publicada ✓');
+  cargarLista();
+}
+
+async function desactivar(id){
+  var {error}=await sb.from('novedades').update({activo:false}).eq('id',id);
+  if(error){toast('Error: '+error.message);return;}
+  toast('Novedad desactivada');
+  cargarLista();
+}
+window.desactivar=desactivar;
+
+async function cargarLista(){
+  var {data,error}=await sb.from('novedades').select('*').order('created_at',{ascending:false}).limit(50);
+  if(error){$('lista').innerHTML='<div style="color:var(--muted);font-size:13px">Error: '+esc(error.message)+'</div>';return;}
+  var rows=data||[];
+  if(!rows.length){$('lista').innerHTML='<div style="color:var(--muted);font-size:13px">Sin novedades aún.</div>';return;}
+  var ids=rows.map(function(r){return r.id;});
+  var conteo={};
+  var lec=await sb.from('novedades_lecturas').select('novedad_id').in('novedad_id',ids);
+  (lec.data||[]).forEach(function(l){conteo[l.novedad_id]=(conteo[l.novedad_id]||0)+1;});
+  $('lista').innerHTML=rows.map(function(r){
+    var f=(r.created_at||'').slice(0,16).replace('T',' ');
+    return '<div class="nov-row'+(r.activo?'':' nov-inactivo')+'"><div class="nrow-top"><span class="nov-tag">'+esc(AREA_LBL[r.area]||r.area)+'</span>'+
+      (r.activo?'<button class="pg-btn alt" style="padding:5px 11px;font-size:11.5px" onclick="desactivar(\''+r.id+'\')">Desactivar</button>':'<span style="font-size:11px;color:var(--faint)">Inactiva</span>')+
+      '</div><div class="nov-titulo">'+esc(r.titulo)+'</div><div class="nov-cuerpo">'+esc(r.cuerpo)+'</div>'+
+      '<div class="nov-meta">'+f+' · '+(conteo[r.id]||0)+' confirmaron lectura</div></div>';
+  }).join('');
+}
+
+function init(){
+  if(!(window.supabase&&window.supabase.createClient)){msg('No se pudo cargar Supabase (revisa tu conexión).','err');$('ov').style.display='flex';return;}
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  sb.auth.getSession().then(function(r){if(r.data&&r.data.session)onAuthed(r.data.session);else onSignedOut();});
+  sb.auth.onAuthStateChange(function(evt,session){if(session)onAuthed(session);else onSignedOut();});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,60);});
+else setTimeout(init,60);
+})();
+</script>
+</body>
+</html>

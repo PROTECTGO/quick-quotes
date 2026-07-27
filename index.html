@@ -210,6 +210,7 @@
         <div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
       </a>
 
+    <a class="card on" id="card-amazon" href="https://protectgo.github.io/amazon-relay/" style="display:none"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="5" width="14" height="11" rx="2"/><path d="M15 9h4l3 4v3h-3"/><circle cx="6" cy="18.5" r="2"/><circle cx="18" cy="18.5" r="2"/><path d="M8 18.5h8"/></svg></div><span class="tag">AMZ</span></div><h3>Amazon Relay</h3><p>Dashboard del equipo Amazon Audit: clientes, loads, cobros, invoices y reportes de utilidades.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a>
     <a class="card on" id="card-novedades-admin" href="novedades-admin.html" style="display:none"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><span class="tag">ADMIN</span></div><h3>Novedades</h3><p>Publica avisos por área — cada herramienta se lo muestra a su gente hasta que confirman que lo leyeron.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a></main>
 
     <div class="pie">ProtectGo Services · Documentos Interactivos (009) · acceso por cuenta Supabase</div>
@@ -287,9 +288,10 @@
   </script>
   <script>
   (function(){
-    var MAPA={"rrhh@protectgoservices.com":"card-rrhh","coi@protectgoservices.com":"card-coi"};
+    var MAPA={"rrhh@protectgoservices.com":"card-rrhh","coi@protectgoservices.com":"card-coi","kam@protectgoservices.com":"card-kam","fam@protectgoservices.com":"card-fam"};
     var EXTERNOS=["gerencia@leonis-go.com"];
-    var EXTRA={"kam@protectgoservices.com":"card-kam","endorsement@protectgoservices.com":"card-end","sales@protectgoservices.com":"card-novedades-admin"};
+    var EXTRA={"endorsement@protectgoservices.com":"card-end","sales@protectgoservices.com":"card-novedades-admin"};
+    var AMAZON={"amazonaud@protectgoservices.com":"card-amazon"};
     function aplicar(email){
       Object.keys(MAPA).forEach(function(k){
         var el=document.getElementById(MAPA[k]);
@@ -299,11 +301,16 @@
         var el=document.getElementById(EXTRA[k]);
         if(el) el.style.display=(email===k)?"flex":"none";
       });
+      Object.keys(AMAZON).forEach(function(k){
+        var el=document.getElementById(AMAZON[k]);
+        if(el) el.style.display=(email===k)?"flex":"none";
+      });
       var externo=EXTERNOS.indexOf(email)>=0;
+      var esAmazon=!!AMAZON[email];
       document.querySelectorAll(".grid .card").forEach(function(c){
-        if(c.id==="card-rrhh"||c.id==="card-coi"||c.id==="card-kam"||c.id==="card-end"||c.id==="card-novedades-admin") return;
+        if(c.id==="card-rrhh"||c.id==="card-coi"||c.id==="card-kam"||c.id==="card-fam"||c.id==="card-amazon"||c.id==="card-end"||c.id==="card-novedades-admin") return;
         var href=(c.getAttribute("href")||"");
-        if(externo) c.style.display=(href.indexOf("quick-quote.html?v=782")>=0)?"flex":"none";
+        if(externo||esAmazon) c.style.display=(href.indexOf("quick-quote.html?v=782")>=0)?"flex":"none";
         else if(MAPA[email]) c.style.display="none";
         else if(EXTRA[email] && (href.indexOf("generador-firmas.html")>=0||href.indexOf("tarjetas.html")>=0)) c.style.display="none";
         else c.style.display="";

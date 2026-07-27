@@ -210,7 +210,7 @@
         <div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
       </a>
 
-    </main>
+    <a class="card on" id="card-novedades-admin" href="novedades-admin.html" style="display:none"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><span class="tag">ADMIN</span></div><h3>Novedades</h3><p>Publica avisos por área — cada herramienta se lo muestra a su gente hasta que confirman que lo leyeron.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a></main>
 
     <div class="pie">ProtectGo Services · Documentos Interactivos (009) · acceso por cuenta Supabase</div>
   </div>
@@ -289,7 +289,7 @@
   (function(){
     var MAPA={"rrhh@protectgoservices.com":"card-rrhh","coi@protectgoservices.com":"card-coi"};
     var EXTERNOS=["gerencia@leonis-go.com"];
-    var EXTRA={"kam@protectgoservices.com":"card-kam","endorsement@protectgoservices.com":"card-end"};
+    var EXTRA={"kam@protectgoservices.com":"card-kam","endorsement@protectgoservices.com":"card-end","sales@protectgoservices.com":"card-novedades-admin"};
     function aplicar(email){
       Object.keys(MAPA).forEach(function(k){
         var el=document.getElementById(MAPA[k]);
@@ -301,7 +301,7 @@
       });
       var externo=EXTERNOS.indexOf(email)>=0;
       document.querySelectorAll(".grid .card").forEach(function(c){
-        if(c.id==="card-rrhh"||c.id==="card-coi"||c.id==="card-kam"||c.id==="card-end") return;
+        if(c.id==="card-rrhh"||c.id==="card-coi"||c.id==="card-kam"||c.id==="card-end"||c.id==="card-novedades-admin") return;
         var href=(c.getAttribute("href")||"");
         if(externo) c.style.display=(href.indexOf("quick-quote.html?v=782")>=0)?"flex":"none";
         else if(MAPA[email]) c.style.display="none";

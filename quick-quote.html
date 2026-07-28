@@ -4922,8 +4922,8 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     var q=qNo(); if(!q) return;
     var c=await getSB(); if(!c) return;
     try{
-      var r=await c.from("quick_quotes").select("id,data").eq("quote_number",q).limit(1);
-      if(r.error||!r.data||!r.data.length) return;
+      var r=await c.from("quick_quotes").select("id,data").eq("quote_number",q).limit(2);
+      if(r.error||!r.data||r.data.length!==1) return; /* numero duplicado o inexistente: no tocar */
       var row=r.data[0]; var d=row.data||{}; d.pv=collect();
       await c.from("quick_quotes").update({data:d}).eq("id",row.id);
     }catch(_){}
@@ -4945,8 +4945,8 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     var q=qNo(); if(!q||window.__pvHydratedFor===q) return;
     var c=await getSB(); if(!c) return;
     try{
-      var r=await c.from("quick_quotes").select("data").eq("quote_number",q).limit(1);
-      if(r.error||!r.data||!r.data.length) return;
+      var r=await c.from("quick_quotes").select("data").eq("quote_number",q).limit(2);
+      if(r.error||!r.data||r.data.length!==1){ window.__pvHydratedFor=q; return; } /* numero duplicado: no hidratar */
       window.__pvHydratedFor=q;
       var p=(r.data[0].data||{}).pv; if(!p) return;
       hydrate(p);

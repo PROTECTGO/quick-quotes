@@ -4960,6 +4960,123 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
   },true);
   setInterval(loadExtras,2500);
 })();
+
+/* ============ NUMERADOR UNICO + AVISO DE GUARDADO + FULL PAY ============ */
+(function(){
+  var sb=null;
+  async function getSB(){
+    if(sb) return sb;
+    try{
+      var src=await fetch("quick-quote.html").then(function(r){return r.text();});
+      var k=src.match(/sb_publishable_[A-Za-z0-9_\-]+/);
+      if(k&&window.supabase&&window.supabase.createClient)
+        sb=window.supabase.createClient("https://bwqzypuiqgxzsrtsueab.supabase.co",k[0]);
+    }catch(_){}
+    return sb;
+  }
+  function numActual(){ var i=document.getElementById("metaQuote"); return i?String(i.value).trim():""; }
+  function setNum(v){
+    var i=document.getElementById("metaQuote");
+    if(i){ i.value=v; i.dispatchEvent(new Event("input",{bubbles:true})); i.dispatchEvent(new Event("change",{bubbles:true})); }
+    var t2=document.getElementById("tbQuote"); if(t2) t2.textContent=v;
+    var e2=document.getElementById("metaQuoteEcho"); if(e2) e2.textContent=v;
+    var p2=document.getElementById("pvQuote"); if(p2) p2.textContent=v;
+    try{ document.title=document.title.replace(/Q[A-Z]+-[\d-]+/,v); }catch(_){}
+  }
+  async function siguienteNumero(){
+    var year=new Date().getFullYear(), max=0;
+    var c=await getSB();
+    if(c){
+      try{
+        var r=await c.from("quick_quotes").select("quote_number").limit(2000);
+        (r.data||[]).forEach(function(x){
+          var m=String(x.quote_number||"").match(/^QC-(\d{4})-(\d+)$/);
+          if(m&&m[1]==String(year)){ var n=parseInt(m[2],10); if(n>max) max=n; }
+        });
+      }catch(_){}
+    }
+    if(!max) max=142;
+    var n2=String(max+1); while(n2.length<4) n2="0"+n2;
+    return "QC-"+year+"-"+n2;
+  }
+  window.__pvOpened=false;
+  document.addEventListener("click",function(e){
+    var el=e.target; if(!el||!el.closest) return;
+    if(el.closest("[class*=quote-item],[class*=qlist],[data-quote-id]")) window.__pvOpened=true;
+    var b=el.closest("button"); if(!b) return;
+    var txt=(b.textContent||"").trim();
+    if(/^nueva$/i.test(txt)){
+      window.__pvOpened=false; window.__pvHydratedFor=null;
+      setTimeout(async function(){ try{ setNum(await siguienteNumero()); }catch(_){} },1500);
+    }
+    if(/guardar/i.test(txt)){ var q=numActual(); setTimeout(function(){ verificarGuardado(q); },3500); }
+  },true);
+  /* quote nueva al abrir la app (si no se abrio una guardada) */
+  setTimeout(async function(){
+    try{
+      if(window.__pvOpened) return;
+      if(!/^QC-2026-0142$/.test(numActual())) return;
+      setNum(await siguienteNumero());
+    }catch(_){}
+  },4500);
+  function aviso(msg,color){
+    var d=document.createElement("div");
+    d.style.cssText="position:fixed;left:50%;transform:translateX(-50%);top:14px;z-index:999999;background:"+(color||"#c0392b")+";color:#fff;padding:12px 20px;border-radius:10px;font:600 13px Inter,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:560px;text-align:center";
+    d.textContent=msg; document.body.appendChild(d);
+    setTimeout(function(){ d.remove(); },9000);
+  }
+  async function verificarGuardado(q){
+    if(!q) return;
+    var c=await getSB(); if(!c) return;
+    try{
+      var r=await c.from("quick_quotes").select("updated_at").eq("quote_number",q).order("updated_at",{ascending:false}).limit(1);
+      if(r.error||!r.data||!r.data.length){ aviso("No se pudo confirmar el guardado de "+q+". Verifica tu conexion."); return; }
+      var t3=new Date(r.data[0].updated_at).getTime();
+      if(Date.now()-t3>120000)
+        aviso("NO SE GUARDO: esta quote fue creada por otro usuario y no tienes permiso para modificarla. Usa el boton Nueva para crear la tuya.");
+    }catch(_){}
+  }
+  /* ---------- FULL PAY ---------- */
+  function totalPrograma(){
+    var tot=0;
+    document.querySelectorAll("#pvPremBody tr").forEach(function(tr){
+      var i2=tr.querySelector("input.pv-prem-in")||tr.querySelector("td:nth-child(2) input");
+      var v=i2?i2.value:(tr.children[1]?tr.children[1].textContent:"");
+      var n=parseFloat(String(v).replace(/[^0-9.\-]/g,"")); if(!isNaN(n)) tot+=n;
+    });
+    ["pvTax1","pvTax2","pvAg1","pvAg2"].forEach(function(id){
+      var e2=document.getElementById(id); if(!e2) return;
+      var n=parseFloat(String(e2.value||"").replace(/[^0-9.\-]/g,"")); if(!isNaN(n)) tot+=n;
+    });
+    return tot;
+  }
+  function setV(id,v){ var e2=document.getElementById(id); if(!e2) return; e2.value=v; e2.dispatchEvent(new Event("input",{bubbles:true})); }
+  function setC(id,v){ var e2=document.getElementById(id); if(!e2||e2.checked===v) return; e2.checked=v; e2.dispatchEvent(new Event("change",{bubbles:true})); }
+  function ensureFullBtn(){
+    if(document.getElementById("pvPresetFull")) return;
+    var ref=document.getElementById("pvPresetStarPkg")||document.getElementById("pvPresetStd");
+    if(!ref) return;
+    var b=document.createElement("button");
+    b.id="pvPresetFull"; b.type="button"; b.className=ref.className; b.textContent="Full pay · pago unico";
+    ref.parentNode.insertBefore(b,ref.nextSibling);
+    b.addEventListener("click",function(ev){
+      ev.preventDefault(); ev.stopImmediatePropagation();
+      window.__pvFullPay=true;
+      setV("pvN1",""); setV("pvAmt1",""); setV("pvSegs1","");
+      setC("pvStar1",false); setC("pvCfgDefer",false);
+      var c2=document.getElementById("pvCard2"); if(c2) c2.classList.add("pv-hide");
+      var w=document.getElementById("pvWhat1"); if(w){ w.value="Full package"; w.dispatchEvent(new Event("input",{bubbles:true})); }
+      var tot=totalPrograma();
+      if(tot) setV("pvDown1",tot.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}));
+      b.style.outline="3px solid #FFB400"; setTimeout(function(){ b.style.outline=""; },1200);
+    },true);
+    ["pvPresetStd","pvPresetStd9","pvPresetStar","pvPresetStarPkg"].forEach(function(id){
+      var o=document.getElementById(id); if(o&&!o.__fpWired){ o.__fpWired=true;
+        o.addEventListener("click",function(){ window.__pvFullPay=false; },true); }
+    });
+  }
+  setInterval(ensureFullBtn,1500); ensureFullBtn();
+})();
 function frame(d){
   /* marco con tope partido: no cruza el logo del membrete (x 172-436) */
   d.setDrawColor(LINE[0],LINE[1],LINE[2]); d.setLineWidth(0.9);
@@ -5117,14 +5234,19 @@ window.__pvExportPDF = function(save){
   var schedLines=schedRaw.split(/\n|\s{2,}\+\s{2,}|\s\+\s/).map(function(s){return s.trim();}).filter(Boolean);
   var boxH=Math.max(60,34+schedLines.length*15+12);
   d.setFillColor(NAVY[0],NAVY[1],NAVY[2]); d.roundedRect(M,y,CW,boxH,10,10,"F");
-  var colX=[M+24,M+CW*0.52];
-  var labs=["DOWN PAYMENT · AT SIGNING","PAYMENT SCHEDULE"];
+  var FP=!!window.__pvFullPay;
+  var colX=FP?[W/2]:[M+24,M+CW*0.52];
+  var labs=FP?["TOTAL DUE AT SIGNING"]:["DOWN PAYMENT · AT SIGNING","PAYMENT SCHEDULE"];
   labs.forEach(function(l,i){ d.setFont("helvetica","bold"); d.setFontSize(6.2); d.setTextColor(168,212,207); d.setCharSpace(0.6);
-    d.text(l,colX[i],y+16); d.setCharSpace(0); });
+    d.text(l,colX[i],y+16,FP?{align:"center"}:undefined); d.setCharSpace(0); });
   d.setFont("helvetica","bold"); d.setTextColor(AMBER[0],AMBER[1],AMBER[2]);
-  d.setFontSize(15); d.text(txt("pvCpDown")||"—",colX[0],y+36);
-  d.setFontSize(schedLines.length>1?10.5:13);
-  schedLines.forEach(function(s,i){ d.text(s,colX[1],y+(schedLines.length>1?30+i*14:36)); });
+  if(FP){
+    d.setFontSize(19); d.text(totalPTF?money(totalPTF):(txt("pvCpDown")||"—"),W/2,y+40,{align:"center"});
+  } else {
+    d.setFontSize(15); d.text(txt("pvCpDown")||"—",colX[0],y+36);
+    d.setFontSize(schedLines.length>1?10.5:13);
+    schedLines.forEach(function(s,i){ d.text(s,colX[1],y+(schedLines.length>1?30+i*14:36)); });
+  }
   var fees=txt("pvCpFees");
   if(fees){ d.setFont("helvetica","normal"); d.setFontSize(6.6); d.setTextColor(168,212,207);
     d.text(d.splitTextToSize(fees,CW-36),M+18,y+boxH-12); }

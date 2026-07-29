@@ -5307,6 +5307,66 @@ window.__pvExportPDF = function(save){
     y = tabla(d,["Driver","DOB","License"],drv,y+2,{})+10; }
   if(un.length){ y = secBar(d,"Power units & trailers",y);
     y = tabla(d,["Year","Make","Body","VIN"],un,y+2,{vinCol:3})+10; }
+
+  /* ===== HOJA DEDICADA · DESGLOSE COMPLETO DEL PROGRAMA ===== */
+  y = page(d,true);
+  y = title(d,"PROGRAM COST BREAKDOWN",y+4);
+  d.setFont("helvetica","italic"); d.setFontSize(9); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]);
+  d.text("Exactly what you are paying for — line by line.",W/2,y+8,{align:"center"});
+  y+=30;
+  var det=[];
+  rows("pvCovBody",4).forEach(function(r){ det.push([r[0]||"", (r[1]&&r[1]!=="—")?("Limit "+r[1]):"Coverage premium", prem[r[0]]||"—"]); });
+  if(taxN>0) det.push(["Taxes & fees","Carrier, MGA and state charges applicable to this program",money(taxN)]);
+  if(agN>0){
+    var pctS=[0.20,0.25,0.20,0.15,0.20];
+    var srvS=[
+      ["Underwriting file preparation","MVR review, loss runs, unit and driver verification, submission package to the MGA"],
+      ["Carrier / MGA placement & binding","Market negotiation, quote comparison, binder request and issuance follow-up"],
+      ["Regulatory compliance & filings","MCS-90 / BMC-91 filings, UCR and MCS-150 monitoring, state filings and renewals"],
+      ["Certificates & document services","Same-day COI, certificates available 24/7, endorsement and change requests"],
+      ["Account management & support","Dedicated bilingual advisor and policy servicing for the full term"]];
+    var acumS=0;
+    srvS.forEach(function(s,i3){
+      var v=(i3===srvS.length-1)?Math.round((agN-acumS)*100)/100:Math.round(agN*pctS[i3]*100)/100;
+      acumS=Math.round((acumS+v)*100)/100;
+      det.push([s[0],s[1],money(v)]);
+    });
+  }
+  y = tabla(d,["Concept","What it covers","Amount"],det,y,{rightBold:2,columnStyles:{0:{cellWidth:126},2:{cellWidth:74}}});
+  y+=8;
+  d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(1.1); d.line(M,y,W-M,y); y+=14;
+  d.setFont("helvetica","bold"); d.setFontSize(9.6); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]); d.setCharSpace(0.7);
+  d.text("TOTAL ANNUAL PROGRAM",M,y); d.setCharSpace(0);
+  d.setFontSize(12); d.text(totalPTF?money(totalPTF):premTotal,W-M,y,{align:"right"});
+  y+=24;
+  var downN3=num(txt("pvCpDown"));
+  var schedRaw3=(($("pvCpSched")||{}).innerText||"");
+  var schedN3=0; schedRaw3.split(/\n|\s\+\s/).forEach(function(s){ var mm=s.match(/(\d+)\s*[x×]\s*\$?([\d,\.]+)/i); if(mm){ schedN3+=parseInt(mm[1],10)*num(mm[2]); } });
+  var totInv3=(downN3&&schedN3)?(downN3+schedN3):0;
+  var finChg3=(totInv3&&totalPTF&&totInv3>totalPTF)?(totInv3-totalPTF):0;
+  if(finChg3>0){
+    y = secBar(d,"If you choose to finance",y);
+    var fbox=60;
+    d.setFillColor(MINTG[0],MINTG[1],MINTG[2]); d.roundedRect(M,y,CW,fbox,7,7,"F");
+    var fcx=[M+20,M+CW*0.38,M+CW*0.70];
+    var fdat=[["INSURANCE PROGRAM",money(totalPTF)],["THIRD-PARTY FINANCE CHARGE",money(finChg3)],["TOTAL IF FINANCED",money(totInv3)]];
+    fdat.forEach(function(c,i4){
+      d.setFont("helvetica","bold"); d.setFontSize(6); d.setTextColor(TEAL2[0],TEAL2[1],TEAL2[2]); d.setCharSpace(0.5);
+      d.text(c[0],fcx[i4],y+17); d.setCharSpace(0);
+      d.setFont("helvetica","bold"); d.setFontSize(12.5);
+      if(i4===1){ d.setTextColor(176,90,20); } else { d.setTextColor(NAVY[0],NAVY[1],NAVY[2]); }
+      d.text(c[1],fcx[i4],y+36);
+    });
+    d.setFont("helvetica","italic"); d.setFontSize(6.4); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]);
+    d.text("The finance charge is billed by an independent premium finance company, not by ProtectGo, and is not part of your policy cost.",M+20,y+51);
+    y+=fbox+14;
+    d.setFont("helvetica","bold"); d.setFontSize(9.6); d.setTextColor(TEAL2[0],TEAL2[1],TEAL2[2]);
+    d.text("Pay in full and save "+money(finChg3)+".",M,y);
+    y+=16;
+  }
+  d.setFont("helvetica","normal"); d.setFontSize(6.6); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]);
+  d.text(d.splitTextToSize("Agency services are rendered from the moment your file is submitted and are fully earned at binding. Taxes and carrier fees are set by the carrier, the MGA and the state, and are collected on their behalf. All amounts are estimates until the carrier confirms and issues the binder.",CW),M,y+10);
+
   y = page(d,true);
   y = title(d,"TERMS & RESPONSIBILITIES",y+4)+18;
   y = secBar(d,"Contingencies",y);

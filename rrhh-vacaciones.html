@@ -188,6 +188,10 @@
             <label>Cobertura de cartera / clientes *</label>
             <input type="text" id="fCobertura" placeholder="Quién cubre sus clientes/pólizas mientras está fuera">
           </div>
+          <div class="f c2">
+            <label>¿Trabajará remoto durante las vacaciones?</label>
+            <select id="fRemoto"><option value="no">No</option><option value="si">Sí</option></select>
+          </div>
           <div class="f chk">
             <input type="checkbox" id="fOficio">
             <label for="fOficio">Vacaciones fijadas de oficio por la empresa (Art. 187)</label>
@@ -230,6 +234,20 @@
           <div class="f c4">
             <label>Notas</label>
             <textarea id="fNotas" placeholder="Observaciones adicionales…"></textarea>
+          </div>
+        </div>
+        <div class="note amber" id="remotoAviso" style="display:none;margin-top:14px">
+          ⚠️ Requiere documento de exoneración firmado — genera el documento, envíalo a firma, y marca aquí cuando vuelva firmado. Sin firma, esta modalidad no queda activa.
+          <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-top:10px">
+            <button class="btn sec mini" id="btnExo" style="width:auto">📄 Generar documento de exoneración</button>
+            <div class="f" style="min-width:170px">
+              <label>¿Documento ya firmado y archivado?</label>
+              <select id="fExoFirmada"><option value="no">No</option><option value="si">Sí</option></select>
+            </div>
+            <div class="f" id="fExoFechaWrap" style="min-width:150px;display:none">
+              <label>Fecha de firma</label>
+              <input type="date" id="fExoFecha">
+            </div>
           </div>
         </div>
         <div id="semaforo" style="display:none;margin-top:14px"></div>
@@ -322,6 +340,17 @@
       <div class="f"><label>Valor total liquidado</label><input type="number" id="mValor" min="0" step="1000"></div>
       <div class="f c2"><label>Notas</label><textarea id="mNotas"></textarea></div>
     </div>
+    <!-- AUDITORÍA v3 · exoneración firmable DESPUÉS de creado el registro -->
+    <div class="note amber" id="mExoBox" style="display:none;margin-top:14px">
+      <div id="mExoTxt" style="margin-bottom:10px"></div>
+      <div class="frm" style="grid-template-columns:1fr 1fr;margin:0">
+        <div class="f"><label>¿Documento de exoneración firmado?</label>
+          <select id="mExoFirmada"><option value="no">No — pendiente de firma</option><option value="si">Sí — ya está firmado</option></select>
+        </div>
+        <div class="f" id="mExoFechaWrap" style="display:none"><label>Fecha de la firma</label><input type="date" id="mExoFecha"></div>
+      </div>
+      <div style="margin-top:10px"><button class="btn sec mini" id="mBtnExo" type="button">📄 Generar documento de exoneración</button></div>
+    </div>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button class="btn" id="mGuardar">Guardar cambios</button>
       <button class="btn sec" id="mCerrar">Cancelar</button>
@@ -369,7 +398,7 @@ var sb=null;
 var PERMITIDOS=['rrhh@protectgoservices.com','sales@protectgoservices.com'];
 var AVISO_DIAS=15; // Art. 187 CST: 15 días de anticipación
 
-var colaboradores=[], vacaciones=[], gestionId=null;
+var colaboradores=[], vacaciones=[], gestionId=null, gestionV=null;
 var ultimoNivel='', ultimasRazones=[];
 
 var $=function(id){return document.getElementById(id);};
@@ -394,7 +423,7 @@ function onAuthed(session){
     $('ovBlockMail').textContent=email;$('ovBlock').style.display='flex';
     return;
   }
-  $('ovBlock').style.display='none';(function(){if(window.pgRevisarNovedades)return;var st=document.createElement('style');st.id='pgnovStyle';st.textContent='.pgnov-ov{position:fixed;inset:0;z-index:999;background:rgba(0,30,38,.72);display:flex;align-items:center;justify-content:center;padding:18px;}.pgnov-card{background:#fff;border-radius:14px;max-width:440px;width:100%;padding:26px 28px;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:Arial,Helvetica,sans-serif;}.pgnov-tag{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#229A82;margin-bottom:6px;}.pgnov-card h3{margin:0 0 12px;font-size:18px;color:#002F3D;}.pgnov-card p{margin:0 0 20px;font-size:13.5px;line-height:1.6;color:#333;white-space:pre-wrap;}.pgnov-card button{width:100%;padding:11px;border:none;border-radius:9px;background:#229A82;color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;}.pgnov-card button:hover{background:#1a7a68;}.pgnov-count{font-size:11px;color:#8da0ad;text-align:center;margin-top:10px;}';document.head.appendChild(st);window.pgRevisarNovedades=function(sbClient,area){if(!sbClient||!area)return;sbClient.rpc('novedades_pendientes',{p_area:area}).then(function(r){if(r.error||!r.data||!r.data.length)return;var cola=r.data.slice();function mostrar(){if(!cola.length){var ov0=document.getElementById('pgnovOv');if(ov0)ov0.remove();return;}var n=cola[0];var ov=document.getElementById('pgnovOv');if(!ov){ov=document.createElement('div');ov.id='pgnovOv';ov.className='pgnov-ov';ov.innerHTML='<div class="pgnov-card"><div class="pgnov-tag">📢 Novedad ProtectGo</div><h3 id="pgnovT"></h3><p id="pgnovB"></p><button id="pgnovBtn" type="button">Ya lo leí, entendido</button><div class="pgnov-count" id="pgnovC"></div></div>';document.body.appendChild(ov);document.getElementById('pgnovBtn').addEventListener('click',function(){var actual=cola[0];if(!actual)return;sbClient.rpc('marcar_novedad_leida',{p_novedad_id:actual.id}).then(function(){cola.shift();mostrar();});});}document.getElementById('pgnovT').textContent=n.titulo||'';document.getElementById('pgnovB').textContent=n.cuerpo||'';document.getElementById('pgnovC').textContent=cola.length>1?('1 de '+cola.length+' novedades pendientes'):'';}mostrar();});};})();pgRevisarNovedades(sb,'rrhh');
+  $('ovBlock').style.display='none';
   $('pgUser').textContent=email;
   $('ov').style.display='none';$('app').style.display='block';
   cargarTodo();
@@ -577,6 +606,9 @@ function guardarVacacion(){
     nivel_semaforo:ultimoNivel||null, motivo_semaforo:ultimasRazones.join(' · ')||null,
     excepcion_gerencia:$('fExcepcion').checked,
     motivo_excepcion:$('fExcepcion').checked?$('fMotivoExc').value.trim():null,
+    exoneracion_requerida:$('fRemoto').value==='si',
+    exoneracion_firmada:$('fExoFirmada').value==='si',
+    exoneracion_fecha:($('fExoFirmada').value==='si'&&$('fExoFecha').value)?$('fExoFecha').value:null,
     estado:$('fEstado').value,
     notas:$('fNotas').value.trim()||null,
     registrado_por:$('pgUser').textContent
@@ -586,8 +618,10 @@ function guardarVacacion(){
     $('btnSave').disabled=false;
     if(r.error){toast('Error: '+r.error.message);return;}
     toast('Vacaciones registradas ✓');
-    ['fFin','fDias','fCompDias','fCobertura','fProm','fValorDia','fValorTotal','fMotivoExc','fNotas'].forEach(function(id){$(id).value='';});
+    ['fFin','fDias','fCompDias','fCobertura','fProm','fValorDia','fValorTotal','fMotivoExc','fNotas','fExoFecha'].forEach(function(id){$(id).value='';});
     $('fOficio').checked=false;$('fExcepcion').checked=false;$('fCompDias').value=0;
+    $('fRemoto').value='no';$('fExoFirmada').value='no';
+    $('remotoAviso').style.display='none';$('fExoFechaWrap').style.display='none';
     $('semaforo').style.display='none';
     cargarTodo();
   });
@@ -619,7 +653,7 @@ function pintarHist(){
       '<td>'+esc(v.cobertura_cartera||'—')+'</td>'+
       '<td class="mono">'+money(v.valor_total)+'</td>'+
       '<td>'+esc(v.aprobado_por||'—')+'</td>'+
-      '<td>'+estadoPill(v.estado)+'</td>'+
+      '<td>'+estadoPill(v.estado)+(v.exoneracion_requerida?('<br><span class="pill '+(v.exoneracion_firmada?'ok':'red')+'" style="margin-top:4px">'+(v.exoneracion_firmada?'✓ exoneración firmada':'EXONERACIÓN PENDIENTE')+'</span>'):'')+'</td>'+
       '<td><button class="btn sec mini" data-gestion="'+v.id+'">Gestionar</button></td>'+
     '</tr>';
   }).join('');
@@ -629,14 +663,42 @@ function pintarHist(){
 // ---------- GESTIONAR ----------
 function abrirGestion(id){
   var v=vacaciones.find(function(x){return x.id===id;});if(!v)return;
-  gestionId=id;
-  $('mEstado').value=v.estado;
+  gestionId=id;gestionV=v;
+  // AUDITORÍA v3 · si el estado guardado no está entre las opciones del select, se añade;
+  // antes el select quedaba vacío y al guardar se borraba el estado del registro sin avisar.
+  $('mEstado').value=v.estado||'';
+  if(v.estado&&$('mEstado').value!==v.estado){
+    var opt=document.createElement('option');opt.value=v.estado;opt.textContent=v.estado;
+    $('mEstado').appendChild(opt);$('mEstado').value=v.estado;
+  }
   $('mValor').value=v.valor_total||0;
   $('mNotas').value=v.notas||'';
+  // AUDITORÍA v3 · la exoneración ya se puede firmar después de creado el registro
+  var box=$('mExoBox');
+  if(box){
+    box.style.display=v.exoneracion_requerida?'block':'none';
+    if(v.exoneracion_requerida){
+      box.className=v.exoneracion_firmada?'note mint':'note amber';
+      $('mExoTxt').innerHTML=v.exoneracion_firmada
+        ?('✅ Exoneración de trabajo remoto <b>FIRMADA</b>'+(v.exoneracion_fecha?(' el '+esc(fdate(v.exoneracion_fecha))):'')+'.')
+        :'⚠️ Este registro <b>requiere documento de exoneración</b> y todavía está <b>pendiente de firma</b>. Genera el documento, envíalo a firma y márcalo aquí cuando vuelva firmado.';
+      $('mExoFirmada').value=v.exoneracion_firmada?'si':'no';
+      $('mExoFecha').value=v.exoneracion_fecha||'';
+      $('mExoFechaWrap').style.display=v.exoneracion_firmada?'flex':'none';
+    }
+  }
   $('modalBg').style.display='flex';
 }
 function guardarGestion(){
+  if(!$('mEstado').value){toast('Selecciona el estado del registro.');return;}
   var upd={estado:$('mEstado').value,valor_total:parseFloat($('mValor').value)||null,notas:$('mNotas').value.trim()||null};
+  // AUDITORÍA v3 · firmar/desfirmar la exoneración desde el modal
+  if(gestionV&&gestionV.exoneracion_requerida&&$('mExoFirmada')){
+    var firm=$('mExoFirmada').value==='si';
+    if(firm&&!$('mExoFecha').value){toast('Indica la fecha en que se firmó la exoneración.');return;}
+    upd.exoneracion_firmada=firm;
+    upd.exoneracion_fecha=firm?$('mExoFecha').value:null;
+  }
   sb.from('rrhh_vacaciones').update(upd).eq('id',gestionId).then(function(r){
     if(r.error){toast('Error: '+r.error.message);return;}
     $('modalBg').style.display='none';toast('Registro actualizado ✓');cargarTodo();
@@ -706,10 +768,13 @@ function parseFecha1(txt){
 }
 function parseRango(txt){
   var n=norm(txt);
-  var m=n.match(/del?\s+(\d{1,2})(?:\s+de\s+([a-z]+))?\s+(?:al|hasta el|hasta|a el|a)\s+(\d{1,2})\s+de\s+([a-z]+)(?:\s+de\s+(\d{4}))?/);
-  if(m&&MESES_MAP[m[4]]){
-    var mes2=MESES_MAP[m[4]],mes1=m[2]&&MESES_MAP[m[2]]?MESES_MAP[m[2]]:mes2;
-    return {ini:fechaISO(+m[1],mes1,m[5]?+m[5]:null),fin:fechaISO(+m[3],mes2,m[5]?+m[5]:null)};
+  // rango: "del 3 al 7 de agosto", "del 10 de agosto de 2026 al 14 de agosto de 2026",
+  // "desde el 3 de agosto hasta el 7 de agosto"
+  var m=n.match(/(?:desde\s+el|entre\s+el|del|de|el)\s+(\d{1,2})(?:\s+de\s+([a-z]+))?(?:\s+de\s+(\d{4}))?\s+(?:al|hasta\s+el|hasta|a\s+el|y|a)\s+(?:el\s+)?(\d{1,2})\s+de\s+([a-z]+)(?:\s+de\s+(\d{4}))?/);
+  if(m&&MESES_MAP[m[5]]){
+    var mes2=MESES_MAP[m[5]],mes1=m[2]&&MESES_MAP[m[2]]?MESES_MAP[m[2]]:mes2;
+    var an2=m[6]?+m[6]:null,an1=m[3]?+m[3]:an2;
+    return {ini:fechaISO(+m[1],mes1,an1),fin:fechaISO(+m[4],mes2,an2||an1)};
   }
   return null;
 }
@@ -741,11 +806,73 @@ function leerCorreo(){
   if(cob){$('fCobertura').value=cob;ok.push('cobertura');}else falta.push('cobertura de cartera');
   var comp=detectarComp(txt);
   if(comp){$('fCompDias').value=comp;ok.push('compensación: '+comp+' día(s)');}
+  var remotoRe=/trabaj\w*\s+(remoto|desde\s+casa)|teletrabajo|seguir[ée]?\s+trabajando|voy\s+a\s+seguir\s+trabajando|exoneraci[oó]n/i;
+  if(remotoRe.test(txt)){$('fRemoto').value='si';onRemoto();ok.push('trabajo remoto detectado — requiere exoneración firmada');}
   evaluarSemaforo();
   falta.push('aprobado por (siempre manual)');
   $('parseRes').innerHTML='<b style="color:var(--teal-2)">Detectado:</b> '+ok.join(' · ')+(falta.length?('<br><b style="color:var(--amber)">Por completar:</b> '+falta.join(' · ')):'');
   toast('Formulario diligenciado — revisa y completa');
 }
+// ---------- EXONERACIÓN: vacaciones trabajando remoto (comisionistas) ----------
+function onRemoto(){
+  var si=$('fRemoto').value==='si';
+  $('remotoAviso').style.display=si?'block':'none';
+}
+function onExoFirmada(){
+  var si=$('fExoFirmada').value==='si';
+  $('fExoFechaWrap').style.display=si?'flex':'none';
+}
+// AUDITORÍA v3 · admite parámetros para poder generar el documento también desde el modal de gestión
+function generarDocExoneracion(colaIdArg,iniArg,finArg){
+  var colaId=colaIdArg||$('fCola').value;
+  var cola=colaboradores.find(function(c){return c.id===colaId;});
+  if(!cola){toast('Selecciona primero el colaborador.');return;}
+  var ini=iniArg||$('fIni').value,fin=finArg||$('fFin').value;
+  if(!ini||!fin){toast('Indica las fechas de inicio y fin de las vacaciones.');return;}
+  var nombre=cola.nombre||'—';
+  var cedula=cola.cedula||'—';
+  var cargoTxt=cola.cargo?(' — '+cola.cargo):'';
+  var iniTxt=fdate(ini),finTxt=fdate(fin),hoyTxt=fdate(hoyISO());
+  var baseDir=location.href.substring(0,location.href.lastIndexOf('/')+1);
+  var html=''+
+    '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'+
+    '<base href="'+esc(baseDir)+'">'+
+    '<title>Acuerdo de exoneración — '+esc(nombre)+'</title>'+
+    '<style>'+
+    '@import url(\'https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600&display=swap\');'+
+    '*{box-sizing:border-box;}'+
+    'body{margin:0;background:#e7ebea;font-family:"Inter",Arial,sans-serif;}'+
+    '.toolbar{max-width:8.5in;margin:16px auto;text-align:right;}'+
+    '.btn{font-family:"Inter",Arial,sans-serif;font-size:13px;font-weight:700;background:#002F3D;color:#fff;border:none;border-radius:8px;padding:10px 18px;cursor:pointer;}'+
+    '.hoja{width:8.5in;min-height:11in;margin:0 auto 26px;background-color:#fff;background-image:url("membrete-colombia.png");background-size:cover;background-repeat:no-repeat;background-position:top center;padding:1.8in .75in .9in;box-sizing:border-box;font-size:12.5px;line-height:1.62;color:#1a1a1a;box-shadow:0 10px 30px rgba(0,0,0,.25);}'+
+    '.titulo{font-family:"Montserrat",Arial,sans-serif;font-weight:800;font-size:16px;text-align:center;text-transform:uppercase;letter-spacing:.04em;color:#002F3D;margin:0 0 26px;}'+
+    '.hoja p{text-align:justify;margin:0 0 13px;}'+
+    '.hoja b{color:#0D141A;}'+
+    '.firmas{margin-top:52px;display:flex;gap:30px;}'+
+    '.firma{flex:1;font-size:12px;}'+
+    '.linea{border-top:1px solid #666;margin:46px 0 6px;}'+
+    '.pie{margin-top:44px;font-size:9.5px;color:#8a989a;text-align:center;}'+
+    '@media print{.toolbar{display:none !important;}html,body{background:#fff;}.hoja{box-shadow:none;margin:0;width:8.5in;min-height:11in;background-size:8.5in 11in;-webkit-print-color-adjust:exact;print-color-adjust:exact;}@page{size:letter;margin:0;}}'+
+    '</style></head><body>'+
+    '<div class="toolbar"><button class="btn" onclick="window.print()">Imprimir / Guardar como PDF</button></div>'+
+    '<div class="hoja">'+
+    '<div class="titulo">Acuerdo voluntario de trabajo remoto durante el período de vacaciones</div>'+
+    '<p>Entre <b>ProtectGo Services S.A.S.</b>, en adelante "la Empresa", y el/la colaborador(a) <b>'+esc(nombre)+'</b>, identificado(a) con cédula de ciudadanía No. <b>'+esc(cedula)+'</b>'+esc(cargoTxt)+', en adelante "el/la Colaborador(a)", se suscribe el presente acuerdo voluntario con el fin de dejar constancia de las condiciones bajo las cuales el/la Colaborador(a) continuará desarrollando actividades comerciales de manera remota durante su período de vacaciones.</p>'+
+    '<p>El/la Colaborador(a) manifiesta, de manera libre, voluntaria y por solicitud expresa propia, su interés en continuar desarrollando actividades comerciales de forma remota durante el período de vacaciones comprendido entre el <b>'+esc(iniTxt)+'</b> y el <b>'+esc(finTxt)+'</b>, motivado en su esquema de remuneración variable por comisiones, el cual lo/la lleva a preferir mantener contacto con su cartera de clientes durante dicho lapso.</p>'+
+    '<p>La Empresa deja constancia de haber informado al/a la Colaborador(a) su derecho irrenunciable al descanso remunerado, consagrado en los artículos 186 y siguientes del Código Sustantivo del Trabajo, y de que la presente modalidad de trabajo remoto voluntario <b>no sustituye, suspende ni extingue</b> dicho derecho, el cual permanece plenamente vigente y a disposición del/de la Colaborador(a) en cualquier momento.</p>'+
+    '<p>En consecuencia, la Empresa se compromete a mantener el <b>pago íntegro de las vacaciones</b> correspondientes al período referido, así como el pago de las <b>comisiones que llegare a causar</b> el/la Colaborador(a) por la actividad comercial que decida desarrollar de manera remota durante dicho lapso, sin que ello implique disminución alguna en su remuneración por concepto de vacaciones.</p>'+
+    '<p>El/la Colaborador(a) podrá desistir de esta modalidad en cualquier momento, retomando el descanso pleno sin que ello genere consecuencia alguna en su relación laboral, bastando para ello una comunicación informal a su jefe inmediato o a Recursos Humanos.</p>'+
+    '<div class="firmas">'+
+    '<div class="firma">En constancia se firma en Bogotá D.C., a los '+esc(hoyTxt)+'.<div class="linea"></div><b>'+esc(nombre)+'</b><br>C.C. '+esc(cedula)+'<br>El/la Colaborador(a)</div>'+
+    '<div class="firma">&nbsp;<div class="linea"></div><b>ProtectGo Services S.A.S.</b><br>Representante de la Empresa</div>'+
+    '</div>'+
+    '<div class="pie">Borrador generado por el sistema RRHH — sujeto a validación del asesor jurídico laboral antes de su firma.</div>'+
+    '</div></body></html>';
+  var w=window.open('','_blank');
+  if(!w){toast('El navegador bloqueó la ventana — permite pop-ups para este sitio.');return;}
+  w.document.open();w.document.write(html);w.document.close();
+}
+
 function copiarPlantilla(){
   var done=function(){toast('Plantilla copiada — compártela con el equipo');};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(PLANTILLA_CORREO).then(done,function(){fallback();});}
@@ -779,6 +906,17 @@ function wire(){
   $('fOficio').addEventListener('change',evaluarSemaforo);
   $('fExcepcion').addEventListener('change',evaluarSemaforo);
   $('fMotivoExc').addEventListener('input',evaluarSemaforo);
+  $('fRemoto').addEventListener('change',onRemoto);
+  $('fExoFirmada').addEventListener('change',onExoFirmada);
+  $('btnExo').addEventListener('click',function(){generarDocExoneracion();});
+  $('mExoFirmada').addEventListener('change',function(){
+    $('mExoFechaWrap').style.display=($('mExoFirmada').value==='si')?'flex':'none';
+    if($('mExoFirmada').value==='si'&&!$('mExoFecha').value)$('mExoFecha').value=hoyISO();
+  });
+  $('mBtnExo').addEventListener('click',function(){
+    if(!gestionV)return;
+    generarDocExoneracion(gestionV.colaborador_id,gestionV.fecha_inicio,gestionV.fecha_fin);
+  });
   $('btnSave').addEventListener('click',guardarVacacion);
   $('filMes').addEventListener('change',pintarHist);
   $('filCola').addEventListener('change',pintarHist);

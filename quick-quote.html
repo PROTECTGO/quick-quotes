@@ -5188,7 +5188,7 @@ window.__pvExportPDF = function(save){
   y = page(d,true);
   y = title(d,"QUOTE SUMMARY",y+4)+4;
   d.setFont("helvetica","bold"); d.setFontSize(7); d.setTextColor(TEAL2[0],TEAL2[1],TEAL2[2]); d.setCharSpace(1.2);
-  d.text("TOTAL PREMIUMS, TAXES & FEES",W/2,y,{align:"center"}); d.setCharSpace(0);
+  d.text("TOTAL ANNUAL PROGRAM · POLICY & SERVICES",W/2,y,{align:"center"}); d.setCharSpace(0);
   y+=20;
   var prem={};
   document.querySelectorAll("#pvPremBody tr").forEach(function(tr){
@@ -5221,7 +5221,29 @@ window.__pvExportPDF = function(save){
     if(v&&v!=="—") prem[n]=v;
   });
   var covBody=rows("pvCovBody",4).map(function(r){ return [r[0]||"",r[3]||"A-rated carrier — confirmed at binding",r[1]||"—",r[2]||"—",prem[r[0]]||"—"]; });
-  y = tabla(d,["Coverage","Carrier","Limit","Deductible","Premium"],covBody,y+2,{rightBold:4});
+  var subCab={fillColor:MINTG,textColor:TEAL2,fontStyle:"bold",fontSize:6.4,cellPadding:{top:5,bottom:3,left:6,right:6}};
+  if(taxN>0||agN>0){
+    covBody.push([{content:"TAXES, FEES & AGENCY SERVICES",colSpan:5,styles:subCab}]);
+  }
+  if(taxN>0){
+    covBody.push(["Taxes & fees","Carrier, MGA and state charges applicable to this program","—","—",money(taxN)]);
+  }
+  if(agN>0){
+    var pctS=[0.20,0.25,0.20,0.15,0.20];
+    var srvS=[
+      ["Underwriting file preparation","MVR review, loss runs, unit and driver verification, submission to the MGA"],
+      ["Carrier / MGA placement & binding","Market negotiation, quote comparison, binder request and issuance follow-up"],
+      ["Regulatory compliance & filings","MCS-90 / BMC-91 filings, UCR and MCS-150 monitoring, state filings"],
+      ["Certificates & document services","Same-day COI, certificates 24/7, endorsement and change requests"],
+      ["Account management & support","Dedicated bilingual advisor and policy servicing for the full term"]];
+    var acumS=0;
+    srvS.forEach(function(s,i3){
+      var v=(i3===srvS.length-1)?Math.round((agN-acumS)*100)/100:Math.round(agN*pctS[i3]*100)/100;
+      acumS=Math.round((acumS+v)*100)/100;
+      covBody.push([s[0],s[1],"—","—",money(v)]);
+    });
+  }
+  y = tabla(d,["Coverage / service","Detail","Limit","Deductible","Amount"],covBody,y+2,{rightBold:4});
   y+=8;
   d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(1.1); d.line(M,y,W-M,y);
   y+=12;

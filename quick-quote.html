@@ -5221,29 +5221,7 @@ window.__pvExportPDF = function(save){
     if(v&&v!=="—") prem[n]=v;
   });
   var covBody=rows("pvCovBody",4).map(function(r){ return [r[0]||"",r[3]||"A-rated carrier — confirmed at binding",r[1]||"—",r[2]||"—",prem[r[0]]||"—"]; });
-  var subCab={fillColor:MINTG,textColor:TEAL2,fontStyle:"bold",fontSize:6.4,cellPadding:{top:5,bottom:3,left:6,right:6}};
-  if(taxN>0||agN>0){
-    covBody.push([{content:"TAXES, FEES & AGENCY SERVICES",colSpan:5,styles:subCab}]);
-  }
-  if(taxN>0){
-    covBody.push(["Taxes & fees","Carrier, MGA and state charges applicable to this program","—","—",money(taxN)]);
-  }
-  if(agN>0){
-    var pctS=[0.20,0.25,0.20,0.15,0.20];
-    var srvS=[
-      ["Underwriting file preparation","MVR review, loss runs, unit and driver verification, submission to the MGA"],
-      ["Carrier / MGA placement & binding","Market negotiation, quote comparison, binder request and issuance follow-up"],
-      ["Regulatory compliance & filings","MCS-90 / BMC-91 filings, UCR and MCS-150 monitoring, state filings"],
-      ["Certificates & document services","Same-day COI, certificates 24/7, endorsement and change requests"],
-      ["Account management & support","Dedicated bilingual advisor and policy servicing for the full term"]];
-    var acumS=0;
-    srvS.forEach(function(s,i3){
-      var v=(i3===srvS.length-1)?Math.round((agN-acumS)*100)/100:Math.round(agN*pctS[i3]*100)/100;
-      acumS=Math.round((acumS+v)*100)/100;
-      covBody.push([s[0],s[1],"—","—",money(v)]);
-    });
-  }
-  y = tabla(d,["Coverage / service","Detail","Limit","Deductible","Amount"],covBody,y+2,{rightBold:4});
+  y = tabla(d,["Coverage","Carrier","Limit","Deductible","Premium"],covBody,y+2,{rightBold:4});
   y+=8;
   d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(1.1); d.line(M,y,W-M,y);
   y+=12;
@@ -5273,23 +5251,7 @@ window.__pvExportPDF = function(save){
   if(fees){ d.setFont("helvetica","normal"); d.setFontSize(6.6); d.setTextColor(168,212,207);
     d.text(d.splitTextToSize(fees,CW-36),M+18,y+boxH-12); }
   y+=boxH+8;
-  /* ---- separacion poliza vs financiamiento (tercero) ---- */
-  if(!FP){
-    var downN2=num(txt("pvCpDown"));
-    var schedRaw2=(($("pvCpSched")||{}).innerText||"");
-    var schedN2=0; schedRaw2.split(/\n|\s\+\s/).forEach(function(s){ var mm=s.match(/(\d+)\s*[x×]\s*\$?([\d,\.]+)/i); if(mm){ schedN2+=parseInt(mm[1],10)*num(mm[2]); } });
-    var totInv2=(downN2&&schedN2)?(downN2+schedN2):0;
-    var finChg2=(totInv2&&totalPTF&&totInv2>totalPTF)?(totInv2-totalPTF):0;
-    if(finChg2>0){
-      d.setFont("helvetica","bold"); d.setFontSize(8.4); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]);
-      d.text("Insurance program — paid in full: "+money(totalPTF),M,y+4);
-      d.setFont("helvetica","normal"); d.setFontSize(7); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]);
-      d.text(d.splitTextToSize("If financed, the installments shown include a "+money(finChg2)+" finance charge from a third-party premium finance company — this is the cost of the financing service, not part of your policy.",CW),M,y+14);
-      d.setFont("helvetica","bolditalic"); d.setFontSize(7.6); d.setTextColor(TEAL2[0],TEAL2[1],TEAL2[2]);
-      d.text("Pay in full today and save "+money(finChg2)+".",M,y+31);
-      y+=40;
-    }
-  }
+
   /* ---- desglose del contributory fee, en tabla (estilo coberturas) ---- */
   if(agN>0){
     y = secBar(d,"Agency services & fees — breakdown",y);

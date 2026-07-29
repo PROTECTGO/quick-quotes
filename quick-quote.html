@@ -5315,9 +5315,12 @@ window.__pvExportPDF = function(save){
     y+=dbH+10;
   }
   var drv=rows("pvDrvBody",3);
+  var un=rows("pvUnitBody",4);
+  /* mantener los schedules juntos: si no caben, empezar pagina nueva */
+  var necesita=(drv.length?(24+20+drv.length*17+10):0)+(un.length?(24+20+un.length*17+10):0);
+  if(necesita>0 && y+necesita>648){ y = page(d,true); }
   if(drv.length){ y = secBar(d,"Drivers",y);
     y = tabla(d,["Driver","DOB","License"],drv,y+2,{})+10; }
-  var un=rows("pvUnitBody",4);
   if(un.length){ y = secBar(d,"Power units & trailers",y);
     y = tabla(d,["Year","Make","Body","VIN"],un,y+2,{vinCol:3})+10; }
   y = page(d,true);

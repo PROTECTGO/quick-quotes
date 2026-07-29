@@ -5076,6 +5076,24 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     });
   }
   setInterval(ensureFullBtn,1500); ensureFullBtn();
+  /* casilla: mostrar u ocultar la hoja de desglose de costos */
+  function ensureCostChk(){
+    if(document.getElementById("pvCfgCost")) return;
+    var ref=document.getElementById("pvCfgSched"); if(!ref) return;
+    var fila=ref.closest("label")||ref.parentNode; if(!fila) return;
+    var nueva=fila.cloneNode(true);
+    var inp=nueva.querySelector("input[type=checkbox]"); if(!inp) return;
+    inp.id="pvCfgCost"; inp.checked=true;
+    nueva.querySelectorAll("*").forEach(function(n){
+      if(n.children.length===0 && /schedules/i.test(n.textContent||"")) n.textContent="Cost breakdown (fees)";
+    });
+    if(!/cost breakdown/i.test(nueva.textContent)){
+      var txts=Array.prototype.filter.call(nueva.childNodes,function(n){ return n.nodeType===3 && n.textContent.trim(); });
+      if(txts.length) txts[txts.length-1].textContent=" Cost breakdown (fees)";
+    }
+    fila.parentNode.insertBefore(nueva,fila.nextSibling);
+  }
+  setInterval(ensureCostChk,1500); ensureCostChk();
 })();
 function frame(d){
   /* marco con tope partido: no cruza el logo del membrete (x 172-436) */
@@ -5252,33 +5270,7 @@ window.__pvExportPDF = function(save){
     d.text(d.splitTextToSize(fees,CW-36),M+18,y+boxH-12); }
   y+=boxH+8;
 
-  /* ---- desglose del contributory fee, en tabla (estilo coberturas) ---- */
-  if(agN>0){
-    y = secBar(d,"Agency services & fees — breakdown",y);
-    var pct=[0.20,0.25,0.20,0.15,0.20];
-    var srv=[
-      ["Underwriting file preparation","MVR review, loss runs, unit and driver verification, submission package to the MGA."],
-      ["Carrier / MGA placement & binding","Market negotiation, quote comparison, binder request and issuance follow-up."],
-      ["Regulatory compliance & filings","MCS-90 / BMC-91 filings, UCR and MCS-150 monitoring, state filings and renewals."],
-      ["Certificates & document services","Same-day COI, certificates available 24/7, endorsement and change requests."],
-      ["Account management & support","Dedicated bilingual advisor and policy servicing for the full term."]];
-    var acum=0, filas=[];
-    srv.forEach(function(s,i2){
-      var v=(i2===srv.length-1)?(agN-acum):Math.round(agN*pct[i2]*100)/100;
-      acum=Math.round((acum+v)*100)/100;
-      filas.push([s[0],s[1],money(v)]);
-    });
-    y = tabla(d,["Agency service","What it covers","Amount"],filas,y+2,{rightBold:2,columnStyles:{0:{cellWidth:118},2:{cellWidth:70}}});
-    y+=6;
-    d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(0.9); d.line(M,y,W-M,y); y+=11;
-    d.setFont("helvetica","bold"); d.setFontSize(8.4); d.setTextColor(NAVY[0],NAVY[1],NAVY[2]); d.setCharSpace(0.6);
-    d.text("TOTAL CONTRIBUTORY FEE",M,y); d.setCharSpace(0);
-    d.setFontSize(9.6); d.text(money(agN),W-M,y,{align:"right"});
-    y+=10;
-    d.setFont("helvetica","italic"); d.setFontSize(6.4); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]);
-    d.text("Agency services are rendered from the moment your file is submitted; these fees are fully earned at binding.",M,y+6);
-    y+=18;
-  }
+
   if(vis("pvSecDefer")){
     var d1n=num(txt("pvDefFirst")), d2n=num(txt("pvDefSecond"));
     var d1=d1n?money(d1n):(txt("pvDefFirst")||"80%"), d2=d2n?money(d2n):(txt("pvDefSecond")||"20%");
@@ -5308,7 +5300,9 @@ window.__pvExportPDF = function(save){
   if(un.length){ y = secBar(d,"Power units & trailers",y);
     y = tabla(d,["Year","Make","Body","VIN"],un,y+2,{vinCol:3})+10; }
 
-  /* ===== HOJA DEDICADA · DESGLOSE COMPLETO DEL PROGRAMA ===== */
+  /* ===== HOJA DEDICADA · DESGLOSE COMPLETO (opcional, lo decide el agente) ===== */
+  var verCosto=!$("pvCfgCost")||$("pvCfgCost").checked;
+  if(verCosto){
   y = page(d,true);
   y = title(d,"PROGRAM COST BREAKDOWN",y+4);
   d.setFont("helvetica","italic"); d.setFontSize(9); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]);
@@ -5366,6 +5360,8 @@ window.__pvExportPDF = function(save){
   }
   d.setFont("helvetica","normal"); d.setFontSize(6.6); d.setTextColor(GRAY[0],GRAY[1],GRAY[2]);
   d.text(d.splitTextToSize("Agency services are rendered from the moment your file is submitted and are fully earned at binding. Taxes and carrier fees are set by the carrier, the MGA and the state, and are collected on their behalf. All amounts are estimates until the carrier confirms and issues the binder.",CW),M,y+10);
+
+  }
 
   y = page(d,true);
   y = title(d,"TERMS & RESPONSIBILITIES",y+4)+18;

@@ -4870,6 +4870,7 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
         /* conservar el limite ya presente en la tabla si el capture no lo tiene */
         var base=actual.split(/\s*·\s*(?:Symbols:|Includes Reefer)/)[0].trim();
         if(base==="—") base="";
+        if(/^(Symbols:|Includes Reefer)/.test(base)) base="";
         if(/^[\d\s,]+$/.test(base)&&base.length<12) base="";  /* eran solo codigos de simbolos */
         if(/^yes$/i.test(base)) base="";
         var limite=cv.limit||base;

@@ -417,6 +417,15 @@
   function p2(n) { n = String(parseInt(n, 10) || 0); return n.length < 2 ? '0' + n : n; }
   function esFecha(v) { return fecha(v) !== ''; }
 
+  // Fecha de HOY en MM/DD/YYYY (reloj del navegador al momento de construir/sanear la
+  // ficha). Uso único documentado: `meta.fechaBinder` — la fecha que va IMPRESA junto a
+  // firmas de rechazo/selección UM-UIM y junto al print-name de PRIME. NUNCA se usa para
+  // autollenar la firma o inicial en sí (eso siempre va por SignNow).
+  function fechaHoy() {
+    var d = new Date();
+    return p2(d.getMonth() + 1) + '/' + p2(d.getDate()) + '/' + d.getFullYear();
+  }
+
   function vin(v) {                                // mayúsculas, sin espacios
     return up(v).replace(/\s/g, '');
   }
@@ -570,6 +579,21 @@
     if (/SOLE\s*PROP/.test(t)) return 'SOLE PROPRIETOR';
     if (/\bLTD\b|\bL\.?P\.?\b/.test(t)) return 'LTD';
     return 'SOLE PROPRIETOR';                      // patrón visto: sin sufijo => persona natural
+  }
+
+  // Owner-operator: el contrato dice dueño = contacto = safety director = firmante.
+  // Cuando el Quick Quote NO trae "Owner Name" explícito, se deriva del driver que la
+  // heurística de parseDrivers ya marcó como dueño (fechaHire=='OWNER' o su propio nombre
+  // contiene "OWNER"). Es solo un punto de partida razonable — sigue 100% editable a mano
+  // en el panel; nunca se inventa un nombre que no esté en la data real.
+  function ownerDeDrivers(drivers) {
+    var i, d;
+    for (i = 0; i < drivers.length; i++) {
+      d = drivers[i];
+      if (d.nombre && d.nombre !== 'N/A' &&
+          (d.fechaHire === 'OWNER' || /OWNER/i.test(d.nombre))) return d.nombre;
+    }
+    return '';
   }
 
   function estimados(unidades, radLocal, radInter, radLong) {
@@ -792,6 +816,12 @@
     var est = estimados(unidades, radLocal, radInter, radLong);
 
     var ownerNombre = naUp(campo(data, 'sec-agency::Owner Name::1'));
+    // Owner-operator sin dueño explícito en el quote: se deriva del driver marcado OWNER
+    // (ver ownerDeDrivers). Sigue editable a mano; si no hay ninguna pista, se queda 'N/A'.
+    if (ownerNombre === 'N/A') {
+      var ownerDerivado = ownerDeDrivers(drivers);
+      if (ownerDerivado) ownerNombre = ownerDerivado;
+    }
     var estadoFiling = estado2(campo(data, 'sec-op::State Filing::1'));
 
     // CDL del dueño: true solo si aparece en drivers con licencia real
@@ -828,11 +858,23 @@
         nombre: AGENCIA.nombre, direccion: AGENCIA.direccion, agente: AGENCIA.agente,
         licencia: AGENCIA.licencia, email: AGENCIA.email
       },
+      /* meta.fechaBinder: fecha de armado del binder (día en que KAM lo genera), NO la
+         fecha de la firma. Default = hoy. La usan los motores B para escribir la fecha
+         IMPRESA junto a firmas de rechazo/selección UM-UIM y junto al print-name de PRIME
+         (PGIA / Collateral Agreement). La firma o inicial en sí SIEMPRE va por SignNow —
+         este campo NUNCA se usa para autollenarla. Editable a mano en el panel. */
+      meta: {
+        fechaBinder: fechaHoy()
+      },
       insured: {
         nombre: nombre || 'N/A',
-        dba: 'N/A',                                                    // el quote no lo trae
+        // FEIN y DBA NUNCA vienen en el Quick Quote (verificado en los 370 registros).
+        // La ficha entrega el dato CRUDO: '' si no hay. Cómo se pinta ('N/A' explícito o
+        // celda en blanco) es decisión de cada motor B, NO de este módulo — ver la
+        // convención D5 documentada en CONTRATO.md. KAM lo teclea al armar el binder.
+        dba: '',
         entidad: entidadDe(nombre),
-        fein: 'N/A',                                                   // brecha conocida: KAM lo captura
+        fein: '',
         dirCorreo: naUp(campo(data, 'sec-agency::Mailing Address::1')),
         dirParqueo: naUp(campo1(data, ['sec-agency::Parking Address::1', 'sec-agency::Mailing Address::1'])),
         telefono: na(tel(campo(data, 'sec-agency::Phone::1'))),   // nunca '' : N/A explícito
@@ -918,7 +960,12 @@
         medpay: tiene(MEDPAY_OBLIGATORIO, estadoFiling) ? 'Accepted' : 'Rejected',
         pip: 'Rejected',
         cargo: limite(campo(data, 'sec-cov::Limit::2')),
-        cargoDed: n0(campo(data, 'sec-cov::Deductible::1'))
+        cargoDed: n0(campo(data, 'sec-cov::Deductible::1')),
+        // Stacking: default universal NON-STACKED (false). Evidencia: CANAL rechaza el
+        // stacking en el ejemplo diligenciado y NICO ni siquiera lo ofrece — columna
+        // "Stacked" = "Not Available" en todas las filas del M-5498. Toggle editable en
+        // el panel solo para el caso raro en que SÍ se quiera stacking.
+        stacking: false
       }
     };
 
@@ -1034,13 +1081,18 @@
       if (!tiene(RECHAZO, f.cob[flags[i]])) f.cob[flags[i]] = 'Rejected';
     }
     if (typeof f.cob.simbolos !== 'string' || !s(f.cob.simbolos)) f.cob.simbolos = '7, 8, 9';
+    f.cob.stacking = !!f.cob.stacking;                  // siempre bool; default lo pone construir()
     // fechas: o MM/DD/YYYY o vacío, nunca texto suelto
     if (!objPlano(f.op)) f.op = {};
     if (!objPlano(f.owner)) f.owner = {};
+    if (!objPlano(f.meta)) f.meta = {};
     f.op.efectiva = fecha(f.op.efectiva);
     f.op.vence = sumaAnio(f.op.efectiva) || fecha(f.op.vence);
     f.op.fechaAutoridad = fecha(f.op.fechaAutoridad);
     f.owner.dob = fecha(f.owner.dob);
+    // meta.fechaBinder: MM/DD/YYYY o vuelve a hoy si un tecleo del KAM lo dejó inválido.
+    // NUNCA se usa para autollenar una firma — solo la fecha impresa junto a ella.
+    f.meta.fechaBinder = fecha(f.meta.fechaBinder) || fechaHoy();
     for (i = 0; i < f.drivers.length; i++) {
       f.drivers[i].dob = fecha(f.drivers[i].dob);
       f.drivers[i].excluido = !!f.drivers[i].excluido;
@@ -1085,6 +1137,9 @@
 
   // spec de campos escalares: [ruta, etiqueta, ancho('full'), tipo('num'|'chk'|'est'|'sel:a|b|c')]
   var SECCIONES = [
+    ['Binder', 'meta', [
+      ['meta.fechaBinder', 'Fecha de armado del binder (junto a firmas/print-name — NUNCA la firma en sí)']
+    ]],
     ['Asegurado', 'insured', [
       ['insured.nombre', 'Razón social', 'full'],
       ['insured.dba', 'DBA (lo escribe KAM)'],
@@ -1144,7 +1199,8 @@
       ['cob.um', 'UM', '', 'sel:Rejected|Accepted|N/A'],
       ['cob.uim', 'UIM', '', 'sel:Rejected|Accepted|N/A'],
       ['cob.medpay', 'MedPay', '', 'sel:Rejected|Accepted|N/A'],
-      ['cob.pip', 'PIP', '', 'sel:Rejected|Accepted|N/A']
+      ['cob.pip', 'PIP', '', 'sel:Rejected|Accepted|N/A'],
+      ['cob.stacking', '¿Stacking? (default No — universal es non-stacked)', '', 'chk']
     ]]
   ];
 
@@ -1272,7 +1328,10 @@
          '(US$100k por unidad al año en long haul · 40% local · 70% intermedio; millas 100k / 60k / 25k). ' +
          '<b>Son editables:</b> si el cliente da la cifra real, escríbela encima. ' +
          (f.fin && f.fin.grossActualFuente ? 'Gross de los últimos 12 meses: ' + esc(f.fin.grossActualFuente) + '. ' : '') +
-         '<b>FEIN y DBA no vienen en el Quick Quote</b>: llegan en N/A y los teclea KAM. ' +
+         '<b>FEIN y DBA no vienen en el Quick Quote</b>: llegan en blanco y los teclea KAM ' +
+         '(cada motor decide si imprime "N/A" o deja la celda vacía). ' +
+         '<b>Fecha del binder</b> (sección Binder) va junto a firmas/print-name — nunca reemplaza la firma. ' +
+         '<b>Stacking</b> por defecto es No (non-stacked); actívalo solo si el cliente lo pide. ' +
          'Firmas, iniciales, fechas de firma y respuestas de cumplimiento FMCSR nunca se autollenan.</div>';
 
     el.innerHTML = h;
@@ -1351,7 +1410,7 @@
     if (!f) return null;
     if (!elActual || !elActual.querySelectorAll) return sanear(f);
     // secciones mínimas: leer() no puede explotar si la ficha llegó mutilada
-    var seccs = ['insured', 'owner', 'op', 'fin', 'loss', 'cob'], si;
+    var seccs = ['insured', 'owner', 'op', 'fin', 'loss', 'cob', 'meta'], si;
     for (si = 0; si < seccs.length; si++) if (!objPlano(f[seccs[si]])) f[seccs[si]] = {};
 
     var nodos = elActual.querySelectorAll('[data-f]'), i, n, ruta, val;
@@ -1421,7 +1480,7 @@
     if (!f || typeof f !== 'object') return ['FRENA · No hay ficha construida. Selecciona una cotización en la lista de la izquierda.'];
     // La ficha puede llegar de un __binder viejo sin alguna sección: se completa en
     // memoria para que validar() nunca lance (un throw aquí apaga el panel de avisos).
-    var _sec = ['insured', 'owner', 'op', 'fin', 'loss', 'cob'];
+    var _sec = ['insured', 'owner', 'op', 'fin', 'loss', 'cob', 'meta'];
     for (i = 0; i < _sec.length; i++) if (!objPlano(f[_sec[i]])) f[_sec[i]] = {};
     var _arr = ['drivers', 'units', 'trailers', 'commodities', 'losses'];
     for (i = 0; i < _arr.length; i++) {
@@ -1659,7 +1718,7 @@
     // utilidades reutilizables por los motores (evita que cada uno reinvente el normalizador)
     util: {
       s: s, up: up, na: na, naUp: naUp, num: num, pct: pct, fecha: fecha, tel: tel,
-      vin: vin, vinOk: vinOk, propiedad: propiedad, money: money, sumaAnio: sumaAnio,
+      vin: vin, vinOk: vinOk, propiedad: propiedad, money: money, sumaAnio: sumaAnio, fechaHoy: fechaHoy,
       campo: campo, campo1: campo1, entidadDe: entidadDe, estimados: estimados,
       // normalizadores nuevos, endurecidos contra la base real (que los motores reutilicen)
       estado2: estado2, esFecha: esFecha, pctRadio: pctRadio, anosNegocio: anosNegocio,
@@ -1726,6 +1785,26 @@
      TODO: `losses[].fecha` puede quedar como año o rango ("2025", "2025-2026") porque la tabla
            es historial de pólizas, no siniestros. Los motores lo imprimen tal cual; si algún
            MGA exige MM/DD/YYYY ahí, hay que decidir qué fecha del período se usa.
+
+     ---- RONDA 2 (D5/D7/D3 + fechaBinder) ----
+     RESUELTO: `insured.fein`/`insured.dba` ya NO nacen en 'N/A' — nacen en '' (dato crudo).
+           Decisión D5: MTM escribe el literal "N/A" cuando está vacío; CANAL deja la celda
+           en blanco. Esa decisión es de CADA MOTOR B, no de la ficha — aquí solo se entrega
+           el dato tal cual lo escribió KAM (o '' si nadie lo ha tecleado todavía).
+     RESUELTO: `owner.nombre` ahora tiene un fallback para el caso owner-operator sin "Owner
+           Name" en el quote: se deriva del driver que parseDrivers ya marcó como dueño
+           (ver ownerDeDrivers). Sigue editable a mano; si no hay ninguna pista se queda 'N/A'.
+     NUEVO: `meta.fechaBinder` (String MM/DD/YYYY, default = hoy vía fechaHoy()). La usan los
+           motores B para la fecha IMPRESA junto a firmas de rechazo/selección UM-UIM y junto
+           al print-name de PRIME (PGIA/Collateral). NUNCA se usa para autollenar la firma o
+           inicial en sí — eso sigue siendo exclusivo de SignNow.
+     NUEVO: `cob.stacking` (Boolean, default false). Universal es non-stacked (CANAL rechaza
+           el stacking en el diligenciado real; NICO ni lo ofrece — "Stacked"="Not Available"
+           en todo el M-5498). Toggle editable para el caso raro en que sí se quiera stacking.
+     TODO (ANDRÉS): si algún MGA necesita un campo de firma-testigo o segunda fecha distinta a
+           `meta.fechaBinder` (ej. fecha de vigencia efectiva vs. fecha de firma real del
+           cliente), no está cubierto todavía — hoy una sola fecha de armado sirve para todos
+           los usos documentados en D1/D7/D12.
      ------------------------------------------------------------------ */
 
 })(typeof window !== 'undefined' ? window : this);
@@ -2148,7 +2227,23 @@
     return s;
   }
 
-  function sanear(v, max) {
+  /* ------------------------------------------------------------------ *
+   * A5 — OVERFLOW MULTILÍNEA. Antes sanear() recortaba a MAX_CAMPO/MAX_CELDA
+   * y agregaba "…"/"..." EN SILENCIO: el operador nunca sabía que había más
+   * texto que el que cabía en la casilla del PDF. Ahora, cuando el texto se
+   * trunca en un campo con espacio suficiente, se agrega una marca VISIBLE
+   * "(VER ANEXO)" y el texto COMPLETO se guarda en `_anexos` para pintarse
+   * en una hoja anexa al final del PDF (ver anexarTextosLargos()). En
+   * campos angostos (VIN, año, estado de 2 letras, %) no cabe la marca larga
+   * ni tiene sentido un anexo — se conserva el recorte con "...", que sigue
+   * siendo una marca visible, nunca un corte mudo.
+   * ------------------------------------------------------------------ */
+  var MARCA_ANEXO = ' (VER ANEXO)';
+  var UMBRAL_ANEXO = 15;   // por debajo de esto el campo es un código corto: sin espacio para la marca
+  var _anexos = null;      // {etiqueta, texto} acumulado durante un llenar(); null fuera de generación
+  var _ultimoAnexo = [];   // copia expuesta para pruebas: KAM.motores['brooklyn']._ultimoAnexo
+
+  function sanear(v, max, etiqueta) {
     var s = txt(v);
     if (s === '') return '';
     s = repararMojibake(s);
@@ -2163,12 +2258,22 @@
       if (n >= 0xD800 && n <= 0xDBFF) { i++; continue; }                // par suplente (emoji) → fuera
       // resto (cirílico, CJK, dingbats, emoji BMP…) → fuera, no encodeable
     }
-    out = out.replace(/\s{2,}/g, ' ').replace(/^\s+|\s+$/g, '');
+    var completo = out.replace(/\s{2,}/g, ' ').replace(/^\s+|\s+$/g, '');
     max = max || 90;
-    if (out.length > max) out = out.substring(0, max - 1).replace(/\s+\S*$/, '') + '…';
-    // el elipsis tampoco es WinAnsi
-    out = out.replace(/…/g, '...');
-    return out;
+    if (completo.length <= max) return completo;
+
+    if (max >= UMBRAL_ANEXO) {
+      var corte = max - MARCA_ANEXO.length;
+      var out2 = completo.substring(0, corte).replace(/\s+\S*$/, '');
+      if (!out2) out2 = completo.substring(0, Math.max(1, corte));
+      if (_anexos) _anexos.push({ etiqueta: etiqueta || 'Campo', texto: completo });
+      return out2 + MARCA_ANEXO;
+    }
+    // campo angosto: sin espacio para la marca larga ni sentido de anexo
+    // (VIN/año/estado/% ya se validan aparte) — recorte con "..." visible.
+    var out3 = completo.substring(0, Math.max(1, max - 3)).replace(/\s+\S*$/, '');
+    if (!out3) out3 = completo.substring(0, Math.max(1, max - 3));
+    return out3 + '...';
   }
 
   /* Ancho máximo por casilla (caracteres). Sin esto un solo campo largo se
@@ -2183,6 +2288,67 @@
     'Agent Name 1': 45, 'Agent Name 2': 45
   };
   var MAX_CELDA = 34;      // celdas de tabla (drivers, units, commodities…)
+
+  /** Envuelve un texto largo en líneas de ancho fijo (para dibujarlo en el
+      anexo). No hace hyphenation: si una sola "palabra" es más larga que el
+      ancho, se corta a lo bruto para no dejar la línea sin fin. */
+  function envolverTexto(s, ancho) {
+    s = txt(s);
+    var palabras = s.split(' '), out = [], linea = '', i, w;
+    for (i = 0; i < palabras.length; i++) {
+      w = palabras[i];
+      while (w.length > ancho) {
+        if (linea) { out.push(linea); linea = ''; }
+        out.push(w.substring(0, ancho));
+        w = w.substring(ancho);
+      }
+      var cand = linea ? (linea + ' ' + w) : w;
+      if (cand.length > ancho) { if (linea) out.push(linea); linea = w; }
+      else linea = cand;
+    }
+    if (linea) out.push(linea);
+    return out.length ? out : [''];
+  }
+
+  /** A5 — hoja(s) anexa(s) con el texto COMPLETO de los campos que se
+      truncaron al llenar el PDF. Se agregan al final del documento; si no
+      hubo truncamientos, no agrega ninguna página. Nunca revienta la
+      generación: un fallo aquí se traga (el PDF principal ya está listo). */
+  function anexarTextosLargos(doc, helv, helvB) {
+    if (!_anexos || !_anexos.length) return;
+    try {
+      var rgb = PDFLib.rgb;
+      var pageW = 612, pageH = 792, margin = 50, y, page;
+      function nuevaPagina() {
+        page = doc.addPage([pageW, pageH]);
+        y = pageH - margin;
+        page.drawText('ANEXO — TEXTOS COMPLETOS (recortados en el formulario por espacio)', {
+          x: margin, y: y, size: 11, font: helvB, color: rgb(0, 0, 0)
+        });
+        y -= 20;
+      }
+      nuevaPagina();
+      var i, j, a, lineas;
+      for (i = 0; i < _anexos.length; i++) {
+        a = _anexos[i];
+        if (y < margin + 40) nuevaPagina();
+        // etiqueta = nombre de campo del AcroForm (ASCII, ya corto): recorte
+        // directo, sin pasar por sanear() para no reactivar el colector _anexos
+        // mientras lo estamos recorriendo.
+        page.drawText(String(a.etiqueta || 'Campo').substring(0, 90) + ':', { x: margin, y: y, size: 9, font: helvB, color: rgb(0, 0, 0) });
+        y -= 13;
+        lineas = envolverTexto(a.texto, 95);
+        for (j = 0; j < lineas.length; j++) {
+          if (y < margin) nuevaPagina();
+          page.drawText(lineas[j], { x: margin + 10, y: y, size: 8.5, font: helv, color: rgb(0, 0, 0) });
+          y -= 11;
+        }
+        y -= 6;
+      }
+    } catch (e) {
+      if (global.console && console.warn) console.warn('BROOKLYN anexo:', e.message);
+    }
+  }
 
   /* ------------------------------------------------------------------ *
    * fecha() — normaliza a MM/DD/YYYY (CONTRATO.md) sin destrozar lo que no
@@ -2318,6 +2484,97 @@
   }
 
   /* ================================================================== *
+   * A3/A4 — VALIDAR: precheck de negocio ANTES de generar el PDF.
+   * CONTRATO: "Validar antes de generar: radios y commodities suman 100 ·
+   * VIN 17 caracteres · firma ≤ efectiva." + UM obligatorio en NJ/IL/VA y
+   * MedPay obligatorio en PA (la MISMA constante que ya usan 01-ficha.js y
+   * 05-motor-c.js; se replica aquí de forma defensiva — leyendo sólo
+   * `ficha.op.estadoFiling`, que SÍ está en el CONTRATO — en vez de
+   * inventar una ruta o depender de otro módulo).
+   * NUNCA bloquea la generación: sólo devuelve avisos para que KAM decida
+   * si continúa. Se muestran en render() (panel ámbar/rojo) y se resumen
+   * con un toast() en generar(), justo antes de pintar el PDF.
+   * ================================================================== */
+  var UM_OBLIGATORIO_ESTADO = { NJ: 1, IL: 1, VA: 1 };
+  var MEDPAY_OBLIGATORIO_ESTADO = { PA: 1 };
+  function estadoFiling2(op) {
+    return MAY((op || {}).estadoFiling).replace(/[^A-Z]/g, '').substring(0, 2);
+  }
+
+  function validar(ficha, x) {
+    ficha = ficha || {}; x = x || {};
+    var op = ficha.op || {}, cob = ficha.cob || {};
+    var avisos = [], i;
+    function add(nivel, texto) { avisos.push({ nivel: nivel, texto: texto }); }
+
+    /* --- radios de operación suman 100 --- */
+    var radios = Math.round((num(op.radLocal) + num(op.radInter) + num(op.radLong)) * 100) / 100;
+    if (radios !== 100) {
+      add('rojo', 'Los radios de operación suman ' + radios + '% y deben sumar 100% (local ' +
+        num(op.radLocal) + '% · intermedio ' + num(op.radInter) + '% · long haul ' + num(op.radLong) + '%).');
+    }
+
+    /* --- commodities suman 100 --- */
+    var coms = arr(ficha.commodities), sumC = 0;
+    for (i = 0; i < coms.length; i++) sumC += num((coms[i] || {}).pct);
+    sumC = Math.round(sumC * 100) / 100;
+    if (coms.length && sumC !== 100) {
+      add('rojo', 'Los commodities suman ' + sumC + '% y deben sumar 100%.');
+    } else if (!coms.length) {
+      add('ambar', 'No hay commodities capturados en la ficha.');
+    }
+
+    /* --- VIN de 17 caracteres (units + trailers) --- */
+    var flota = arr(ficha.units).concat(arr(ficha.trailers)), malos = [];
+    for (i = 0; i < flota.length; i++) {
+      var u = flota[i] || {};
+      var v = MAY(u.vin).replace(/[^A-Z0-9]/g, '');
+      if (v && v.length !== 17) malos.push((u.ano || '?') + ' ' + MAY(u.marca) + ' VIN "' + v + '" (' + v.length + ' car.)');
+    }
+    if (malos.length) add('rojo', 'VIN inválido en ' + malos.length + ' unidad(es): ' + malos.join(' · '));
+
+    /* --- firma <= efectiva (sólo si ya se capturó una fecha de firma) --- */
+    var fe = fecha(op.efectiva), ff = fecha(x.fechaFirma);
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(fe) && /^\d{2}\/\d{2}\/\d{4}$/.test(ff)) {
+      var pe = fe.split('/'), pf = ff.split('/');
+      var de = new Date(+pe[2], +pe[0] - 1, +pe[1]).getTime();
+      var df = new Date(+pf[2], +pf[0] - 1, +pf[1]).getTime();
+      if (df > de) add('rojo', 'La fecha de firma (' + ff + ') es posterior a la efectiva (' + fe +
+        '). Underwriting rechaza un binder firmado después de que empezó la cobertura.');
+    }
+
+    /* --- A4: UM obligatorio NJ/IL/VA y MedPay obligatorio PA --- */
+    var estF = estadoFiling2(op);
+    var umActual = (x.um !== undefined && x.um !== null) ? x.um : cob.um;
+    var medpayActual = (x.medpay !== undefined && x.medpay !== null) ? x.medpay : cob.medpay;
+    if (Object.prototype.hasOwnProperty.call(UM_OBLIGATORIO_ESTADO, estF) && umActual !== 'Accepted') {
+      add('rojo', 'UM (Uninsured Motorist) está en "' + txt(umActual || 'Rejected') + '" y en ' + estF +
+        ' no se puede rechazar por ley. Cámbialo a Accepted (Q27) antes de mandar a SignNow.');
+    }
+    if (Object.prototype.hasOwnProperty.call(MEDPAY_OBLIGATORIO_ESTADO, estF) && medpayActual !== 'Accepted') {
+      add('rojo', 'MedPay está en "' + txt(medpayActual || 'Rejected') + '" y en ' + estF +
+        ' es obligatorio. Cámbialo a Accepted (Q31) antes de mandar a SignNow.');
+    }
+
+    return avisos;
+  }
+
+  /** Panel ámbar/rojo con los avisos de validar() — mismo patrón visual que
+      ya usa el resto del sistema (04-motor-b.js: clase .hint + fondo/borde
+      inline, ámbar #fff6e5/#c98a00, rojo #fdeaea/#8c1d1d). Nunca un alert(). */
+  function panelAvisos(avisos) {
+    if (!avisos || !avisos.length) return '';
+    var h = '<div class="panel"><div class="head">BROOKLYN · avisos antes de generar (no bloquean — tú decides)</div><div class="body">', i, a;
+    for (i = 0; i < avisos.length; i++) {
+      a = avisos[i];
+      h += '<div class="hint" style="padding:8px 10px;margin:0 0 6px;background:' +
+        (a.nivel === 'rojo' ? '#fdeaea' : '#fff6e5') + ';border-left:3px solid ' +
+        (a.nivel === 'rojo' ? '#8c1d1d' : '#c98a00') + '">' + esc(a.texto) + '</div>';
+    }
+    return h + '</div></div>';
+  }
+
+  /* ================================================================== *
    * Elecciones de underwriting pre-sugeridas (KAM confirma, no se
    * autollenan a ciegas). Devuelve el objeto `extra` por defecto.
    * ================================================================== */
@@ -2354,6 +2611,9 @@
       iowaAgent: 'N/A',
       lienholder: { nombre: 'NONE', direccion: '', ciudad: '', estado: '', zip: '' },
       histAnos: [],                 // [{ano,gross,millas,unidades}] — vacío = N/A
+      // A3: sólo para VALIDAR (firma <= efectiva). NUNCA se autollena en el PDF:
+      // las firmas y sus fechas las pone SignNow, esto es solo un precheck.
+      fechaFirma: '',
 
       /* --- elecciones de underwriting pre-sugeridas --- */
       q4Cambio: op.nuevoNegocio ? 'no' : 'no',
@@ -2426,7 +2686,7 @@
      * la línea "Other:". Antes se escribía el texto PERO se marcaba LLC —
      * rama que nunca se había ejercitado y que declaraba mal la entidad. */
     v.entidadRadio = entidadRadio(ins.entidad);
-    v.entidadOtra = (v.entidadRadio === 'OTHER') ? sanear(MAY(ins.entidad), 40) : '';
+    v.entidadOtra = (v.entidadRadio === 'OTHER') ? sanear(MAY(ins.entidad), 40, 'Entidad (Other)') : '';
     v.anosNegocio = op.nuevoNegocio ? 'NEW VENTURE'
       : (/^\d+$/.test(txt(op.anosNegocio).trim()) ? txt(op.anosNegocio).trim() + ' YEARS' : naMay(op.anosNegocio));
     var em = txt(x.expMgmt || op.anosNegocio || x.expMinima).trim();
@@ -2592,7 +2852,7 @@
     }
     var f;
     try { f = form.getTextField(nombre); } catch (e) { return false; }
-    var s = sanear(valor, max || MAX_CAMPO[nombre] || 90);
+    var s = sanear(valor, max || MAX_CAMPO[nombre] || 90, nombre);
     try { f.setText(s); } catch (e) { return false; }
     // tamaño automático: los nombres largos se recortan con el tamaño fijo
     try { f.setFontSize(0); } catch (e) {
@@ -2634,6 +2894,20 @@
       }
     }
 
+    /* A3: precheck de validación ANTES de generar el PDF. Se avisa por
+     * toast() (mismo helper global que usa el resto del sistema — nunca un
+     * alert() de navegador, que bloquea todo) y NO se detiene la generación:
+     * el detalle completo vive en el panel de render() y el operador decide. */
+    try {
+      var avisosPrecheck = validar(ficha, x);
+      if (avisosPrecheck.length && typeof global.toast === 'function') {
+        var rojos = 0, j;
+        for (j = 0; j < avisosPrecheck.length; j++) if (avisosPrecheck[j].nivel === 'rojo') rojos++;
+        global.toast('BROOKLYN: ' + avisosPrecheck.length + ' aviso(s) antes de generar' +
+          (rojos ? ' (' + rojos + ' para revisar ya)' : '') + ' — mira el panel de avisos.');
+      }
+    } catch (ePre) { /* el precheck jamás bloquea ni tumba la generación */ }
+
     var base = (global.PDF_BASE || 'kam-docs/');
     if (base.charAt(base.length - 1) !== '/') base += '/';
 
@@ -2649,6 +2923,7 @@
   function llenar(bytes, ficha, x) {
     ficha = ficha || {};
     var PDFDocument = PDFLib.PDFDocument, StandardFonts = PDFLib.StandardFonts, rgb = PDFLib.rgb;
+    _anexos = [];   // A5: colector de textos truncados de ESTA generación
 
     return PDFDocument.load(bytes, { ignoreEncryption: true }).then(function (doc) {
       return doc.embedFont(StandardFonts.Helvetica).then(function (helv) {
@@ -2861,6 +3136,13 @@
           return doc.embedFont(StandardFonts.ZapfDingbats).then(marcaQ14b, function () {
             marcaQ14b(null);
           }).then(function () {
+            // A5: hoja(s) anexa(s) con el texto completo de los campos truncados
+            anexarTextosLargos(doc, helv, helvB);
+            _ultimoAnexo = _anexos ? _anexos.slice(0) : [];
+            _anexos = null;
+            if (_ultimoAnexo.length && global.console && console.info) {
+              console.info('BROOKLYN: ' + _ultimoAnexo.length + ' campo(s) truncado(s) — anexo generado al final del PDF.');
+            }
             return doc.save();
           });
         });
@@ -2894,6 +3176,11 @@
     _el = el;
     var x = sugerencias(ficha);
     var h = '';
+
+    // A3/A4: precheck de validación ANTES de generar (panel ámbar/rojo, no bloquea).
+    var avisosPre = [];
+    try { avisosPre = validar(ficha, x); } catch (eV) { /* nunca tumbar el render por el precheck */ }
+    h += panelAvisos(avisosPre);
 
     h += '<div class="panel"><div class="head">BROOKLYN · datos que pide el formulario y no están en la ficha</div><div class="body"><div class="frm">';
     h += inp('agentNo', 'Agent No.', x.agentNo);
@@ -2942,6 +3229,7 @@
     h += sel('um', 'Q27 · Uninsured Motorist', x.um, [['Rejected', 'Rejected'], ['Accepted', 'Limits accepted']]);
     h += sel('uim', 'Q28 · Underinsured Motorist', x.uim, [['Rejected', 'Rejected'], ['Accepted', 'Limits accepted']]);
     h += sel('medpay', 'Q31 · Medical Payments', x.medpay, [['Rejected', 'Rejected'], ['Accepted', 'Limits accepted']]);
+    h += inp('fechaFirma', 'Fecha en que el cliente firmó (opcional — sólo para validar firma ≤ efectiva; NUNCA se escribe en el PDF)', x.fechaFirma);
     h += '</div>';
     h += '<p class="hint">Recordatorio de estado: UM es obligatorio en NJ / IL / VA y MedPay en PA. ' +
       'Las firmas y las fechas de firma quedan en blanco: las pone SignNow.</p>';
@@ -2963,7 +3251,7 @@
       'tiLimite', 'tiDias', 'dedSCOL', 'policyFee', 'q4Cambio', 'q7Filings', 'q8FueraSchedule',
       'q9Brokerage', 'q9bMismoNombre', 'q10Interchange', 'q11Prestados', 'q12Dobles',
       'q13Subhaulers', 'q14Lease', 'q14bScheduled', 'q21Cancelado', 'q29PipRechazado',
-      'q30PipAceptado', 'um', 'uim', 'medpay'], i;
+      'q30PipAceptado', 'um', 'uim', 'medpay', 'fechaFirma'], i;
     for (i = 0; i < simples.length; i++) x[simples[i]] = val(simples[i], x[simples[i]]);
     x.lienholder = {
       nombre: val('lhNombre', 'NONE'), direccion: val('lhDir', ''), ciudad: val('lhCiudad', ''),
@@ -2982,6 +3270,9 @@
     leerExtra: leerExtra,
     sugerencias: sugerencias,
     generar: function (ficha, extra) { return generar(ficha, extra || leerExtra(ficha)); },
+    validar: function (ficha, extra) { return validar(ficha, extra || sugerencias(ficha)); },
+    // A5: campos truncados de la ÚLTIMA generación (para pruebas / diagnóstico)
+    ultimoAnexo: function () { return _ultimoAnexo.slice(0); },
     // expuesto para pruebas fuera del navegador (test-brooklyn.js)
     _llenar: llenar,
     _calc: calc
@@ -3001,18 +3292,27 @@
    * TODO(zonas-Q5): las zonas se reparten proporcional al NÚMERO de estados
    *   de op.estados, no al volumen real por zona. Si el quote llega a traer
    *   millas o viajes por estado, ponderar con eso.
-   * TODO(overflow-multilinea): sanear() recorta a MAX_CAMPO/MAX_CELDA y
-   *   agrega "..." para que el texto no se derrame fuera de la caja. Falta
-   *   detectar los campos multilínea del template (/Ff bit 13) y darles un
-   *   límite mayor con salto de línea en vez de recorte.
-   * TODO(validaciones-precheck): el CONTRATO pide validar antes de generar
-   *   (radios y commodities suman 100 · VIN de 17 · firma <= efectiva).
-   *   Aquí sólo se NORMALIZA (VIN se limpia a [A-Z0-9], nunca se rechaza);
-   *   el bloqueo de la generación vive en la capa de UI, no en el motor.
-   * TODO(um-obligatorio-por-estado): UM en NJ/IL/VA y MedPay en PA son
-   *   obligatorios por estado. El motor pinta el espejo del quote tal cual;
-   *   no fuerza "Accepted" ni avisa si el quote trae "Rejected" en esos
-   *   estados — eso debe salir como advertencia en sugerencias()/UI. */
+   * RESUELTO (A5, ronda 2): sanear() ya NO trunca en silencio. Cuando el
+   *   texto excede MAX_CAMPO/MAX_CELDA y hay espacio suficiente (>= 15
+   *   caracteres), agrega la marca visible " (VER ANEXO)" y el texto
+   *   COMPLETO se pinta en una hoja anexa al final del PDF
+   *   (anexarTextosLargos()). En campos angostos (VIN, año, estado, %) se
+   *   conserva el recorte con "..." — visible, nunca mudo, sin anexo (no
+   *   tiene sentido: son códigos ya validados aparte).
+   *   TODO(overflow-multilinea-Ff13): sigue faltando detectar los campos
+   *   /Ff bit 13 (multilínea) del propio AcroForm para pintar 2-3 renglones
+   *   DENTRO de la casilla original en vez de recortar + anexar; el anexo
+   *   cubre el caso (nada se pierde), pero un multilínea real leería mejor.
+   * RESUELTO (A3, ronda 2): validar(ficha, x) corre el precheck del
+   *   CONTRATO (radios y commodities suman 100 · VIN 17 · firma <= efectiva)
+   *   ANTES de generar. Se muestra en un panel ámbar/rojo en render() y se
+   *   resume con toast() en generar(); NUNCA bloquea — KAM decide si sigue.
+   * RESUELTO (A4, ronda 2): UM obligatorio en NJ/IL/VA y MedPay obligatorio
+   *   en PA ahora se avisan también desde BROOKLYN (antes sólo los mostraba
+   *   01-ficha.js). Se replicó la misma constante de forma defensiva
+   *   (lee sólo ficha.op.estadoFiling, que sí está en el CONTRATO) en vez
+   *   de acoplarse a otro módulo. El motor sigue sin forzar "Accepted": el
+   *   aviso es rojo pero no bloqueante, igual que el resto del precheck. */
 
   // esc() lo provee kam.html; fallback para pruebas fuera del navegador.
   function esc(s) {
@@ -3595,8 +3895,10 @@
     var units = arr(ficha.units), trailers = arr(ficha.trailers);
     var drivers = driversDe(ficha), losses = lossesDe(ficha);
     var tiv = tivDe(ficha);
-    /* TODO(contrato): cob.reeferBreakdown NO esta en el contrato de FICHA; se lee
-       de forma opcional y si no existe se cae a op.reeferPct (que si existe). */
+    /* A6 (ronda 2): cob.reeferBreakdown es un campo OPCIONAL, ya formalizado
+       en CONTRATO.md ("Campo opcional: cob.reeferBreakdown"). No viene de
+       quick_quotes hoy: se lee de forma defensiva y, si no existe, se cae a
+       op.reeferPct (que sí está en el contrato desde el inicio). */
     var reeferOn = esSi(cob.reeferBreakdown);
     var H = [];
     var ent = T(ins.entidad).toLowerCase();
@@ -4074,8 +4376,8 @@
     var loss = obj(ficha.loss), losses = lossesDe(ficha), cob = obj(ficha.cob), fin = obj(ficha.fin);
     var units = arr(ficha.units), trailers = arr(ficha.trailers), drivers = driversDe(ficha);
     var tiv = tivDe(ficha);
-    /* TODO(contrato): cob.reeferBreakdown NO esta en el contrato de FICHA; se lee
-       de forma opcional y si no existe se cae a op.reeferPct (que si existe). */
+    /* A6 (ronda 2): cob.reeferBreakdown, ya formalizado en CONTRATO.md como
+       campo OPCIONAL. Si no existe, se cae a op.reeferPct (ver ptrrgHTML). */
     var reeferOn = esSi(cob.reeferBreakdown);
     var coms = arr(ficha.commodities), valProm = 0, valMax = 0, ci;
     for (ci = 0; ci < coms.length; ci++) {
@@ -4897,6 +5199,22 @@
 
   var SUFIJOS = { LLC: 1, INC: 1, CORP: 1, CO: 1, LTD: 1, LP: 1, LLP: 1, COMPANY: 1,
                   THE: 1, AND: 1, DBA: 1 };
+  /* A2 (ronda 2) — se probo excluir palabras genericas del rubro (LOGISTICS,
+     TRANSPORT, etc.) para que dos razones sociales DISTINTAS que comparten
+     una de esas palabras no se confundieran. Eso rompio un caso peor,
+     encontrado en la verificacion final de esta ronda: una ficha cuyo nombre
+     era "[PROPIO] LOGISTICS LLC" se quedaba con UN SOLO token util (el
+     nombre propio corto), y ese token calzaba por pura coincidencia con
+     codigos de formulario internos de otro MGA (prefijos tipo "XXX-F-017")
+     que no tienen nada que ver con el cliente -> el guardia ACEPTABA el
+     paquete de otro cliente. Revertido: las palabras del rubro se quedan en
+     la lista de tokens (no se excluyen), y en su lugar coincidenciaNombre()
+     exige que calcen AL MENOS DOS tokens distintos cuando el nombre tiene
+     dos o mas — asi ni un token generico compartido entre dos empresas ni
+     un token corto que matchea por azar bastan por si solos. Verificado
+     contra dos casos reales de clientes distintos (ver salidas.js "RECHAZA
+     paquete de otro cliente" — los nombres de prueba viven solo ahi, con
+     PII real, nunca en este modulo). */
 
   function tokensNombre(s) {
     var crudo = norm(s).replace(/[^A-Z0-9 ]/g, ' ').split(/\s+/), out = [], corto = [], i, t;
@@ -4915,12 +5233,29 @@
     return out.length ? out : corto;
   }
 
-  /* Cuantos tokens del nombre del asegurado aparecen en el texto del paquete. */
+  /* A2 (ronda 2, version final) — guardia por MULTIPLES tokens, no por
+     fraccion de peso de uno solo. Un solo token que calza (por mas largo
+     que sea) NUNCA es evidencia suficiente por si solo: puede ser un
+     codigo de formulario, un termino generico del rubro compartido con
+     otro cliente, o una coincidencia de letras cortas. Con 2+ tokens en el
+     nombre, exige que calcen AL MENOS DOS (ponderando por longitud solo
+     para el caso de empate/orden, nunca para permitir que un solo token
+     "pese" lo suficiente). Con exactamente 1 token util en todo el nombre
+     (caso raro: razon social de dos iniciales + una sola palabra real,
+     p.ej. "A & D [PALABRA] LLC") no hay con que exigir un segundo, y se
+     mantiene el comportamiento anterior documentado en el TODO(guardia) de
+     tokensNombre: la evidencia es debil y el USDOT es el respaldo fuerte
+     cuando el operador lo tenga a mano. */
   function coincidenciaNombre(textoFull, nombre) {
-    var t = tokensNombre(nombre), i, hits = 0;
+    var t = tokensNombre(nombre), i, w, hits = 0, pesoTotal = 0, pesoHit = 0;
     if (!t.length) return 0;
-    for (i = 0; i < t.length; i++) if (textoFull.indexOf(t[i]) > -1) hits++;
-    return hits / t.length;
+    for (i = 0; i < t.length; i++) {
+      w = t[i].length;
+      pesoTotal += w;
+      if (textoFull.indexOf(t[i]) > -1) { hits++; pesoHit += w; }
+    }
+    if (t.length >= 2 && hits < 2) return 0;   /* un solo token nunca alcanza */
+    return pesoTotal ? (pesoHit / pesoTotal) : 0;
   }
 
   /**
@@ -5565,10 +5900,62 @@
   }
   function fechaEfectiva(f) { return fecha(porRuta(f, 'op.efectiva')); }
   function ownerNombre(f) { return may(porRuta(f, 'owner.nombre')); }
+  function ownerTitulo(f) { return may(porRuta(f, 'owner.titulo')) || 'OWNER'; }
   function agencia(f, k) { return porRuta(f, 'agencia.' + k); }
 
   /* --- estado del filing (suplementos que solo aplican a un estado) --- */
   function esPA(f) { return /\bPA\b/.test(norm(porRuta(f, 'op.estadoFiling'))); }
+
+  /* ===================== RONDA 2 (D1/D3/D7/D8/D11/D12) ===================== */
+
+  /* D1: la FECHA junto a una firma SI se autollena (la firma/inicial, nunca).
+     `meta.fechaBinder` la trae la FICHA (default hoy, editable por KAM); si el
+     campo aun no existe en el disco (otro agente en paralelo) se degrada a la
+     fecha de hoy en vez de reventar o dejar la fecha vacia. */
+  function fechaBinder(f) {
+    return fecha(porRuta(f, 'meta.fechaBinder')) || fechaMDY(new Date());
+  }
+
+  /* D11 — fecha de la tabla de accidentes/violaciones del MVR (NICO). Es un
+     dato "del momento del binder" que no vive en la FICHA (es del MVR que KAM
+     corrio, no del quote): campo manual en la UI de este motor (ver render()).
+     Si KAM no lo escribio, se degrada a `meta.fechaBinder`. */
+  function fechaMVR(f) {
+    var v = fecha((KAM.motorB && KAM.motorB._fechaMVR) || '');
+    return v || fechaBinder(f);
+  }
+
+  /* D8 — PRIME Payment Options: campos manuales del motor (no de la ficha).
+     `KAM.motorB._pagoPrime` lo llena la UI agregada en render() abajo. */
+  function pagoMetodo() {
+    var p = KAM.motorB && KAM.motorB._pagoPrime;
+    return (p && p.metodo) || 'Bank Wire';
+  }
+  function pagoVal(campo) {
+    var p = KAM.motorB && KAM.motorB._pagoPrime;
+    return limpio((p && p[campo]) || '');
+  }
+
+  /* D3: stacking universal. Default NON-STACKED (false) si el campo no viene
+     (ficha vieja) o no es exactamente `true`. */
+  function esStacked(f) { return porRuta(f, 'cob.stacking') === true; }
+
+  /* "Yes"/"Y"/"Si"/"True"/"1" -> true. Cualquier otra cosa ("No", "N/A", '',
+     undefined) -> false. A diferencia de `!!v` (que ya causaba un bug conocido
+     en XPT con op.hazmat==='No'), esto SI distingue el string "No" de vacio. */
+  function esSiTxt(v) { return /^(YES|Y|SI|S[ÍI]|TRUE|1)$/.test(norm(v)); }
+
+  /* D11 Q56 ("Do you barter, hire or lease any vehicles?"): Yes si algun
+     vehiculo o trailer de la ficha viene marcado como Leased. */
+  function hayLeasing(f) {
+    var arr = [], u = porRuta(f, 'units'), t = porRuta(f, 'trailers'), i;
+    if (u && typeof u.length === 'number') arr = arr.concat(u);
+    if (t && typeof t.length === 'number') arr = arr.concat(t);
+    for (i = 0; i < arr.length; i++) {
+      if (arr[i] && typeof arr[i] === 'object' && norm(arr[i].propiedad) === 'LEASED') return true;
+    }
+    return false;
+  }
 
   /* --- UM/UIM: espejo del quote. El RECHAZO nunca se autollena cuando el
      formulario lo ejerce por firma/iniciales; solo se escriben los limites
@@ -5869,18 +6256,44 @@
         ancla: 'UNINSURED MOTORIST COVERAGE', ancla2: 'PAGE 3 OF 5', fallback: 22,
         si: esPA,
         campos: [
+          /* D2/D1 — RECALIBRADO 2026-07 renderizando esta pagina del ejemplo
+             DILIGENCIADO (pdftoppm -r 150 + pdftotext -bbox: el texto SI
+             extrae en el A-101). Step A ("Reject UM Coverage") NO tiene
+             checkbox propio: se ejerce firmando la linea "X ___ / Date ___".
+             La firma NUNCA se autollena (regla dura); la FECHA de esa linea
+             SI (D1), cuando el ejemplo real la muestra escrita a maquina
+             (07/16/2026). Se pinta cuando UM no fue Accepted (Step A es la
+             rama que se firma en ese caso). */
+          { x: 446, y: 622, size: 9, et: 'Step A · fecha de rechazo UM',
+            si: function (f) { return porRuta(f, 'cob.um') !== 'Accepted'; }, valor: fechaBinder },
+
           /* Step B = limites de UM. Solo se escriben si UM fue ACEPTADO: el
              rechazo (Step A) en este formulario se ejerce UNICAMENTE FIRMANDO,
              no hay checkbox -> no se autollena (regla 6). */
           { x: 40, y: 483, size: 10, et: 'Step B · UM per person',
             si: umAceptado, valor: function (f) { return limUM(f, 0); } },
           { x: 296, y: 483, size: 10, et: 'Step B · UM each accident',
-            si: umAceptado, valor: function (f) { return limUM(f, 1); } }
-          /* TODO(PA supp pag 3): Step C stacking. Casillas calibradas
-             (Purchase x=74.5 y=274.5 · Rejection x=74.5 y=251.5, size 9) pero
-             la FICHA no tiene campo de stacking -> no se marca ninguna hasta
-             que se agregue `cob.umStacking`. No se inventa la eleccion.
-             Step A (rechazo UM): solo por firma -> jamas se autollena. */
+            si: umAceptado, valor: function (f) { return limUM(f, 1); } },
+          /* D1: fecha de la linea de firma de Step B, solo si se llego a
+             elegir/firmar ese paso (UM aceptado con limite). */
+          { x: 455, y: 450, size: 9, et: 'Step B · fecha de eleccion UM',
+            si: umAceptado, valor: fechaBinder },
+
+          /* D2/D3 — Step C: la agencia SIEMPRE marca stacking (rechazo o
+             compra), independiente de si UM se acepto o se rechazo en Step A
+             (verificado: en el ejemplo real Step A esta rechazado Y Step C
+             tambien viene firmado marcando "Rejection of Stacking"). Default
+             universal = non-stacked (`cob.stacking` false/ausente). Casillas
+             verificadas por rectangulo vectorial (pdfplumber): Purchase
+             x=[152,171]px y=[1061,1081]px · Rejection x=[152,171]px
+             y=[1109,1129]px a 150dpi -> centro de "X" Helvetica size 9. */
+          { x: 74.5, y: 274.5, size: 9, check: true, id: 'pa-um-stack-si',
+            et: 'Step C · Purchase of Stacking', si: esStacked },
+          { x: 74.5, y: 251.5, size: 9, check: true, id: 'pa-um-stack-no',
+            et: 'Step C · Rejection of Stacking (default non-stacked)',
+            si: function (f) { return !esStacked(f); } },
+          { x: 446, y: 152, size: 9, et: 'Step C · fecha de stacking',
+            valor: fechaBinder }
         ]
       },
       {
@@ -5888,15 +6301,32 @@
         ancla: 'UNDERINSURED MOTORIST COVERAGE', ancla2: 'PAGE 4 OF 5', fallback: 23,
         si: esPA,
         campos: [
+          /* Mismo patron que la pagina UM (D2), calibrado por separado contra
+             el rendering real de esta pagina (el "Date" de Step A/C cae unos
+             puntos mas a la derecha que en la pagina de UM). */
+          { x: 455.5, y: 627, size: 9, et: 'Step A · fecha de rechazo UIM',
+            si: function (f) { return porRuta(f, 'cob.uim') !== 'Accepted'; }, valor: fechaBinder },
+
           { x: 40, y: 494.5, size: 10, et: 'Step B · UIM per person',
             si: uimAceptado, valor: function (f) { return limUM(f, 0); } },
           { x: 287, y: 494.5, size: 10, et: 'Step B · UIM each accident',
-            si: uimAceptado, valor: function (f) { return limUM(f, 1); } }
-          /* TODO(PA supp pag 4): Step C stacking (mismas coords que pag 3) —
-             pendiente `cob.uimStacking` en la FICHA.
-             TODO(PA supp pag 5, idx 24): "Increased Medical Benefit Amount"
-             ($10,000/$25,000/$50,000/$100,000) y "Optional First Party Benefit
-             Coverages" (Income Loss / Accidental Death / Funeral) sin calibrar. */
+            si: uimAceptado, valor: function (f) { return limUM(f, 1); } },
+          { x: 446, y: 462, size: 9, et: 'Step B · fecha de eleccion UIM',
+            si: uimAceptado, valor: fechaBinder },
+
+          { x: 74.5, y: 274.5, size: 9, check: true, id: 'pa-uim-stack-si',
+            et: 'Step C · Purchase of Stacking', si: esStacked },
+          { x: 74.5, y: 251.5, size: 9, check: true, id: 'pa-uim-stack-no',
+            et: 'Step C · Rejection of Stacking (default non-stacked)',
+            si: function (f) { return !esStacked(f); } },
+          { x: 455.5, y: 163, size: 9, et: 'Step C · fecha de stacking',
+            valor: fechaBinder }
+          /* D6 — pag 5 de 5 (idx 24, "Increased Medical Benefit Amount" /
+             "Optional First Party Benefit Coverages"): CONFIRMADO INTACTA
+             contra el ejemplo DILIGENCIADO (pdftoppm -r 150): las 4 casillas
+             de Increased Medical, las 11 de Optional/Combined Benefits y la
+             firma/fecha del pie quedan TODAS vacias — ni siquiera la agencia
+             las lleno. Decision (no TODO): esta pagina NO se toca. */
         ]
       }
     ]
@@ -6193,19 +6623,59 @@
                        } };
             })(i));
           }
+          /* D11 — tabla "Accidents and Minor Moving Traffic Violations" +
+             "Major convictions": columnas # Accidents | Date(s) | # Violations |
+             Date(s) | Describe conviction | Date(s). Verificado contra la hoja
+             de respuestas real (pdftoppm -r 150 + tesseract tsv sobre la fila
+             ya diligenciada: "0 | 2/12/2026 | 0 | 2/12/2026 | 0 | 2/12/2026").
+             Fila 0 en y=588, paso -23.8 (grid de lineas horizontales medido
+             con pdfplumber: 162.25/186.25/209.25/233.25/257.25/281.25).
+             Los conteos SI reflejan la ficha si trae dato; "0" es el default
+             (regla del ejemplo real), nunca vacio. La fecha usa `extra.fechaMVR`
+             (campo manual del motor, ver render()) o si no `meta.fechaBinder`. */
+          for (i = 0; i < 6; i++) {
+            out = out.concat((function (n) {
+              var yRow = 588 - n * 23.8;
+              var hay = function (f) { return !!filaDe(f, 'drivers', n); };
+              function cuenta(campo) {
+                return function (f) {
+                  var d = filaDe(f, 'drivers', n); if (!d) return '';
+                  var v = num(d[campo]);
+                  return (v === null) ? '0' : String(Math.max(0, Math.round(v)));
+                };
+              }
+              return [
+                { x: 180, y: yRow, size: 9, tipo: 'opcional', id: 'nico-acc-' + n,
+                  et: 'Driver ' + (n + 1) + ' · # Accidents (0 por defecto)', si: hay, valor: cuenta('accidentes') },
+                { x: 226, y: yRow, size: 9, tipo: 'opcional', id: 'nico-accf-' + n,
+                  et: 'Driver ' + (n + 1) + ' · fecha accidentes', si: hay, valor: fechaMVR },
+                { x: 279, y: yRow, size: 9, tipo: 'opcional', id: 'nico-vio-' + n,
+                  et: 'Driver ' + (n + 1) + ' · # Violations (0 por defecto)', si: hay, valor: cuenta('violaciones') },
+                { x: 324, y: yRow, size: 9, tipo: 'opcional', id: 'nico-viof-' + n,
+                  et: 'Driver ' + (n + 1) + ' · fecha violaciones', si: hay, valor: fechaMVR },
+                { x: 376, y: yRow, size: 9, tipo: 'opcional', id: 'nico-conv-' + n,
+                  et: 'Driver ' + (n + 1) + ' · Describe conviction (0 por defecto)', si: hay, valor: '0' },
+                { x: 500, y: yRow, size: 9, tipo: 'opcional', id: 'nico-convf-' + n,
+                  et: 'Driver ' + (n + 1) + ' · fecha conviction', si: hay, valor: fechaMVR }
+              ];
+            })(i));
+          }
+
+          /* D11 — Q32 "Are drivers covered by workers compensation?": default
+             No (casilla verificada por rectangulo vectorial x=[105.5,114.8]
+             y=[314.3,322.8]pt -> centro de X size 10 en x=107,y=470... la
+             conversion bottom-left da y=470). Juicio de underwriting ->
+             PRE-SUGERIDO (regla 6), no se pinta solo. */
+          out.push({ x: 107, y: 470, size: 10, check: true, confirmar: true, id: 'nico-q32',
+                     et: 'Q32 No · drivers NO cubiertos por workers comp (sugerido)' });
+
           return out;
         })()
-        /* TODO(NICO idx 2): la columna MVR "0/0/0" NO EXISTE en este formulario.
-           La tabla de drivers solo trae "# of Accidents | Date(s) | # of
-           Violations | Date(s) | Describe conviction | Date(s)" (verificado
-           tambien contra el paquete diligenciado). Falta decidir con KAM si el
-           "0/0/0" va en "# of Accidents" (x~181) y "# of Violations" (x~280) o
-           si simplemente no aplica a NICO. Hasta entonces no se escribe nada. */
       },
 
       /* ---- idx 3: Filings ---- */
       {
-        id: 'nico-filings', nombre: 'Filings (Q33-42)',
+        id: 'nico-filings', nombre: 'Filings (Q33-56)',
         ancla: 'FILINGS', fallback: 3,
         campos: [
           { x: 323, y: 612, size: 9, et: 'If yes, MC number',
@@ -6217,14 +6687,91 @@
              Helvetica size 10 mide 6.67 x 7.17, asi que se centra en (69, 612). */
           { x: 69, y: 612, size: 10, check: true, confirmar: true, id: 'nico-q33',
             et: 'Q33 Yes · sujeto a filing FHWA (sugerido)',
-            si: function (f) { return !!txt(porRuta(f, 'op.usdot')); } }
+            si: function (f) { return !!txt(porRuta(f, 'op.usdot')); } },
+
+          /* D11 — Q34 ("If you hold a broker's license, identify name filed
+             with FHWA, FHWA docket number, and receipts from brokerage
+             operations"): la hoja de respuestas real escribe "N/A" (owner-
+             operator sin licencia de broker). Renglon medido por pdfplumber
+             (linea x=[236.7,558.0] top=217.2 -> y=574.8 bottom-left). No es
+             juicio de underwriting (es un dato objetivo casi siempre N/A para
+             este perfil de cliente) -> se pinta directo, sin confirmar. */
+          { x: 239, y: 577, size: 9, et: 'Q34 · brokerage operations', valor: 'N/A' },
+
+          /* D11 — Q36-56: casillas Yes/No verificadas UNA A UNA con
+             rectangulos vectoriales (pdfplumber, no OCR: NICO no tiene
+             ToUnicode y el OCR de una tabla tan densa no es confiable).
+             Columna YES x=67.8pt, columna NO x=103.2pt (centro de X size 10:
+             +1.2/+0.7). Defaults D11: 36 No · 39 Yes (MCS-90) · 40 Yes (cubre
+             todos los vehiculos) · 41-56 No, salvo las que dependen de la
+             ficha (43 hazmat, 45/46 Canada/Mexico, 48 DBA/otro nombre, 56
+             leasing) que se leen de ella de forma defensiva. TODAS son
+             cumplimiento FMCSR / juicio de underwriting -> PRE-SUGERIDAS
+             (regla 6): naranja en la vista previa, KAM confirma. */
+          { x: 104, y: 552, size: 10, check: true, confirmar: true, id: 'nico-q36',
+            et: 'Q36 No · intrastate filing (sugerido)' },
+          { x: 69, y: 505, size: 10, check: true, confirmar: true, id: 'nico-q39',
+            et: 'Q39 Yes · MCS-90 endorsement needed (sugerido)' },
+          { x: 69, y: 493, size: 10, check: true, confirmar: true, id: 'nico-q40',
+            et: 'Q40 Yes · policy cubre todos los vehiculos (sugerido)' },
+          { x: 104, y: 469, size: 10, check: true, confirmar: true, id: 'nico-q41',
+            et: 'Q41 No · oversize/overweight (sugerido)' },
+          { x: 104, y: 457, size: 10, check: true, confirmar: true, id: 'nico-q42',
+            et: 'Q42 No · escort vehicles (sugerido)' },
+          { x: 69, y: 445, size: 10, check: true, confirmar: true, id: 'nico-q43y',
+            et: 'Q43 Yes · autoridad permite hazmat (sugerido)',
+            si: function (f) { return esSiTxt(porRuta(f, 'op.hazmat')); } },
+          { x: 104, y: 445, size: 10, check: true, confirmar: true, id: 'nico-q43n',
+            et: 'Q43 No · autoridad no permite hazmat (sugerido)',
+            si: function (f) { return !esSiTxt(porRuta(f, 'op.hazmat')); } },
+          { x: 104, y: 434, size: 10, check: true, confirmar: true, id: 'nico-q44',
+            et: 'Q44 No · terceros no transportan hazmat bajo su autoridad (sugerido)' },
+          { x: 69, y: 422, size: 10, check: true, confirmar: true, id: 'nico-q45y',
+            et: 'Q45 Yes · entra a Canada (sugerido)',
+            si: function (f) { return esSiTxt(porRuta(f, 'op.canada')); } },
+          { x: 104, y: 422, size: 10, check: true, confirmar: true, id: 'nico-q45n',
+            et: 'Q45 No · no entra a Canada (sugerido)',
+            si: function (f) { return !esSiTxt(porRuta(f, 'op.canada')); } },
+          { x: 69, y: 410, size: 10, check: true, confirmar: true, id: 'nico-q46y',
+            et: 'Q46 Yes · entra a Mexico (sugerido)',
+            si: function (f) { return esSiTxt(porRuta(f, 'op.mexico')); } },
+          { x: 104, y: 410, size: 10, check: true, confirmar: true, id: 'nico-q46n',
+            et: 'Q46 No · no entra a Mexico (sugerido)',
+            si: function (f) { return !esSiTxt(porRuta(f, 'op.mexico')); } },
+          { x: 104, y: 398, size: 10, check: true, confirmar: true, id: 'nico-q47',
+            et: 'Q47 No · no ha cambiado de nombre operativo (sugerido)' },
+          { x: 69, y: 386, size: 10, check: true, confirmar: true, id: 'nico-q48y',
+            et: 'Q48 Yes · opera bajo otro nombre/DBA (sugerido)',
+            si: function (f) { return !!limpio(porRuta(f, 'insured.dba')); } },
+          { x: 104, y: 386, size: 10, check: true, confirmar: true, id: 'nico-q48n',
+            et: 'Q48 No · no opera bajo otro nombre (sugerido)',
+            si: function (f) { return !limpio(porRuta(f, 'insured.dba')); } },
+          { x: 104, y: 374, size: 10, check: true, confirmar: true, id: 'nico-q49',
+            et: 'Q49 No · no es subsidiaria (sugerido)' },
+          { x: 104, y: 362, size: 10, check: true, confirmar: true, id: 'nico-q50',
+            et: 'Q50 No · no maneja otras operaciones sin cubrir (sugerido)' },
+          { x: 104, y: 339, size: 10, check: true, confirmar: true, id: 'nico-q51',
+            et: 'Q51 No · no arrienda su autoridad (sugerido)' },
+          { x: 104, y: 328, size: 10, check: true, confirmar: true, id: 'nico-q52',
+            et: 'Q52 No · no nombra agentes/contratistas independientes (sugerido)' },
+          { x: 104, y: 304, size: 10, check: true, confirmar: true, id: 'nico-q53',
+            et: 'Q53 No · sin acuerdos de intercambio con otros carriers (sugerido)' },
+          { x: 104, y: 268, size: 10, check: true, confirmar: true, id: 'nico-q54',
+            et: 'Q54 No · (aplica solo si Q53=Yes) (sugerido)' },
+          { x: 104, y: 233, size: 10, check: true, confirmar: true, id: 'nico-q55',
+            et: 'Q55 No · sin Hold Harmless en el acuerdo (sugerido)' },
+          { x: 69, y: 221, size: 10, check: true, confirmar: true, id: 'nico-q56y',
+            et: 'Q56 Yes · arrienda/subcontrata vehiculos (sugerido)', si: hayLeasing },
+          { x: 104, y: 221, size: 10, check: true, confirmar: true, id: 'nico-q56n',
+            et: 'Q56 No · no arrienda/subcontrata vehiculos (sugerido)',
+            si: function (f) { return !hayLeasing(f); } }
           /* TODO(NICO idx 3): "What authority" (Broker x=287 / Common x=340 /
-             Contract x=404, y=599) sin marcar: la FICHA guarda `op.autoridad`
-             en texto libre y no hay mapeo acordado -> se llena a mano. */
+             Contract x=404, y=599) sin marcar — fuera del alcance de esta
+             ronda (D4, asignado a otro ejecutor/otro archivo). */
         ]
       },
 
-      /* ---- idx 4: NEW MEXICO UM selection/rejection (M-5498) ---- */
+      /* ---- idx 4: NEW MEXICO UM selection/rejection (M-5498), pag 1 de 2 ---- */
       {
         id: 'nico-um', nombre: 'UM coverage selection / rejection (M-5498)',
         ancla: 'UNINSURED MOTORIST', fallback: 4,
@@ -6233,16 +6780,36 @@
             et: 'UM · I wish to purchase (espejo del quote)' },
           { x: 72, y: 165, size: 10, check: true,
             si: function (f) { return porRuta(f, 'cob.um') === 'Rejected'; },
-            et: 'UM · I wish to reject entirely (espejo del quote)' }
-          /* La firma que acompaña el rechazo va aparte: aqui solo la eleccion. */
+            et: 'UM · I wish to reject entirely (espejo del quote)' },
+          /* D1/D12 — la firma que acompaña la eleccion va aparte (SignNow);
+             la FECHA junto a ella SI se autollena (verificado en el ejemplo
+             real: "03/04/2026" impreso junto a la firma). Se pinta siempre
+             que haya una eleccion real de UM (Accepted o Rejected). */
+          { x: 442, y: 123, size: 9, et: 'Fecha de eleccion/rechazo UM',
+            si: function (f) { var v = porRuta(f, 'cob.um'); return v === 'Accepted' || v === 'Rejected'; },
+            valor: fechaBinder }
+        ]
+      },
+
+      /* ---- idx 5: NEW MEXICO NON-STACKING UM selection (M-5498, pag 2 de 2) */
+      {
+        id: 'nico-stacking', nombre: 'Non-Stacking UM selection (M-5498 pag 2)',
+        ancla: 'NON-STACKING UNINSURED MOTORIST', fallback: 5,
+        campos: [
+          /* D3/D12 — Casillas verificadas por rectangulo vectorial (pdfplumber):
+             Stacking x=[85,101]px y=[478,494]px · Non-Stacking x=[85,101]px
+             y=[528,544]px a 150dpi. Default universal = non-stacked. */
+          { x: 41.6, y: 555.5, size: 9, check: true, id: 'nico-stack-si',
+            et: 'Stacking · I wish to retain stacking', si: esStacked },
+          { x: 41.6, y: 531.5, size: 9, check: true, id: 'nico-stack-no',
+            et: 'Non-Stacking (default) · elect non-stacking', si: function (f) { return !esStacked(f); } },
+          { x: 440, y: 416, size: 9, et: 'Fecha de eleccion de stacking',
+            si: function (f) { return porRuta(f, 'cob.um') === 'Accepted' || porRuta(f, 'cob.um') === 'Rejected'; },
+            valor: fechaBinder }
         ]
       }
 
-      /* TODO(NICO idx 5): "NON-STACKING UNINSURED MOTORIST SELECTION".
-         Casillas calibradas (Stacking x=42 y=555 · Non-Stacking x=42 y=530,
-         size 10) pero la FICHA no tiene campo de stacking -> no se marca
-         ninguna. Agregar `cob.umStacking` y activar.
-         TODO(NICO idx 1): "License Type" del bloque de coberturas y los Q11-Q31
+      /* TODO(NICO idx 1): "License Type" del bloque de coberturas y los Q11-Q31
          de Operations quedan a mano (juicio de underwriting). */
     ]
   };
@@ -6311,21 +6878,47 @@
 
       /* ---- idx 3: ACA-F-017 Payment Options ---- */
       {
+        /* D8 — este documento es la UNICA excepcion documentada a "wire
+           confirmations nunca se autollenan": aqui NO se derivan de la ficha
+           ni se inventan, son CAMPOS MANUALES que KAM escribe en la UI de este
+           motor en el momento de armar el paquete de PRIME (ver render() /
+           KAM.motorB._pagoPrime mas abajo) — exactamente lo que el ejemplo
+           DILIGENCIADO muestra a maquina (metodo, numero de confirmacion de wire,
+           nombre de financiera y numero de contrato, todos tipeados por la
+           agencia al armar ESE binder). Metodo default = Bank Wire (el propio
+           formulario lo declara "the preferred method of payment" para
+           filings). Coordenadas verificadas con pdftotext -bbox sobre la
+           pagina 4 del ejemplo real. */
         id: 'aca-f-017', nombre: 'ACA-F-017 · Payment Options',
         ancla: 'PAYMENT OPTIONS', ancla2: 'PAYMENT METHOD', fallback: 3,
-        campos: []
-        /* TODO(PRIME idx 3) — coordenadas CALIBRADAS pero sin dato en la FICHA:
-             Bank Wire            x=119.5 y=676.0 size 9  (check)
-             ACH                  x=33.5  y=675.6 size 9  (check)
-             Credit Card          x=273.0 y=675.6 size 9  (check)
-             Premium Finance      x=384.8 y=675.6 size 9  (check)
-             Other Premium Finance x=30.4 y=205.8 size 9  (check)
-             Finance Company Name  x=136.19 y=183.78 size 11
-             Finance Contract #    x=142.21 y=155.49 size 11
-           La FICHA no tiene bloque `pago` -> no se marca ninguna opcion (marcar
-           el metodo de pago equivocado en un binder es peor que dejarlo vacio).
-           NUNCA: "Date Initiated", "Wire Confirmation Number", "Signature of
-           Authorization" ni su "Date" — dependen de finanzas. */
+        campos: [
+          { x: 119.5, y: 676.0, size: 9, check: true, id: 'prime-pago-bw',
+            et: 'Payment Method · Bank Wire (default)', si: function () { return pagoMetodo() === 'Bank Wire'; } },
+          { x: 33.5, y: 675.6, size: 9, check: true, id: 'prime-pago-ach',
+            et: 'Payment Method · ACH', si: function () { return pagoMetodo() === 'ACH'; } },
+          { x: 273.0, y: 675.6, size: 9, check: true, id: 'prime-pago-cc',
+            et: 'Payment Method · Credit Card', si: function () { return pagoMetodo() === 'Credit Card'; } },
+          { x: 384.8, y: 675.6, size: 9, check: true, id: 'prime-pago-pf',
+            et: 'Payment Method · Premium Finance', si: function () { return pagoMetodo() === 'Premium Finance'; } },
+
+          { x: 93, y: 400, size: 9, et: 'Bank Wire · Date Initiated',
+            si: function () { return pagoMetodo() === 'Bank Wire'; }, valor: fechaBinder },
+          { x: 422, y: 398, size: 9, tipo: 'opcional', et: 'Bank Wire · Wire Confirmation Number',
+            si: function () { return pagoMetodo() === 'Bank Wire'; }, valor: function () { return pagoVal('wire'); } },
+
+          { x: 30.4, y: 205.8, size: 9, check: true, id: 'prime-pago-otherpf',
+            et: 'Other Premium Finance',
+            si: function () { return pagoMetodo() === 'Premium Finance' && !!pagoVal('financiera'); } },
+          { x: 136.19, y: 183.78, size: 11, tipo: 'opcional', et: 'Finance Company Name',
+            si: function () { return pagoMetodo() === 'Premium Finance'; },
+            valor: function () { return may(pagoVal('financiera')); } },
+          { x: 142.21, y: 155.49, size: 11, tipo: 'opcional', et: 'Finance Contract #',
+            si: function () { return pagoMetodo() === 'Premium Finance'; },
+            valor: function () { return pagoVal('contrato'); } },
+
+          /* D1: fecha junto a "Signature of Authorization" — la firma, nunca. */
+          { x: 463, y: 113, size: 9, et: 'Signature of Authorization · Date', valor: fechaBinder }
+        ]
       },
 
       /* ---- idx 6: ACA-F-028 Coverage Request Form ---- */
@@ -6423,14 +7016,43 @@
             valor: function (f) { return may(agencia(f, 'agente')); } }
           /* NUNCA: las dos firmas ni sus "Date". */
         ]
+      },
+
+      /* ---- idx 15: UDA-F-107 Personal Guarantee (PGIA), pagina de firma ---- */
+      {
+        /* D7 — CONFIRMADO por el ejemplo DILIGENCIADO (pdftotext -bbox sobre
+           la pag. 16/22): print name, fecha y titulo van A MAQUINA junto a la
+           firma (nombre del dueño / fecha de armado / cargo, tipeados por la agencia
+           al armar ESE binder). Solo la
+           firma queda para SignNow. El PGIA sigue siendo un compromiso
+           PERSONAL del dueño (owner.nombre / owner.titulo, default 'OWNER'),
+           no de la razon social. */
+        id: 'prime-pgia-firma', nombre: 'UDA-F-107 · PGIA (firma, idx 15)',
+        ancla: 'JOB TITLE/CAPACITY OF SIGNOR', ancla2: 'PAGE 4 OF 4', fallback: 15,
+        campos: [
+          { x: 99, y: 279, size: 9, et: 'PGIA · Date', valor: fechaBinder },
+          { x: 319, y: 258, size: 9, w: 240, et: 'PGIA · Name of Responsible Party', valor: ownerNombre },
+          { x: 270, y: 200, size: 9, w: 240, et: 'PGIA · Job Title/Capacity of Signor', valor: ownerTitulo }
+          /* NUNCA: "Signature of Responsible Party". */
+        ]
+      },
+
+      /* ---- idx 20: ACA-F-036 Collateral Agreement, pagina de firma ---- */
+      {
+        /* D7 — mismo patron confirmado en la pag. 21/22 (pagina 5 de 5 del
+           Collateral): nombre del dueño + cargo en la misma linea de arriba, fecha
+           debajo de "Signature". */
+        id: 'prime-collateral-firma', nombre: 'ACA-F-036 · Collateral Agreement (firma, idx 20)',
+        ancla: 'COLLATERAL AGREEMENT', ancla2: 'PAGE 5 OF 5', fallback: 20,
+        campos: [
+          { x: 78, y: 623, size: 9, w: 190, et: "Collateral · Named Insured's Representative Name", valor: ownerNombre },
+          { x: 281, y: 621, size: 9, w: 100, et: 'Collateral · Title', valor: ownerTitulo },
+          { x: 101, y: 492, size: 9, et: 'Collateral · Date', valor: fechaBinder }
+          /* NUNCA: "Signature". */
+        ]
       }
 
-      /* TODO(PRIME) pendientes de calibrar / decidir:
-         - idx 12-15 UDA-F-107 (Personal Guarantee PGIA): print name x=319 y=257.95
-           y Title x=270 y=199.95 en idx 15 estan medidos, pero el PGIA es un
-           compromiso personal del dueño -> NO se autollena sin visto bueno.
-         - idx 16-20 ACA-F-036 (Collateral Agreement): print name x=78 y=624.95 y
-           Title x=281 y=622.95 en idx 20, misma razon.
+      /* TODO(PRIME) pendientes de calibrar / decidir (fuera de esta ronda):
          - Limite CSL, deducibles comp/coll y limites de cargo: en este paquete NO
            existen como campos llenables (vienen impresos). No autollenar.
          - Rechazo UM/UIM: la forma NO viene en este PDF; el paquete solo exige
@@ -6468,14 +7090,69 @@
       requiereSubida: true,
       receta: r,
       render: function (el, ficha) {
+        /* D8 (PRIME) / D11 (NICO): campos MANUALES del motor — no viven en la
+           FICHA porque son especificos de este documento y de este momento
+           del binder. Se llenan ANTES de subir el PDF (el overlay los lee al
+           previsualizar/generar). */
+        var extraHTML = '';
+        if (id === 'prime') {
+          if (!KAM.motorB._pagoPrime) {
+            KAM.motorB._pagoPrime = { metodo: 'Bank Wire', wire: '', financiera: '', contrato: '' };
+          }
+          extraHTML =
+            '<div class="hint">D8 · Payment Options (ACA-F-017): llena esto ANTES de subir el PDF. ' +
+            'Metodo default Bank Wire (el propio formulario lo declara preferido para filings).</div>' +
+            '<div class="frm">' +
+            '<label class="fld">Metodo de pago<select id="mbPagoMetodo_prime">' +
+            '<option value="Bank Wire">Bank Wire</option><option value="ACH">ACH</option>' +
+            '<option value="Credit Card">Credit Card</option><option value="Premium Finance">Premium Finance</option>' +
+            '</select></label>' +
+            '<label class="fld">Wire confirmation # (si aplica)<input type="text" id="mbPagoWire_prime"></label>' +
+            '<label class="fld">Financiera (si Premium Finance)<input type="text" id="mbPagoFinanciera_prime"></label>' +
+            '<label class="fld">Contrato financiera # (si aplica)<input type="text" id="mbPagoContrato_prime"></label>' +
+            '</div>';
+        } else if (id === 'nico') {
+          extraHTML =
+            '<div class="hint">D11 · Tabla de accidentes/violaciones del MVR: fecha a usar (si se deja vacio, ' +
+            'se usa la fecha del binder).</div>' +
+            '<div class="frm"><label class="fld">Fecha del MVR (MM/DD/YYYY, opcional)' +
+            '<input type="text" id="mbFechaMVR_nico" placeholder="MM/DD/YYYY"></label></div>';
+        }
         el.innerHTML =
           '<div class="panel"><div class="head">' + window.esc(r.nombre) + ' · subir paquete del MGA</div>' +
           '<div class="body">' +
           '<div class="hint">' + window.esc(r.nota || '') + '</div>' +
+          extraHTML +
           '<div class="frm"><label class="fld full">PDF del deal generado por ' + window.esc(r.nombre) +
           '<input type="file" accept="application/pdf" id="mbFile_' + id + '"></label></div>' +
           '<div id="mbPrev_' + id + '"></div>' +
           '</div></div>';
+        if (id === 'prime') {
+          var selMet = el.querySelector('#mbPagoMetodo_prime'),
+              inpWire = el.querySelector('#mbPagoWire_prime'),
+              inpFin = el.querySelector('#mbPagoFinanciera_prime'),
+              inpCon = el.querySelector('#mbPagoContrato_prime');
+          selMet.value = KAM.motorB._pagoPrime.metodo || 'Bank Wire';
+          inpWire.value = KAM.motorB._pagoPrime.wire || '';
+          inpFin.value = KAM.motorB._pagoPrime.financiera || '';
+          inpCon.value = KAM.motorB._pagoPrime.contrato || '';
+          var actualizarPago = function () {
+            KAM.motorB._pagoPrime = {
+              metodo: selMet.value || 'Bank Wire',
+              wire: inpWire.value || '',
+              financiera: inpFin.value || '',
+              contrato: inpCon.value || ''
+            };
+          };
+          selMet.onchange = actualizarPago;
+          inpWire.oninput = actualizarPago;
+          inpFin.oninput = actualizarPago;
+          inpCon.oninput = actualizarPago;
+        } else if (id === 'nico') {
+          var inpMVR = el.querySelector('#mbFechaMVR_nico');
+          inpMVR.value = KAM.motorB._fechaMVR || '';
+          inpMVR.oninput = function () { KAM.motorB._fechaMVR = inpMVR.value || ''; };
+        }
         var inp = el.querySelector('#mbFile_' + id);
         inp.onchange = function () {
           KAM.motorB._entrada = null;
@@ -6742,7 +7419,7 @@
   /* ---------- estado en memoria (PROHIBIDO localStorage) ------------------ */
   var estado = {
     treatyoak: { docs: {}, fechas: {}, fechaFirma: '', fmcsaConfirmado: false, fmcsaNombre: '' },
-    mtm: { docs: {}, fechas: {}, fechaFirma: '', targetPremium: '', grandTotal: '', teamDriving: false, vinsExcluidos: '' }
+    mtm: { docs: {}, fechas: {}, fechaFirma: '', targetPremium: '', grandTotal: '', teamDriving: false, vinsExcluidos: '', cuestionario: {} }
   };
 
   /* ---------- checklists de sumisión ------------------------------------- */
@@ -6823,30 +7500,60 @@
      VALIDACIONES
      ======================================================================= */
 
-  /** Validaciones de vencimiento de documentos (MVR y loss runs ≤ 30 días). */
+  /* -----------------------------------------------------------------------
+     A7 — vencimientos unificados por `extra`. Antes SOLO 'mvr' y 'lossruns'
+     podían recibir su fecha por `extra` (`extra.fechaMVR`, `extra.fechaLossRuns`);
+     el resto de documentos del checklist con `venceDias` dependía del `estado`
+     en memoria de la UI (`st.fechas[id]`), que se pierde si la página se
+     recarga. Ahora CUALQUIER documento del checklist acepta su fecha por
+     `extra`, con el mismo patrón ya usado para MVR/loss runs. Se admiten
+     3 formas (de mayor a menor prioridad), todas opcionales:
+       extra.fechaDocs = { mvr:'...', lossruns:'...', cdl:'...', ... }  (genérica, por id)
+       extra.fechaMVR / extra.fechaLossRuns                             (compat. con código previo)
+       extra['fecha' + Id-en-PascalCase]  (p.ej. extra.fechaCdl, extra.fechaSchedveh)
+     Si ninguna trae dato, se cae al estado en memoria de siempre. --------- */
+  var ALIAS_FECHA_EXTRA = { mvr: 'fechaMVR', lossruns: 'fechaLossRuns' };
+  function fechaExtraDoc(id, extra) {
+    extra = extra || {};
+    if (extra.fechaDocs && has(extra.fechaDocs, id) && _s(extra.fechaDocs[id]) !== '') return extra.fechaDocs[id];
+    var alias = ALIAS_FECHA_EXTRA[id];
+    if (alias && has(extra, alias) && _s(extra[alias]) !== '') return extra[alias];
+    var generico = 'fecha' + id.charAt(0).toUpperCase() + id.slice(1);
+    if (has(extra, generico) && _s(extra[generico]) !== '') return extra[generico];
+    return undefined;
+  }
+
+  /* Etiqueta corta legado para MVR/loss runs (mensajes ya probados/conocidos
+     por el equipo); cualquier documento nuevo con `venceDias` usa su propio
+     `d.txt` del checklist, en singular, para no inventar una conjugación. */
+  var ETIQUETA_VENC_LEGADO = { mvr: 'MVRs', lossruns: 'Loss runs' };
+
+  /** Validaciones de vencimiento de documentos: CUALQUIER doc del checklist
+      con `venceDias` (hoy sólo MVR y loss runs, a 30 días) se revisa igual. */
   function valVencimientos(mga, extra, out) {
-    var st = estado[mga], hoy = extra && extra.hoy;
-    var pares = [
-      { k: 'mvr', lbl: 'MVRs', pide: 'Vuelve a correr los MVR en el proveedor con la licencia y el estado de cada driver (están en la tabla de drivers de este paquete) y escribe aquí la fecha del reporte nuevo.' },
-      { k: 'lossruns', lbl: 'Loss runs', pide: 'Escríbele a la aseguradora anterior o al agente que lo tenía y pide loss runs "currently valued" al día de hoy; cuando lleguen, captura aquí la fecha de valuación.' }
-    ];
-    for (var i = 0; i < pares.length; i++) {
-      var k = pares[i].k, lbl = pares[i].lbl, pide = pares[i].pide;
-      var f = (extra && extra[k === 'mvr' ? 'fechaMVR' : 'fechaLossRuns']) || st.fechas[k];
-      var d = diasDesde(f, hoy);
-      if (d === null) {
+    var st = estado[mga], hoy = extra && extra.hoy, defs = CHECKLIST[mga], i;
+    for (i = 0; i < defs.length; i++) {
+      var d = defs[i];
+      if (!d.venceDias) continue;                 // este documento no vence
+      var legado = has(ETIQUETA_VENC_LEGADO, d.id);
+      var lbl = legado ? ETIQUETA_VENC_LEGADO[d.id] : d.txt;
+      var plural = legado ? 's' : '';              // "vencidos"/"vigentes" sólo en el legado probado
+      var fx = fechaExtraDoc(d.id, extra);
+      var f = (fx !== undefined && _s(fx) !== '') ? fx : st.fechas[d.id];
+      var dias = diasDesde(f, hoy);
+      if (dias === null) {
         out.push(chk(AMBAR, lbl + ': falta la fecha del documento',
-          'Sin la fecha no puedo saber si siguen vigentes; el MGA los acepta solo con 30 días o menos.',
-          'Mira la fecha impresa en el documento y escríbela en la columna "Fecha del documento" del checklist.'));
-      } else if (d > 30) {
-        out.push(chk(ROJO, lbl + ' vencidos (' + d + ' días de antigüedad)',
-          'Pasan de 30 días. El MGA devuelve la sumisión con documentos así.', pide));
-      } else if (d > 23) {
-        out.push(chk(AMBAR, lbl + ' por vencer (' + d + ' días de antigüedad)',
-          'Les quedan ' + (30 - d) + ' días antes de pasarse de los 30.',
+          'Sin la fecha no puedo saber si sigue vigente; el MGA lo acepta solo con ' + d.venceDias + ' días o menos.',
+          d.acc || 'Mira la fecha impresa en el documento y escríbela en la columna "Fecha del documento" del checklist.'));
+      } else if (dias > d.venceDias) {
+        out.push(chk(ROJO, lbl + ' vencido' + plural + ' (' + dias + ' días de antigüedad)',
+          'Pasa de ' + d.venceDias + ' días. El MGA devuelve la sumisión con documentos así.', d.acc || ''));
+      } else if (dias > d.venceDias - 7) {
+        out.push(chk(AMBAR, lbl + ' por vencer (' + dias + ' días de antigüedad)',
+          'Le quedan ' + (d.venceDias - dias) + ' días antes de pasarse de los ' + d.venceDias + '.',
           'Manda la sumisión esta semana. Si se te va a pasar, pide el documento nuevo desde ya.'));
       } else {
-        out.push(chk(VERDE, lbl + ' vigentes (' + d + ' días)', 'Dentro de los 30 días.', ''));
+        out.push(chk(VERDE, lbl + ' vigente' + plural + ' (' + dias + ' días)', 'Dentro de los ' + d.venceDias + ' días.', ''));
       }
     }
   }
@@ -6854,12 +7561,55 @@
   /* --- estados que EXIGEN la cobertura: si viene rechazada, es BLOQUEO ------ */
   var UM_OBLIG = { NJ: 1, IL: 1, VA: 1 };
   var MEDPAY_OBLIG = { PA: 1 };
-  /** Lista de estados de la ficha (filing + estados de operación), sin repetir. */
+
+  /* ---------------------------------------------------------------------
+     A1 — tabla nombre completo -> código de 2 letras (50 estados + DC).
+     Antes `estadosDe()` sólo reconocía tokens de 2 letras: una ficha con
+     "Pennsylvania" o "New Jersey" en vez del código nunca disparaba la
+     regla de UM/MedPay obligatorio por estado. "Nationwide" se expande a
+     la lista completa a propósito: si el filing es Nationwide, SÍ debe
+     disparar la regla en NJ/IL/VA (y PA para MedPay). ------------------ */
+  var NOMBRE_ESTADO_A_CODIGO = {
+    'ALABAMA': 'AL', 'ALASKA': 'AK', 'ARIZONA': 'AZ', 'ARKANSAS': 'AR', 'CALIFORNIA': 'CA',
+    'COLORADO': 'CO', 'CONNECTICUT': 'CT', 'DELAWARE': 'DE', 'DISTRICT OF COLUMBIA': 'DC',
+    'FLORIDA': 'FL', 'GEORGIA': 'GA', 'HAWAII': 'HI', 'IDAHO': 'ID', 'ILLINOIS': 'IL',
+    'INDIANA': 'IN', 'IOWA': 'IA', 'KANSAS': 'KS', 'KENTUCKY': 'KY', 'LOUISIANA': 'LA',
+    'MAINE': 'ME', 'MARYLAND': 'MD', 'MASSACHUSETTS': 'MA', 'MICHIGAN': 'MI', 'MINNESOTA': 'MN',
+    'MISSISSIPPI': 'MS', 'MISSOURI': 'MO', 'MONTANA': 'MT', 'NEBRASKA': 'NE', 'NEVADA': 'NV',
+    'NEW HAMPSHIRE': 'NH', 'NEW JERSEY': 'NJ', 'NEW MEXICO': 'NM', 'NEW YORK': 'NY',
+    'NORTH CAROLINA': 'NC', 'NORTH DAKOTA': 'ND', 'OHIO': 'OH', 'OKLAHOMA': 'OK', 'OREGON': 'OR',
+    'PENNSYLVANIA': 'PA', 'RHODE ISLAND': 'RI', 'SOUTH CAROLINA': 'SC', 'SOUTH DAKOTA': 'SD',
+    'TENNESSEE': 'TN', 'TEXAS': 'TX', 'UTAH': 'UT', 'VERMONT': 'VT', 'VIRGINIA': 'VA',
+    'WASHINGTON': 'WA', 'WEST VIRGINIA': 'WV', 'WISCONSIN': 'WI', 'WYOMING': 'WY'
+  };
+  var TODOS_CODIGOS_ESTADO = (function () {
+    var out = [], k;
+    for (k in NOMBRE_ESTADO_A_CODIGO) if (has(NOMBRE_ESTADO_A_CODIGO, k)) out.push(NOMBRE_ESTADO_A_CODIGO[k]);
+    return out;
+  })();
+
+  /** Lista de estados de la ficha (filing + estados de operación), sin repetir.
+      Acepta código de 2 letras ("NJ"), nombre completo ("New Jersey") y
+      "Nationwide" (se expande a los 50 + DC). Basura ("N/A", "", null, texto
+      sin sentido) se ignora en silencio: nunca dispara un falso positivo. */
   function estadosDe(op) {
-    var txt = up(op.estadoFiling) + ',' + up(op.estados);
-    var partes = txt.split(/[^A-Z]+/), vistos = {}, out = [], i;
-    for (i = 0; i < partes.length; i++) {
-      if (partes[i].length === 2 && !has(vistos, '#' + partes[i])) { vistos['#' + partes[i]] = 1; out.push(partes[i]); }
+    op = op || {};
+    var crudo = _s(op.estadoFiling) + ',' + _s(op.estados);
+    var vistos = {}, out = [], piezas, palabras, i, j, p;
+    function agregar(cod) {
+      if (cod && cod.length === 2 && !has(vistos, '#' + cod)) { vistos['#' + cod] = 1; out.push(cod); }
+    }
+    function agregarTodos() { for (var k = 0; k < TODOS_CODIGOS_ESTADO.length; k++) agregar(TODOS_CODIGOS_ESTADO[k]); }
+    piezas = up(crudo).split(/[,;/|]+/);
+    for (i = 0; i < piezas.length; i++) {
+      p = _s(piezas[i]).replace(/[^A-Z ]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (!p) continue;
+      if (/^NATION\s*WIDE$|^ALL STATES$|^ALL 50 STATES$/.test(p)) { agregarTodos(); continue; }
+      if (has(NOMBRE_ESTADO_A_CODIGO, p)) { agregar(NOMBRE_ESTADO_A_CODIGO[p]); continue; }
+      if (/^[A-Z]{2}$/.test(p)) { agregar(p); continue; }
+      // pieza compuesta sin coma (p.ej. "TX NJ IL"): probar palabra por palabra
+      palabras = p.split(' ');
+      for (j = 0; j < palabras.length; j++) { if (/^[A-Z]{2}$/.test(palabras[j])) agregar(palabras[j]); }
     }
     return out;
   }
@@ -7068,6 +7818,60 @@
   }
 
   /* ---------------------------- MTM -------------------------------------- */
+
+  /* -----------------------------------------------------------------------
+     D10 — CUESTIONARIO MTM: defaults calibrados contra el ejemplo REAL
+     diligenciado (BINDER APP - MTM - DILIGENCIADA.pdf, pág. 1). Motor C es
+     un asistente de sumisión, no autollena un PDF: estos son valores
+     SUGERIDOS/PRECOMPLETADOS en el paquete de datos, siempre overridables
+     por el operador antes de copiarlos al portal. --------------------------
+     Subsidiaries No · ¿otro nombre/DOT? No · cancelado/no renovado No ·
+     non-trucking No · team drivers No · Canadá/México No ·
+     "Do drivers complete employment applications" Yes (confirmado) ·
+     Required Filings = Federal si hay MC # · Carrier Type = Common si tiene
+     MC propio (misma lógica que D4/"Common" en NICO) · Form of Business =
+     Corporation si la ficha trae una LLC (D9, confirmado con evidencia real:
+     DAT TRANSPORT LLC se marcó Corporation en el ejemplo). */
+  /** D9: una LLC se marca "Corporation" en la aplicación MTM (no existe
+      casilla LLC en su formulario). El resto de entidades mapea 1:1. */
+  function formaNegocioMTM(entidadTxt) {
+    var e = up(entidadTxt).replace(/[^A-Z ]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (/LLC|LIMITED LIABILITY/.test(e)) return 'Corporation';
+    if (/CORP|\bINC\b/.test(e)) return 'Corporation';
+    if (/PARTNER/.test(e)) return 'Partnership';
+    if (/JOINT/.test(e)) return 'Joint Venture';
+    if (/SOLE|INDIVIDUAL|PROPRIET/.test(e)) return 'Individual';
+    return e ? 'Other' : 'Corporation';   // sin entidad capturada: default histórico de la agencia
+  }
+  function mtmDefaults(ficha) {
+    ficha = normFicha(ficha);
+    var op = ficha.op || {}, ins = ficha.insured || {};
+    var mcNum = _s(op.mc).replace(/[^0-9]/g, '');
+    return {
+      subsidiaries: 'No',
+      otroNombreODot: 'No',
+      canceladoNoRenovado: 'No',
+      nonTrucking: 'No',
+      teamDrivers: 'No',
+      canadaMexico: 'No',
+      employmentApplications: 'Yes',                        // confirmado con evidencia real
+      requiredFilings: mcNum ? 'Federal' : FALTA_C,          // Federal si hay MC #
+      carrierType: mcNum ? 'Common' : FALTA_C,               // MC propio => Common (D4/NICO)
+      formOfBusiness: formaNegocioMTM(ins.entidad)           // LLC => Corporation (D9)
+    };
+  }
+  /** Mezcla los valores capturados en pantalla (o en `extra`) con los
+      defaults de D10: cualquier campo vacío/ausente cae al default. */
+  function normQ(x, base) {
+    x = (x && typeof x === 'object') ? x : {};
+    var out = {}, k;
+    for (k in base) {
+      if (!has(base, k)) continue;
+      out[k] = (has(x, k) && x[k] !== undefined && x[k] !== null && _s(x[k]) !== '') ? x[k] : base[k];
+    }
+    return out;
+  }
+
   function validarMTM(ficha, extra) {
     ficha = normFicha(ficha); extra = extra || {};
     var st = estado.mtm, out = [], i;
@@ -7499,12 +8303,13 @@
   function blqChecklist(mga, extra) {
     extra = extra || {};
     var defs = CHECKLIST[mga], st = estado[mga], filas = [], i;
-    // Las fechas que llegan por `extra` mandan sobre el estado de la UI: si no,
-    // el semáforo decía "vencido" y el checklist del mismo paquete decía "N/A".
-    var ovr = { mvr: extra.fechaMVR, lossruns: extra.fechaLossRuns };
+    // A7: las fechas que llegan por `extra` (CUALQUIER documento, no sólo MVR/loss
+    // runs) mandan sobre el estado de la UI: si no, el semáforo decía "vencido" y
+    // el checklist del mismo paquete decía "N/A".
     for (i = 0; i < defs.length; i++) {
       var d = defs[i], marcado = !!st.docs[d.id];
-      var f = (has(ovr, d.id) && _s(ovr[d.id]) !== '') ? ovr[d.id] : (st.fechas[d.id] || '');
+      var fx = fechaExtraDoc(d.id, extra);
+      var f = (fx !== undefined && _s(fx) !== '') ? fx : (st.fechas[d.id] || '');
       var venc = marcado ? 'LISTO' : FALTA_C;
       if (d.venceDias) {
         var dd = diasDesde(f, extra.hoy);
@@ -7610,6 +8415,21 @@
       var tp = (extra.targetPremium !== undefined && extra.targetPremium !== '') ? extra.targetPremium : estado.mtm.targetPremium;
       var gt = (extra.grandTotal !== undefined && extra.grandTotal !== '') ? extra.grandTotal : estado.mtm.grandTotal;
       if (gt === '' || gt === undefined || gt === null) gt = (ficha.fin || {}).prima;
+
+      var cuestionario = normQ(extra.cuestionarioMTM, mtmDefaults(ficha));
+      b = kv([
+        ['Subsidiaries?', cuestionario.subsidiaries],
+        ['¿Opera bajo otro nombre / DOT#?', cuestionario.otroNombreODot],
+        ['¿Cancelado / no renovado (3 años)?', cuestionario.canceladoNoRenovado],
+        ['Non-trucking use?', cuestionario.nonTrucking],
+        ['¿Team drivers?', cuestionario.teamDrivers],
+        ['¿Opera en Canadá / México?', cuestionario.canadaMexico],
+        ['¿Drivers llenan employment applications?', cuestionario.employmentApplications],
+        ['Required Filings', cuestionario.requiredFilings],
+        ['Carrier Type', cuestionario.carrierType],
+        ['Form of Business', cuestionario.formOfBusiness]
+      ]);
+      bloques.push(sec('0 · Cuestionario MTM — valores sugeridos (D10, confirma/edita antes de copiar)', b.h, b.t));
 
       b = blqInsured(ficha); bloques.push(sec('1 · Policy Details / Applicant ("N/A" explícito, nunca vacío)', b.h, b.t));
       b = kv([
@@ -7721,14 +8541,30 @@
       el = byId('mc-mtm-grand'); if (el) st.grandTotal = el.value;
       el = byId('mc-mtm-team'); if (el) st.teamDriving = !!el.checked;
       el = byId('mc-mtm-vinsexc'); if (el) st.vinsExcluidos = el.value;
+      // D10: cuestionario MTM (defaults sugeridos, todos overridables)
+      st.cuestionario = st.cuestionario || {};
+      var qmap = {
+        subsidiaries: 'subsidiaries', otronombre: 'otroNombreODot', cancelado: 'canceladoNoRenovado',
+        nontrucking: 'nonTrucking', teamdrivers: 'teamDrivers', canadamexico: 'canadaMexico',
+        empapp: 'employmentApplications', filings: 'requiredFilings', carriertype: 'carrierType',
+        formnegocio: 'formOfBusiness'
+      };
+      for (var qk in qmap) {
+        if (!has(qmap, qk)) continue;
+        el = byId('mc-mtm-q-' + qk);
+        if (el) st.cuestionario[qmap[qk]] = el.value;
+      }
     }
-    // Las fechas de MVR y loss runs alimentan las validaciones de vencimiento.
+    // Las fechas de MVR y loss runs alimentan las validaciones de vencimiento
+    // (fechaDocs generaliza a CUALQUIER documento del checklist — A7).
     return {
       hoy: null, fechaFirma: st.fechaFirma,
       fmcsaConfirmado: st.fmcsaConfirmado, fmcsaNombre: st.fmcsaNombre,
       fechaMVR: st.fechas.mvr, fechaLossRuns: st.fechas.lossruns,
+      fechaDocs: st.fechas,
       targetPremium: st.targetPremium, grandTotal: st.grandTotal,
-      teamDriving: st.teamDriving, vinsExcluidos: st.vinsExcluidos
+      teamDriving: st.teamDriving, vinsExcluidos: st.vinsExcluidos,
+      cuestionarioMTM: st.cuestionario
     };
   }
 
@@ -7793,6 +8629,27 @@
         '<tr><th>VINs excluidos (→ MTM010)</th><td><input id="mc-mtm-vinsexc" type="text" value="' + ESC(st.vinsExcluidos || '') + '" placeholder="VIN1, VIN2 …"></td></tr>' +
         '<tr><th>¿Hay team driving?</th><td><input type="checkbox" id="mc-mtm-team"' + (st.teamDriving ? ' checked' : '') + '> sí (MTM lo EXCLUYE)</td></tr>' +
         '</table></div></div>';
+
+      // D10: cuestionario MTM — defaults sugeridos, todos overridables.
+      var qd = normQ(st.cuestionario, mtmDefaults(ficha));
+      function filaYN(id, label, val) {
+        return '<tr><th>' + ESC(label) + '</th><td><select id="' + id + '">' +
+          '<option value="No"' + (val === 'No' ? ' selected' : '') + '>No</option>' +
+          '<option value="Yes"' + (val === 'Yes' ? ' selected' : '') + '>Yes</option>' +
+          '</select></td></tr>';
+      }
+      h += '<div class="sec"><h2><span class="ttl">Cuestionario MTM — valores sugeridos (D10)</span></h2><div><table class="frmt">' +
+        filaYN('mc-mtm-q-subsidiaries', 'Subsidiaries?', qd.subsidiaries) +
+        filaYN('mc-mtm-q-otronombre', '¿Opera bajo otro nombre / DOT#?', qd.otroNombreODot) +
+        filaYN('mc-mtm-q-cancelado', '¿Cancelado / no renovado (3 años)?', qd.canceladoNoRenovado) +
+        filaYN('mc-mtm-q-nontrucking', 'Non-trucking use?', qd.nonTrucking) +
+        filaYN('mc-mtm-q-teamdrivers', '¿Team drivers?', qd.teamDrivers) +
+        filaYN('mc-mtm-q-canadamexico', '¿Opera en Canadá / México?', qd.canadaMexico) +
+        filaYN('mc-mtm-q-empapp', '¿Drivers llenan employment applications?', qd.employmentApplications) +
+        '<tr><th>Required Filings</th><td><input type="text" id="mc-mtm-q-filings" value="' + ESC(qd.requiredFilings) + '"></td></tr>' +
+        '<tr><th>Carrier Type</th><td><input type="text" id="mc-mtm-q-carriertype" value="' + ESC(qd.carrierType) + '"></td></tr>' +
+        '<tr><th>Form of Business</th><td><input type="text" id="mc-mtm-q-formnegocio" value="' + ESC(qd.formOfBusiness) + '"></td></tr>' +
+        '</table><p class="mot">Defaults calibrados contra el ejemplo diligenciado real (D10). Confirma o edita antes de copiar al portal.</p></div></div>';
     }
 
     // Fecha de firma: SIEMPRE a mano. Nunca se autollena.
@@ -7845,6 +8702,7 @@
     checklist: CHECKLIST.mtm,
     avisosCliente: AVISOS_CLIENTE.mtm,
     pendiente: PENDIENTES.mtm,
+    defaults: mtmDefaults,             // D10: defaults del cuestionario MTM, overridables
     validar: function (ficha, extra) { return validarMTM(ficha, extra); },
     render: function (el, ficha) { renderAsistente('mtm', el, ficha); },
     generar: function (ficha, extra) { return generarSeguro('mtm', ficha, extra); }
@@ -7856,13 +8714,14 @@
   // TODO: parametrizar rechazos UM/UIM/MedPay/PIP por estado (NJ/IL/VA/PA) en el bloque de coberturas.
   // TODO(endurecimiento): `Reefer %` sin dato se imprime como "0%" (asume que no hay reefer).
   //       Confirmar con KAM si prefiere que salga FALTA como los demás porcentajes.
-  // TODO(endurecimiento): `estadosDe()` solo reconoce códigos de 2 letras; "N/A" o
-  //       "Nationwide" no producen estados, así que la regla UM obligatoria (NJ/IL/VA)
-  //       no se dispara. Está del lado seguro (no bloquea de más) pero puede pasar por alto
-  //       un caso real: falta la lista canónica de estados para validar de verdad.
-  // TODO(endurecimiento): las validaciones de vencimiento de MVR / loss runs solo miran
-  //       las dos fechas que llega por `extra`; el resto de documentos del checklist con
-  //       `venceDias` usa la fecha del estado en memoria. Unificar cuando la UI capture todas.
+  // RESUELTO (A1, ronda 2): `estadosDe()` ahora reconoce nombre completo del estado
+  //       ("Pennsylvania", "New Jersey") vía NOMBRE_ESTADO_A_CODIGO y expande "Nationwide"
+  //       a los 50 + DC, además de códigos de 2 letras. Basura ("N/A", "") se ignora sin
+  //       falso positivo. Ver pruebas en /tmp — no se rediseñó la política de negocio.
+  // RESUELTO (A7, ronda 2): los vencimientos de CUALQUIER documento del checklist (no sólo
+  //       MVR/loss runs) ahora aceptan su fecha por `extra` (`fechaExtraDoc()`), con el mismo
+  //       patrón que ya usaba `extra.fechaMVR`/`extra.fechaLossRuns`. Sigue cayendo al estado
+  //       en memoria de la UI si `extra` no trae nada.
   // TODO(endurecimiento): no hay verificación real contra FMCSA/SAFER (no hay red en el
   //       contenedor y no hay API contratada). El name-match sigue siendo confirmación manual de KAM.
   // NOTA: las firmas, iniciales y fechas de firma NUNCA se autollenan (regla inviolable):

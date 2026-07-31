@@ -38,6 +38,8 @@
   .puesto{width:80px;height:92px;border:2px solid var(--teal);border-radius:10px;background:var(--menta2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;transition:.15s}
   .puesto.vent{border-color:var(--teal2);background:var(--menta)}
   .puesto .num{position:absolute;top:3px;left:6px;font-size:9px;font-weight:700;font-family:Montserrat,sans-serif;color:var(--teal2)}
+  .quitar-btn{position:absolute;top:2px;right:4px;width:17px;height:17px;border-radius:50%;border:none;background:#c0392b;color:#fff;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;z-index:2}
+  .quitar-btn:hover{background:#a93226}
   .puesto.dragover{background:#fff;border-style:dashed;transform:scale(1.05)}
   .puesto.locked{opacity:.55;cursor:not-allowed}
   .puesto.editable{cursor:pointer}
@@ -207,7 +209,7 @@ function render(){
   document.getElementById('hintBox').textContent = puedoEditar
     ? (seleccionado
         ? 'Foto seleccionada: toca el puesto (o "banca") donde quieres ponerla.'
-        : 'Toca una foto para seleccionarla y luego toca el puesto donde quieres ponerla. Los cambios se guardan al instante y quedan en el historial.')
+        : 'Toca una foto para seleccionarla y luego toca el puesto donde quieres ponerla. Para quitar a alguien de un puesto, toca la ✕ roja de su foto. Los cambios se guardan al instante y quedan en el historial.')
     : 'Modo solo consulta. Si necesitas mover a alguien, pídeselo a Brahiam.';
 }
 
@@ -216,8 +218,17 @@ function personEl(cid){
   const w = document.createElement('div');
   w.className = 'pwrap' + (seleccionado===cid ? ' seleccionado' : ''); w.dataset.cid = cid;
   w.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px';
-  w.innerHTML = `<img class="avatar" src="${c.foto}"><span class="pname">${c.nombre}</span>`;
-  if(puedoEditar) w.addEventListener('click', ev=>{ ev.stopPropagation(); seleccionar(cid); });
+  w.innerHTML = `<img class="avatar" src="${c.foto}"><span class="pname">${c.nombre}</span>` +
+    (puedoEditar ? `<button type="button" class="quitar-btn" title="Quitar del puesto">&#10005;</button>` : '');
+  if(puedoEditar){
+    w.addEventListener('click', ev=>{ ev.stopPropagation(); seleccionar(cid); });
+    const btn = w.querySelector('.quitar-btn');
+    if(btn) btn.addEventListener('click', async ev=>{
+      ev.stopPropagation();
+      if(seleccionado === cid) seleccionado = null;
+      await moverA(cid, null);
+    });
+  }
   return w;
 }
 function mkChip(cid){

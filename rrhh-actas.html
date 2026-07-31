@@ -76,6 +76,8 @@
   .hoja .img-placeholder{border:1.5px dashed #b9c6c3;border-radius:8px;padding:26px;text-align:center;color:#8a989a;font-size:12.5px;margin:10px 0 14px;}
   .hoja .constancia{background:#F2F8F5;border-radius:8px;padding:16px 20px;margin-top:26px;}
   .hoja .constancia .ct{font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.12em;color:#229A82;text-transform:uppercase;margin-bottom:8px;}
+  .hoja .firma-2col{display:flex;gap:40px;margin-top:40px;}
+  .hoja .firma-2col>div{flex:1;}
 
   .ov{position:fixed;inset:0;z-index:90;background:rgba(0,30,38,.6);display:flex;align-items:center;justify-content:center;padding:18px;}
   .ov .card-l{background:#fff;border-radius:18px;padding:34px 30px;width:380px;max-width:94vw;box-shadow:0 30px 80px -25px rgba(0,0,0,.55);}
@@ -126,8 +128,18 @@
       <div class="f">
         <label>Formato *</label>
         <select id="fFormato">
-          <option value="llamado">Llamado de Atención</option>
-          <option value="compromiso">Compromiso de Cumplimiento de Metas</option>
+          <optgroup label="Disciplinarias">
+            <option value="llamado">Llamado de Atención</option>
+            <option value="compromiso">Compromiso de Cumplimiento de Metas</option>
+          </optgroup>
+          <optgroup label="Vinculación">
+            <option value="contrato">Contrato a Término Indefinido</option>
+            <option value="anexo">Anexo de Funciones</option>
+            <option value="politica">Política de Recursos Tecnológicos</option>
+          </optgroup>
+          <optgroup label="Certificados">
+            <option value="carta">Carta Laboral</option>
+          </optgroup>
         </select>
       </div>
       <div class="f">
@@ -197,6 +209,27 @@
         </div>
       </div>
 
+      <!-- Campos CONTRATO -->
+      <div id="grpContrato" style="display:none">
+        <div class="f"><label>Salario básico mensual</label><input type="number" id="fSalarioContrato" placeholder="Ej: 2500000"></div>
+        <div class="f"><label>Auxilio de transporte 2026</label><input type="number" id="fAuxContrato" value="249095"></div>
+        <div class="f" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="chkGuardarSalarioContrato" style="width:auto"><label style="text-transform:none;font-weight:400">Guardar este salario en la ficha del colaborador</label></div>
+      </div>
+      <!-- Campos ANEXO -->
+      <div id="grpAnexo" style="display:none">
+        <div class="f"><label>Estándar de funciones</label><select id="fEstandar"></select></div>
+      </div>
+      <!-- Campos POLITICA -->
+      <div id="grpPolitica" style="display:none"></div>
+      <!-- Campos CARTA -->
+      <div id="grpCarta" style="display:none">
+        <div class="f"><label>Fecha de ingreso</label><input type="date" id="fFechaIngresoCarta"></div>
+        <div class="f"><label>Salario mensual</label><input type="number" id="fSalarioCarta" placeholder="Ej: 2500000"></div>
+        <div class="f"><label>Promedio mensual de comisiones (si aplica)</label><input type="number" id="fComisionesCarta" value="0"></div>
+        <div class="f" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="chkGuardarFichaCarta" style="width:auto"><label style="text-transform:none;font-weight:400">Guardar salario y fecha de ingreso en la ficha del colaborador</label></div>
+      </div>
+      <div id="avisoTipo" class="datos" style="display:none;background:#fff7e0;border-color:#e8c468;color:#7a5b12;font-weight:600">⚠ Este colaborador está marcado como <b>Prestación de servicios</b>. Verifica si este formato aplica antes de generarlo.</div>
+
       <button class="btn" id="btnPrintReg">🖨️ Imprimir y registrar</button>
       <button class="btn sec" id="btnPrint">Solo imprimir (sin registrar)</button>
     </div>
@@ -256,6 +289,42 @@ function toast(t){var el=$('toast');el.textContent=t;el.style.display='block';se
 function msg(t,cls){var m=$('msg');if(m){m.textContent=t||'';m.className='msg '+(cls||'');}}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function nl2p(s){return s.split(/\n+/).filter(Boolean).map(function(x){return '<p>'+esc(x)+'</p>';}).join('');}
+function money(n){return '$'+Number(n||0).toLocaleString('es-CO');}
+var UNIDADES=['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE','VEINTE'];
+var DECENAS=['','','VEINTI','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
+var CENTENAS=['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
+function centenasALetras(n){
+  if(n===100)return 'CIEN';
+  var c=Math.floor(n/100),r=n%100,s='';
+  if(c>0)s+=CENTENAS[c];
+  if(r>0){
+    if(s)s+=' ';
+    if(r<20)s+=UNIDADES[r];
+    else if(r<30){
+      var especiales={1:'VEINTIÚN',2:'VEINTIDÓS',3:'VEINTITRÉS',6:'VEINTISÉIS'};
+      var u2=r-20;
+      s+=especiales[u2]||('VEINTI'+UNIDADES[u2]);
+    }else{
+      var d=Math.floor(r/10),u=r%10;
+      s+=DECENAS[d]+(u>0?' Y '+UNIDADES[u]:'');
+    }
+  }
+  return s.trim();
+}
+function pesosALetras(n){
+  n=Math.round(Number(n||0));
+  if(n===0)return 'CERO PESOS';
+  var mill=Math.floor(n/1000000), miles=Math.floor((n%1000000)/1000), resto=n%1000;
+  var partes=[];
+  if(mill>0)partes.push((mill===1?'UN MILLÓN':centenasALetras(mill)+' MILLONES'));
+  if(miles>0)partes.push((miles===1?'MIL':centenasALetras(miles)+' MIL'));
+  if(resto>0)partes.push(centenasALetras(resto));
+  return partes.join(' ').trim()+' PESOS';
+}
+function firmaDosColumnas(){
+  var c=cola();
+  return '<div class="firma-2col"><div><p>Empleador,</p><br><br><p style="margin-bottom:2px"><b>PROTECT GO SERVICES S.A.S</b></p><p style="margin-bottom:2px">Representada legalmente por</p><p style="margin-bottom:2px">'+FIRMANTE.nombre+'</p><p>CC. '+FIRMANTE.cc+'</p></div><div><p>Empleado,</p><br><br><p style="margin-bottom:2px"><b>'+esc(c?c.nombre:'____________')+'</b></p><p>C.C. '+esc(c&&c.cedula?c.cedula:'____________')+'</p></div></div>';
+}
 var MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 function fechaLarga(iso){
   if(!iso)return '____________';
@@ -350,6 +419,361 @@ function renderCompromiso(){
   h+=pieHoja();
   return h;
 }
+
+// ===== Contrato / Anexo / Política / Carta =====
+function renderContrato(){
+  var c = cola();
+  var nombre = c && c.nombre ? c.nombre : '________________________';
+  var cedula = c && c.cedula ? c.cedula : '________________________';
+  var salario = ($('fSalarioContrato') && $('fSalarioContrato').value) ? $('fSalarioContrato').value : 0;
+  var aux = ($('fAuxContrato') && $('fAuxContrato').value) ? $('fAuxContrato').value : 249095;
+  var fecha = $('fFecha') ? $('fFecha').value : '';
+  var h = '';
+  h += membrete();
+  h += '<div class="titulo-doc">CONTRATO INDIVIDUAL DE TRABAJO A TÉRMINO INDEFINIDO ENTRE PROTECT GO SERVICES S.A.S Y '+esc(nombre).toUpperCase()+'</div>';
+
+  h += '<div style="display:flex;gap:40px;margin:20px 0 30px 0;">'
+    + '<div><p style="margin-bottom:2px"><b>PROTECT GO SERVICES S.A.S</b></p>'
+    + '<p style="margin-bottom:2px">NIT. 901.633.503-8</p>'
+    + '<p style="margin-bottom:2px">Representada legalmente por</p>'
+    + '<p style="margin-bottom:2px">JORGE ANDRES LOPEZ LOPEZ</p>'
+    + '<p>(En adelante, "Empleador")</p></div>'
+    + '<div><p style="margin-bottom:2px"><b>'+esc(nombre)+'</b></p>'
+    + '<p style="margin-bottom:2px">'+esc(cedula)+'</p>'
+    + '<p>(En adelante, "Empleado")</p></div>'
+    + '</div>';
+
+  h += '<p>El "Empleador" y el "Empleado", en adelante se denominarán en su conjunto las "Partes" y cada uno como una "Parte".</p>';
+  h += '<p>Este Contrato, está regido por las cláusulas que a continuación se establecen y en lo no dispuesto en ellas, por las normas laborales vigentes y demás complementarias que resulten aplicables, atendiendo a las siguientes:</p>';
+
+  h += '<div class="sec-t">CONSIDERACIONES</div>';
+  h += '<p>Entre los suscritos a saber y estando plenamente facultados para ello, se acuerda entre las partes celebrar el presente contrato individual de trabajo, regido por las siguientes:</p>';
+
+  h += '<div class="sec-t">CLÁUSULAS</div>';
+
+  h += '<p><b>Primera - Objeto.</b> El Empleador contrata los servicios personales del empleado y éste se obliga a desempeñar en forma exclusiva y de buena fe las funciones inherentes al cargo de así como a la ejecución de las tareas ordinarias, anexas y complementarias al mismo, de conformidad con las leyes y con los reglamentos, órdenes e instrucciones que le imparta el Empleador.</p>';
+
+  h += '<p><b>Segunda - Lugar.</b> El servicio antedicho lo prestará el empleado en el municipio de Sabaneta, lugar donde ha sido contratado, pero se compromete a aceptar otro cargo u oficio, en cualquiera otra ciudad o país a donde el Empleador en ejercicio de su facultad de subordinación, lo promueva y/o traslade, dentro de sus dependencias, siempre que el cambio no implique afectación del honor, la dignidad y los derechos mínimos del empleado.</p>';
+
+  h += '<p><b>Tercera - Salario.</b>  El Empleador pagará al empleado por la prestación de sus servicios, la suma de '+money(salario)+' ('+pesosALetras(salario)+' M/C) como salario básico mensual, más el auxilio de transporte vigente para el año 2026, correspondiente a $ '+money(aux)+' ('+pesosALetras(aux)+' M/C). Dichos valores constituyen salario fijo mensual, dentro del cual queda comprendido el pago de la remuneración por descanso en dominicales y festivos. El salario será pagado en el lugar de trabajo o consignado en una cuenta personal del empleado, con período de pago los días 15 y 30 de cada mes.</p>';
+  h += '<p>El Empleador y el empleado convienen expresamente que el 82.5% de los ingresos que reciba el empleado por concepto de cualquier modalidad fija o variable de salario constituye remuneración ordinaria, y el 17.5% restante se destina a remunerar los descansos obligatorios de que tratan los capítulos I y II del Título VII del Código Sustantivo del Trabajo.</p>';
+
+  h += '<p><b>Cuarta – Pagos externos no constitutivos de salario.</b> El EMPLEADO reconoce y acepta que cualquier ingreso que perciba por concepto de comisiones, bonificaciones o incentivos variables que le sean pagados directamente por ProtectGo Services LLC, entidad con domicilio en los Estados Unidos de América, no hacen parte de la relación laboral con el EMPLEADOR, PROTECT GO SERVICES S.A.S.</p>';
+  h += '<p>En consecuencia, dichos pagos corresponden a acuerdos independientes de naturaleza comercial, no constituyen salario ni factor salarial para ningún efecto legal, y no generan obligaciones laborales, prestacionales ni parafiscales a cargo del EMPLEADOR en Colombia.</p>';
+  h += '<p><b>Parágrafo 1.</b> El empleado autoriza expresamente al Empleador para que cuando termine el presente contrato por cualquier causa, deduzca del valor de sus salarios, prestaciones sociales, vacaciones, indemnizaciones y en general cualquier concepto económico derivado de la relación laboral, los dineros que le correspondan por los siguientes motivos:</p>';
+  h += '<ul style="list-style-type:lower-alpha">'
+    + '<li>Las sumas que deba por concepto de préstamos.</li>'
+    + '<li>El valor de los elementos, mercancías, utensilios, herramientas y demás bienes que haya recibido y que llegaren a faltar al hacer entrega del inventario a su cargo, por su pérdida, extravío o apropiación indebida.</li>'
+    + '<li>El valor de los daños causados a los enseres que se le confían para el desempeño de sus labores, salvo el deterioro natural por el uso común u ordinario de los mismos.</li>'
+    + '<li>El equivalente al dinero y/o valores pertenecientes al Empleador, sus clientes o proveedores, que se hayan extraviado por negligencia o falta de diligencia y cuidado por parte del empleado.</li>'
+    + '</ul>';
+  h += '<p><b>Parágrafo 2.</b> Cuando el EMPLEADOR otorgue al EMPLEADO alimentos, vestuario, vivienda y demás elementos que no estén contemplados en este contrato como parte de su remuneración; estas donaciones no se tendrán en cuenta como salario o remuneración para efectos de liquidación de prestaciones sociales como lo cita el Art.15/ Ley 50/90.</p>';
+
+  h += '<p><b>Cuarta - Obligaciones especiales.</b> Además de las obligaciones determinadas en la ley y en las circulares, manuales y reglamentos establecidos por el Empleador, el empleado se compromete a cumplir con las siguientes obligaciones especiales:</p>';
+  h += '<ul style="list-style-type:lower-alpha">'
+    + '<li>Desempeñar personalmente las labores asignadas, observando en el cumplimiento de éstas el cuidado y diligencia necesarios, incorporando toda su capacidad de trabajo en el desempeño de las mismas y conservando rigurosamente en sus actos y conductas los principios de veracidad y de lealtad hacia el Empleador.</li>'
+    + '<li>Prestar sus servicios con buenas maneras, con óptima cortesía, constante actitud de servicio y respeto hacia el Empleador, los clientes y los usuarios en general.</li>'
+    + '<li>Guardar estricta reserva de cuanto llegue a su conocimiento por razón de su trabajo y, por consiguiente, a no comunicarlo a terceros, en especial los secretos profesionales, industriales, comerciales y tecnológicos del Empleador y/o de sus clientes o aquella información de naturaleza reservada, como datos y estados de cuentas, planes de negocio, software, tecnología aplicada, circuitos integrados, insumos, desarrollos, análisis, estudios, bases de datos, etc.</li>'
+    + '<li>Prestar sus servicios personalmente en el lugar del territorio de la República de Colombia que indicare el Empleador y excepcionalmente fuera de dicho territorio cuando las necesidades del servicio así lo exigieran.</li>'
+    + '<li>Obrar siempre en el desarrollo de su labor, de acuerdo con las instrucciones y normas del Empleador y las disposiciones legales y reglamentarias de las autoridades competentes.</li>'
+    + '<li>Tramitar ante el Empleador la documentación de los clientes, requerida para la oportuna realización de las operaciones o negocios, al igual que las reclamaciones que sean formuladas por su intermedio.</li>'
+    + '<li>Asesorar a los clientes y canalizar ante la respectiva dependencia del Empleador, las inquietudes planteadas por éstos.</li>'
+    + '<li>Mantener completa armonía con sus compañeros de trabajo en el desarrollo de sus funciones y en las relaciones personales</li>'
+    + '<li>Guardar rigurosamente una conducta intachable y la moral con sus superiores y compañeros.</li>'
+    + '<li>Laborar en jornadas diferentes a las establecidas cuando el Empleador así lo requiera.</li>'
+    + '<li>Asistir al trabajo y visitar cuando sea del caso a los clientes del Empleador, ambas actividades en condiciones personales, de atuendo y de presentación personal apropiadas, esto es, consultando la delicadeza e importancia de la actividad desarrollada para el Empleador y teniendo en cuenta la buena imagen que tanto individual como institucionalmente se requiere brindar en desarrollo del negocio del Empleador</li>'
+    + '<li>Participar activamente de todos los programas de capacitación, entrenamiento y adiestramiento, presenciales o autodidácticos, a los que se le invite y servir siempre como multiplicador de sus conocimientos frente a los demás empleados del Empleador y a los clientes cuando así lo indique el Empleador</li>'
+    + '<li>Atender y acatar todas las medidas de seguridad y salud en el trabajo adoptadas por el Empleador y utilizar adecuadamente los elementos de protección personal, y de protección y seguridad industrial que le sean entregados.</li>'
+    + '<li>Abstenerse de realizar labores que afecten su salud u ocasionen desgaste a su organismo en forma tal que le impidan prestar adecuadamente el servicio contratado.</li>'
+    + '<li>Conocer y someterse a todas las políticas y medidas de seguridad y control que establezca el Empleador para la buena y segura marcha del negocio.</li>'
+    + '<li>Utilizar de manera racional los beneficios y servicios que le sean otorgados por el Empleador.</li>'
+    + '<li>Responder ante el Empleador por cualquier perjuicio que éste pueda recibir como consecuencia de su proceder negligente o imprudente o por incumplimiento de sus deberes y obligaciones.</li>'
+    + '<li>Informar al Empleador oportunamente sobre aquellas condiciones económicas y/o morales de los clientes o proveedores que puedan influir en la prestación de algún servicio.</li>'
+    + '<li>Manejar la información con diligencia y cuidado.</li>'
+    + '<li>Prestar toda la colaboración que las circunstancias exijan, en caso de siniestro o de riesgo que afecten o amenacen las personas o los bienes del Empleador.</li>'
+    + '<li>Laborar en el turno de trabajo y según el horario que le señale el Empleador, pudiendo este hacer los cambios de horario cuando lo estime conveniente.</li>'
+    + '<li>Cumplir los reglamentos de trabajo y de higiene y seguridad del Empleador, cuyas normas se entienden incorporadas en el presente contrato y declara conocer el empleado.</li>'
+    + '<li>Informar oportunamente sobre la imposibilidad de concurrir al trabajo por cualquier motivo y presentar inmediatamente la justificación de cualquiera falta de asistencia.</li>'
+    + '<li>Proveer de la mejor atención a los clientes, con una actitud de excelente servicio y respeto, procurando siempre mantener la imagen comercial del Empleador.</li>'
+    + '<li>Acatar y respetar todas las medidas de control y seguridad para garantizar la seguridad de los recursos del Empleador.</li>'
+    + '<li>Cumplir con exactitud las obligaciones especiales consagradas en la ley, en el reglamento interno de trabajo, en el reglamento de higiene y seguridad industrial, en las políticas y manuales internos, así como abstenerse de realizar lo que está prohibido.</li>'
+    + '</ul>';
+
+  h += '<p><b>Parágrafo 1.</b> Cuando las labores del empleado impliquen custodia, manejo, tenencia, vigilancia o administración de bienes y/o valores de propiedad, bajo custodia o recibidos en depósito por el Empleador, o ejerza estas atribuciones con causa, motivo u ocasión del contrato de trabajo, se conviene que: <b>a.</b> La preservación de dichos bienes y valores es de responsabilidad exclusiva del empleado y su pérdida, deterioro o faltantes, será de su exclusiva responsabilidad, excepto cuando esta obedezca a fuerza mayor o caso fortuito producido sin culpa o participación del empleado; <b>b.</b> El empleado responderá pecuniariamente por el valor que represente la pérdida, faltante o deterioro de los bienes o valores señalados, para lo cual se considera suficiente prueba de su ocurrencia, valor y responsabilidad, la investigación interna adelantada por el Empleador; <b>c.</b> El empleado autoriza que dichos valores sean descontados de cualquier pago que deba hacérsele con motivo o fundamento en el contrato de trabajo o relación laboral, o por cualquier otra causa jurídica.</p>';
+
+  h += '<p><b>Parágrafo 2.</b> En el evento en el que el empleado en virtud de sus servicios deba o de hecho esté a cargo de dinero en efectivo y/o valores, estará obligado de manera particular a lo siguiente: <b>a.</b> Registrar en la caja todos los productos y/o servicios vendidos, arrendados, cedidos, o en general comercializados por el Empleador. Para estos efectos, el empleado deberá acatar estrictamente las determinaciones sobre la categorización de los precios, productos y/o servicios; <b>b.</b> Verificar la idoneidad del dinero en efectivo con en el que pagan los clientes, la coincidencia entre la identificación del tarjetahabiente y el pagador por medio de tarjetas, y la firma de las constancias necesarias por parte del pagador, cuando sea del caso; <b>c.</b> Ingresar a la caja todo el dinero en efectivo, cheques, bonos, o cualquier otro valor, con el que los clientes paguen por los servicios o productos al momento del pago; <b>d.</b> Seguir el procedimiento establecido por el Empleador para las devoluciones de productos, registrando toda la información necesaria para la misma y diligenciando los formatos que se le provean para esos efectos; <b>e.</b> Salvaguardar el dinero, valores, bonos, o cualquier valor, que esté a su cargo; <b>f.</b> Mantener en todo momento la base de la caja, especialmente al momento del cierre de la misma de acuerdo a las periodicidades fijadas por el Empleador; <b>g.</b> Mantener completo orden en la caja, procurando en todo caso la buena imagen del Empleador y la preservación de sus bienes (incluidos dinero, valores, productos, materia prima y mercancía en general); <b>h.</b> Permitir y contribuir con las fiscalizaciones y/o arqueos a la caja realizados por el Empleador;</p>';
+
+  h += '<p><b>Quinta - Duración.</b> La duración del presente contrato será indefinida. Las partes acuerdan que los dos (2) primeros meses de vigencia del contrato serán de período de prueba. Por lo tanto, durante este período el contrato puede darse por terminado unilateralmente por cualquiera de las partes en cualquier momento, sin previo aviso y sin indemnización alguna.</p>';
+
+  h += '<p><b>Sexta - Prohibiciones.</b> Además de las prohibiciones determinadas en la ley y en las normas internas del Empleador, se prohíbe especialmente al empleado:</p>';
+  h += '<ul style="list-style-type:lower-alpha">'
+    + '<li>Atender durante la jornada de trabajo asuntos u ocupaciones distintos a los que el Empleador le encomiende.</li>'
+    + '<li>Prestar directa o indirectamente servicios a terceros, salvo autorización previa y expresa del Empleador.</li>'
+    + '<li>Faltar al trabajo o abandonar el sitio de trabajo, a menos que exista justa causa plenamente comprobada.</li>'
+    + '<li>Efectuar cualquier actividad insegura que exponga su salubridad, mientras se encuentre incapacitad.</li>'
+    + '<li>Modificar sin estar autorizado, en cualquier forma, las condiciones y/o características de los productos o servicios ofrecidos a los clientes.</li>'
+    + '<li>Ofrecer a los clientes, productos, servicios o beneficios que no estén expresamente autorizados por el empleador.</li>'
+    + '<li>Ofrecer, promocionar o vender cualquier tipo de producto o servicio de una empresa distinta a el Empleador, salvo instrucción y/o autorización expresa de este.</li>'
+    + '<li>Incurrir en pérdida deliberada o injustificada de tiempo.</li>'
+    + '<li>Ceder total o parcialmente a terceros la ejecución de las obligaciones derivadas de este contrato.</li>'
+    + '<li>Retener en su poder, información (en cualquier medio, sea físico o electrónico), dineros, archivos o solicitudes que haya recibido para el normal desempeño de sus funciones.</li>'
+    + '<li>Copiar, distribuir o transferir electrónicamente o por cualquier otro medio, programas, archivos, software o manuales de propiedad o bajo licencia del Empleador sin previa autorización.</li>'
+    + '<li>Facilitar por acción o por omisión, claves de acceso a los sistemas de computación o utilizar claves ajenas</li>'
+    + '<li>Usar software para el cual el Empleador no cuenta con la respectiva licencia de funcionamiento.</li>'
+    + '<li>Utilizar los equipos, herramientas y elementos de trabajo del Empleador, para su uso personal.</li>'
+    + '<li>Utilizar el correo electrónico, programas de mensajería, o softwares en general, dispuestos por el Empleador, para fines contrarios a aquel para el cual le fueron dotados o contraviniendo las políticas o directrices establecidas sobre el uso de los mismos.</li>'
+    + '<li>Fijar carteles, pancartas, avisos y en general cualquier clase de propaganda, sin autorización del Empleador o en lugares diferentes a los permitidos.</li>'
+    + '<li>Proveer a los clientes de una atención grosera, descortés o fuera de la calidad del servicio establecida por el Empleador.</li>'
+    + '</ul>';
+  h += '<p><b>Parágrafo.</b> En el evento en el que el empleado desempeñe un cargo que implique el manejo de dinero y/o valores, le estará prohibido especialmente lo siguiente: <b>a.</b> Apropiarse del dinero o títulos valores que reposan en la caja o que se encuentran en poder del Empleador; <b>b.</b> Conceder, autorizar o tolerar préstamos o dádivas a sí mismo, a sus compañeros de trabajo, prestadores de servicio o contratistas en general del Empleador, con el dinero y/o títulos valores que reposan en la caja o en poder del Empleador; <b>c.</b> Permitir, tolerar o autorizar que terceros tales como compañeros de trabajo, contratistas, proveedores, clientes y usuarios en general, se apropien del dinero o de los títulos valores, que reposan en la caja o que se encuentra en poder del Empleador; <b>d.</b> Presentar descuadres en la caja de acuerdo a los resultados de las auditorías realizadas por el Empleador; <b>e.</b> Realizar pagos a proveedores, contratistas o empleados, con el dinero o los títulos valores que reposen en la caja o que se encuentran en poder del Empleador, sin autorización previa del encargado de autorizar estos pagos; <b>f.</b> Permitir, tolerar o secundar que se realicen descuentos al cliente sobre al valor real de los productos o servicios comercializados por el Empleador, sin autorización previa del Jefe inmediato. <b>g)</b> Tener en desorden el espacio de la caja.</p>';
+
+  h += '<p><b>Séptima.</b> Cualesquiera concesiones, prestaciones o pagos extralegales que el Empleador haya otorgado y otorgare en el futuro a el empleado, sea en tiempo, en dinero o en especie, se entenderá que constituyen meras gratificaciones voluntarias y que aquel podrá suspender, disminuir o suprimir en cualquier tiempo, tales como auxilios ocasionales o habituales, alimentación, vestuario, primas extralegales de vacaciones, de servicio, o antigüedad, auxilio extralegal de movilización o transporte, bonificaciones de toda índole, y otras semejantes o que las partes expresamente por este contrato convienen que no constituyen salario ni serán tenidas como tal para efectos de liquidar prestaciones sociales, vacaciones, indemnizaciones, aportes a la seguridad social y parafiscales, de conformidad con lo establecido por los artículos 15 y 16 de la Ley 50 de 1990 y 17 de la Ley 344 de 1996.</p>';
+  h += '<p><b>Parágrafo.</b> Cualquier bonificación o prestación extralegal que se conceda al empleado, estará sujeta a la reglamentación que para cada caso expida el Empleador.</p>';
+
+  h += '<p><b>Octava - Jornada.</b> El empleado se obliga a laborar la jornada ordinaria en los turnos y dentro de las horas señaladas por el empleador, teniendo éste la facultad de realizar los ajustes o cambios de horarios que estime convenientes. Por el acuerdo expreso o tácito de las partes, podrán repartirse las horas de la jornada ordinaria, en la forma prevista en el artículo 164 del CST. Los tiempos de descanso entre las secciones de la jornada no se computan dentro de la misma, según el artículo 167 del mismo estatuto laboral.</p>';
+
+  h += '<p><b>Novena - Elementos de trabajo.</b> El empleado prestará sus servicios bajo la dirección de representantes del Empleador y en su trabajo utilizará los locales, herramientas, equipos, elementos de trabajo y materias primas de propiedad del Empleador, y así mismo, recibirá la ayuda y la colaboración de compañeros que están vinculados bajo un contrato de trabajo con el Empleador y/o asesores al servicio de éste y de otras personas, si el Empleador lo  autoriza, así como de experiencias y conocimientos obtenidos en viajes al exterior y contactos técnicos logrados.</p>';
+  h += '<p>En razón de ello, todas las mejoras que realice el empleado, bien sea en los procesos, equipos, formulaciones, sistemas de trabajo, servicios y todas aquellas iniciativas que entregue como fruto de su labor, incluyendo todas las creaciones del espíritu en el campo científico o técnico que realizare para el Empleador, serán de propiedad exclusiva de éste último, sin derecho a compensación o retribución especial, y no podrán ser utilizados por el empleado en beneficio propio o de terceros, sea que el empleado se encuentre al servicio del Empleador o se haya desvinculado de éste. En tal virtud, el empleado accederá a facilitar el cumplimiento oportuno de las correspondientes formalidades y firmará u otorgará los poderes y documentos necesarios que se requieran.</p>';
+
+  h += '<p><b>Décima - Terminación unilateral del contrato.</b> El empleador podrá dar por terminado el contrato de trabajo en forma unilateral y con causa justa probada al empleado conforme a lo establecido en el art. 62 del C.S.T. en la ley, el reglamento y el contrato de trabajo, cuando se configure alguna de las siguientes causales:</p>';
+  h += '<ul>'
+    + '<li>El haber sufrido engaño por parte del empleado, mediante la prestación de certificados falsos para su admisión o tendientes a obtener un provecho indebido.</li>'
+    + '<li>Todo acto de violencia, injuria, malos tratamientos o grave indisciplina en que incurra el empleado en sus labores, contra el empleador, los miembros de su familia, el personal directivo o los compañeros de trabajo.</li>'
+    + '<li>Todo acto grave de violencia, injuria o malos tratamientos en que incurra el empleado fuera del servicio, en contra del empleador, de los miembros de su familia, o de sus representantes o socios, jefes de taller, vigilante y celadores.</li>'
+    + '<li>Todo daño material causado intencionalmente a los edificios, obras, maquinarias y materias primas, instrumentos y demás objetos relacionados con el trabajo y toda grave negligencia que ponga en peligro la seguridad de las personas y las cosas.</li>'
+    + '<li>Todo acto inmoral o delictuoso que el empleado cometa en el establecimiento o lugar de trabajo, o en el desempeño de sus labores.</li>'
+    + '<li>Cualquier violación grave de las obligaciones o prohibiciones especiales que incumben al empleado, de acuerdo con los artículos 58 y 60 del C.S.T, o cualquier falta grave, calificada como tal en pactos o convenciones colectivas, fallos arbitrales, contratos individuales y en este reglamento.</li>'
+    + '<li>La detención preventiva del empleado por más de treinta días (30), a menos que posteriormente sea absuelto.</li>'
+    + '<li>El que el empleado revele secretos técnicos o comerciales o dé a conocer asuntos de carácter reservado, con perjuicio de la empresa.</li>'
+    + '<li>El deficiente rendimiento en el trabajo, en relación con la capacidad del empleado y con el rendimiento promedio en labores análogas, cuando no se corrige en un plazo razonable, a pesar del requerimiento del empleador.</li>'
+    + '<li>La sistemática inejecución, sin razones válidas, por parte del empleado, de las obligaciones convencionales o legales.</li>'
+    + '<li>Todo vicio del empleado que perturbe la disciplina del establecimiento.</li>'
+    + '<li>La renuncia sistemática del empleado a aceptar las medidas preventivas, profilácticas o curativas, prescritas por el médico del empleador o por las autoridades para evitar enfermedades o accidentes laborales.</li>'
+    + '<li>La baja productividad y falta de compromiso por parte del empleado para realizar la labor encomendada.</li>'
+    + '<li>El reconocimiento al empleado de la pensión de jubilación o invalidez estando al servicio de la empresa.</li>'
+    + '<li>No utilizar debidamente los Elementos de protección personal entregados por la Empresa o hacer mal uso de ellos.</li>'
+    + '</ul>';
+
+  h += '<p><b>Décima primera - Autorización tratamiento de datos personales.</b> El empleado autoriza irrevocablemente al empleador para verificar la información y/o documentación suministrada en su solicitud de empleo, hoja de vida, contrato y demás documentos; así como para consultar en las centrales de riesgo o entidades similares toda la información relevante para conocer su comportamiento financiero y comercial, y el cumplimiento de sus obligaciones legales y contractuales; con la finalidad de decidir la conveniencia o no de celebrar, terminar o mantener una relación contractual y evaluar los riesgos derivados de la misma.</p>';
+  h += '<p>Lo anterior en virtud de la Ley 1581 de 2012 y el Decreto 1377 de 2013 (y las demás normas que un futuro regulen la materia) para recolectar y tratar la información personal suministrada en el transcurso del proceso de vinculación laboral, y así mismo a que la misma sea verificada.</p>';
+
+  h += '<p><b>Décima segunda - Confidencialidad.</b> Además de lo previamente establecido en acuerdo de confidencialidad el cual hace parte integrante del presente contrato, las partes acuerdan que la información entregada durante la ejecución del contrato de trabajo y todo lo relacionado a este, es de carácter confidencial y no podrá ser divulgada por ninguna de las partes, salvo autorización expresa de la otra parte.</p>';
+
+  h += '<p><b>Décima tercera.</b> Por mutuo acuerdo entre el Empleador y el Empleado, este contrato sustituye cualquiera otro que entre ellos se hubiera firmado o pactado verbalmente con anterioridad al presente. Así mismo, manifiestan que no reconocerán como válidas, estipulaciones verbales que se hagan con relación al presente contrato, el cual constituye un acuerdo completo y total acerca de su objeto. Las modificaciones y/o adiciones que acuerden partes sobre el presente contrato, se harán constar en un otrosí o anexo al mismo.</p>';
+
+  h += '<p><b>Décima cuarta.</b> El presente contrato queda sujeto a las disposiciones legales que regulan la relación entre empleadores y empleados y a aquellas que en el futuro lleguen a regirlas, de suerte que las disposiciones legales que consagren una modificación o cambio de las situaciones jurídicas inherentes al contrato de trabajo se entenderán automáticamente incorporadas en este, sustituirán sus estipulaciones y a ellas quedarán sometidas las partes.</p>';
+
+  h += '<p>Para constancia se firma este contrato, en dos ejemplares del mismo tenor y valor el día '+fechaLarga(fecha)+'.</p>';
+
+  h += firmaDosColumnas();
+  h += pieHoja();
+  return h;
+}
+
+var ESTANDARES_FUNCIONES = {
+  kam: {
+    label: 'KAM (Activación y manejo de cuentas)',
+    funciones: [
+      'Seguimiento Proactivo a Renovaciones de póliza correspondientes y requeridas por el empleador.',
+      'Gestión completa de activación de pólizas. El área KAM es responsable de recibir cotizaciones aprobadas, procesar y generar los binders, y formalizar la activación de las pólizas, ya sea con aseguradoras online o con MGAs.',
+      'Comunicación operativa con MGAs y aseguradoras. KAM gestiona la relación directa con los MGAs (NGA), incluyendo la solicitud de cotizaciones, condiciones especiales, respuestas técnicas y trámites de appointments con nuevas compañías.',
+      'Diligenciamiento de documentación técnica. El equipo se encarga de completar y validar toda la documentación requerida para formalizar la activación: formularios, contratos, archivos de respaldo y documentación exigida por el carrier.',
+      'Soporte al equipo comercial (asesores). KAM responde de forma oportuna las solicitudes y correos de los asesores, confirmando avances en activaciones, entregando documentos clave y resolviendo inquietudes técnicas para facilitar el cierre efectivo.',
+      'Validación antes de emitir binders. Se asegura de que toda cotización enviada a activar esté completamente validada, con sus condiciones aprobadas, respaldos cargados y cumplimiento de requisitos antes de emitir el binder final.',
+      'Organización documental y emisión de COIs. KAM es responsable de cargar los documentos correctamente en sistema indicado para el asegurado (binder, factura, quote final) y de emitir los COIs (Certificates of Insurance) correspondientes al paquete de coberturas activadas.',
+      'Actualizar informes, archivos y sistemas operativos requeridos.',
+      'Mantener comunicación directa con el director de ventas y los asesores de venta.',
+      'Dejar por escrito las notas adicionales en cada cliente para identificarlos.',
+      'Todas las demás adicionales que sean solicitadas por el empleador en ejercicio de facultad de instrucción y subordinación.'
+    ]
+  },
+  comercial: {
+    label: 'AGENTE COMERCIAL',
+    funciones: [
+      'Seguimiento Proactivo a Renovaciones de póliza correspondientes y requeridas por el empleador.',
+      'Mantenimiento de Contacto Comercial durante toda la vigencia de la póliza.',
+      'Apoyo en Actualizaciones y Endosos. segurar que el cliente notifique cualquier cambio relevante: unidades, conductores, contratos, etc. Canalizar estas solicitudes hacia el equipo de soporte para su correcta gestión con la aseguradora.',
+      'Validación de Pagos y Prevención de Cancelaciones. Confirmar que el cliente entienda sus fechas de pago, métodos y consecuencias de retrasos. Hacer seguimiento en caso de fallos en el débito o alertas de cancelación.',
+      'Asegurar Cumplimiento de Requisitos Contractuales. Confirmar que se hayan generado y entregado los COIs necesarios para contratos activos. Validar que se mantengan actualizadas las licencias, filings y demás requisitos regulatorios si aplica.',
+      'Informar oportunamente al equipo de coordinación sobre riesgos de cancelación, insatisfacción del cliente o errores operativos. Contribuir con ideas o feedback para mejorar la experiencia de postventa.',
+      'Acompañamiento en Procesos de Reclamos (Claims). Brindar orientación básica al cliente en caso de siniestros, recopilar información inicial y canalizar el caso hacia el área operativa. Hacer seguimiento al avance del reclamo y asegurar que el cliente se sienta respaldado durante todo el proceso.',
+      'Actualizar informes y archivos requeridos.',
+      'Mantener comunicación directa con el director de ventas y el equipo de KAM.',
+      'Marcar cada venta.',
+      'Dejar por escrito las notas en cada cliente para identificarlos.',
+      'Todas las demás adicionales que sean solicitadas por el empleador en ejercicio de facultad de instrucción y subordinación.'
+    ]
+  }
+};
+window.ESTANDARES_FUNCIONES = ESTANDARES_FUNCIONES;
+
+function renderAnexo(){
+  var c=cola();
+  var est=ESTANDARES_FUNCIONES[$('fEstandar').value];
+  var h=membrete();
+  h+='<div class="titulo-doc">Anexo 1. Al contrato individual de trabajo a término indefinido</div>';
+  h+='<div class="sub-doc">Entre Protect Go S.A.S y '+esc(c?c.nombre.toUpperCase():'____________')+'</div>';
+  h+='<p>Entre los suscritos a saber y estando plenamente facultados para ello, se acuerda entre las partes la firma del presente anexo al contrato individual de trabajo, el cual establece las funciones a desarrollar por el empleado.</p>';
+  h+='<div class="sec-t">Funciones</div>';
+  h+='<p>De acuerdo con el cargo para el cual fue contratado '+esc(est?est.label:'')+', el empleado desarrollará sin limitarse solo a estas, las siguientes funciones:</p>';
+  h+='<ol>'+(est?est.funciones.map(function(f){return '<li>'+esc(f)+'</li>';}).join(''):'')+'</ol>';
+  h+='<p>Para constancia y aceptación se firma este anexo al contrato, en dos ejemplares del mismo tenor y valor el día '+fechaLarga($('fFecha').value)+'.</p>';
+  h+=firmaDosColumnas();
+  h+=pieHoja();
+  return h;
+}
+
+function renderCarta(){
+  var c=cola();
+  var h=membrete();
+  h+='<div class="titulo-doc">PROTECTGO S.A.S</div>';
+  h+='<div class="sub-doc">NIT. 901633503-8</div>';
+  h+='<div class="sec-t">Certifica que:</div>';
+  h+='<p>'+esc(c?c.nombre.toUpperCase():'____________')+' identificado(a) con cédula de ciudadanía No: '+esc(c&&c.cedula?c.cedula:'____________')+' se encuentra vinculado(a) con la empresa desde el '+fechaLarga($('fFechaIngresoCarta').value)+' hasta la fecha, desempeñando el cargo de '+esc(c&&c.cargo?c.cargo:'____________')+', con un salario mensual de '+money($('fSalarioCarta').value)+' y un promedio mensual por comisiones de '+money($('fComisionesCarta').value)+'.</p>';
+  h+='<p>Para constancia de lo anterior se firma el '+fechaLarga($('fFecha').value)+'</p>';
+  h+='<div class="firma"><p>Cordialmente,</p><br><br><p style="margin-bottom:2px"><b>PROTECTGO S.A.S</b></p><p>NIT: 901633503-8</p></div>';
+  h+=pieHoja();
+  return h;
+}
+
+function renderPolitica(){
+  var c=cola();
+  var h=membrete();
+  h+='<div class="titulo-doc">Política sobre el buen uso y protección de los recursos tecnológicos y la protección de la información y de los datos</div>';
+
+  h+='<div class="sec-t">OBJETIVO</div>';
+  h+='<p>Describir y establecer la política tecnológica para el buen uso y protección de los recursos tecnológicos y la protección de la información y los datos, además de la responsabilidad económica que determina la indemnización por daños de Hardware y Software de PROTECT GO SERVICES SAS</p>';
+
+  h+='<div class="sec-t">ALCANCE</div>';
+  h+='<p>Esta política aplica a todos los colaboradores que hagan uso de los equipos tecnológicos de la empresa y tengan acceso a información y datos confidenciales de la empresa. Así como a todo recurso tecnológico (Equipo de cómputo, Computador Portátil, Tableta Digital, Impresora, Escáner, teléfono móvil, Proyector o equipos tecnológicos existentes o por existir) que pertenezcan a PROTECT GO SERVICES SAS</p>';
+
+  h+='<div class="sec-t">DEFINICIONES</div>';
+  h+='<p><b>Código Malicioso</b>: En seguridad informática, código malicioso es un término que hace referencia a cualquier conjunto de códigos, especialmente sentencias de programación, que tiene un fin malicioso. Esta definición incluye tanto programas malignos compilados, como macros y códigos que se ejecutan directamente, como los que suelen emplearse en las páginas web (scripts).</p>';
+  h+='<p>Los códigos maliciosos pueden tener múltiples objetivos como:</p>';
+  h+='<ul><li>Extenderse por la computadora, otras computadoras en una red o por Internet.</li><li>Robar información y claves.</li><li>Eliminar archivos e incluso formatear el disco duro.</li><li>Mostar publicidad invasiva.</li></ul>';
+  h+='<p><b>Cuentas de Servicios Institucionales o cuentas de colaboradores</b>: Es un registro electrónico individual para un usuario de los servicios informáticos institucionales que tienen asociados, un nombre de usuario (ID Usuario, user ID, login name, Username,) además una contraseña (password) y otra información de identificación del titular de la cuenta.</p>';
+  h+='<p><b>Herramienta de hacking</b>: Programa de computador que puede ser utilizado por una persona para acceder de forma no autorizada o ilegal, conocido como hacker, con el fin de causar perjuicios a los colaboradores, servicios o infraestructura tecnológica, pudiendo Obtener el control del equipo afectado, obtención de información confidencial, chequeo de puertos de comunicaciones, entre otros.</p>';
+  h+='<p><b>Infraestructura Tecnológica</b>: la infraestructura tecnológica se encuentra integrada por un conjunto de elementos de hardware (servidores, puestos de trabajos, redes, enlaces de comunicaciones, etc.) y servicios (soporte técnico, seguros, comunicaciones, etc.) que en conjunto dan soporte a las aplicaciones (sistemas de información) de la institución.</p>';
+  h+='<p><b>Licencia de software</b>: Es un contrato donde se especifican todas las normas y cláusulas que rigen el uso de un determinado programa por parte de los colaboradores o licenciatarios. Principalmente se estipulan los alcances de uso, instalación, reproducción y copia de estos productos.</p>';
+  h+='<p><b>Recursos tecnológicos</b>: Elementos de tecnología que pueden ser hardware y/o software, tales como equipos de cómputo, servidores, impresoras, teléfonos, fax, programas y/o aplicativos softwares dispositivos USB entre otros.</p>';
+  h+='<p><b>Redes Informáticas</b>: Son aquellas redes a través de las cuales los colaboradores de PROTECT GO SERVICES SAS tienen acceso a servicios informáticos ofrecidos por la empresa como tal. Se considera en este grupo Internet Red Local- Intranet, red inalámbrica y otras redes que hagan parte de la estructura de la empresa.</p>';
+  h+='<p><b>Sistema de información</b>: Un sistema de información es un conjunto de elementos que interactúan entre sí con el fin de apoyar las actividades de una empresa o negocio.</p>';
+  h+='<p><b>El equipo computacional</b>: el hardware necesario para que el sistema de información pueda operar. El recurso humano que interactúa con el Sistema de Información, el cual está formado por las personas que utilizan el sistema. Un sistema de información realiza cuatro actividades básicas: entrada, almacenamiento, procesamiento y salida de información.</p>';
+  h+='<p><b>Software de libre distribución</b>: Es el software que puede modificarse y ser distribuido gratuitamente por cualquier persona.</p>';
+  h+='<p><b>Software no autorizado</b>: Se caracteriza porque no cuenta con una licencia de uso y no corresponde a una función determinada y por lo tanto no es autorizado por parte del departamento administrativo y financiero. Teniendo en cuenta lo anterior deberá ser borrado de los equipos de la empresa.</p>';
+  h+='<p><b>Tool Bar</b>: Barra de herramientas añadidas al navegador de internet.</p>';
+  h+='<p><b>Tecnologías de Información y Comunicación (Tics)</b>: Las TIC optimizan el manejo de la información y el desarrollo de la comunicación. Permiten actuar sobre la información y generar mayor conocimiento e inteligencia. Abarcan todos los ámbitos de la experiencia humana. Están en todas partes y modifican los ámbitos de la experiencia.</p>';
+  h+='<p><b>Vulnerabilidad</b>: En términos informáticos vulnerabilidad es definida como un fallo en el proyecto, implementación o configuración de un software o sistema operativo que, cuando es descubierta por un atacante, resulta en la violación de la seguridad de un computador o un sistema computacional.</p>';
+  h+='<p><b>WiFi</b>: Se refiere a los servicios de internet inalámbricos.</p>';
+  h+='<p><b>Backup</b>: Copia de documentos y archivos en más de un dispositivo (Cd, USB, Disco duro externo, entre otros) con el fin de tenerlos como respaldo o apoyo en caso de que el archivo original sea corrompido.</p>';
+
+  h+='<div class="sec-t">NORMATIVIDAD</div>';
+  h+='<p>LEY 1273 del 5 de enero 2009 por medio de la cual se modifica el Código Penal, se crea un nuevo bien jurídico tutelado-denominado "de la protección de la información y de los datos" y se preservan integralmente los sistemas que utilicen las tecnologías de la información y las comunicaciones, entre otras disposiciones".</p>';
+
+  h+='<div class="sec-t">1. POLÍTICA DE OPERACIÓN</div>';
+  h+='<p>En este documento se define la política que regulara el buen uso y protección de los recursos tecnológicos de PROTECT GO SERVICES SAS puesto que se define los términos, condiciones y las responsabilidades establecidas por cada una de las partes que intervienen. Está fundamentada en valores como la responsabilidad, la trasparencia, la eficiencia y calidad. PROTECT GO SERVICES SAS hace entrega y facilita el uso de los recursos Tecnológicos a todos los colaboradores (Directivos, mandantes, empleados) como apoyo a las gestiones administrativas. Cualquier uso inapropiado de estos recursos que interfiera o esté en contra de los fines de la empresa o ponga en riesgo la imagen de PROTECT GO SERVICES SAS será considerado como una violación a esta política y estará sujeta a las sanciones disciplinarias correspondientes.</p>';
+
+  h+='<div class="sec-t">2. DESCRIPCIÓN</div>';
+  h+='<p>Todos los colaboradores y colaboradores externos que haga uso de los equipos tecnológicos de la empresa como (Equipo de cómputo, Computador Portátil, Tableta Digital, Impresora, Escáner, teléfono móvil, Proyector o equipos tecnológicos existentes o por existir), se regirá y aceptara cumplir con los términos y condiciones establecidos en esta política sobre el buen uso y protección de los recursos. En este documento se muestran detalladamente los procedimientos y regulaciones que se deben tener en cuenta para el buen uso y protección de los recursos tecnológicos, esta política es establecida por la oficina asesora de sistemas con el fin de promover el acceso, uso efectivo y apropiación de recursos tecnológicos, a través de políticas y programas, para mejorar la utilización de los mismos en beneficio de la empresa en general.</p>';
+
+  h+='<div class="sec-t">3. DISPOSICIONES GENERALES</div>';
+  h+='<p>Los equipos tecnológicos son administrados y supervisados por el departamento administrativo y financiero acuerdo a las políticas de la misma.</p>';
+  h+='<ul>';
+  h+='<li>Los equipos tecnológicos podrán ser utilizados por todos los colaboradores autorizados de la empresa.</li>';
+  h+='<li>Los equipos tecnológicos deben ser supervisados por los colaboradores a quien le fue asignado.</li>';
+  h+='<li>Todos los colaboradores que utilice los equipos tecnológicos debe manejarlos con mucha responsabilidad y cuidado.</li>';
+  h+='<li>Todos los colaboradores al terminar de utilizar los equipos tecnológicos deben dejar el área organizada y los equipos en buenas condiciones.</li>';
+  h+='<li>Todos los colaboradores que utilice los equipos tecnológicos (Equipo de cómputo, Computador Portátil, Tableta Digital, Impresora, Escáner, teléfono móvil, Proyector o equipos tecnológicos existentes o por existir pertenecientes a PROTECT GO SERVICES SAS) lo debe hacer estrictamente con fines relacionados con la empresa.</li>';
+  h+='<li>Cualquier problema que ocurra con los equipos tecnológicos deberá ser reportado al departamento administrativo y financiero.</li>';
+  h+='<li>El Técnico de sistemas atenderá el requerimiento de soporte y si es necesario remplazo de una parte lo reportara al Coordinador Administrativo y Financiero, quien realizara la gestión de comprar de lo requerido.</li>';
+  h+='<li>Toda la información que el colaborador disponga en los equipos de cómputo debe ser relacionada con la labor que se le ha asignado, la información que sea de carácter personal del colaborador, la empresa tendrá libre disposición sobre la misma y será borrada cuando se ejecute el plan de mantenimiento.</li>';
+  h+='<li>Los equipos serán entregados con acta de entrega de equipos tecnológicos. Acta entrega de equipos, suministros y materiales de la oficina asesora de sistemas donde se consignarán las características físicas en hardware y software y el funcionamiento de las partes básicas del equipo entregado.</li>';
+  h+='</ul>';
+
+  h+='<div class="sec-t">4. USO DE LOS EQUIPOS TECNOLÓGICOS</div>';
+
+  h+='<p><b>4.1 HARDWARE</b></p>';
+  h+='<p>Para prender los Equipos de cómputo, Computador Portátil, Impresora, Escáner, proyectores de imagen debe verificar que uno de los extremos del cable este colocado correctamente en el puerto correspondiente (detrás del equipo) y el otro extremo del cable a la toma de corriente.</p>';
+  h+='<p>Luego prenderá el equipo presionado el botón de encendido (Power). En el caso de equipos con baterías precargadas deberá verificar que posea la carga para encenderlo.</p>';
+  h+='<ul>';
+  h+='<li>Siempre que tenga alguna duda sobre el funcionamiento de los equipos de tecnología pertenecientes a la empresa o cualquier situación que ocurra con los mismos debe solicitar ayuda técnica siguiendo los procedimientos establecidos por la empresa.</li>';
+  h+='<li>Debe informar cualquier anormalidad que se presente con los equipos tecnológicos, a través de una solicitud de servicio de soporte técnico, por medio verbal o mediante el oficio de solicitud soporte técnico enviado por correo electrónico institucional. De esta forma un Técnico de sistemas se encargará de dar soporte pase a verificar el equipo. Esta actividad se realiza de acuerdo a los procedimientos establecidos por la empresa.</li>';
+  h+='<li>Al concluir la utilización de una computadora, laptop o equipo móvil-Tablet debe apagar el mismo de manera correcta para evitar que otras personas tengan acceso al mismo.</li>';
+  h+='<li>Al terminar de utilizar un proyector debe apagar el mismo presionando el botón de off en el control previsto para ello.</li>';
+  h+='<li>Esta terminante prohibido la utilización de los equipos tecnológicos, de la empresa, para generar o distribuir cualquier material que este en violación de leyes o atente contra los derechos constitucionales actividades que fomenten el hostigamiento sexual u hostigamiento laboral, así como el libre derecho de creencias y prácticas religiosas.</li>';
+  h+='<li>Bajo ninguna circunstancia un usuario está autorizado a entrar en alguna actividad que sea ilegal bajo las leyes locales, nacionales o internacionales utilizando los equipos tecnológicos de la empresa.</li>';
+  h+='<li>Los equipos tecnológicos de la empresa serán movidos y/o conectados a la red solamente por el Técnico de Sistemas.</li>';
+  h+='</ul>';
+
+  h+='<p><b>4.2 USO DE SOFTWARE:</b></p>';
+  h+='<p>El personal no debe instalar ningún programa no autorizado que exija licenciamiento en su computadora (Programas de mensajería, chats, programa para cambiar el curso del mouse, juegos, tool bar, etc.)</p>';
+  h+='<ul>';
+  h+='<li>Si el personal necesita instalar algún programa en apoyo a sus funciones labores, investigación o administrativas debe consultar a Técnico de Sistemas para que evalúen la necesidad del usuario, los requerimientos de licencia y los requisitos de instalación para aprobar dicha solicitud y proceder a la instalación del programa.</li>';
+  h+='<li>Están completamente prohibidas las actividades que violen los derechos de cualquier persona o compañía protegidos por los derechos de autor, secretos comerciales, patente u otra característica intelectual, o las leyes o regulaciones similares, pero no limita a, la instalación o la distribución de programas pirateados u otros productos de software que no son licenciados apropiadamente para su uso por PROTECT GO SERVICES SAS</li>';
+  h+='<li>No se permite por ningún motivo copiar material protegido por derechos de autor incluyendo, pero no limitados a, digitalización y la distribución de fotografía de revistas, libros o de fuentes protegidas por los derechos de autor, para lo cual la empresa no tiene una licencia activa.</li>';
+  h+='<li>El usuario no puede exportar programas, información técnica y programas de cifrado o tecnología, en violación de las leyes internacionales o nacionales que controlan dicha exportación.</li>';
+  h+='<li>Está terminantemente prohibido insertar código malicioso en la red, estaciones de trabajos o servidores, ejemplo: Virus, gusano, caballos troyanos, bombas de email y otros.</li>';
+  h+='</ul>';
+
+  h+='<p><b>4.3 PROTECCIÓN DE LOS EQUIPOS TECNOLÓGICOS, INFORMACIÓN Y DATA</b></p>';
+  h+='<p>La protección de la información y el data se basará teniendo en cuenta la LEY 1273 del 5 de enero 2009 por medio de la cual se modifica el Código Penal, se crea un nuevo bien jurídico tutelado-denominado "de la protección de la información y de los datos" y se preservan integralmente los sistemas que utilicen las tecnologías de la información y las comunicaciones, entré otras disposiciones".</p>';
+
+  h+='<p><b>4.3.1 PÉRDIDA E INFORMACIÓN</b>: Los archivos sensitivos o críticos en los sistemas se protegen a través del control de privilegios o acceso otorgados a los colaboradores. Se exonera a los colaboradores que realicen Backus para salvar o proteger los documentos de trabajo administrativo o laboral en caso de que ocurran daños físicos al equipo o al sistema operativo que impidan la recuperación de los mismos. Esto según el procedimiento establecido.</p>';
+
+  h+='<p><b>4.3.2 VIRUS, SPAM Y APLICACIONES MALICIOSAS</b></p>';
+  h+='<ul>';
+  h+='<li>Todas las estaciones de trabajo conectadas a la red, en PROTECT GO SERVICES SAS, tienen instalado un antivirus y el mismo deberá estar al día en las actualizaciones de seguridad.</li>';
+  h+='<li>La red de PROTECT GO SERVICES SAS es constantemente monitoreada por el Técnico de sistemas.</li>';
+  h+='<li>Se orienta al personal que no debe abrir correo electrónico de promociones, asuntos no relacionados al trabajo o de personas desconocidas.</li>';
+  h+='<li>Se orienta a los colaboradores a no instalar ningún tipo de programa de internet debido a que pueden poner en riesgo la seguridad de la red de la empresa.</li>';
+  h+='</ul>';
+
+  h+='<p><b>4.4 ROBOS</b></p>';
+  h+='<p>Al terminar la jornada de trabajo todos los equipos tecnológicos deben quedar apagados y en el establecimiento de comercio</p>';
+  h+='<ul>';
+  h+='<li>Todas las puertas de las oficinas de la empresa tienen un sistema de llave de seguridad.</li>';
+  h+='<li>Todos los colaboradores que identifique la pérdida de un equipo tecnológico o sus accesorios debe reportarlo inmediatamente al personal del departamento administrativo y financiero y al personal de seguridad de la planta física.</li>';
+  h+='</ul>';
+
+  h+='<p><b>4.5 DAÑOS FÍSICOS GENERALES A LA PROPIEDAD</b></p>';
+  h+='<p>Se orienta a los colaboradores sobre el uso adecuado de los equipos tecnológicos para la conservación de los mismos.</p>';
+  h+='<ul>';
+  h+='<li>Se prohíbe ingerir alimentos en oficinas donde haya equipos tecnológicos instalados.</li>';
+  h+='<li>Al sufrir bajos de luz se deberán de apagar los equipos o desconectarlos de la corriente, para evitar daños a los mismos.</li>';
+  h+='<li>Equipos generen mucho calor y el área en donde se encuentren no tenga aire, se deberá de llamar a la oficina asesora de sistemas para solicitar ventiladores. Esto evitara la sobrecarga en la temperatura de los equipos.</li>';
+  h+='<li>Todos los colaboradores que identifique daños físicos en los equipos tecnológicos o sus accesorios deben reportarlo.</li>';
+  h+='</ul>';
+
+  h+='<p><b>4.6 FUEGO</b></p>';
+  h+='<p>Evitar sobrecargar las líneas de las tomas de corriente al utilizar un multiplug con más de un equipo. Cada receptáculo tiene una capacidad eléctrica la cual puede ser consumida.</p>';
+  h+='<ul>';
+  h+='<li>No tener en el área líquidos flamables, tóxicos y/o fósforos.</li>';
+  h+='<li>Evitar la utilización de velas en las oficinas de trabajo.</li>';
+  h+='<li>Asegúrese de apagar los equipos electrónicos, siempre al terminar la jornada laboral.</li>';
+  h+='</ul>';
+
+  h+='<p><b>4.7 DESASTRES NATURALES PREDECIBLES (TORMENTAS, INUNDACIONES)</b></p>';
+  h+='<p>Como medida preventiva se desconectarán los equipos tecnológicos de la toma de corriente.</p>';
+  h+='<ul>';
+  h+='<li>Todas las dependencias identificaran las áreas, con equipos tecnológicos, más propensas a inundaciones y lo reportaran al departamento administrativo y financiero de la empresa para que estos realicen la movilización de los equipos tecnológicos otro lugar donde estén más seguros en conjunto a planta física.</li>';
+  h+='<li>Los recursos tecnológicos deberán ser resguardados en caso de lluvia. En caso de presentarse daño o pérdida por descuido o negligencia en el cumplimiento de los anteriores puntos, su compensación económica podrá ser exigida al personal por parte de la empresa. PROTECT GO SERVICES SAS por medio del Técnico de Sistema podrá en cualquier momento solicitar la entrega del o los equipos para verificar el cumplimiento de este reglamento mediante una auditoría, solicitud que debe ser atendida por el personal responsable.</li>';
+  h+='</ul>';
+
+  h+='<div class="sec-t">5. RESPONSABILIDAD DE PAGO EN CASO DE DAÑO DE EQUIPOS</div>';
+  h+='<p>En los casos enunciados en el numeral 4.3, se hará un estudio para determinar la responsabilidad del colaborador teniendo en cuenta su actuar y el estado del equipo.</p>';
+  h+='<ul>';
+  h+='<li>Los colabores que tienen contrato laboral con PROTECT GO SERVICES SAS se pondrá descontar la quinta parte extra del salario mínimo legal mensual vigente</li>';
+  h+='<li>En los casos que se trata de otro tipo de contrato se realizará un acuerdo por escrito de como responderá por el daño ocasionado.</li>';
+  h+='</ul>';
+
+  h+='<p>Se puso en conocimiento a todos los colaboradores el '+fechaLarga($('fFecha').value)+'</p>';
+
+  h+='<div class="firma-2col"><div><p>Gerencia,</p><br><br><p style="margin-bottom:2px"><b>'+FIRMANTE.nombre+'</b></p></div><div><p>Recibido,</p><br><br><p style="margin-bottom:2px"><b>'+esc(c?c.nombre:'____________')+'</b></p><p>C.C. '+esc(c&&c.cedula?c.cedula:'____________')+'</p></div></div>';
+
+  h+=pieHoja();
+  return h;
+}
+
 var CONTENT_H=711; // 1056 - 175 (zona logo) - 170 (zona pie)
 function paginar(){
   var m=$('measurer');
@@ -373,38 +797,86 @@ function paginar(){
     return '<div class="hoja">'+list.map(function(n){return n.outerHTML;}).join('')+'</div>';
   }).join('');
 }
+function poblarEstandares(){
+  var sel=$('fEstandar');
+  if(sel&&window.ESTANDARES_FUNCIONES&&!sel.options.length){
+    sel.innerHTML=Object.keys(window.ESTANDARES_FUNCIONES).map(function(k){
+      return '<option value="'+esc(k)+'">'+esc(window.ESTANDARES_FUNCIONES[k].label||k)+'</option>';
+    }).join('');
+  }
+}
+var lastPrecargaId=null;
+function precargarFicha(c){
+  if(!c||lastPrecargaId===c.id)return;
+  lastPrecargaId=c.id;
+  if($('fSalarioContrato')&&!$('fSalarioContrato').value&&c.salario_base)$('fSalarioContrato').value=c.salario_base;
+  if($('fSalarioCarta')&&!$('fSalarioCarta').value&&c.salario_base)$('fSalarioCarta').value=c.salario_base;
+  if($('fFechaIngresoCarta')&&!$('fFechaIngresoCarta').value&&c.fecha_ingreso)$('fFechaIngresoCarta').value=c.fecha_ingreso;
+}
 function render(){
   var f=$('fFormato').value;
   $('grpLlamado').style.display=f==='llamado'?'block':'none';
   $('grpCompromiso').style.display=f==='compromiso'?'block':'none';
+  $('grpContrato').style.display=f==='contrato'?'block':'none';
+  $('grpAnexo').style.display=f==='anexo'?'block':'none';
+  $('grpPolitica').style.display=f==='politica'?'block':'none';
+  $('grpCarta').style.display=f==='carta'?'block':'none';
+  if(f==='anexo')poblarEstandares();
   var c=cola();
+  precargarFicha(c);
   var d=$('datosCola');
   if(c){
     d.style.display='block';
-    d.innerHTML='<b>'+esc(c.nombre)+'</b> · <span class="mono">C.C. '+esc(c.cedula||'—')+'</span><br>'+esc(c.cargo||'Sin cargo')+(c.area?(' · '+esc(c.area)):'')+(c.correo?('<br>'+esc(c.correo)):'');
+    d.innerHTML='<b>'+esc(c.nombre)+'</b> · <span class="mono">C.C. '+esc(c.cedula||'—')+'</span><br>'+esc(c.cargo||'Sin cargo')+(c.area?(' · '+esc(c.area)):'')+(c.correo?('<br>'+esc(c.correo)):'')+(c.tipo_contrato?(' · '+esc(c.tipo_contrato)):'');
   } else d.style.display='none';
+  if($('avisoTipo'))$('avisoTipo').style.display=((f==='contrato'||f==='anexo')&&c&&c.tipo_contrato==='Prestación de servicios')?'block':'none';
   var m=$('measurer');
-  m.innerHTML=f==='llamado'?renderLlamado():renderCompromiso();
+  if(f==='llamado')m.innerHTML=renderLlamado();
+  else if(f==='compromiso')m.innerHTML=renderCompromiso();
+  else if(f==='contrato')m.innerHTML=renderContrato();
+  else if(f==='anexo')m.innerHTML=renderAnexo();
+  else if(f==='politica')m.innerHTML=renderPolitica();
+  else if(f==='carta')m.innerHTML=renderCarta();
   var imgs=[].slice.call(m.querySelectorAll('img')).filter(function(i){return !i.complete;});
   if(imgs.length){imgs.forEach(function(i){i.onload=paginar;i.onerror=paginar;});}
   paginar();
 }
 
 // ===== Registro + impresión =====
+function tipoYAsunto(f){
+  if(f==='llamado')return {tipo:'Llamado de Atención',asunto:$('fAsunto').value};
+  if(f==='compromiso')return {tipo:'Compromiso de Metas',asunto:'Metas '+fechaLarga($('fDesde').value)+' a '+fechaLarga($('fHasta').value)};
+  if(f==='contrato')return {tipo:'Contrato Indefinido',asunto:'Contrato a término indefinido'};
+  if(f==='anexo')return {tipo:'Anexo de Funciones',asunto:'Anexo funciones — '+((window.ESTANDARES_FUNCIONES&&window.ESTANDARES_FUNCIONES[$('fEstandar').value])?window.ESTANDARES_FUNCIONES[$('fEstandar').value].label:'')};
+  if(f==='politica')return {tipo:'Política Recursos Tecnológicos',asunto:'Política sobre recursos tecnológicos e información'};
+  if(f==='carta')return {tipo:'Carta Laboral',asunto:'Carta laboral'};
+  return {tipo:f,asunto:''};
+}
 function registrar(cb){
   var c=cola();
   if(!c){toast('Selecciona el colaborador.');return;}
   var f=$('fFormato').value;
+  var ta=tipoYAsunto(f);
   var row={
     colaborador_id:c.id,
-    tipo:f==='llamado'?'Llamado de Atención':'Compromiso de Metas',
-    asunto:f==='llamado'?$('fAsunto').value:('Metas '+fechaLarga($('fDesde').value)+' a '+fechaLarga($('fHasta').value)),
+    tipo:ta.tipo,
+    asunto:ta.asunto,
     fecha_documento:$('fFecha').value||hoyISO(),
     generado_por:$('pgUser').textContent
   };
   sb.from('rrhh_actas').insert(row).then(function(r){
     if(r.error){toast('Error registrando: '+r.error.message);return;}
     toast('Acta registrada ✓');
+    if(f==='contrato'&&$('chkGuardarSalarioContrato')&&$('chkGuardarSalarioContrato').checked){
+      sb.from('rrhh_colaboradores').update({salario_base:Number($('fSalarioContrato').value)||null}).eq('id',c.id).then(function(ur){
+        if(ur.error)console.error('Error guardando salario en ficha:',ur.error.message);
+      });
+    }
+    if(f==='carta'&&$('chkGuardarFichaCarta')&&$('chkGuardarFichaCarta').checked){
+      sb.from('rrhh_colaboradores').update({salario_base:Number($('fSalarioCarta').value)||null,fecha_ingreso:$('fFechaIngresoCarta').value||null}).eq('id',c.id).then(function(ur){
+        if(ur.error)console.error('Error guardando ficha:',ur.error.message);
+      });
+    }
     if(cb)cb();
   });
 }
@@ -427,7 +899,7 @@ function onAuthed(session){
     $('ovBlockMail').textContent=email;$('ovBlock').style.display='flex';
     return;
   }
-  $('ovBlock').style.display='none';(function(){if(window.pgRevisarNovedades)return;var st=document.createElement('style');st.id='pgnovStyle';st.textContent='.pgnov-ov{position:fixed;inset:0;z-index:999;background:rgba(0,30,38,.72);display:flex;align-items:center;justify-content:center;padding:18px;}.pgnov-card{background:#fff;border-radius:14px;max-width:440px;width:100%;padding:26px 28px;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:Arial,Helvetica,sans-serif;}.pgnov-tag{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#229A82;margin-bottom:6px;}.pgnov-card h3{margin:0 0 12px;font-size:18px;color:#002F3D;}.pgnov-card p{margin:0 0 20px;font-size:13.5px;line-height:1.6;color:#333;white-space:pre-wrap;}.pgnov-card button{width:100%;padding:11px;border:none;border-radius:9px;background:#229A82;color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;}.pgnov-card button:hover{background:#1a7a68;}.pgnov-count{font-size:11px;color:#8da0ad;text-align:center;margin-top:10px;}';document.head.appendChild(st);window.pgRevisarNovedades=function(sbClient,area){if(!sbClient||!area)return;sbClient.rpc('novedades_pendientes',{p_area:area}).then(function(r){if(r.error||!r.data||!r.data.length)return;var cola=r.data.slice();function mostrar(){if(!cola.length){var ov0=document.getElementById('pgnovOv');if(ov0)ov0.remove();return;}var n=cola[0];var ov=document.getElementById('pgnovOv');if(!ov){ov=document.createElement('div');ov.id='pgnovOv';ov.className='pgnov-ov';ov.innerHTML='<div class="pgnov-card"><div class="pgnov-tag">📢 Novedad ProtectGo</div><h3 id="pgnovT"></h3><p id="pgnovB"></p><button id="pgnovBtn" type="button">Ya lo leí, entendido</button><div class="pgnov-count" id="pgnovC"></div></div>';document.body.appendChild(ov);document.getElementById('pgnovBtn').addEventListener('click',function(){var actual=cola[0];if(!actual)return;sbClient.rpc('marcar_novedad_leida',{p_novedad_id:actual.id}).then(function(){cola.shift();mostrar();});});}document.getElementById('pgnovT').textContent=n.titulo||'';document.getElementById('pgnovB').textContent=n.cuerpo||'';document.getElementById('pgnovC').textContent=cola.length>1?('1 de '+cola.length+' novedades pendientes'):'';}mostrar();});};})();pgRevisarNovedades(sb,'rrhh');
+  $('ovBlock').style.display='none';
   $('pgUser').textContent=email;
   $('ov').style.display='none';$('app').style.display='block';
   cargar();
@@ -458,7 +930,7 @@ function wire(){
   $('fMes').value=mesAct.charAt(0).toUpperCase()+mesAct.slice(1)+' '+new Date().getFullYear();
   resetTextos(true);
   $('tObj').value=defObj();
-  ['fFormato','fCola','fFecha','fAsunto','fMeta','fHist','fDesde','fHasta'].forEach(function(id){$(id).addEventListener('input',render);$(id).addEventListener('change',render);});
+  ['fFormato','fCola','fFecha','fAsunto','fMeta','fHist','fDesde','fHasta','fSalarioContrato','fAuxContrato','fEstandar','fFechaIngresoCarta','fSalarioCarta','fComisionesCarta'].forEach(function(id){if($(id)){$(id).addEventListener('input',render);$(id).addEventListener('change',render);}});
   ['tIntro','tHechos','tConsid','tReq','tCierre','tObj'].forEach(function(id){
     $(id).addEventListener('input',function(){var k=this.getAttribute('data-blk');if(k)dirty[k]=true;render();});
   });

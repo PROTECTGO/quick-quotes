@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa de Puestos · ProtectGo</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  :root{--petrol:#002F3D;--petrol2:#001E28;--teal:#2DBFA3;--teal2:#229A82;--menta:#BADFCE;--menta2:#E4F2EB;--bg:#FAF9F5;--muted:#4a6a75}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);font-family:Inter,sans-serif;color:var(--petrol);padding:18px}
+  h1{font-family:Montserrat,sans-serif;font-size:20px;margin:0 0 2px}
+  .sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;max-width:1280px;margin:0 auto 12px}
+  .badge{display:inline-block;background:var(--teal);color:#fff;font-family:Montserrat,sans-serif;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px}
+  .who{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,47,61,.08);padding:8px 12px;font-size:12px;display:flex;align-items:center;gap:8px}
+  .who input{border:1px solid #cfe0e4;border-radius:6px;padding:4px 8px;font-size:12px;width:190px}
+  .who button{border:none;background:var(--petrol);color:#fff;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:Montserrat,sans-serif;font-weight:700}
+  .pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;font-family:Montserrat,sans-serif}
+  .pill.edit{background:var(--menta);color:var(--petrol2)}
+  .pill.view{background:#eee;color:var(--muted)}
+  .layout{display:flex;gap:16px;align-items:flex-start;max-width:1280px;margin:0 auto;flex-wrap:wrap}
+  .planos{flex:1;min-width:640px;display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .oficina{border:3px solid var(--petrol);border-radius:12px;background:#fff;padding:12px;position:relative;min-height:600px}
+  .of1{border-top-right-radius:0;border-bottom-right-radius:0;border-right-width:1.5px}
+  .of2{border-top-left-radius:0;border-bottom-left-radius:0;border-left-width:1.5px}
+  .of-title{font-family:Montserrat,sans-serif;font-weight:800;font-size:13px;letter-spacing:1px;text-align:center;margin-bottom:4px}
+  .ventanal{height:6px;background:var(--teal);border-radius:99px;margin:0 30px 6px}
+  .zona-label{font-size:10px;font-weight:700;font-family:Montserrat,sans-serif;color:var(--muted);letter-spacing:1px;text-align:center;margin:6px 0 4px}
+  .fila-v{display:flex;gap:10px;justify-content:center;margin-bottom:10px}
+  .cuerpo{display:flex;gap:8px}
+  .bahia{display:flex;flex-direction:column;gap:12px}
+  .col2{display:flex;gap:10px}
+  .pasillo{flex:1;display:flex;align-items:center;justify-content:center;color:#b6c6cc;font-style:italic;font-size:12px;letter-spacing:3px;writing-mode:vertical-rl;min-height:400px}
+  .entrada{position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);width:110px;height:8px;background:var(--petrol);border-radius:4px}
+  .entrada-label{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;font-family:Montserrat,sans-serif}
+  .puesto{width:80px;height:92px;border:2px solid var(--teal);border-radius:10px;background:var(--menta2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;transition:.15s}
+  .puesto.vent{border-color:var(--teal2);background:var(--menta)}
+  .puesto .num{position:absolute;top:3px;left:6px;font-size:9px;font-weight:700;font-family:Montserrat,sans-serif;color:var(--teal2)}
+  .puesto.dragover{background:#fff;border-style:dashed;transform:scale(1.05)}
+  .puesto.locked{opacity:.55;cursor:not-allowed}
+  .avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;box-shadow:0 2px 6px rgba(0,47,61,.25);cursor:grab}
+  .pname{font-size:8px;font-weight:600;text-align:center;line-height:1.1;max-width:76px}
+  .vacio{font-size:9px;color:#9db3ba;font-style:italic}
+  .banca{width:230px;background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,47,61,.08);padding:14px;flex-shrink:0}
+  .banca h2{font-family:Montserrat,sans-serif;font-size:12px;letter-spacing:1px;margin:0 0 8px;color:var(--petrol)}
+  .banca .chips{display:flex;flex-wrap:wrap;gap:8px;min-height:60px}
+  .chip{display:flex;flex-direction:column;align-items:center;width:60px;cursor:grab}
+  .chip img{width:42px;height:42px;border-radius:50%;object-fit:cover;box-shadow:0 2px 5px rgba(0,47,61,.2)}
+  .chip span{font-size:8px;font-weight:600;text-align:center;line-height:1.1;margin-top:2px}
+  .hint{font-size:10px;color:var(--muted);margin-top:10px;line-height:1.4;background:var(--menta2);border-radius:8px;padding:8px}
+  .histbtn{margin-top:10px;width:100%;border:1px solid var(--petrol);background:#fff;color:var(--petrol);border-radius:6px;padding:6px;font-size:11px;font-family:Montserrat,sans-serif;font-weight:700;cursor:pointer}
+  .modal{display:none;position:fixed;inset:0;background:rgba(0,30,40,.5);align-items:center;justify-content:center;z-index:50}
+  .modal.open{display:flex}
+  .modal-box{background:#fff;border-radius:14px;padding:18px;max-width:480px;width:92%;max-height:80vh;overflow:auto}
+  .modal-box h3{font-family:Montserrat,sans-serif;margin:0 0 10px}
+  .hist-row{font-size:12px;padding:6px 0;border-bottom:1px solid #eee}
+  .close-x{float:right;cursor:pointer;font-weight:700;color:var(--muted)}
+  .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--petrol);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;opacity:0;transition:.3s;pointer-events:none}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div>
+    <span class="badge">MAPA DE PUESTOS · ProtectGo</span>
+    <h1>Oficina · Distribución mensual</h1>
+    <div class="sub">Brahiam mueve las fotos cada mes al rotar puestos. El resto del equipo puede consultar quién está dónde.</div>
+  </div>
+  <div class="who">
+    <span id="whoLabel">Solo consulta</span>
+    <input id="emailInput" type="email" placeholder="correo" style="width:150px">
+    <input id="passInput" type="password" placeholder="contraseña" style="width:110px">
+    <button onclick="loginBrahiam()">Entrar</button>
+    <button id="logoutBtn" onclick="logout()" style="display:none;background:#8aa3ac">Salir</button>
+    <span id="rolePill" class="pill view" style="display:none"></span>
+  </div>
+</div>
+<div class="layout">
+  <div class="planos">
+    <div class="oficina of1">
+      <div class="of-title">OFICINA 1</div>
+      <div class="ventanal"></div>
+      <div class="zona-label">VENTANAL 1</div>
+      <div class="fila-v">
+        <div class="puesto vent" data-id="V1"><span class="num">V1</span></div>
+        <div class="puesto vent" data-id="V2"><span class="num">V2</span></div>
+        <div class="puesto vent" data-id="V3"><span class="num">V3</span></div>
+        <div class="puesto vent" data-id="V4"><span class="num">V4</span></div>
+      </div>
+      <div class="cuerpo">
+        <div>
+          <div class="zona-label">BAHÍA 1 · 4+4</div>
+          <div class="bahia">
+            <div class="col2"><div class="puesto" data-id="P1"><span class="num">P1</span></div><div class="puesto" data-id="F1"><span class="num">F1</span></div></div>
+            <div class="col2"><div class="puesto" data-id="P2"><span class="num">P2</span></div><div class="puesto" data-id="F2"><span class="num">F2</span></div></div>
+            <div class="col2"><div class="puesto" data-id="P3"><span class="num">P3</span></div><div class="puesto" data-id="F3"><span class="num">F3</span></div></div>
+            <div class="col2"><div class="puesto" data-id="P4"><span class="num">P4</span></div><div class="puesto" data-id="F4"><span class="num">F4</span></div></div>
+          </div>
+        </div>
+        <div class="pasillo">PASILLO</div>
+      </div>
+      <div class="entrada"></div><div class="entrada-label">ENTRADA 1</div>
+    </div>
+    <div class="oficina of2">
+      <div class="of-title">OFICINA 2</div>
+      <div class="ventanal"></div>
+      <div class="zona-label">VENTANAL 2</div>
+      <div class="fila-v">
+        <div class="puesto vent" data-id="V5"><span class="num">V5</span></div>
+        <div class="puesto vent" data-id="V6"><span class="num">V6</span></div>
+        <div class="puesto vent" data-id="V7"><span class="num">V7</span></div>
+        <div class="puesto vent" data-id="V8"><span class="num">V8</span></div>
+      </div>
+      <div class="cuerpo">
+        <div class="pasillo">PASILLO</div>
+        <div>
+          <div class="zona-label">BAHÍA 2 · 5+5</div>
+          <div class="bahia">
+            <div class="col2"><div class="puesto" data-id="F5"><span class="num">F5</span></div><div class="puesto" data-id="P5"><span class="num">P5</span></div></div>
+            <div class="col2"><div class="puesto" data-id="F6"><span class="num">F6</span></div><div class="puesto" data-id="P6"><span class="num">P6</span></div></div>
+            <div class="col2"><div class="puesto" data-id="F7"><span class="num">F7</span></div><div class="puesto" data-id="P7"><span class="num">P7</span></div></div>
+            <div class="col2"><div class="puesto" data-id="F8"><span class="num">F8</span></div><div class="puesto" data-id="P8"><span class="num">P8</span></div></div>
+            <div class="col2"><div class="puesto" data-id="F9"><span class="num">F9</span></div><div class="puesto" data-id="P9"><span class="num">P9</span></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="entrada"></div><div class="entrada-label">ENTRADA 2</div>
+    </div>
+  </div>
+  <div class="banca">
+    <h2>SIN PUESTO (banca)</h2>
+    <div class="chips" id="banca"></div>
+    <button class="histbtn" onclick="loadHistorial()">Ver historial de cambios</button>
+    <div class="hint" id="hintBox">Cargando…</div>
+  </div>
+</div>
+
+<div class="modal" id="histModal">
+  <div class="modal-box">
+    <span class="close-x" onclick="document.getElementById('histModal').classList.remove('open')">✕</span>
+    <h3>Historial de cambios</h3>
+    <div id="histList">Cargando…</div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = "https://bwqzypuiqgxzsrtsueab.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3cXp5cHVpcWd4enNydHN1ZWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDc1NzAsImV4cCI6MjA5NjU4MzU3MH0.Cp313Eaqpl7A1zWJqTES646Jj57Wfg40SVeG_VvrXag";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let colaboradores = {};   // id -> {nombre, foto}
+let admins = [];          // lista de correos con permiso de editar
+let asignaciones = {};    // puesto_id -> colaborador_id
+let miCorreo = '';
+let puedoEditar = false;
+let dragged = null;
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+async function cargarTodo(){
+  const [{data: fotos}, {data: admin}, {data: asigs}] = await Promise.all([
+    sb.from('mapa_fotos').select('colaborador_id, foto_data_url, rrhh_colaboradores(nombre)'),
+    sb.from('mapa_admins').select('correo'),
+    sb.from('mapa_asignaciones').select('puesto_id, colaborador_id').eq('activo', true)
+  ]);
+  admins = (admin||[]).map(a=>a.correo.toLowerCase());
+  colaboradores = {};
+  (fotos||[]).forEach(f=>{
+    colaboradores[f.colaborador_id] = { nombre: f.rrhh_colaboradores?.nombre || '(sin nombre)', foto: f.foto_data_url };
+  });
+  asignaciones = {};
+  (asigs||[]).forEach(a=> asignaciones[a.puesto_id] = a.colaborador_id);
+  render();
+}
+
+function render(){
+  document.querySelectorAll('.puesto').forEach(p=>{
+    p.querySelectorAll('.pwrap, .vacio').forEach(n=>n.remove());
+    const pid = p.dataset.id;
+    const cid = asignaciones[pid];
+    if(cid && colaboradores[cid]){
+      p.appendChild(personEl(cid));
+    } else {
+      const v = document.createElement('span'); v.className='vacio'; v.textContent='vacío';
+      p.appendChild(v);
+    }
+    p.classList.toggle('locked', !puedoEditar);
+  });
+  const asignados = new Set(Object.values(asignaciones));
+  const banca = document.getElementById('banca');
+  banca.innerHTML = '';
+  Object.keys(colaboradores).forEach(cid=>{
+    if(!asignados.has(cid)) banca.appendChild(mkChip(cid));
+  });
+  document.getElementById('hintBox').textContent = puedoEditar
+    ? 'Arrastra una foto a un puesto para asignarla. Los cambios se guardan al instante y quedan en el historial.'
+    : 'Modo solo consulta. Si necesitas mover a alguien, pídeselo a Brahiam.';
+}
+
+function personEl(cid){
+  const c = colaboradores[cid];
+  const w = document.createElement('div');
+  w.className = 'pwrap'; w.draggable = puedoEditar; w.dataset.cid = cid;
+  w.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px';
+  w.innerHTML = `<img class="avatar" src="${c.foto}" draggable="false"><span class="pname">${c.nombre}</span>`;
+  if(puedoEditar) w.addEventListener('dragstart', ()=>{ dragged = w; });
+  return w;
+}
+function mkChip(cid){
+  const c = colaboradores[cid];
+  const d = document.createElement('div');
+  d.className = 'chip'; d.draggable = puedoEditar; d.dataset.cid = cid;
+  d.innerHTML = `<img src="${c.foto}" draggable="false"><span>${c.nombre}</span>`;
+  if(puedoEditar) d.addEventListener('dragstart', ()=>{ dragged = d; });
+  return d;
+}
+
+async function moverA(cid, puestoDestino){
+  // Cierra cualquier asignación activa previa de este colaborador
+  await sb.from('mapa_asignaciones').update({activo:false, fecha_fin: new Date().toISOString().slice(0,10)}).eq('colaborador_id', cid).eq('activo', true);
+  if(puestoDestino){
+    // Si el puesto destino tenía a otra persona, la desaloja (vuelve a banca)
+    const ocupante = asignaciones[puestoDestino];
+    if(ocupante && ocupante !== cid){
+      await sb.from('mapa_asignaciones').update({activo:false, fecha_fin: new Date().toISOString().slice(0,10)}).eq('colaborador_id', ocupante).eq('activo', true);
+    }
+    await sb.from('mapa_asignaciones').insert({puesto_id: puestoDestino, colaborador_id: cid, asignado_por: miCorreo});
+  }
+  await cargarTodo();
+  toast('Cambio guardado');
+}
+
+document.querySelectorAll('.puesto').forEach(p=>{
+  p.addEventListener('dragover', ev=>{ if(puedoEditar){ ev.preventDefault(); p.classList.add('dragover'); }});
+  p.addEventListener('dragleave', ()=> p.classList.remove('dragover'));
+  p.addEventListener('drop', async ev=>{
+    ev.preventDefault(); p.classList.remove('dragover');
+    if(!puedoEditar || !dragged) return;
+    const cid = dragged.dataset.cid;
+    await moverA(cid, p.dataset.id);
+    dragged = null;
+  });
+});
+document.getElementById('banca').addEventListener('dragover', ev=>{ if(puedoEditar) ev.preventDefault(); });
+document.getElementById('banca').addEventListener('drop', async ev=>{
+  ev.preventDefault();
+  if(!puedoEditar || !dragged) return;
+  const cid = dragged.dataset.cid;
+  await moverA(cid, null);
+  dragged = null;
+});
+
+async function loginBrahiam(){
+  const email = document.getElementById('emailInput').value.trim().toLowerCase();
+  const pass = document.getElementById('passInput').value;
+  if(!email || !pass){ toast('Escribe correo y contraseña'); return; }
+  if(!admins.includes(email)){
+    toast('Este correo no tiene permiso de edición aquí');
+    return;
+  }
+  const {data, error} = await sb.auth.signInWithPassword({email, password: pass});
+  if(error){ toast('Contraseña incorrecta'); return; }
+  miCorreo = email;
+  puedoEditar = true;
+  document.getElementById('emailInput').style.display = 'none';
+  document.getElementById('passInput').style.display = 'none';
+  document.querySelector('.who button[onclick="loginBrahiam()"]').style.display = 'none';
+  document.getElementById('logoutBtn').style.display = 'inline-block';
+  const pill = document.getElementById('rolePill');
+  pill.style.display = 'inline-block';
+  pill.textContent = 'Editando como ' + email;
+  pill.className = 'pill edit';
+  document.getElementById('whoLabel').textContent = '';
+  render();
+}
+async function logout(){
+  await sb.auth.signOut();
+  miCorreo = ''; puedoEditar = false;
+  document.getElementById('emailInput').style.display = 'inline-block';
+  document.getElementById('passInput').style.display = 'inline-block';
+  document.querySelector('.who button[onclick="loginBrahiam()"]').style.display = 'inline-block';
+  document.getElementById('logoutBtn').style.display = 'none';
+  document.getElementById('emailInput').value=''; document.getElementById('passInput').value='';
+  document.getElementById('whoLabel').textContent = 'Solo consulta';
+  const pill = document.getElementById('rolePill');
+  pill.style.display = 'inline-block';
+  pill.textContent = 'Solo consulta';
+  pill.className = 'pill view';
+  render();
+}
+
+async function loadHistorial(){
+  document.getElementById('histModal').classList.add('open');
+  const {data} = await sb.from('mapa_asignaciones')
+    .select('puesto_id, colaborador_id, fecha_inicio, fecha_fin, activo, asignado_por')
+    .order('fecha_inicio', {ascending:false}).limit(60);
+  const box = document.getElementById('histList');
+  box.innerHTML = '';
+  (data||[]).forEach(r=>{
+    const nombre = colaboradores[r.colaborador_id]?.nombre || r.colaborador_id;
+    const row = document.createElement('div');
+    row.className = 'hist-row';
+    row.textContent = `${r.puesto_id} — ${nombre} · desde ${r.fecha_inicio}${r.fecha_fin ? ' hasta '+r.fecha_fin : ' (activo)'}${r.asignado_por ? ' · por '+r.asignado_por : ''}`;
+    box.appendChild(row);
+  });
+  if(!data || !data.length) box.textContent = 'Aún no hay movimientos registrados.';
+}
+
+(async function init(){
+  await cargarTodo();
+})();
+</script>
+</body>
+</html>

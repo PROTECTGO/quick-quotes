@@ -40,13 +40,17 @@
   .puesto .num{position:absolute;top:3px;left:6px;font-size:9px;font-weight:700;font-family:Montserrat,sans-serif;color:var(--teal2)}
   .puesto.dragover{background:#fff;border-style:dashed;transform:scale(1.05)}
   .puesto.locked{opacity:.55;cursor:not-allowed}
-  .avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;box-shadow:0 2px 6px rgba(0,47,61,.25);cursor:grab}
+  .puesto.editable{cursor:pointer}
+  .puesto.puedeSoltar{background:#fff;border-style:dashed;border-color:var(--teal2);box-shadow:0 0 0 3px rgba(45,191,163,.35)}
+  .avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;box-shadow:0 2px 6px rgba(0,47,61,.25);cursor:pointer}
   .pname{font-size:8px;font-weight:600;text-align:center;line-height:1.1;max-width:76px}
   .vacio{font-size:9px;color:#9db3ba;font-style:italic}
   .banca{width:230px;background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,47,61,.08);padding:14px;flex-shrink:0}
   .banca h2{font-family:Montserrat,sans-serif;font-size:12px;letter-spacing:1px;margin:0 0 8px;color:var(--petrol)}
   .banca .chips{display:flex;flex-wrap:wrap;gap:8px;min-height:60px}
-  .chip{display:flex;flex-direction:column;align-items:center;width:60px;cursor:grab}
+  .banca.puedeSoltar{outline:2px dashed var(--teal2);outline-offset:4px;border-radius:10px}
+  .chip{display:flex;flex-direction:column;align-items:center;width:60px;cursor:pointer}
+  .pwrap.seleccionado .avatar, .chip.seleccionado img{outline:3px solid var(--teal2);outline-offset:2px;box-shadow:0 0 0 5px rgba(45,191,163,.35)}
   .chip img{width:42px;height:42px;border-radius:50%;object-fit:cover;box-shadow:0 2px 5px rgba(0,47,61,.2)}
   .chip span{font-size:8px;font-weight:600;text-align:center;line-height:1.1;margin-top:2px}
   .hint{font-size:10px;color:var(--muted);margin-top:10px;line-height:1.4;background:var(--menta2);border-radius:8px;padding:8px}
@@ -156,7 +160,7 @@ let admins = [];          // lista de correos con permiso de editar
 let asignaciones = {};    // puesto_id -> colaborador_id
 let miCorreo = '';
 let puedoEditar = false;
-let dragged = null;
+let seleccionado = null; // colaborador_id seleccionado para mover
 
 function toast(msg){
   const t = document.getElementById('toast');
@@ -192,6 +196,7 @@ function render(){
       p.appendChild(v);
     }
     p.classList.toggle('locked', !puedoEditar);
+    p.classList.toggle('editable', puedoEditar);
   });
   const asignados = new Set(Object.values(asignaciones));
   const banca = document.getElementById('banca');
@@ -200,26 +205,34 @@ function render(){
     if(!asignados.has(cid)) banca.appendChild(mkChip(cid));
   });
   document.getElementById('hintBox').textContent = puedoEditar
-    ? 'Arrastra una foto a un puesto para asignarla. Los cambios se guardan al instante y quedan en el historial.'
+    ? (seleccionado
+        ? 'Foto seleccionada: toca el puesto (o "banca") donde quieres ponerla.'
+        : 'Toca una foto para seleccionarla y luego toca el puesto donde quieres ponerla. Los cambios se guardan al instante y quedan en el historial.')
     : 'Modo solo consulta. Si necesitas mover a alguien, pídeselo a Brahiam.';
 }
 
 function personEl(cid){
   const c = colaboradores[cid];
   const w = document.createElement('div');
-  w.className = 'pwrap'; w.draggable = puedoEditar; w.dataset.cid = cid;
+  w.className = 'pwrap' + (seleccionado===cid ? ' seleccionado' : ''); w.dataset.cid = cid;
   w.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px';
-  w.innerHTML = `<img class="avatar" src="${c.foto}" draggable="false"><span class="pname">${c.nombre}</span>`;
-  if(puedoEditar) w.addEventListener('dragstart', ()=>{ dragged = w; });
+  w.innerHTML = `<img class="avatar" src="${c.foto}"><span class="pname">${c.nombre}</span>`;
+  if(puedoEditar) w.addEventListener('click', ev=>{ ev.stopPropagation(); seleccionar(cid); });
   return w;
 }
 function mkChip(cid){
   const c = colaboradores[cid];
   const d = document.createElement('div');
-  d.className = 'chip'; d.draggable = puedoEditar; d.dataset.cid = cid;
-  d.innerHTML = `<img src="${c.foto}" draggable="false"><span>${c.nombre}</span>`;
-  if(puedoEditar) d.addEventListener('dragstart', ()=>{ dragged = d; });
+  d.className = 'chip' + (seleccionado===cid ? ' seleccionado' : ''); d.dataset.cid = cid;
+  d.innerHTML = `<img src="${c.foto}"><span>${c.nombre}</span>`;
+  if(puedoEditar) d.addEventListener('click', ev=>{ ev.stopPropagation(); seleccionar(cid); });
   return d;
+}
+
+function seleccionar(cid){
+  if(!puedoEditar) return;
+  seleccionado = (seleccionado === cid) ? null : cid;
+  render();
 }
 
 async function moverA(cid, puestoDestino){
@@ -238,23 +251,19 @@ async function moverA(cid, puestoDestino){
 }
 
 document.querySelectorAll('.puesto').forEach(p=>{
-  p.addEventListener('dragover', ev=>{ if(puedoEditar){ ev.preventDefault(); p.classList.add('dragover'); }});
-  p.addEventListener('dragleave', ()=> p.classList.remove('dragover'));
-  p.addEventListener('drop', async ev=>{
-    ev.preventDefault(); p.classList.remove('dragover');
-    if(!puedoEditar || !dragged) return;
-    const cid = dragged.dataset.cid;
+  p.addEventListener('click', async ()=>{
+    if(!puedoEditar || !seleccionado) return;
+    const cid = seleccionado;
+    seleccionado = null;
     await moverA(cid, p.dataset.id);
-    dragged = null;
   });
 });
-document.getElementById('banca').addEventListener('dragover', ev=>{ if(puedoEditar) ev.preventDefault(); });
-document.getElementById('banca').addEventListener('drop', async ev=>{
-  ev.preventDefault();
-  if(!puedoEditar || !dragged) return;
-  const cid = dragged.dataset.cid;
+document.getElementById('banca').addEventListener('click', async ev=>{
+  if(!puedoEditar || !seleccionado) return;
+  if(ev.target.closest('.chip')) return; // click sobre otra foto ya lo maneja seleccionar()
+  const cid = seleccionado;
+  seleccionado = null;
   await moverA(cid, null);
-  dragged = null;
 });
 
 async function loginBrahiam(){
@@ -282,7 +291,7 @@ async function loginBrahiam(){
 }
 async function logout(){
   await sb.auth.signOut();
-  miCorreo = ''; puedoEditar = false;
+  miCorreo = ''; puedoEditar = false; seleccionado = null;
   document.getElementById('emailInput').style.display = 'inline-block';
   document.getElementById('passInput').style.display = 'inline-block';
   document.querySelector('.who button[onclick="loginBrahiam()"]').style.display = 'inline-block';

@@ -134,6 +134,7 @@
           </optgroup>
           <optgroup label="Vinculación">
             <option value="contrato">Contrato a Término Indefinido</option>
+            <option value="prestacion">Contrato Prestación de Servicios</option>
             <option value="anexo">Anexo de Funciones</option>
             <option value="politica">Política de Recursos Tecnológicos</option>
           </optgroup>
@@ -214,6 +215,13 @@
         <div class="f"><label>Salario básico mensual</label><input type="number" id="fSalarioContrato" placeholder="Ej: 2500000"></div>
         <div class="f"><label>Auxilio de transporte 2026</label><input type="number" id="fAuxContrato" value="249095"></div>
         <div class="f" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="chkGuardarSalarioContrato" style="width:auto"><label style="text-transform:none;font-weight:400">Guardar este salario en la ficha del colaborador</label></div>
+      </div>
+      <!-- Campos PRESTACIÓN DE SERVICIOS -->
+      <div id="grpPrestacion" style="display:none">
+        <div class="f"><label>Valor mensual del contrato (honorarios)</label><input type="number" id="fValorPrestacion" placeholder="Ej: 1750905"></div>
+        <div class="f"><label>Término (meses)</label><input type="number" id="fTerminoPrestacion" value="12" min="1"></div>
+        <div class="f"><label>Fecha de inicio</label><input type="date" id="fInicioPrestacion"></div>
+        <div class="f" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="chkGuardarValorPrestacion" style="width:auto"><label style="text-transform:none;font-weight:400">Guardar este valor en la ficha del colaborador</label></div>
       </div>
       <!-- Campos ANEXO -->
       <div id="grpAnexo" style="display:none">
@@ -570,6 +578,64 @@ function renderContrato(){
   return h;
 }
 
+function renderPrestacion(){
+  var c=cola();
+  var fecha=$('fFecha').value;
+  var valor=$('fValorPrestacion').value;
+  var termino=$('fTerminoPrestacion').value||'____';
+  var inicio=$('fInicioPrestacion').value;
+  var h=membrete();
+  h += '<div class="titulo-doc">Contrato Prestación de Servicios entre ProtectGo S.A.S y '+esc(c?c.nombre.toUpperCase():'____________')+'</div>';
+
+  h += '<p>En la ciudad de Sabaneta Antioquia: respectivamente a los '+(fecha?fechaLarga(fecha).split(' de ')[0]:'____')+' días del mes de '+(fecha?fechaLarga(fecha).split(' de ')[1]:'____')+' de '+(fecha?fechaLarga(fecha).split(' de ')[2]:'____')+'</p>';
+
+  h += '<div class="sec-t">Comparecen</div>';
+  h += '<div class="campo"><b>PROTECTGO S.A.S.</b><br>NIT. 901.633.503.8<br>Representada legalmente por<br>JORGE ANDRES LOPEZ LOPEZ<br>(En adelante, "Contratante")</div>';
+  h += '<div class="campo" style="margin-top:14px"><b>'+esc(c?c.nombre:'____________')+'</b><br>CC. '+esc(c&&c.cedula?c.cedula:'____________')+'<br>(En adelante, "Contratista")</div>';
+
+  h += '<p style="margin-top:14px">El "Contratante" y el "Contratista", en adelante se denominará en su conjunto las "Partes" y cada uno como una "Parte".</p>';
+  h += '<p>Este Contrato, está regido por las cláusulas que a continuación se establecen y en lo no dispuesto en ellas, por las normas comerciales y civiles vigentes que resulten aplicables, atendiendo a las siguientes:</p>';
+
+  h += '<div class="sec-t">Consideraciones</div>';
+  h += '<p>Que el Contratante requiere contratar los servicios relacionados con los conocimientos que tiene el Contratista, por lo que las partes han convenido la celebración de un contrato de prestación de servicios independientes.</p>';
+  h += '<p>Que el Contratista actuará con libertad y autonomía, sin más sujeción que a las instrucciones generales que le sean dadas por el Contratante para la prestación de sus servicios.</p>';
+
+  h += '<div class="sec-t">Cláusulas</div>';
+  h += '<p><b>Primera - Objeto.</b> El CONTRATISTA se compromete para con el CONTRATANTE de manera independiente, es decir, sin que exista subordinación y utilizando sus propios medios, a prestar el servicio de desarrollo de funciones administrativas, las cuales serán acordadas entre el contratante y el contratista, en anexo el cual será parte integrante de este contrato.</p>';
+
+  h += '<p><b>Segunda - Obligaciones.</b> El CONTRATISTA se obliga para con el CONTRATANTE a:</p>';
+  h += '<ol><li>Prestar el servicio con eficiencia y calidad hasta la terminación del contrato.</li><li>Dar cumplimiento a las actividades acordadas entre las partes, en los plazos acordados.</li><li>Atender a las observaciones dadas para el contratante para un correcto desarrollo de la prestación del servicio.</li><li>Dar cumplimento a las normas en materia tributaria que rigen para este tipo de contratos.</li><li>Demás que ordene la ley.</li></ol>';
+
+  h += '<p>El CONTRATANTE se obliga para con el CONTRATISTA a:</p>';
+  h += '<ol><li>Cubrir el monto de los honorarios.</li><li>Suministrar toda la información que requiera el contratista.</li><li>Dar cumplimento a las normas en materia tributaria que rigen para este tipo de contratos.</li><li>Demás que ordene la ley.</li></ol>';
+
+  h += '<p><b>Tercera - Término.</b> El término de duración del presente contrato será de '+esc(termino)+' meses, contados a partir del día '+(inicio?fechaLarga(inicio):'____________')+'.</p>';
+  h += '<p><b>Parágrafo.</b> El contrato No tendrá prórroga automática y no hay necesidad de dar aviso antes de su expiración, en caso de requerir un periodo adicional, conjuntamente entre las partes a través de un otrosí podrá prorrogarse el mismo por el término necesario.</p>';
+
+  h += '<p><b>Cuarta - Valor del contrato.</b> El valor mensual del presente contrato se establece en la suma de '+money(valor)+' ('+pesosALetras(valor)+') de pesos M/CTE</p>';
+
+  h += '<p><b>Quinta - Terminación del contrato.</b> El presente Contrato terminará por alguno de los siguientes eventos:</p>';
+  h += '<ul><li>Por el vencimiento del término pactado.</li><li>Unilateralmente por cualquiera de las partes, ante la ocurrencia debidamente comprobada de trasgresión a las obligaciones y estipulaciones aquí pactadas.</li><li>Unilateralmente por parte del contratante en caso de no requerir más el servicio.</li><li>Por mutuo acuerdo entre las Partes.</li><li>Por imposibilidad jurídica o, de hecho, ajena a la voluntad de las partes que impida la ejecución del presente Contrato.</li><li>Por las demás causales previstas expresamente en este Contrato.</li></ul>';
+
+  h += '<p><b>Sexta - Confidencialidad.</b> Las partes otorgan el carácter de confidencial a: La información a la cual EL CONTRATISTA tenga acceso en virtud del presente contrato. A toda la información escrita, gráfica, electromagnética, digital, técnica, financiera, magnetofónica, de seguridad, reportes, informes, bases de datos, nombres, registros, planes, planos, diseños, estudios investigaciones, proyectos, o cualquier otra información, que EL CONTRATANTE tenga en su poder y a la cual EL CONTRATISTA por una u otra razón tenga acceso, como consecuencia del presente contrato. En consecuencia, su divulgación, copia o uso por parte EL CONTRATISTA, sus funcionarios, contratistas, socios, asociados, dependientes o vinculados de cualquier tipo, en perjuicio del CONTRATANTE, dará derecho a este, para iniciar las acciones tendientes al resarcimiento de los daños y perjuicios que se pudieren ocasionar por ser la parte afectada.</p>';
+  h += '<p><b>Parágrafo.</b> EL CONTRATISTA no podrá revelar la información confidencial a terceros salvo cuando dicho tercero tenga la estricta necesidad de conocerla para el satisfactorio desarrollo de este contrato, evento en el cual la parte reveladora se compromete a obtener la autorización escrita de la otra parte.</p>';
+
+  h += '<p><b>Séptima – Indemnidad.</b> La parte CONTRATISTA libera de responsabilidad al CONTRATANTE, sus agentes, accionistas, miembros, representantes y empleados, de cualquier reclamación, responsabilidades, pérdidas, daños, costos, gastos, juicios, multas y sanciones basadas en o que surjan de sus acciones negligentes, errores y omisiones, dolo y fraude en relación con la prestación del servicio. Asimismo, acepta en caso de presentar una reclamación o demanda por la violación de este contrato, será responsable de los honorarios y costos incurridos por el CONTRATANTE o sus respectivos agentes, accionistas, miembros, representantes y empleados en relación con la defensa de dicha reclamación o demanda.</p>';
+
+  h += '<p><b>Octava - Mérito ejecutivo.</b> El presente contrato presta mérito ejecutivo y podrá ser demandado su cumplimiento por la vía ejecutiva sin más que este documento.</p>';
+
+  h += '<p><b>Novena - Exclusión de Relación Laboral.</b> En ningún evento existe relación laboral en el presente contrato.</p>';
+
+  h += '<p><b>Décima - Domicilio.</b> Para todos los efectos contractuales se fija el municipio de Sabaneta Antioquia.</p>';
+
+  h += '<p>Dado en el municipio de Sabaneta Antioquia el día '+fechaLarga(fecha)+'.</p>';
+
+  h += '<div class="firma-2col"><div><p>CONTRATANTE,</p><br><br><p style="margin-bottom:2px"><b>PROTECT GO S.A.S</b></p><p style="margin-bottom:2px">NIT. 901.633.503-8</p><p style="margin-bottom:2px">Representada legalmente por</p><p style="margin-bottom:2px">'+FIRMANTE.nombre+'</p><p>CC. '+FIRMANTE.cc+'</p></div><div><p>CONTRATISTA,</p><br><br><p style="margin-bottom:2px"><b>'+esc(c?c.nombre:'____________')+'</b></p><p>CC. '+esc(c&&c.cedula?c.cedula:'____________')+'</p></div></div>';
+
+  h += pieHoja();
+  return h;
+}
+
 var ESTANDARES_FUNCIONES = {
   kam: {
     label: 'KAM (Activación y manejo de cuentas)',
@@ -812,12 +878,14 @@ function precargarFicha(c){
   if($('fSalarioContrato')&&!$('fSalarioContrato').value&&c.salario_base)$('fSalarioContrato').value=c.salario_base;
   if($('fSalarioCarta')&&!$('fSalarioCarta').value&&c.salario_base)$('fSalarioCarta').value=c.salario_base;
   if($('fFechaIngresoCarta')&&!$('fFechaIngresoCarta').value&&c.fecha_ingreso)$('fFechaIngresoCarta').value=c.fecha_ingreso;
+  if($('fValorPrestacion')&&!$('fValorPrestacion').value&&c.salario_base)$('fValorPrestacion').value=c.salario_base;
 }
 function render(){
   var f=$('fFormato').value;
   $('grpLlamado').style.display=f==='llamado'?'block':'none';
   $('grpCompromiso').style.display=f==='compromiso'?'block':'none';
   $('grpContrato').style.display=f==='contrato'?'block':'none';
+  $('grpPrestacion').style.display=f==='prestacion'?'block':'none';
   $('grpAnexo').style.display=f==='anexo'?'block':'none';
   $('grpPolitica').style.display=f==='politica'?'block':'none';
   $('grpCarta').style.display=f==='carta'?'block':'none';
@@ -829,11 +897,24 @@ function render(){
     d.style.display='block';
     d.innerHTML='<b>'+esc(c.nombre)+'</b> · <span class="mono">C.C. '+esc(c.cedula||'—')+'</span><br>'+esc(c.cargo||'Sin cargo')+(c.area?(' · '+esc(c.area)):'')+(c.correo?('<br>'+esc(c.correo)):'')+(c.tipo_contrato?(' · '+esc(c.tipo_contrato)):'');
   } else d.style.display='none';
-  if($('avisoTipo'))$('avisoTipo').style.display=((f==='contrato'||f==='anexo')&&c&&c.tipo_contrato==='Prestación de servicios')?'block':'none';
+  var avisoEl=$('avisoTipo');
+  if(avisoEl){
+    var esIndefinido=(f==='contrato'||f==='anexo'), esPrestacion=(f==='prestacion');
+    if(esIndefinido&&c&&c.tipo_contrato==='Prestación de servicios'){
+      avisoEl.innerHTML='⚠ Este colaborador está marcado como <b>Prestación de servicios</b>. Verifica si este formato aplica antes de generarlo.';
+      avisoEl.style.display='block';
+    }else if(esPrestacion&&c&&c.tipo_contrato&&c.tipo_contrato!=='Prestación de servicios'){
+      avisoEl.innerHTML='⚠ Este colaborador está marcado como <b>'+esc(c.tipo_contrato)+'</b>. Verifica si el contrato de prestación de servicios aplica antes de generarlo.';
+      avisoEl.style.display='block';
+    }else{
+      avisoEl.style.display='none';
+    }
+  }
   var m=$('measurer');
   if(f==='llamado')m.innerHTML=renderLlamado();
   else if(f==='compromiso')m.innerHTML=renderCompromiso();
   else if(f==='contrato')m.innerHTML=renderContrato();
+  else if(f==='prestacion')m.innerHTML=renderPrestacion();
   else if(f==='anexo')m.innerHTML=renderAnexo();
   else if(f==='politica')m.innerHTML=renderPolitica();
   else if(f==='carta')m.innerHTML=renderCarta();
@@ -847,6 +928,7 @@ function tipoYAsunto(f){
   if(f==='llamado')return {tipo:'Llamado de Atención',asunto:$('fAsunto').value};
   if(f==='compromiso')return {tipo:'Compromiso de Metas',asunto:'Metas '+fechaLarga($('fDesde').value)+' a '+fechaLarga($('fHasta').value)};
   if(f==='contrato')return {tipo:'Contrato Indefinido',asunto:'Contrato a término indefinido'};
+  if(f==='prestacion')return {tipo:'Contrato Prestación de Servicios',asunto:'Contrato de prestación de servicios'};
   if(f==='anexo')return {tipo:'Anexo de Funciones',asunto:'Anexo funciones — '+((window.ESTANDARES_FUNCIONES&&window.ESTANDARES_FUNCIONES[$('fEstandar').value])?window.ESTANDARES_FUNCIONES[$('fEstandar').value].label:'')};
   if(f==='politica')return {tipo:'Política Recursos Tecnológicos',asunto:'Política sobre recursos tecnológicos e información'};
   if(f==='carta')return {tipo:'Carta Laboral',asunto:'Carta laboral'};
@@ -875,6 +957,11 @@ function registrar(cb){
     if(f==='carta'&&$('chkGuardarFichaCarta')&&$('chkGuardarFichaCarta').checked){
       sb.from('rrhh_colaboradores').update({salario_base:Number($('fSalarioCarta').value)||null,fecha_ingreso:$('fFechaIngresoCarta').value||null}).eq('id',c.id).then(function(ur){
         if(ur.error)console.error('Error guardando ficha:',ur.error.message);
+      });
+    }
+    if(f==='prestacion'&&$('chkGuardarValorPrestacion')&&$('chkGuardarValorPrestacion').checked){
+      sb.from('rrhh_colaboradores').update({salario_base:Number($('fValorPrestacion').value)||null}).eq('id',c.id).then(function(ur){
+        if(ur.error)console.error('Error guardando valor en ficha:',ur.error.message);
       });
     }
     if(cb)cb();
@@ -930,7 +1017,7 @@ function wire(){
   $('fMes').value=mesAct.charAt(0).toUpperCase()+mesAct.slice(1)+' '+new Date().getFullYear();
   resetTextos(true);
   $('tObj').value=defObj();
-  ['fFormato','fCola','fFecha','fAsunto','fMeta','fHist','fDesde','fHasta','fSalarioContrato','fAuxContrato','fEstandar','fFechaIngresoCarta','fSalarioCarta','fComisionesCarta'].forEach(function(id){if($(id)){$(id).addEventListener('input',render);$(id).addEventListener('change',render);}});
+  ['fFormato','fCola','fFecha','fAsunto','fMeta','fHist','fDesde','fHasta','fSalarioContrato','fAuxContrato','fEstandar','fFechaIngresoCarta','fSalarioCarta','fComisionesCarta','fValorPrestacion','fTerminoPrestacion','fInicioPrestacion'].forEach(function(id){if($(id)){$(id).addEventListener('input',render);$(id).addEventListener('change',render);}});
   ['tIntro','tHechos','tConsid','tReq','tCierre','tObj'].forEach(function(id){
     $(id).addEventListener('input',function(){var k=this.getAttribute('data-blk');if(k)dirty[k]=true;render();});
   });

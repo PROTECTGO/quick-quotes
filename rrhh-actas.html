@@ -41,6 +41,7 @@
   .f label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
   .f input,.f select,.f textarea{width:100%;padding:9px 11px;border:1px solid var(--hairline);border-radius:var(--r-sm);font-size:13px;font-family:inherit;background:#fff;color:var(--ink);}
   .f textarea{resize:vertical;min-height:64px;line-height:1.45;}
+  .letras-nota{font-size:11px;color:var(--teal-2);font-weight:600;margin-top:4px;min-height:14px;}
   .f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(34,154,130,.14);}
   .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .hint{font-size:11.5px;color:var(--faint);line-height:1.4;margin-bottom:12px;}
@@ -123,7 +124,7 @@
     <!-- ===== PANEL ===== -->
     <div class="panel">
       <h2>Datos del acta</h2>
-      <div class="hint">Selecciona el formato y el colaborador: el documento se diligencia solo. Edita los textos del caso si lo necesitas y dale imprimir para la firma.</div>
+      <div class="hint">Selecciona el formato y el colaborador: el documento se diligencia solo. Edita los textos del caso si lo necesitas y dale imprimir para la firma. Para guardar en PDF en vez de papel, elige "Guardar como PDF" en el destino de la ventana de impresión.</div>
 
       <div class="f">
         <label>Formato *</label>
@@ -145,9 +146,11 @@
       </div>
       <div class="f">
         <label>Colaborador *</label>
+        <input type="text" id="fColaBusca" placeholder="Escribe para buscar…" autocomplete="off" style="margin-bottom:6px">
         <select id="fCola"></select>
       </div>
       <div class="datos" id="datosCola"></div>
+      <div id="historialActas" style="display:none;font-size:11.5px;color:var(--muted);background:var(--mint-ghost);border:1px solid var(--mint);border-radius:var(--r-md);padding:9px 12px;margin:-6px 0 12px;line-height:1.6"></div>
       <div class="f">
         <label>Fecha del documento</label>
         <input type="date" id="fFecha">
@@ -212,13 +215,13 @@
 
       <!-- Campos CONTRATO -->
       <div id="grpContrato" style="display:none">
-        <div class="f"><label>Salario básico mensual</label><input type="number" id="fSalarioContrato" placeholder="Ej: 2500000"></div>
+        <div class="f"><label>Salario básico mensual</label><input type="number" id="fSalarioContrato" placeholder="Ej: 2500000"><div class="letras-nota" id="notaSalarioContrato"></div></div>
         <div class="f"><label>Auxilio de transporte 2026</label><input type="number" id="fAuxContrato" value="249095"></div>
         <div class="f" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="chkGuardarSalarioContrato" style="width:auto"><label style="text-transform:none;font-weight:400">Guardar este salario en la ficha del colaborador</label></div>
       </div>
       <!-- Campos PRESTACIÓN DE SERVICIOS -->
       <div id="grpPrestacion" style="display:none">
-        <div class="f"><label>Valor mensual del contrato (honorarios)</label><input type="number" id="fValorPrestacion" placeholder="Ej: 1750905"></div>
+        <div class="f"><label>Valor mensual del contrato (honorarios)</label><input type="number" id="fValorPrestacion" placeholder="Ej: 1750905"><div class="letras-nota" id="notaValorPrestacion"></div></div>
         <div class="f"><label>Término (meses)</label><input type="number" id="fTerminoPrestacion" value="12" min="1"></div>
         <div class="f"><label>Fecha de inicio</label><input type="date" id="fInicioPrestacion"></div>
         <div class="f" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="chkGuardarValorPrestacion" style="width:auto"><label style="text-transform:none;font-weight:400">Guardar este valor en la ficha del colaborador</label></div>
@@ -232,7 +235,7 @@
       <!-- Campos CARTA -->
       <div id="grpCarta" style="display:none">
         <div class="f"><label>Fecha de ingreso</label><input type="date" id="fFechaIngresoCarta"></div>
-        <div class="f"><label>Salario mensual</label><input type="number" id="fSalarioCarta" placeholder="Ej: 2500000"></div>
+        <div class="f"><label>Salario mensual</label><input type="number" id="fSalarioCarta" placeholder="Ej: 2500000"><div class="letras-nota" id="notaSalarioCarta"></div></div>
         <div class="f"><label>Promedio mensual de comisiones (si aplica)</label><input type="number" id="fComisionesCarta" value="0"></div>
         <div class="f" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="chkGuardarFichaCarta" style="width:auto"><label style="text-transform:none;font-weight:400">Guardar salario y fecha de ingreso en la ficha del colaborador</label></div>
       </div>
@@ -880,6 +883,45 @@ function precargarFicha(c){
   if($('fFechaIngresoCarta')&&!$('fFechaIngresoCarta').value&&c.fecha_ingreso)$('fFechaIngresoCarta').value=c.fecha_ingreso;
   if($('fValorPrestacion')&&!$('fValorPrestacion').value&&c.salario_base)$('fValorPrestacion').value=c.salario_base;
 }
+function actualizarNotasLetras(){
+  var pares=[['fSalarioContrato','notaSalarioContrato'],['fValorPrestacion','notaValorPrestacion'],['fSalarioCarta','notaSalarioCarta']];
+  pares.forEach(function(p){
+    var inp=$(p[0]), nota=$(p[1]);
+    if(!inp||!nota)return;
+    var v=Number(inp.value);
+    nota.textContent=(v>0)?('= '+money(v)+' — '+pesosALetras(v)):'';
+  });
+}
+var histCache={};
+function cargarHistorial(c){
+  var el=$('historialActas');
+  if(!el)return;
+  if(!c){el.style.display='none';el.innerHTML='';return;}
+  if(histCache[c.id]){pintarHistorial(el,histCache[c.id]);return;}
+  el.style.display='block';
+  el.innerHTML='Cargando historial…';
+  sb.from('rrhh_actas').select('tipo,fecha_documento').eq('colaborador_id',c.id).order('fecha_documento',{ascending:false}).limit(6).then(function(r){
+    var rows=(r.error||!r.data)?[]:r.data;
+    histCache[c.id]=rows;
+    pintarHistorial(el,rows);
+  });
+}
+function pintarHistorial(el,rows){
+  if(!rows.length){el.innerHTML='<i>Sin actas previas registradas para esta persona.</i>';return;}
+  el.innerHTML='<b>Actas previas de esta persona:</b><br>'+rows.map(function(a){return esc(a.tipo)+' — '+(a.fecha_documento?fechaLarga(a.fecha_documento):'—');}).join('<br>');
+}
+function validarFormato(f,c){
+  var faltan=[];
+  if(!c)faltan.push('Selecciona el colaborador.');
+  if(f==='contrato'&&!Number($('fSalarioContrato').value))faltan.push('Escribe el salario básico mensual.');
+  if(f==='prestacion'&&!Number($('fValorPrestacion').value))faltan.push('Escribe el valor mensual del contrato.');
+  if(f==='carta'){
+    if(!Number($('fSalarioCarta').value))faltan.push('Escribe el salario mensual.');
+    if(!$('fFechaIngresoCarta').value)faltan.push('Escribe la fecha de ingreso.');
+  }
+  if(f==='anexo'&&!$('fEstandar').value)faltan.push('Selecciona el estándar de funciones.');
+  return faltan;
+}
 function render(){
   var f=$('fFormato').value;
   $('grpLlamado').style.display=f==='llamado'?'block':'none';
@@ -897,9 +939,10 @@ function render(){
     d.style.display='block';
     d.innerHTML='<b>'+esc(c.nombre)+'</b> · <span class="mono">C.C. '+esc(c.cedula||'—')+'</span><br>'+esc(c.cargo||'Sin cargo')+(c.area?(' · '+esc(c.area)):'')+(c.correo?('<br>'+esc(c.correo)):'')+(c.tipo_contrato?(' · '+esc(c.tipo_contrato)):'');
   } else d.style.display='none';
+  cargarHistorial(c);
   var avisoEl=$('avisoTipo');
   if(avisoEl){
-    var esIndefinido=(f==='contrato'||f==='anexo'), esPrestacion=(f==='prestacion');
+    var esIndefinido=(f==='contrato'||f==='anexo'||f==='carta'), esPrestacion=(f==='prestacion');
     if(esIndefinido&&c&&c.tipo_contrato==='Prestación de servicios'){
       avisoEl.innerHTML='⚠ Este colaborador está marcado como <b>Prestación de servicios</b>. Verifica si este formato aplica antes de generarlo.';
       avisoEl.style.display='block';
@@ -910,6 +953,7 @@ function render(){
       avisoEl.style.display='none';
     }
   }
+  actualizarNotasLetras();
   var m=$('measurer');
   if(f==='llamado')m.innerHTML=renderLlamado();
   else if(f==='compromiso')m.innerHTML=renderCompromiso();
@@ -936,8 +980,9 @@ function tipoYAsunto(f){
 }
 function registrar(cb){
   var c=cola();
-  if(!c){toast('Selecciona el colaborador.');return;}
   var f=$('fFormato').value;
+  var faltan=validarFormato(f,c);
+  if(faltan.length){toast(faltan[0]);return;}
   var ta=tipoYAsunto(f);
   var row={
     colaborador_id:c.id,
@@ -968,7 +1013,9 @@ function registrar(cb){
   });
 }
 function imprimir(){
-  if(!cola()){toast('Selecciona el colaborador.');return;}
+  var c=cola();
+  var faltan=validarFormato($('fFormato').value,c);
+  if(faltan.length){toast(faltan[0]);return;}
   window.print();
 }
 
@@ -1030,6 +1077,15 @@ function wire(){
   });
   $('btnPrint').addEventListener('click',imprimir);
   $('btnPrintReg').addEventListener('click',function(){registrar(function(){setTimeout(imprimir,300);});});
+  $('fColaBusca').addEventListener('input',function(){
+    var q=this.value.trim().toLowerCase();
+    var opts=$('fCola').options;
+    for(var i=0;i<opts.length;i++){
+      var o=opts[i];
+      if(!o.value){continue;}
+      o.hidden=q&&o.textContent.toLowerCase().indexOf(q)===-1;
+    }
+  });
 }
 
 function init(){
@@ -1041,6 +1097,43 @@ function init(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,60);});
 else setTimeout(init,60);
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PGV_ARCHIVO="rrhh-actas.html";
+var PGV_VERSION=2;
+function pgvBanner(){
+  if(document.getElementById('pgvBar'))return;
+  var b=document.createElement('div');
+  b.id='pgvBar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
+  b.innerHTML='🔄 Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
+  document.body.appendChild(b);
+  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+}
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY);
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION)pgvBanner();
+    });
+  }catch(e){}
+}
+function pgvCheck(){
+  if(window.supabase&&window.supabase.createClient){pgvRun();return;}
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload=pgvRun;
+  document.head.appendChild(s);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);});
+else setTimeout(pgvCheck,400);
+setInterval(pgvCheck,600000);
 })();
 </script>
 </body>

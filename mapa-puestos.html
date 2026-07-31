@@ -166,14 +166,14 @@ function toast(msg){
 
 async function cargarTodo(){
   const [{data: fotos}, {data: admin}, {data: asigs}] = await Promise.all([
-    sb.from('mapa_fotos').select('colaborador_id, foto_data_url, rrhh_colaboradores(nombre)'),
+    sb.from('mapa_fotos').select('colaborador_id, nombre, foto_data_url'),
     sb.from('mapa_admins').select('correo'),
     sb.from('mapa_asignaciones').select('puesto_id, colaborador_id').eq('activo', true)
   ]);
   admins = (admin||[]).map(a=>a.correo.toLowerCase());
   colaboradores = {};
   (fotos||[]).forEach(f=>{
-    colaboradores[f.colaborador_id] = { nombre: f.rrhh_colaboradores?.nombre || '(sin nombre)', foto: f.foto_data_url };
+    colaboradores[f.colaborador_id] = { nombre: f.nombre || '(sin nombre)', foto: f.foto_data_url };
   });
   asignaciones = {};
   (asigs||[]).forEach(a=> asignaciones[a.puesto_id] = a.colaborador_id);

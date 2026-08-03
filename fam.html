@@ -549,14 +549,14 @@ function onAuthed(session){
     $('ovBlockMail').textContent=email;$('ovBlock').style.display='flex';
     return;
   }
-  $('ovBlock').style.display='none';
+  $('ovBlock').style.display='none';(function(){if(window.pgRevisarNovedades)return;var st=document.createElement('style');st.id='pgnovStyle';st.textContent='.pgnov-ov{position:fixed;inset:0;z-index:999;background:rgba(0,30,38,.72);display:flex;align-items:center;justify-content:center;padding:18px;}.pgnov-card{background:#fff;border-radius:14px;max-width:440px;width:100%;padding:26px 28px;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:Arial,Helvetica,sans-serif;}.pgnov-tag{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#229A82;margin-bottom:6px;}.pgnov-card h3{margin:0 0 12px;font-size:18px;color:#002F3D;}.pgnov-card p{margin:0 0 20px;font-size:13.5px;line-height:1.6;color:#333;white-space:pre-wrap;}.pgnov-card button{width:100%;padding:11px;border:none;border-radius:9px;background:#229A82;color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;}.pgnov-card button:hover{background:#1a7a68;}.pgnov-count{font-size:11px;color:#8da0ad;text-align:center;margin-top:10px;}';document.head.appendChild(st);window.pgRevisarNovedades=function(sbClient,area){if(!sbClient||!area)return;sbClient.rpc('novedades_pendientes',{p_area:area}).then(function(r){if(r.error||!r.data||!r.data.length)return;var cola=r.data.slice();function mostrar(){if(!cola.length){var ov0=document.getElementById('pgnovOv');if(ov0)ov0.remove();return;}var n=cola[0];var ov=document.getElementById('pgnovOv');if(!ov){ov=document.createElement('div');ov.id='pgnovOv';ov.className='pgnov-ov';ov.innerHTML='<div class="pgnov-card"><div class="pgnov-tag">📢 Novedad ProtectGo</div><h3 id="pgnovT"></h3><p id="pgnovB"></p><button id="pgnovBtn" type="button">Ya lo leí, entendido</button><div class="pgnov-count" id="pgnovC"></div></div>';document.body.appendChild(ov);document.getElementById('pgnovBtn').addEventListener('click',function(){var actual=cola[0];if(!actual)return;sbClient.rpc('marcar_novedad_leida',{p_novedad_id:actual.id}).then(function(){cola.shift();mostrar();});});}document.getElementById('pgnovT').textContent=n.titulo||'';document.getElementById('pgnovB').textContent=n.cuerpo||'';document.getElementById('pgnovC').textContent=cola.length>1?('1 de '+cola.length+' novedades pendientes'):'';}mostrar();});};})();pgRevisarNovedades(sb,'fam');
   $('pgUser').textContent=email;
   $('ov').style.display='none';$('app').style.display='block';
   pintarDocs();cargarQuotes();
 }
 function onSignedOut(){$('app').style.display='none';$('ovBlock').style.display='none';$('ov').style.display='flex';}
 function init(){
-  if(DEMO){$('ov').style.display='none';$('app').style.display='block';$('pgUser').textContent='fam@protectgoservices.com (demo)';pintarDocs();cargarQuotes();return;}
+  
   if(!(window.supabase&&window.supabase.createClient)){msg('No se pudo cargar Supabase (revisa tu conexión).','err');$('ov').style.display='flex';return;}
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
   sb.auth.getSession().then(function(r){if(r.data&&r.data.session)onAuthed(r.data.session);else onSignedOut();});
@@ -564,6 +564,43 @@ function init(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,60);});
 else setTimeout(init,60);
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PGV_ARCHIVO="fam.html";
+var PGV_VERSION=1;
+function pgvBanner(){
+  if(document.getElementById('pgvBar'))return;
+  var b=document.createElement('div');
+  b.id='pgvBar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
+  b.innerHTML='\uD83D\uDD04 Hay una versi\u00f3n nueva de esta p\u00e1gina. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
+  document.body.appendChild(b);
+  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+}
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY);
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION)pgvBanner();
+    });
+  }catch(e){}
+}
+function pgvCheck(){
+  if(window.supabase&&window.supabase.createClient){pgvRun();return;}
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload=pgvRun;
+  document.head.appendChild(s);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);});
+else setTimeout(pgvCheck,400);
+setInterval(pgvCheck,600000);
 })();
 </script>
 </body>

@@ -163,8 +163,8 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 <div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
 </a>
 
-<!-- Mapa de Puestos -->
-<a class="card on" href="mapa-puestos.html">
+<!-- Mapa de Puestos (solo brahian.toro@) -->
+<a class="card on" id="card-mapa" href="mapa-puestos.html" style="display:none">
 <div class="top">
 <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="15" width="7" height="7" rx="1.5"/><rect x="14" y="15" width="7" height="7" rx="1.5"/></svg></div>
 <span class="tag">EQUIPO</span>
@@ -300,6 +300,7 @@ var MAPA={"rrhh@protectgoservices.com":"card-rrhh","coi@protectgoservices.com":"
 var EXTERNOS=["gerencia@leonis-go.com"];
 var EXTRA={"endorsement@protectgoservices.com":"card-end","sales@protectgoservices.com":"card-novedades-admin"};
 var AMAZON={"amazonaud@protectgoservices.com":"card-amazon"};
+var PUESTOS={"brahian.toro@protectgoservices.com":"card-mapa"};
 function aplicar(email){
 Object.keys(MAPA).forEach(function(k){
 var el=document.getElementById(MAPA[k]);
@@ -313,10 +314,14 @@ Object.keys(AMAZON).forEach(function(k){
 var el=document.getElementById(AMAZON[k]);
 if(el) el.style.display=(email===k)?"flex":"none";
 });
+Object.keys(PUESTOS).forEach(function(k){
+var el=document.getElementById(PUESTOS[k]);
+if(el) el.style.display=(email===k)?"flex":"none";
+});
 var externo=EXTERNOS.indexOf(email)>=0;
 var esAmazon=!!AMAZON[email];
 document.querySelectorAll(".grid .card").forEach(function(c){
-if(c.id==="card-rrhh"||c.id==="card-coi"||c.id==="card-kam"||c.id==="card-fam"||c.id==="card-amazon"||c.id==="card-end"||c.id==="card-novedades-admin") return;
+if(c.id==="card-rrhh"||c.id==="card-coi"||c.id==="card-kam"||c.id==="card-fam"||c.id==="card-amazon"||c.id==="card-end"||c.id==="card-novedades-admin"||c.id==="card-mapa") return;
 var href=(c.getAttribute("href")||"");
 if(externo||esAmazon) c.style.display=(href.indexOf("quick-quote.html?v=804")>=0)?"flex":"none";
 else if(MAPA[email]) c.style.display="none";
@@ -332,43 +337,6 @@ c.auth.onAuthStateChange(function(evt,s){aplicar(s&&s.user?String(s.user.email).
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(arrancar,150);});
 else setTimeout(arrancar,150);
-})();
-</script>
-<script>
-(function(){
-"use strict";
-var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
-var PGV_ARCHIVO="index.html";
-var PGV_VERSION=1;
-function pgvBanner(){
-  if(document.getElementById('pgvBar'))return;
-  var b=document.createElement('div');
-  b.id='pgvBar';
-  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
-  b.innerHTML='\uD83D\uDD04 Hay una versi\u00f3n nueva de esta p\u00e1gina. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
-  document.body.appendChild(b);
-  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
-}
-function pgvRun(){
-  try{
-    var c=window.supabase.createClient(PGV_URL,PGV_KEY);
-    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
-      if(!r||r.error||!r.data)return;
-      if(Number(r.data.version)>PGV_VERSION)pgvBanner();
-    });
-  }catch(e){}
-}
-function pgvCheck(){
-  if(window.supabase&&window.supabase.createClient){pgvRun();return;}
-  var s=document.createElement('script');
-  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-  s.onload=pgvRun;
-  document.head.appendChild(s);
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);});
-else setTimeout(pgvCheck,400);
-setInterval(pgvCheck,600000);
 })();
 </script>
 </body>

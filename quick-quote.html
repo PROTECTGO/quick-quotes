@@ -4954,6 +4954,7 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     var p={prem:window.__pvPremVals||{},carrReal:window.__pvCarrierReal||{},carrMask:window.__pvCarrierMask||{},panel:{},chk:{}};
     IDS.forEach(function(id){ var e=document.getElementById(id); if(e&&e.value) p.panel[id]=e.value; });
     CHK.forEach(function(id){ var e=document.getElementById(id); if(e) p.chk[id]=!!e.checked; });
+    p.chk.pvFullPay=!!window.__pvFullPay;
     return p;
   }
   async function saveExtras(){
@@ -4971,6 +4972,8 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     window.__pvPremVals=p.prem||{}; window.__pvCarrierReal=p.carrReal||{}; window.__pvCarrierMask=p.carrMask||{};
     IDS.forEach(function(id){ var e=document.getElementById(id); if(e&&p.panel&&p.panel[id]!==undefined&&e.value!==p.panel[id]){ e.value=p.panel[id]; e.dispatchEvent(new Event("input",{bubbles:true})); } });
     CHK.forEach(function(id){ var e=document.getElementById(id); if(e&&p.chk&&p.chk[id]!==undefined&&e.checked!==p.chk[id]){ e.checked=p.chk[id]; e.dispatchEvent(new Event("change",{bubbles:true})); } });
+    window.__pvFullPay = !!(p.chk && p.chk.pvFullPay);
+    if(window.__pvFullPay){ var _c2=document.getElementById("pvCard2"); if(_c2) _c2.classList.add("pv-hide"); }
     document.querySelectorAll("#pvPremBody tr").forEach(function(tr){
       var td0=tr.children[0]; if(!td0) return;
       var n=(td0.childNodes[0]?td0.childNodes[0].textContent:td0.textContent).trim(); if(!n) return;
@@ -5044,7 +5047,7 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     var b=el.closest("button"); if(!b) return;
     var txt=(b.textContent||"").trim();
     if(/^nueva$/i.test(txt)){
-      window.__pvOpened=false; window.__pvHydratedFor=null;
+      window.__pvOpened=false; window.__pvHydratedFor=null; window.__pvFullPay=false;
       setTimeout(async function(){ try{ setNum(await siguienteNumero()); }catch(_){} },1500);
     }
     if(/guardar/i.test(txt)){ var q=numActual(); setTimeout(function(){ verificarGuardado(q); },3500); }
@@ -5058,10 +5061,15 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     }catch(_){}
   },4500);
   function aviso(msg,color){
+    var ahora=Date.now(), ult=window.__lastAviso;
+    if(ult && ult.msg===msg && (ahora-ult.t)<10000) return; /* mismo mensaje en menos de 10 s: ignorar */
+    window.__lastAviso={msg:msg,t:ahora};
+    var prev=document.getElementById("pv-aviso"); if(prev) prev.remove(); /* una sola burbuja a la vez */
     var d=document.createElement("div");
+    d.id="pv-aviso";
     d.style.cssText="position:fixed;left:50%;transform:translateX(-50%);top:14px;z-index:999999;background:"+(color||"#c0392b")+";color:#fff;padding:12px 20px;border-radius:10px;font:600 13px Inter,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:560px;text-align:center";
     d.textContent=msg; document.body.appendChild(d);
-    setTimeout(function(){ d.remove(); },9000);
+    setTimeout(function(){ if(d.parentNode) d.remove(); },9000);
   }
   async function verificarGuardado(q){
     if(!q) return;
@@ -5764,5 +5772,23 @@ function wireBinderBtn(){
 }
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",wireBinderBtn); else wireBinderBtn();
 setTimeout(wireBinderBtn,1500);
+})();
+
+/* ============ ESTAMPA DE VERSION (diagnostico de cache) ============ */
+(function(){
+  var VER="pv-suite v7.15";
+  window.__pvVer=VER;
+  function stamp(){
+    if(!document.body || document.getElementById("pv-ver")) return;
+    var st=document.createElement("style");
+    st.textContent="@media print{#pv-ver{display:none!important}}";
+    (document.head||document.body).appendChild(st);
+    var d=document.createElement("div");
+    d.id="pv-ver"; d.textContent=VER; d.title="Version del modulo Proposal (para diagnosticar cache)";
+    d.style.cssText="position:fixed;left:8px;bottom:6px;z-index:99998;font:500 10px 'IBM Plex Mono',ui-monospace,monospace;color:#8a989a;opacity:.6;pointer-events:none;user-select:none";
+    document.body.appendChild(d);
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",stamp); else stamp();
+  setTimeout(stamp,2000);
 })();
 </script>

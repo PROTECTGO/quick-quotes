@@ -452,7 +452,7 @@ render();
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="tarjetas.html";
-var PGV_VERSION=2;
+var PGV_VERSION=3;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
@@ -488,102 +488,111 @@ setInterval(pgvCheck,600000);
 /* ============ NOVEDADES ProtectGo — aviso bloqueante (area general) ============ */
 (function(){if(window.pgRevisarNovedades)return;
 var st=document.createElement('style');st.id='pgnovStyle';
-st.textContent='.pgnov-ov{position:fixed;inset:0;z-index:2147483000;background:rgba(0,30,38,.93);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:18px;}'
-+'.pgnov-card{background:#fff;border-radius:16px;max-width:560px;width:100%;padding:30px 32px;box-shadow:0 24px 70px rgba(0,0,0,.45);font-family:Inter,Arial,Helvetica,sans-serif;}'
-+'.pgnov-tag{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#229A82;margin-bottom:8px;}'
-+'.pgnov-card h3{margin:0 0 14px;font-size:20px;line-height:1.3;color:#0D3040;font-family:Montserrat,Inter,Arial,sans-serif;}'
-+'.pgnov-card p{margin:0 0 22px;font-size:14px;line-height:1.65;color:#333;white-space:pre-wrap;}'
-+'.pgnov-card button{width:100%;padding:13px;border:none;border-radius:10px;background:#229A82;color:#fff;font-weight:700;font-size:14px;cursor:pointer;transition:background .2s;}'
-+'.pgnov-card button:hover:not(:disabled){background:#1a7a68;}'
-+'.pgnov-card button:disabled{background:#c9d4d8;color:#5b6b72;cursor:not-allowed;}'
-+'.pgnov-bar{height:5px;border-radius:99px;background:#e6edef;overflow:hidden;margin:0 0 14px;}'
+st.textContent='.pgnov-ov{position:fixed;inset:0;z-index:2147483000;background:rgba(6,32,42,.94);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;font-family:Inter,Arial,Helvetica,sans-serif;}'
++'.pgnov-card{background:#fff;border-radius:18px;max-width:620px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 26px 80px rgba(0,0,0,.5);overflow:hidden;}'
++'.pgnov-head{background:#0D3040;color:#fff;padding:20px 28px 18px;}'
++'.pgnov-head .k{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#A8D4CF;margin-bottom:5px;}'
++'.pgnov-head h2{margin:0;font-size:21px;font-family:Montserrat,Inter,Arial,sans-serif;font-weight:800;letter-spacing:-.01em;}'
++'.pgnov-head .s{margin:5px 0 0;font-size:12.5px;color:#9dbac4;}'
++'.pgnov-list{padding:6px 28px 4px;overflow-y:auto;flex:1;}'
++'.pgnov-it{border-left:4px solid #229A82;background:#F4F9F8;border-radius:0 12px 12px 0;padding:15px 18px;margin:14px 0;}'
++'.pgnov-it .t{font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#229A82;margin-bottom:6px;}'
++'.pgnov-it h4{margin:0 0 7px;font-size:15.5px;line-height:1.35;color:#0D3040;font-family:Montserrat,Inter,Arial,sans-serif;font-weight:700;}'
++'.pgnov-it p{margin:0;font-size:13.5px;line-height:1.62;color:#3a4a50;white-space:pre-wrap;}'
++'.pgnov-it.felicitacion{border-color:#00C864;background:#EAFBF1;}.pgnov-it.felicitacion .t{color:#0a8c47;}'
++'.pgnov-it.aviso{border-color:#FFB400;background:#FFF8E6;}.pgnov-it.aviso .t{color:#a67400;}'
++'.pgnov-it.recordatorio{border-color:#8da0ad;background:#F3F6F7;}.pgnov-it.recordatorio .t{color:#5b6b72;}'
++'.pgnov-foot{padding:16px 28px 22px;border-top:1px solid #e6edef;background:#fff;}'
++'.pgnov-bar{height:6px;border-radius:99px;background:#e6edef;overflow:hidden;margin:0 0 14px;}'
 +'.pgnov-bar i{display:block;height:100%;width:0;background:#FFB400;transition:width .95s linear;}'
-+'.pgnov-count{font-size:11.5px;color:#8da0ad;text-align:center;margin-top:10px;line-height:1.5;}';
++'.pgnov-foot button{width:100%;padding:14px;border:none;border-radius:11px;background:#229A82;color:#fff;font-weight:700;font-size:14.5px;cursor:pointer;transition:background .2s;font-family:inherit;}'
++'.pgnov-foot button:hover:not(:disabled){background:#1a7a68;}'
++'.pgnov-foot button:disabled{background:#cfd9dd;color:#5b6b72;cursor:not-allowed;}'
++'.pgnov-note{font-size:11.5px;color:#8da0ad;text-align:center;margin-top:11px;line-height:1.5;white-space:pre-line;}';
 document.head.appendChild(st);
+var TIPOS={felicitacion:{c:'felicitacion',e:'🎉',n:'Felicitación'},
+           aviso:{c:'aviso',e:'⚠️',n:'Aviso importante'},
+           recordatorio:{c:'recordatorio',e:'📌',n:'Recordatorio'},
+           novedad:{c:'novedad',e:'🔧',n:'Novedad'}};
 window.pgRevisarNovedades=function(sbClient,area){
-  if(!sbClient||!area||window.__pgnovCorriendo)return;
+  if(!sbClient||!area||window.__pgnovCorriendo||document.getElementById('pgnovOv'))return;
   window.__pgnovCorriendo=true;
   sbClient.rpc('novedades_pendientes',{p_area:area}).then(function(r){
     window.__pgnovCorriendo=false;
     if(r.error||!r.data||!r.data.length)return;
-    var cola=r.data.slice(), tick=null;
-    function bloquearFondo(on){
-      try{
-        document.documentElement.style.overflow=on?'hidden':'';
-        document.body.style.overflow=on?'hidden':'';
-      }catch(e){}
-    }
+    var items=r.data.slice(), tick=null;
+    var bloquea=items.some(function(n){return n.bloqueante!==false;});
+    var total=0;
+    items.forEach(function(n){ var s=parseInt(n.segundos_lectura,10); if(n.bloqueante!==false&&s>total) total=s; });
+    if(bloquea&&!total) total=120;
     function tragaEscape(ev){ if(ev.key==='Escape'||ev.keyCode===27){ ev.preventDefault(); ev.stopImmediatePropagation(); } }
-    function cerrarTodo(){
-      if(tick){clearInterval(tick);tick=null;}
-      var ov=document.getElementById('pgnovOv'); if(ov) ov.remove();
-      bloquearFondo(false);
-      document.removeEventListener('keydown',tragaEscape,true);
+    function fondo(on){ try{ document.documentElement.style.overflow=on?'hidden':''; document.body.style.overflow=on?'hidden':''; }catch(e){} }
+    var ov=document.createElement('div'); ov.id='pgnovOv'; ov.className='pgnov-ov';
+    var n1=items.length;
+    var titulo = n1===1 ? 'Tienes algo por leer' : 'Tienes '+n1+' cosas por leer';
+    var html='<div class="pgnov-card"><div class="pgnov-head"><div class="k">📢 ProtectGo · al día</div>'
+      +'<h2>'+titulo+'</h2><p class="s">Tómate un momento. Esto es lo que pasó desde la última vez que entraste.</p></div>'
+      +'<div class="pgnov-list">';
+    items.forEach(function(n){
+      var t=TIPOS[(n.tipo||'novedad')]||TIPOS.novedad;
+      html+='<div class="pgnov-it '+t.c+'"><div class="t">'+t.e+' '+t.n+'</div>'
+        +'<h4></h4><p></p></div>';
+    });
+    html+='</div><div class="pgnov-foot"><div class="pgnov-bar" id="pgnovBar"><i id="pgnovFill"></i></div>'
+      +'<button id="pgnovBtn" type="button">Ya lo leí, entendido</button>'
+      +'<div class="pgnov-note" id="pgnovC"></div></div></div>';
+    ov.innerHTML=html;
+    document.body.appendChild(ov);
+    // texto por nodo (evita inyeccion de HTML desde la base)
+    var its=ov.querySelectorAll('.pgnov-it');
+    items.forEach(function(n,i){
+      if(!its[i])return;
+      its[i].querySelector('h4').textContent=n.titulo||'';
+      its[i].querySelector('p').textContent=n.cuerpo||'';
+    });
+    fondo(bloquea);
+    document.addEventListener('keydown',tragaEscape,true);
+    var btn=ov.querySelector('#pgnovBtn'), fill=ov.querySelector('#pgnovFill'),
+        barra=ov.querySelector('#pgnovBar'), nota=ov.querySelector('#pgnovC');
+    btn.addEventListener('click',function(){
+      if(btn.disabled)return;
+      btn.disabled=true; btn.textContent='Guardando…';
+      Promise.all(items.map(function(n){ return sbClient.rpc('marcar_novedad_leida',{p_novedad_id:n.id}); }))
+      .then(function(res){
+        var fallo=res.some(function(x){ return x&&x.error; });
+        if(fallo){ btn.disabled=false; btn.textContent='Reintentar';
+          nota.textContent='No se pudo registrar la lectura. Revisa tu conexión e inténtalo otra vez.'; return; }
+        if(tick){clearInterval(tick);tick=null;}
+        ov.remove(); fondo(false);
+        document.removeEventListener('keydown',tragaEscape,true);
+        /* al confirmar, devolver al portal (index) para que arranquen desde ahi */
+        try{
+          var ruta=location.pathname.replace(/[^\/]*$/,'');
+          var enIndex=/(^|\/)index\.html$/i.test(location.pathname)||/\/$/.test(location.pathname);
+          if(!enIndex) location.replace(ruta+'index.html');
+        }catch(e){}
+      })
+      .catch(function(){ btn.disabled=false; btn.textContent='Reintentar';
+        nota.textContent='No se pudo registrar la lectura. Revisa tu conexión e inténtalo otra vez.'; });
+    });
+    if(!bloquea||total<=0){ barra.style.display='none'; nota.textContent=''; return; }
+    var restante=total;
+    btn.disabled=true;
+    function pinta(){
+      var m=Math.floor(restante/60), s=restante%60;
+      btn.textContent='Podrás continuar en '+m+':'+(s<10?'0':'')+s;
+      fill.style.width=Math.round(((total-restante)/total)*100)+'%';
+      nota.textContent='El contador se detiene si te vas a otra pestaña.';
     }
-    function mostrar(){
-      if(!cola.length){ cerrarTodo(); return; }
-      var n=cola[0];
-      var bloquea=(n.bloqueante!==false);
-      var total=Math.max(0,parseInt(n.segundos_lectura,10)||0); if(bloquea&&!total) total=120;
-      var ov=document.getElementById('pgnovOv');
-      if(!ov){
-        ov=document.createElement('div'); ov.id='pgnovOv'; ov.className='pgnov-ov';
-        ov.innerHTML='<div class="pgnov-card"><div class="pgnov-tag">📢 Novedad ProtectGo</div>'
-          +'<h3 id="pgnovT"></h3><p id="pgnovB"></p>'
-          +'<div class="pgnov-bar" id="pgnovBar"><i id="pgnovFill"></i></div>'
-          +'<button id="pgnovBtn" type="button">Ya lo leí, entendido</button>'
-          +'<div class="pgnov-count" id="pgnovC"></div></div>';
-        document.body.appendChild(ov);
-        document.addEventListener('keydown',tragaEscape,true);
-        document.getElementById('pgnovBtn').addEventListener('click',function(){
-          var b=document.getElementById('pgnovBtn'); if(b.disabled) return;
-          var actual=cola[0]; if(!actual) return;
-          b.disabled=true; b.textContent='Guardando…';
-          sbClient.rpc('marcar_novedad_leida',{p_novedad_id:actual.id}).then(function(res){
-            if(res&&res.error){ b.disabled=false; b.textContent='Reintentar';
-              document.getElementById('pgnovC').textContent='No se pudo registrar la lectura. Revisa tu conexión e inténtalo otra vez.'; return; }
-            cola.shift(); mostrar();
-          });
-        });
-      }
-      bloquearFondo(bloquea);
-      document.getElementById('pgnovT').textContent=n.titulo||'';
-      document.getElementById('pgnovB').textContent=n.cuerpo||'';
-      var btn=document.getElementById('pgnovBtn');
-      var fill=document.getElementById('pgnovFill');
-      var cont=document.getElementById('pgnovC');
-      var barra=document.getElementById('pgnovBar');
-      var pendientes=cola.length>1?('1 de '+cola.length+' novedades pendientes'):'';
-      btn.textContent='Ya lo leí, entendido';
-      if(tick){clearInterval(tick);tick=null;}
-      if(!bloquea||total<=0){
-        btn.disabled=false; barra.style.display='none';
-        cont.textContent=pendientes; return;
-      }
-      barra.style.display='';
-      var restante=total;
-      btn.disabled=true;
-      function pinta(){
-        var m=Math.floor(restante/60), s=restante%60;
-        btn.textContent='Podrás continuar en '+m+':'+(s<10?'0':'')+s;
-        fill.style.width=Math.round(((total-restante)/total)*100)+'%';
-        cont.textContent='Tómate estos minutos para leerlo. El contador se detiene si te vas a otra pestaña.'+(pendientes?'\n'+pendientes:'');
-      }
+    pinta();
+    tick=setInterval(function(){
+      if(document.visibilityState==='hidden')return;
+      restante--;
+      if(restante<=0){ clearInterval(tick); tick=null; fill.style.width='100%';
+        btn.disabled=false; btn.textContent='Ya lo leí, entendido';
+        nota.textContent=n1>1?'Confirmas las '+n1+' de una vez.':''; return; }
       pinta();
-      tick=setInterval(function(){
-        if(document.visibilityState==='hidden') return;
-        restante--;
-        if(restante<=0){
-          clearInterval(tick); tick=null;
-          fill.style.width='100%';
-          btn.disabled=false; btn.textContent='Ya lo leí, entendido';
-          cont.textContent=pendientes;
-          return;
-        }
-        pinta();
-      },1000);
-    }
-    mostrar();
+    },1000);
   });
 };
 })();

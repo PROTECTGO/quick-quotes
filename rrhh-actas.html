@@ -136,6 +136,7 @@
           <optgroup label="Vinculación">
             <option value="contrato">Contrato a Término Indefinido</option>
             <option value="prestacion">Contrato Prestación de Servicios</option>
+            <option value="otrosi">Otrosí Prestación de Servicios</option>
             <option value="anexo">Anexo de Funciones</option>
             <option value="politica">Política de Recursos Tecnológicos</option>
           </optgroup>
@@ -226,9 +227,22 @@
         <div class="f"><label>Fecha de inicio</label><input type="date" id="fInicioPrestacion"></div>
         <div class="f" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="chkGuardarValorPrestacion" style="width:auto"><label style="text-transform:none;font-weight:400">Guardar este valor en la ficha del colaborador</label></div>
       </div>
+      <!-- Campos OTROSÍ PRESTACIÓN -->
+      <div id="grpOtrosi" style="display:none">
+        <div class="f"><label>Otrosí No.</label><input type="number" id="fOtrosiNumero" min="1" placeholder="Se sugiere solo"></div>
+        <div class="f"><label>Fecha del contrato inicial (el que se prorroga)</label><input type="date" id="fOtrosiFechaContrato"></div>
+        <div class="frow">
+          <div class="f"><label>Prórroga desde</label><input type="date" id="fOtrosiDesde"></div>
+          <div class="f"><label>Prórroga hasta</label><input type="date" id="fOtrosiHasta"></div>
+        </div>
+      </div>
       <!-- Campos ANEXO -->
       <div id="grpAnexo" style="display:none">
         <div class="f"><label>Estándar de funciones</label><select id="fEstandar"></select></div>
+        <div id="grpAnexoRenovaciones" style="display:none">
+          <div class="f"><label>Salario base garantizado</label><input type="number" id="fAnexoSalario" value="2500000"><div class="letras-nota" id="notaAnexoSalario"></div></div>
+          <div class="f"><label>Bono de cumplimiento del área</label><input type="number" id="fAnexoBono" placeholder="Ej: 300000"><div class="letras-nota" id="notaAnexoBono"></div></div>
+        </div>
       </div>
       <!-- Campos POLITICA -->
       <div id="grpPolitica" style="display:none"></div>
@@ -639,6 +653,30 @@ function renderPrestacion(){
   return h;
 }
 
+function renderOtrosi(){
+  var c=cola();
+  var numero=$('fOtrosiNumero').value||'____';
+  var fechaContrato=$('fOtrosiFechaContrato').value;
+  var desde=$('fOtrosiDesde').value;
+  var hasta=$('fOtrosiHasta').value;
+  var fecha=$('fFecha').value;
+  var fp=fecha?fechaLarga(fecha).split(' de '):['____','____','____'];
+  var h=membrete();
+  h += '<div class="titulo-doc">Otrosí No. '+esc(numero)+' al Contrato de Prestación de Servicios</div>';
+  h += '<p>Entre los suscritos a saber:</p>';
+  h += '<p><u>PROTECTGO S.A.S,</u> identificada con <u>NIT 901633503-8,</u> representada legalmente por JORGE ANDRÉS LÓPEZ LÓPEZ, quien para los efectos del presente documento se denominará EL CONTRATANTE, y</p>';
+  h += '<p><b>'+esc(c?c.nombre:'____________')+'</b> identificado(a) con cédula de ciudadanía No. '+esc(c&&c.cedula?c.cedula:'____________')+' quien en adelante se denominará EL(LA) CONTRATISTA,</p>';
+  h += '<p>Hemos convenido celebrar el presente OTROSÍ No. '+esc(numero)+' al Contrato de Prestación de Servicios suscrito el '+(fechaContrato?fechaLarga(fechaContrato):'____________')+', el cual se regirá por las siguientes cláusulas:</p>';
+  h += '<div class="sec-t">Primera – Prórroga</div>';
+  h += '<p>Las partes acuerdan prorrogar el término del contrato por un (1) mes, contado a partir del '+(desde?fechaLarga(desde):'____________')+' y hasta el '+(hasta?fechaLarga(hasta):'____________')+'</p>';
+  h += '<div class="sec-t">Segunda – Condiciones</div>';
+  h += '<p>Las demás cláusulas, condiciones y obligaciones establecidas en el contrato inicial permanecen vigentes y sin modificación alguna.</p>';
+  h += '<p>En constancia de lo anterior, se firma el presente otrosí en el municipio de Sabaneta (Antioquia), a los '+fp[0]+' días del mes de '+fp[1]+' de '+fp[2]+'.</p>';
+  h += '<div class="firma-2col"><div><p>CONTRATANTE,</p><br><br><p style="margin-bottom:2px"><b>PROTECT GO S.A.S</b></p><p style="margin-bottom:2px">NIT. 901.633.503-8</p><p style="margin-bottom:2px">Representada legalmente por</p><p style="margin-bottom:2px">'+FIRMANTE.nombre+'</p><p>CC. '+FIRMANTE.cc+'</p></div><div><p>EL(LA) CONTRATISTA,</p><br><br><p style="margin-bottom:2px"><b>'+esc(c?c.nombre:'____________')+'</b></p><p>C.C. '+esc(c&&c.cedula?c.cedula:'____________')+'</p></div></div>';
+  h += pieHoja();
+  return h;
+}
+
 var ESTANDARES_FUNCIONES = {
   kam: {
     label: 'KAM (Activación y manejo de cuentas)',
@@ -672,6 +710,40 @@ var ESTANDARES_FUNCIONES = {
       'Dejar por escrito las notas en cada cliente para identificarlos.',
       'Todas las demás adicionales que sean solicitadas por el empleador en ejercicio de facultad de instrucción y subordinación.'
     ]
+  },
+  renovaciones: {
+    label: 'AGENTE DE RENOVACIONES Y RETENCIÓN',
+    funciones: [
+      'Gestión proactiva de renovaciones asignadas y correspondientes según la cartera activa del empleador.',
+      'Retención de clientes mediante acompañamiento, seguimiento y reducción de fricciones que puedan derivar en cancelaciones.',
+      'Contactar al cliente con la debida anticipación para explicar condiciones, precios, tiempos y requerimientos de la renovación.',
+      'Validación y actualización de información del cliente y póliza en CRM y sistemas internos.',
+      'Coordinación operativa con las áreas de soporte para gestión de documentos, declaraciones, pagos, COIs y requerimientos adicionales cuando aplique.',
+      'Seguimiento preventivo en materia de pagos y cancelaciones, verificando que el cliente esté informado sobre fechas, métodos y consecuencias por incumplimiento.',
+      'Acompañamiento al cliente durante el proceso de cierre (bind), asegurando la continuidad sin interrupciones de cobertura.',
+      'Escalar oportunamente alertas relacionadas con riesgos de cancelación, insatisfacción del cliente, problemas operativos o reclamos.',
+      'Actualizar informes, archivos e información en CRM, asegurando orden, trazabilidad y continuidad operativa.',
+      'Trabajo coordinado con la dirección del área de renovaciones, manteniendo comunicación constante para priorización de casos y flujo operativo.',
+      'Apoyo en endosos y actualizaciones de póliza cuando estas se deriven del proceso de renovación.',
+      'Participar en procesos internos de mejora, proponiendo correcciones o sugerencias orientadas a la estabilidad de la cartera.',
+      'Todas las demás funciones relacionadas con el cargo, que sean solicitadas por el empleador en ejercicio de facultad de instrucción y subordinación.'
+    ],
+    condicionesEconomicas: {
+      intro: 'El cargo de Agente de Renovaciones y Retención se rige bajo los siguientes componentes:',
+      items: [
+        {tipo:'money', label:'Salario base garantizado', campo:'fAnexoSalario', sufijo:'COP mensuales.'},
+        {tipo:'money', label:'Bono de cumplimiento del área', campo:'fAnexoBono', sufijo:'mensuales, condicionado al cumplimiento de metas del área.'},
+        {tipo:'texto', label:'Participación en fees de renovaciones', texto:'El cargo podrá participar en incentivos económicos internos definidos por el área de renovaciones, asociados a métricas de desempeño operativo, continuidad de cartera y cumplimiento de estándares internos.\nDichos incentivos no constituyen comisiones por intermediación de seguros, no dependen de la prima asegurada ni del negocio asegurador en sí, y no se originan directamente en ingresos percibidos por intermediación, los cuales corresponden exclusivamente a ProtectGo Services LLC\nEstos incentivos no tienen carácter salarial ni prestacional, y se rigen por políticas internas independientes al presente contrato.'},
+        {tipo:'texto', label:'Ventas propias', texto:'El cargo podrá realizar ventas propias de clientes externos a la cartera asignada, las cuales serán reconocidas mediante un esquema de incentivos definido bajo el Modelo GABI, el cual constituye un modelo interno de reconocimiento económico no salarial y ajeno al presente contrato laboral.'}
+      ]
+    },
+    evaluacion: [
+      'Tasa de renovación.',
+      'Reducción de cancelaciones.',
+      'Orden administrativo y actualización del CRM.',
+      'Cumplimiento de tiempos y procesos.',
+      'Aporte operativo al área y a la continuidad de la cartera.'
+    ]
   }
 };
 window.ESTANDARES_FUNCIONES = ESTANDARES_FUNCIONES;
@@ -686,6 +758,23 @@ function renderAnexo(){
   h+='<div class="sec-t">Funciones</div>';
   h+='<p>De acuerdo con el cargo para el cual fue contratado '+esc(est?est.label:'')+', el empleado desarrollará sin limitarse solo a estas, las siguientes funciones:</p>';
   h+='<ol>'+(est?est.funciones.map(function(f){return '<li>'+esc(f)+'</li>';}).join(''):'')+'</ol>';
+  if(est&&est.condicionesEconomicas){
+    h+='<div class="sec-t">Condiciones Económicas y Componentes del Cargo</div>';
+    h+='<p>'+esc(est.condicionesEconomicas.intro)+'</p>';
+    h+='<ol>'+est.condicionesEconomicas.items.map(function(it){
+      if(it.tipo==='money'){
+        var v=Number($(it.campo)?$(it.campo).value:0)||0;
+        var txt=v>0?money(v):'____________';
+        return '<li><b>'+esc(it.label)+':</b> '+txt+' '+esc(it.sufijo)+'</li>';
+      }
+      return '<li><b>'+esc(it.label)+':</b> '+nl2p(it.texto)+'</li>';
+    }).join('')+'</ol>';
+  }
+  if(est&&est.evaluacion){
+    h+='<div class="sec-t">Evaluación</div>';
+    h+='<p>El desempeño del cargo será evaluado en función de:</p>';
+    h+='<ol>'+est.evaluacion.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol>';
+  }
   h+='<p>Para constancia y aceptación se firma este anexo al contrato, en dos ejemplares del mismo tenor y valor el día '+fechaLarga($('fFecha').value)+'.</p>';
   h+=firmaDosColumnas();
   h+=pieHoja();
@@ -884,7 +973,7 @@ function precargarFicha(c){
   if($('fValorPrestacion')&&!$('fValorPrestacion').value&&c.salario_base)$('fValorPrestacion').value=c.salario_base;
 }
 function actualizarNotasLetras(){
-  var pares=[['fSalarioContrato','notaSalarioContrato'],['fValorPrestacion','notaValorPrestacion'],['fSalarioCarta','notaSalarioCarta']];
+  var pares=[['fSalarioContrato','notaSalarioContrato'],['fValorPrestacion','notaValorPrestacion'],['fSalarioCarta','notaSalarioCarta'],['fAnexoSalario','notaAnexoSalario'],['fAnexoBono','notaAnexoBono']];
   pares.forEach(function(p){
     var inp=$(p[0]), nota=$(p[1]);
     if(!inp||!nota)return;
@@ -910,6 +999,21 @@ function pintarHistorial(el,rows){
   if(!rows.length){el.innerHTML='<i>Sin actas previas registradas para esta persona.</i>';return;}
   el.innerHTML='<b>Actas previas de esta persona:</b><br>'+rows.map(function(a){return esc(a.tipo)+' — '+(a.fecha_documento?fechaLarga(a.fecha_documento):'—');}).join('<br>');
 }
+var lastOtrosiColaId=null;
+function actualizarSugerenciaOtrosi(c){
+  var inp=$('fOtrosiNumero');
+  if(!inp)return;
+  if(!c){lastOtrosiColaId=null;return;}
+  if(lastOtrosiColaId===c.id)return;
+  lastOtrosiColaId=c.id;
+  inp.value='';
+  sb.from('rrhh_actas').select('id',{count:'exact',head:true}).eq('colaborador_id',c.id).eq('tipo','Otrosí Prestación de Servicios').then(function(r){
+    if(cola()&&cola().id===c.id&&$('fFormato').value==='otrosi'&&!inp.value){
+      inp.value=(r.count||0)+1;
+      render();
+    }
+  });
+}
 function validarFormato(f,c){
   var faltan=[];
   if(!c)faltan.push('Selecciona el colaborador.');
@@ -919,7 +1023,16 @@ function validarFormato(f,c){
     if(!Number($('fSalarioCarta').value))faltan.push('Escribe el salario mensual.');
     if(!$('fFechaIngresoCarta').value)faltan.push('Escribe la fecha de ingreso.');
   }
-  if(f==='anexo'&&!$('fEstandar').value)faltan.push('Selecciona el estándar de funciones.');
+  if(f==='anexo'){
+    if(!$('fEstandar').value)faltan.push('Selecciona el estándar de funciones.');
+    else if($('fEstandar').value==='renovaciones'&&!Number($('fAnexoSalario').value))faltan.push('Escribe el salario base garantizado.');
+  }
+  if(f==='otrosi'){
+    if(!$('fOtrosiNumero').value)faltan.push('Escribe el número del otrosí.');
+    if(!$('fOtrosiFechaContrato').value)faltan.push('Escribe la fecha del contrato inicial.');
+    if(!$('fOtrosiDesde').value)faltan.push('Escribe la fecha desde de la prórroga.');
+    if(!$('fOtrosiHasta').value)faltan.push('Escribe la fecha hasta de la prórroga.');
+  }
   return faltan;
 }
 function render(){
@@ -928,10 +1041,14 @@ function render(){
   $('grpCompromiso').style.display=f==='compromiso'?'block':'none';
   $('grpContrato').style.display=f==='contrato'?'block':'none';
   $('grpPrestacion').style.display=f==='prestacion'?'block':'none';
+  $('grpOtrosi').style.display=f==='otrosi'?'block':'none';
   $('grpAnexo').style.display=f==='anexo'?'block':'none';
   $('grpPolitica').style.display=f==='politica'?'block':'none';
   $('grpCarta').style.display=f==='carta'?'block':'none';
-  if(f==='anexo')poblarEstandares();
+  if(f==='anexo'){
+    poblarEstandares();
+    if($('grpAnexoRenovaciones'))$('grpAnexoRenovaciones').style.display=($('fEstandar').value==='renovaciones')?'block':'none';
+  }
   var c=cola();
   precargarFicha(c);
   var d=$('datosCola');
@@ -940,9 +1057,10 @@ function render(){
     d.innerHTML='<b>'+esc(c.nombre)+'</b> · <span class="mono">C.C. '+esc(c.cedula||'—')+'</span><br>'+esc(c.cargo||'Sin cargo')+(c.area?(' · '+esc(c.area)):'')+(c.correo?('<br>'+esc(c.correo)):'')+(c.tipo_contrato?(' · '+esc(c.tipo_contrato)):'');
   } else d.style.display='none';
   cargarHistorial(c);
+  if(f==='otrosi')actualizarSugerenciaOtrosi(c);
   var avisoEl=$('avisoTipo');
   if(avisoEl){
-    var esIndefinido=(f==='contrato'||f==='anexo'||f==='carta'), esPrestacion=(f==='prestacion');
+    var esIndefinido=(f==='contrato'||f==='anexo'||f==='carta'), esPrestacion=(f==='prestacion'||f==='otrosi');
     if(esIndefinido&&c&&c.tipo_contrato==='Prestación de servicios'){
       avisoEl.innerHTML='⚠ Este colaborador está marcado como <b>Prestación de servicios</b>. Verifica si este formato aplica antes de generarlo.';
       avisoEl.style.display='block';
@@ -959,6 +1077,7 @@ function render(){
   else if(f==='compromiso')m.innerHTML=renderCompromiso();
   else if(f==='contrato')m.innerHTML=renderContrato();
   else if(f==='prestacion')m.innerHTML=renderPrestacion();
+  else if(f==='otrosi')m.innerHTML=renderOtrosi();
   else if(f==='anexo')m.innerHTML=renderAnexo();
   else if(f==='politica')m.innerHTML=renderPolitica();
   else if(f==='carta')m.innerHTML=renderCarta();
@@ -973,6 +1092,7 @@ function tipoYAsunto(f){
   if(f==='compromiso')return {tipo:'Compromiso de Metas',asunto:'Metas '+fechaLarga($('fDesde').value)+' a '+fechaLarga($('fHasta').value)};
   if(f==='contrato')return {tipo:'Contrato Indefinido',asunto:'Contrato a término indefinido'};
   if(f==='prestacion')return {tipo:'Contrato Prestación de Servicios',asunto:'Contrato de prestación de servicios'};
+  if(f==='otrosi')return {tipo:'Otrosí Prestación de Servicios',asunto:'Otrosí No. '+$('fOtrosiNumero').value+' — Prórroga contrato de prestación de servicios'};
   if(f==='anexo')return {tipo:'Anexo de Funciones',asunto:'Anexo funciones — '+((window.ESTANDARES_FUNCIONES&&window.ESTANDARES_FUNCIONES[$('fEstandar').value])?window.ESTANDARES_FUNCIONES[$('fEstandar').value].label:'')};
   if(f==='politica')return {tipo:'Política Recursos Tecnológicos',asunto:'Política sobre recursos tecnológicos e información'};
   if(f==='carta')return {tipo:'Carta Laboral',asunto:'Carta laboral'};
@@ -1064,7 +1184,15 @@ function wire(){
   $('fMes').value=mesAct.charAt(0).toUpperCase()+mesAct.slice(1)+' '+new Date().getFullYear();
   resetTextos(true);
   $('tObj').value=defObj();
-  ['fFormato','fCola','fFecha','fAsunto','fMeta','fHist','fDesde','fHasta','fSalarioContrato','fAuxContrato','fEstandar','fFechaIngresoCarta','fSalarioCarta','fComisionesCarta','fValorPrestacion','fTerminoPrestacion','fInicioPrestacion'].forEach(function(id){if($(id)){$(id).addEventListener('input',render);$(id).addEventListener('change',render);}});
+  ['fFormato','fCola','fFecha','fAsunto','fMeta','fHist','fDesde','fHasta','fSalarioContrato','fAuxContrato','fEstandar','fFechaIngresoCarta','fSalarioCarta','fComisionesCarta','fValorPrestacion','fTerminoPrestacion','fInicioPrestacion','fAnexoSalario','fAnexoBono','fOtrosiNumero','fOtrosiFechaContrato','fOtrosiHasta'].forEach(function(id){if($(id)){$(id).addEventListener('input',render);$(id).addEventListener('change',render);}});
+  if($('fOtrosiDesde'))$('fOtrosiDesde').addEventListener('change',function(){
+    if(!this.value){render();return;}
+    var d=new Date(this.value+'T00:00:00');
+    d.setMonth(d.getMonth()+1);
+    var hasta=$('fOtrosiHasta');
+    if(hasta)hasta.value=d.toISOString().slice(0,10);
+    render();
+  });
   ['tIntro','tHechos','tConsid','tReq','tCierre','tObj'].forEach(function(id){
     $(id).addEventListener('input',function(){var k=this.getAttribute('data-blk');if(k)dirty[k]=true;render();});
   });
@@ -1105,7 +1233,7 @@ else setTimeout(init,60);
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="rrhh-actas.html";
-var PGV_VERSION=2;
+var PGV_VERSION=3;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');

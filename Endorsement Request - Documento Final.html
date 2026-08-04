@@ -1505,7 +1505,7 @@ document.addEventListener('DOMContentLoaded', () => {
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="Endorsement Request - Documento Final.html";
-var PGV_VERSION=4;
+var PGV_VERSION=5;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
@@ -1552,6 +1552,10 @@ st.textContent='.pgnov-ov{position:fixed;inset:0;z-index:2147483000;background:r
 +'.pgnov-it .t{font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#229A82;margin-bottom:6px;}'
 +'.pgnov-it h4{margin:0 0 7px;font-size:15.5px;line-height:1.35;color:#0D3040;font-family:Montserrat,Inter,Arial,sans-serif;font-weight:700;}'
 +'.pgnov-it p{margin:0;font-size:13.5px;line-height:1.62;color:#3a4a50;white-space:pre-wrap;}'
++'.pgnov-foto{margin:0 0 12px;border-radius:12px;overflow:hidden;background:#e6edef;}'
++'.pgnov-foto img{display:block;width:100%;max-height:320px;object-fit:cover;}'
++'.pgnov-pie{font-size:12px;font-weight:600;color:#0D3040;text-align:center;padding:9px 12px;background:#fff;border-radius:0 0 12px 12px;}'
++'.pgnov-it.felicitacion .pgnov-pie{color:#0a8c47;}'
 +'.pgnov-it.felicitacion{border-color:#00C864;background:#EAFBF1;}.pgnov-it.felicitacion .t{color:#0a8c47;}'
 +'.pgnov-it.aviso{border-color:#FFB400;background:#FFF8E6;}.pgnov-it.aviso .t{color:#a67400;}'
 +'.pgnov-it.recordatorio{border-color:#8da0ad;background:#F3F6F7;}.pgnov-it.recordatorio .t{color:#5b6b72;}'
@@ -1589,8 +1593,9 @@ window.pgRevisarNovedades=function(sbClient,area){
       +'<div class="pgnov-list">';
     items.forEach(function(n){
       var t=TIPOS[(n.tipo||'novedad')]||TIPOS.novedad;
+      var foto = n.imagen_url ? '<div class="pgnov-foto"><img alt="" loading="lazy"><div class="pgnov-pie"></div></div>' : '';
       html+='<div class="pgnov-it '+t.c+'"><div class="t">'+t.e+' '+t.n+'</div>'
-        +'<h4></h4><p></p></div>';
+        +'<h4></h4>'+foto+'<p></p></div>';
     });
     html+='</div><div class="pgnov-foot"><div class="pgnov-pausa" id="pgnovPausa">⏸️ Contador detenido — vuelve a esta ventana para que siga corriendo</div>'
       +'<div class="pgnov-bar" id="pgnovBar"><i id="pgnovFill"></i></div>'
@@ -1604,6 +1609,14 @@ window.pgRevisarNovedades=function(sbClient,area){
       if(!its[i])return;
       its[i].querySelector('h4').textContent=n.titulo||'';
       its[i].querySelector('p').textContent=n.cuerpo||'';
+      var img=its[i].querySelector('.pgnov-foto img');
+      if(img && n.imagen_url){
+        img.src=n.imagen_url;
+        img.alt=n.pie_foto||n.titulo||'';
+        img.onerror=function(){ var c=this.closest('.pgnov-foto'); if(c) c.remove(); };
+        var pie=its[i].querySelector('.pgnov-pie');
+        if(pie){ if(n.pie_foto) pie.textContent=n.pie_foto; else pie.remove(); }
+      }
     });
     fondo(bloquea);
     document.addEventListener('keydown',tragaEscape,true);

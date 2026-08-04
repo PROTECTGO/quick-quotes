@@ -1505,7 +1505,7 @@ document.addEventListener('DOMContentLoaded', () => {
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="Endorsement Request - Documento Final.html";
-var PGV_VERSION=1;
+var PGV_VERSION=2;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
@@ -1536,5 +1536,140 @@ else setTimeout(pgvCheck,400);
 setInterval(pgvCheck,600000);
 })();
 </script>
+
+<script>
+/* ============ NOVEDADES ProtectGo — aviso bloqueante (area general) ============ */
+(function(){if(window.pgRevisarNovedades)return;
+var st=document.createElement('style');st.id='pgnovStyle';
+st.textContent='.pgnov-ov{position:fixed;inset:0;z-index:2147483000;background:rgba(0,30,38,.93);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:18px;}'
++'.pgnov-card{background:#fff;border-radius:16px;max-width:560px;width:100%;padding:30px 32px;box-shadow:0 24px 70px rgba(0,0,0,.45);font-family:Inter,Arial,Helvetica,sans-serif;}'
++'.pgnov-tag{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#229A82;margin-bottom:8px;}'
++'.pgnov-card h3{margin:0 0 14px;font-size:20px;line-height:1.3;color:#0D3040;font-family:Montserrat,Inter,Arial,sans-serif;}'
++'.pgnov-card p{margin:0 0 22px;font-size:14px;line-height:1.65;color:#333;white-space:pre-wrap;}'
++'.pgnov-card button{width:100%;padding:13px;border:none;border-radius:10px;background:#229A82;color:#fff;font-weight:700;font-size:14px;cursor:pointer;transition:background .2s;}'
++'.pgnov-card button:hover:not(:disabled){background:#1a7a68;}'
++'.pgnov-card button:disabled{background:#c9d4d8;color:#5b6b72;cursor:not-allowed;}'
++'.pgnov-bar{height:5px;border-radius:99px;background:#e6edef;overflow:hidden;margin:0 0 14px;}'
++'.pgnov-bar i{display:block;height:100%;width:0;background:#FFB400;transition:width .95s linear;}'
++'.pgnov-count{font-size:11.5px;color:#8da0ad;text-align:center;margin-top:10px;line-height:1.5;}';
+document.head.appendChild(st);
+window.pgRevisarNovedades=function(sbClient,area){
+  if(!sbClient||!area||window.__pgnovCorriendo)return;
+  window.__pgnovCorriendo=true;
+  sbClient.rpc('novedades_pendientes',{p_area:area}).then(function(r){
+    window.__pgnovCorriendo=false;
+    if(r.error||!r.data||!r.data.length)return;
+    var cola=r.data.slice(), tick=null;
+    function bloquearFondo(on){
+      try{
+        document.documentElement.style.overflow=on?'hidden':'';
+        document.body.style.overflow=on?'hidden':'';
+      }catch(e){}
+    }
+    function tragaEscape(ev){ if(ev.key==='Escape'||ev.keyCode===27){ ev.preventDefault(); ev.stopImmediatePropagation(); } }
+    function cerrarTodo(){
+      if(tick){clearInterval(tick);tick=null;}
+      var ov=document.getElementById('pgnovOv'); if(ov) ov.remove();
+      bloquearFondo(false);
+      document.removeEventListener('keydown',tragaEscape,true);
+    }
+    function mostrar(){
+      if(!cola.length){ cerrarTodo(); return; }
+      var n=cola[0];
+      var bloquea=(n.bloqueante!==false);
+      var total=Math.max(0,parseInt(n.segundos_lectura,10)||0); if(bloquea&&!total) total=120;
+      var ov=document.getElementById('pgnovOv');
+      if(!ov){
+        ov=document.createElement('div'); ov.id='pgnovOv'; ov.className='pgnov-ov';
+        ov.innerHTML='<div class="pgnov-card"><div class="pgnov-tag">📢 Novedad ProtectGo</div>'
+          +'<h3 id="pgnovT"></h3><p id="pgnovB"></p>'
+          +'<div class="pgnov-bar" id="pgnovBar"><i id="pgnovFill"></i></div>'
+          +'<button id="pgnovBtn" type="button">Ya lo leí, entendido</button>'
+          +'<div class="pgnov-count" id="pgnovC"></div></div>';
+        document.body.appendChild(ov);
+        document.addEventListener('keydown',tragaEscape,true);
+        document.getElementById('pgnovBtn').addEventListener('click',function(){
+          var b=document.getElementById('pgnovBtn'); if(b.disabled) return;
+          var actual=cola[0]; if(!actual) return;
+          b.disabled=true; b.textContent='Guardando…';
+          sbClient.rpc('marcar_novedad_leida',{p_novedad_id:actual.id}).then(function(res){
+            if(res&&res.error){ b.disabled=false; b.textContent='Reintentar';
+              document.getElementById('pgnovC').textContent='No se pudo registrar la lectura. Revisa tu conexión e inténtalo otra vez.'; return; }
+            cola.shift(); mostrar();
+          });
+        });
+      }
+      bloquearFondo(bloquea);
+      document.getElementById('pgnovT').textContent=n.titulo||'';
+      document.getElementById('pgnovB').textContent=n.cuerpo||'';
+      var btn=document.getElementById('pgnovBtn');
+      var fill=document.getElementById('pgnovFill');
+      var cont=document.getElementById('pgnovC');
+      var barra=document.getElementById('pgnovBar');
+      var pendientes=cola.length>1?('1 de '+cola.length+' novedades pendientes'):'';
+      btn.textContent='Ya lo leí, entendido';
+      if(tick){clearInterval(tick);tick=null;}
+      if(!bloquea||total<=0){
+        btn.disabled=false; barra.style.display='none';
+        cont.textContent=pendientes; return;
+      }
+      barra.style.display='';
+      var restante=total;
+      btn.disabled=true;
+      function pinta(){
+        var m=Math.floor(restante/60), s=restante%60;
+        btn.textContent='Podrás continuar en '+m+':'+(s<10?'0':'')+s;
+        fill.style.width=Math.round(((total-restante)/total)*100)+'%';
+        cont.textContent='Tómate estos minutos para leerlo. El contador se detiene si te vas a otra pestaña.'+(pendientes?'\n'+pendientes:'');
+      }
+      pinta();
+      tick=setInterval(function(){
+        if(document.visibilityState==='hidden') return;
+        restante--;
+        if(restante<=0){
+          clearInterval(tick); tick=null;
+          fill.style.width='100%';
+          btn.disabled=false; btn.textContent='Ya lo leí, entendido';
+          cont.textContent=pendientes;
+          return;
+        }
+        pinta();
+      },1000);
+    }
+    mostrar();
+  });
+};
+})();
+(function(){
+  var PGN_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+  var PGN_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+  var cli=null;
+  function correr(){
+    if(!cli||!window.pgRevisarNovedades) return;
+    cli.auth.getSession().then(function(r){
+      if(r&&r.data&&r.data.session) window.pgRevisarNovedades(cli,'general');
+    });
+  }
+  function arranca(){
+    if(!(window.supabase&&window.supabase.createClient)) return;
+    if(!cli){
+      cli=window.supabase.createClient(PGN_URL,PGN_KEY);
+      cli.auth.onAuthStateChange(function(_e,ses){ if(ses) correr(); });
+    }
+    correr();
+  }
+  function cargar(){
+    if(window.supabase&&window.supabase.createClient){ arranca(); return; }
+    var s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    s.onload=arranca;
+    document.head.appendChild(s);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){ setTimeout(cargar,600); });
+  else setTimeout(cargar,600);
+  setInterval(correr,300000);
+})();
+</script>
+
 </body>
 </html>

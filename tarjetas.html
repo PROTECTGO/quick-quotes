@@ -452,7 +452,7 @@ render();
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="tarjetas.html";
-var PGV_VERSION=3;
+var PGV_VERSION=4;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
@@ -508,6 +508,7 @@ st.textContent='.pgnov-ov{position:fixed;inset:0;z-index:2147483000;background:r
 +'.pgnov-foot button{width:100%;padding:14px;border:none;border-radius:11px;background:#229A82;color:#fff;font-weight:700;font-size:14.5px;cursor:pointer;transition:background .2s;font-family:inherit;}'
 +'.pgnov-foot button:hover:not(:disabled){background:#1a7a68;}'
 +'.pgnov-foot button:disabled{background:#cfd9dd;color:#5b6b72;cursor:not-allowed;}'
++'.pgnov-pausa{background:#FFF8E6;border:1px solid #f2e3bc;color:#a67400;border-radius:9px;padding:9px 12px;font-size:12px;font-weight:600;text-align:center;margin:0 0 12px;display:none;}'
 +'.pgnov-note{font-size:11.5px;color:#8da0ad;text-align:center;margin-top:11px;line-height:1.5;white-space:pre-line;}';
 document.head.appendChild(st);
 var TIPOS={felicitacion:{c:'felicitacion',e:'🎉',n:'Felicitación'},
@@ -524,7 +525,7 @@ window.pgRevisarNovedades=function(sbClient,area){
     var bloquea=items.some(function(n){return n.bloqueante!==false;});
     var total=0;
     items.forEach(function(n){ var s=parseInt(n.segundos_lectura,10); if(n.bloqueante!==false&&s>total) total=s; });
-    if(bloquea&&!total) total=120;
+    if(bloquea&&!total) total=180;
     function tragaEscape(ev){ if(ev.key==='Escape'||ev.keyCode===27){ ev.preventDefault(); ev.stopImmediatePropagation(); } }
     function fondo(on){ try{ document.documentElement.style.overflow=on?'hidden':''; document.body.style.overflow=on?'hidden':''; }catch(e){} }
     var ov=document.createElement('div'); ov.id='pgnovOv'; ov.className='pgnov-ov';
@@ -538,7 +539,8 @@ window.pgRevisarNovedades=function(sbClient,area){
       html+='<div class="pgnov-it '+t.c+'"><div class="t">'+t.e+' '+t.n+'</div>'
         +'<h4></h4><p></p></div>';
     });
-    html+='</div><div class="pgnov-foot"><div class="pgnov-bar" id="pgnovBar"><i id="pgnovFill"></i></div>'
+    html+='</div><div class="pgnov-foot"><div class="pgnov-pausa" id="pgnovPausa">⏸️ Contador detenido — vuelve a esta ventana para que siga corriendo</div>'
+      +'<div class="pgnov-bar" id="pgnovBar"><i id="pgnovFill"></i></div>'
       +'<button id="pgnovBtn" type="button">Ya lo leí, entendido</button>'
       +'<div class="pgnov-note" id="pgnovC"></div></div></div>';
     ov.innerHTML=html;
@@ -553,7 +555,8 @@ window.pgRevisarNovedades=function(sbClient,area){
     fondo(bloquea);
     document.addEventListener('keydown',tragaEscape,true);
     var btn=ov.querySelector('#pgnovBtn'), fill=ov.querySelector('#pgnovFill'),
-        barra=ov.querySelector('#pgnovBar'), nota=ov.querySelector('#pgnovC');
+        barra=ov.querySelector('#pgnovBar'), nota=ov.querySelector('#pgnovC'),
+        pausa=ov.querySelector('#pgnovPausa');
     btn.addEventListener('click',function(){
       if(btn.disabled)return;
       btn.disabled=true; btn.textContent='Guardando…';
@@ -578,17 +581,29 @@ window.pgRevisarNovedades=function(sbClient,area){
     if(!bloquea||total<=0){ barra.style.display='none'; nota.textContent=''; return; }
     var restante=total;
     btn.disabled=true;
+    /* solo cuenta si la pestana esta visible Y la ventana tiene el foco:
+       si se van a otra pestana, a otra ventana o a otra aplicacion, se detiene */
+    function leyendo(){
+      try{ return document.visibilityState==='visible' && document.hasFocus(); }
+      catch(e){ return document.visibilityState==='visible'; }
+    }
     function pinta(){
       var m=Math.floor(restante/60), s=restante%60;
       btn.textContent='Podrás continuar en '+m+':'+(s<10?'0':'')+s;
       fill.style.width=Math.round(((total-restante)/total)*100)+'%';
-      nota.textContent='El contador se detiene si te vas a otra pestaña.';
+      var quieto=!leyendo();
+      pausa.style.display=quieto?'block':'none';
+      nota.textContent=quieto?'':'El contador solo avanza mientras estés en esta ventana.';
     }
     pinta();
+    ['blur','focus','visibilitychange'].forEach(function(ev){
+      (ev==='visibilitychange'?document:window).addEventListener(ev,function(){ if(restante>0) pinta(); },true);
+    });
     tick=setInterval(function(){
-      if(document.visibilityState==='hidden')return;
+      if(!leyendo()){ pinta(); return; }
       restante--;
       if(restante<=0){ clearInterval(tick); tick=null; fill.style.width='100%';
+        pausa.style.display='none';
         btn.disabled=false; btn.textContent='Ya lo leí, entendido';
         nota.textContent=n1>1?'Confirmas las '+n1+' de una vez.':''; return; }
       pinta();

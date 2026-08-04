@@ -76,6 +76,36 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 .ov .link{background:none;border:none;color:var(--teal-2);font-weight:600;cursor:pointer;font-size:13px;margin-top:13px;width:100%;}
 .msg{font-size:12.5px;margin-top:12px;min-height:16px;}
 .msg.err{color:#c0392b;}.msg.ok{color:var(--teal-2);}
+
+/* ---------- Mi Jornada (breaks / almuerzo) ---------- */
+.brk-panel{max-width:1080px;margin:0 auto;padding:14px 22px 6px;}
+.brk-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.brk-kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-2);font-weight:600;}
+.brk-clock{font-family:var(--font-mono);font-size:15px;font-weight:600;color:var(--navy);}
+.brk-sub{margin:4px 0 16px;color:var(--muted);font-size:13px;}
+.brk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media (max-width:720px){.brk-grid{grid-template-columns:1fr;}}
+.brk-card{background:var(--mint-ghost);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 18px 16px;box-shadow:var(--shadow-2);display:flex;flex-direction:column;gap:9px;transition:background .2s,border-color .2s;}
+.brk-card.brk-afuera{background:var(--amber-soft);border-color:var(--amber);}
+.brk-card.brk-cerrada{background:var(--mint-soft);border-color:var(--mint);}
+.brk-nombre{font-family:var(--font-title);font-weight:700;font-size:16px;color:var(--navy);}
+.brk-meta{font-size:11.5px;color:var(--muted);line-height:1.4;}
+.brk-salida-txt{font-size:13px;color:var(--navy);font-weight:600;}
+.brk-count{font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--navy);}
+.brk-count.brk-red{color:#c0392b;}
+.brk-over{font-size:12px;color:#c0392b;font-weight:600;min-height:15px;}
+.brk-summary{font-family:var(--font-mono);font-size:13px;color:var(--navy);}
+.brk-chip{display:inline-block;width:fit-content;font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:var(--r-pill);}
+.brk-chip.ok{background:var(--mint);color:var(--teal-2);}
+.brk-chip.fuera{background:var(--amber-soft);color:#9a6b00;}
+.brk-chip.late{background:#c0392b;color:#fff;}
+.brk-btn{font:inherit;font-weight:700;font-size:14px;padding:11px;border:none;border-radius:var(--r-md);cursor:pointer;color:#fff;background:var(--teal);margin-top:4px;}
+.brk-btn:hover{background:var(--teal-2);}
+.brk-btn.brk-btn-volver{background:var(--navy);}
+.brk-btn.brk-btn-volver:hover{background:var(--teal-2);}
+.brk-btn:disabled{opacity:.5;cursor:not-allowed;}
+.brk-err{max-width:1080px;font-size:12.5px;color:#c0392b;min-height:16px;margin-top:8px;}
+
 #app{display:none;}
 </style>
 </head>
@@ -93,6 +123,30 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 <div class="kicker">Documentos Interactivos</div>
 <h1>Bienvenido</h1>
 <p>Elige la herramienta con la que vas a trabajar. Tu sesión es la misma en todos los documentos: entras una vez y no te la vuelve a pedir.</p>
+</section>
+
+<!-- ===== Mi Jornada · breaks y almuerzo ===== -->
+<section class="brk-panel" id="brkPanel" style="display:none">
+<div class="brk-head">
+<div class="brk-kicker">MI JORNADA</div>
+<div class="brk-clock" id="brkClock">--:--:-- --</div>
+</div>
+<p class="brk-sub">Marca antes de salir y apenas regreses.</p>
+<div class="brk-grid">
+<div class="brk-card" id="brk-card-break_am"><div id="brk-body-break_am">
+<div class="brk-nombre">Break mañana</div>
+<div class="brk-meta">9:30 – 10:30 a.m. · 20 min</div>
+</div></div>
+<div class="brk-card" id="brk-card-almuerzo"><div id="brk-body-almuerzo">
+<div class="brk-nombre">Almuerzo</div>
+<div class="brk-meta">12:30 – 2:30 p.m. · 60 min</div>
+</div></div>
+<div class="brk-card" id="brk-card-break_pm"><div id="brk-body-break_pm">
+<div class="brk-nombre">Break tarde</div>
+<div class="brk-meta">4:20 – 4:50 p.m. · 20 min</div>
+</div></div>
+</div>
+<div class="brk-err" id="brkErr"></div>
 </section>
 
 <main class="grid">
@@ -219,7 +273,18 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 </a>
 
 <a class="card on" id="card-amazon" href="https://protectgo.github.io/amazon-relay/" style="display:none"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="5" width="14" height="11" rx="2"/><path d="M15 9h4l3 4v3h-3"/><circle cx="6" cy="18.5" r="2"/><circle cx="18" cy="18.5" r="2"/><path d="M8 18.5h8"/></svg></div><span class="tag">AMZ</span></div><h3>Amazon Relay</h3><p>Dashboard del equipo Amazon Audit: clientes, loads, cobros, invoices y reportes de utilidades.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a>
-<a class="card on" id="card-novedades-admin" href="novedades-admin.html" style="display:none"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><span class="tag">ADMIN</span></div><h3>Novedades</h3><p>Publica avisos por área — cada herramienta se lo muestra a su gente hasta que confirman que lo leyeron.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a></main>
+<a class="card on" id="card-novedades-admin" href="novedades-admin.html" style="display:none"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><span class="tag">ADMIN</span></div><h3>Novedades</h3><p>Publica avisos por área — cada herramienta se lo muestra a su gente hasta que confirman que lo leyeron.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a>
+
+<!-- Reporte de breaks (solo andres.lopez@, rrhh@, brahian.toro@, sales@) -->
+<a class="card on" id="card-breaks" href="reporte-breaks.html" style="display:none">
+<div class="top">
+<div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 1.9"/></svg></div>
+<span class="tag">EQUIPO</span>
+</div>
+<h3>Reporte de Breaks</h3>
+<p>Marcación de breaks y almuerzo del equipo: quién salió, a qué hora volvió y quién se pasó del tiempo.</p>
+<div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
+</a></main>
 
 <div class="pie">ProtectGo Services · Documentos Interactivos (009) · acceso por cuenta Supabase</div>
 </div>
@@ -301,7 +366,11 @@ var EXTERNOS=["gerencia@leonis-go.com"];
 var EXTRA={"endorsement@protectgoservices.com":"card-end","sales@protectgoservices.com":"card-novedades-admin"};
 var AMAZON={"amazonaud@protectgoservices.com":"card-amazon"};
 var PUESTOS={"brahian.toro@protectgoservices.com":"card-mapa"};
+// Reporte de breaks: varias cuentas ven la MISMA tarjeta.
+var BREAKS=["andres.lopez@protectgoservices.com","rrhh@protectgoservices.com","brahian.toro@protectgoservices.com","sales@protectgoservices.com"];
 function aplicar(email){
+var elBreaks=document.getElementById("card-breaks");
+if(elBreaks) elBreaks.style.display=(BREAKS.indexOf(email)>=0)?"flex":"none";
 Object.keys(MAPA).forEach(function(k){
 var el=document.getElementById(MAPA[k]);
 if(el) el.style.display=(email===k)?"flex":"none";
@@ -321,7 +390,7 @@ if(el) el.style.display=(email===k)?"flex":"none";
 var externo=EXTERNOS.indexOf(email)>=0;
 var esAmazon=!!AMAZON[email];
 document.querySelectorAll(".grid .card").forEach(function(c){
-if(c.id==="card-rrhh"||c.id==="card-coi"||c.id==="card-kam"||c.id==="card-fam"||c.id==="card-amazon"||c.id==="card-end"||c.id==="card-novedades-admin"||c.id==="card-mapa") return;
+if(c.id==="card-rrhh"||c.id==="card-coi"||c.id==="card-kam"||c.id==="card-fam"||c.id==="card-amazon"||c.id==="card-end"||c.id==="card-novedades-admin"||c.id==="card-mapa"||c.id==="card-breaks") return;
 var href=(c.getAttribute("href")||"");
 if(externo||esAmazon) c.style.display=(href.indexOf("quick-quote.html?v=810")>=0)?"flex":"none";
 else if(MAPA[email]) c.style.display="none";
@@ -337,6 +406,237 @@ c.auth.onAuthStateChange(function(evt,s){aplicar(s&&s.user?String(s.user.email).
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(arrancar,150);});
 else setTimeout(arrancar,150);
+})();
+</script>
+<script>
+(function(){
+"use strict";
+// Panel "Mi Jornada": marcacion de breaks y almuerzo. Cliente propio de Supabase,
+// mismo patron que los otros scripts de este archivo (misma sesion por dominio).
+var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var sb=null;
+
+var OFFSET=0;       // ms: hora_servidor - reloj del PC. TODA hora mostrada usa Date.now()+OFFSET.
+var HOY=null;       // fecha (YYYY-MM-DD) segun el servidor, para el update de "entrada".
+var HORA_OK=false;  // false hasta que hora_servidor responda bien; con false los botones quedan deshabilitados.
+var STATE={};       // espacio -> fila de mis_marcas_hoy (o undefined si no ha marcado hoy)
+var TICK=null;
+
+var ESPACIOS={
+break_am:{nombre:"Break mañana",ventana:"9:30 – 10:30 a.m.",permitido:20},
+almuerzo:{nombre:"Almuerzo",ventana:"12:30 – 2:30 p.m.",permitido:60},
+break_pm:{nombre:"Break tarde",ventana:"4:20 – 4:50 p.m.",permitido:20}
+};
+
+var panel=document.getElementById("brkPanel");
+
+function pad2(n){ return n<10 ? "0"+n : ""+n; }
+// Devuelve un Date cuyos getters (getHours/getMinutes) dan la hora REAL de Colombia,
+// sin importar la zona horaria ni el reloj que tenga configurado el PC del usuario.
+function serverNow(){
+var d=new Date(Date.now()+OFFSET);
+return new Date(d.getTime() + (d.getTimezoneOffset()*60000) - (5*3600000));
+}
+
+function fmtClock(d){
+var h=d.getHours(), m=d.getMinutes(), s=d.getSeconds();
+var ampm = h>=12 ? "p.m." : "a.m.";
+var h12=h%12; if(h12===0) h12=12;
+return h12+":"+pad2(m)+":"+pad2(s)+" "+ampm;
+}
+
+// salida_local/entrada_local llegan SIN zona, ya en hora Colombia (ej "2026-08-03T14:05:22").
+// Se parsea el texto directo, nunca con new Date() (evita corrimiento de zona horaria).
+function fmtHoraLocalStr(str){
+if(!str) return "--";
+var t = str.indexOf("T")>=0 ? str.split("T")[1] : str;
+var parts = t.split(":");
+var h=parseInt(parts[0],10), m=parts[1]||"00";
+var ampm = h>=12 ? "p.m." : "a.m.";
+var h12=h%12; if(h12===0) h12=12;
+return h12+":"+m+" "+ampm;
+}
+
+function mmss(totalSeconds){
+if(totalSeconds<0) totalSeconds=0;
+var m=Math.floor(totalSeconds/60), s=totalSeconds%60;
+return pad2(m)+":"+pad2(s);
+}
+
+function setPanelVisible(v){ if(panel) panel.style.display = v ? "" : "none"; }
+function errRow(t){ var e=document.getElementById("brkErr"); if(e) e.textContent = t||""; }
+
+function disableAll(msg){
+HORA_OK=false;
+var clock=document.getElementById("brkClock");
+if(clock) clock.textContent = msg || "No se pudo confirmar la hora del servidor — recarga la página";
+}
+
+function cardBody(espacio){ return document.getElementById("brk-body-"+espacio); }
+function cardEl(espacio){ return document.getElementById("brk-card-"+espacio); }
+
+function renderCard(espacio){
+var cfg=ESPACIOS[espacio];
+var row=STATE[espacio];
+var body=cardBody(espacio);
+var card=cardEl(espacio);
+if(!body||!card) return;
+var metaHtml='<div class="brk-meta">'+cfg.ventana+' · '+cfg.permitido+' min</div>';
+
+if(!row){
+card.className="brk-card";
+body.innerHTML =
+'<div class="brk-nombre">'+cfg.nombre+'</div>'+
+metaHtml+
+'<button class="brk-btn" data-brk-act="salir" data-brk-espacio="'+espacio+'"'+(HORA_OK?'':' disabled')+'>Salir</button>';
+return;
+}
+
+if(row.abierta){
+card.className="brk-card brk-afuera";
+body.innerHTML =
+'<div class="brk-nombre">'+cfg.nombre+'</div>'+
+metaHtml+
+'<div class="brk-salida-txt">Saliste a las '+fmtHoraLocalStr(row.salida_local)+'</div>'+
+'<div class="brk-count" id="brk-timer-'+espacio+'">00:00</div>'+
+'<div class="brk-over" id="brk-over-'+espacio+'"></div>'+
+'<button class="brk-btn brk-btn-volver" data-brk-act="volver" data-brk-espacio="'+espacio+'"'+(HORA_OK?'':' disabled')+'>Ya volví</button>';
+tickOne(espacio);
+return;
+}
+
+// cerrada: ya marco salida y entrada
+card.className="brk-card brk-cerrada";
+var chipCls="ok", chipTxt="A tiempo";
+if(row.en_ventana===false){ chipCls="fuera"; chipTxt="Fuera de horario"; }
+else if(row.excedido){
+var permitidoMin = row.permitido_min!=null ? row.permitido_min : cfg.permitido;
+var pasado = Math.max(0, (row.minutos||0) - permitidoMin);
+chipCls="late"; chipTxt="Se pasó "+pasado+" min";
+}
+body.innerHTML =
+'<div class="brk-nombre">'+cfg.nombre+'</div>'+
+metaHtml+
+'<div class="brk-summary">'+fmtHoraLocalStr(row.salida_local)+' &#8594; '+fmtHoraLocalStr(row.entrada_local)+' · '+(row.minutos!=null?row.minutos:"--")+' min</div>'+
+'<span class="brk-chip '+chipCls+'">'+chipTxt+'</span>';
+}
+
+function renderAll(){ Object.keys(ESPACIOS).forEach(function(e){ renderCard(e); }); }
+
+// Contador en vivo: usa "salida" (timestamptz con zona, Date.parse) contra Date.now()+OFFSET.
+// Si el RPC no trajera "salida" (solo salida_local), se arma el timestamp asumiendo -05:00 (Bogota, sin DST).
+function tickOne(espacio){
+var row=STATE[espacio];
+var cfg=ESPACIOS[espacio];
+if(!row||!row.abierta) return;
+var timerEl=document.getElementById("brk-timer-"+espacio);
+var overEl=document.getElementById("brk-over-"+espacio);
+if(!timerEl) return;
+var saleMs = row.salida ? Date.parse(row.salida) : Date.parse(row.salida_local+"-05:00");
+if(isNaN(saleMs)){ timerEl.textContent="--:--"; return; }
+var elapsedSec = Math.floor((Date.now()+OFFSET - saleMs)/1000);
+var permitidoMin = row.permitido_min!=null ? row.permitido_min : cfg.permitido;
+var permitidoSec = permitidoMin*60;
+timerEl.textContent = mmss(elapsedSec);
+if(elapsedSec>permitidoSec){
+timerEl.className="brk-count brk-red";
+if(overEl) overEl.textContent = "te pasaste por "+Math.ceil((elapsedSec-permitidoSec)/60)+" min";
+} else {
+timerEl.className="brk-count";
+if(overEl) overEl.textContent = "";
+}
+}
+
+function tickAll(){
+var clock=document.getElementById("brkClock");
+if(HORA_OK && clock) clock.textContent = fmtClock(serverNow());
+Object.keys(ESPACIOS).forEach(function(e){ tickOne(e); });
+}
+
+function cargarHora(cb){
+sb.rpc("hora_servidor").then(function(r){
+if(r.error || !r.data || !r.data[0]){ disableAll(); if(cb) cb(false); return; }
+var row=r.data[0];
+OFFSET = Date.parse(row.ahora) - Date.now();
+HOY = row.hoy;
+HORA_OK=true;
+if(cb) cb(true);
+});
+}
+
+function cargarMarcas(){
+sb.rpc("mis_marcas_hoy").then(function(r){
+if(r.error){ errRow("No se pudo cargar el estado de hoy: "+r.error.message); return; }
+STATE={};
+(r.data||[]).forEach(function(row){ STATE[row.espacio]=row; });
+errRow("");
+renderAll();
+});
+}
+
+function marcarSalida(espacio){
+if(!HORA_OK){ errRow("No se pudo confirmar la hora del servidor — recarga la página"); return; }
+sb.from("marcas_breaks").insert({espacio:espacio}).then(function(r){
+if(r.error){
+if(r.error.code==="23505") errRow("Ya marcaste este espacio hoy");
+else errRow(r.error.message||"No se pudo marcar la salida");
+} else { errRow(""); }
+cargarMarcas();
+});
+}
+
+function marcarEntrada(espacio){
+if(!HORA_OK){ errRow("No se pudo confirmar la hora del servidor — recarga la página"); return; }
+if(!HOY){ errRow("No se pudo confirmar la fecha del servidor — recarga la página"); return; }
+sb.from("marcas_breaks").update({entrada:null}).eq("espacio",espacio).eq("fecha",HOY).is("entrada",null).then(function(r){
+if(r.error) errRow(r.error.message||"No se pudo marcar el regreso");
+else errRow("");
+cargarMarcas();
+});
+}
+
+document.addEventListener("click",function(e){
+var b=e.target.closest("[data-brk-act]"); if(!b) return;
+var espacio=b.getAttribute("data-brk-espacio");
+var act=b.getAttribute("data-brk-act");
+if(act==="salir") marcarSalida(espacio);
+else if(act==="volver") marcarEntrada(espacio);
+});
+
+function iniciarCarga(){
+cargarHora(function(ok){
+if(ok){
+cargarMarcas();
+tickAll();
+if(!TICK) TICK=setInterval(tickAll,1000);
+} else {
+renderAll();
+}
+});
+}
+
+// Cuentas de area/compartidas: no son personas, no marcan jornada.
+var SIN_MARCACION=["sales@protectgoservices.com","fam@protectgoservices.com","kam@protectgoservices.com",
+"coi@protectgoservices.com","rrhh@protectgoservices.com","endorsement@protectgoservices.com",
+"amazonaud@protectgoservices.com","renewal@protectgoservices.com","retention@protectgoservices.com",
+"gerencia@leonis-go.com"];
+function marca(email){ return SIN_MARCACION.indexOf(String(email||"").toLowerCase())<0; }
+
+function onAuthed(email){
+if(!marca(email)){ onSignedOut(); return; }
+setPanelVisible(true); iniciarCarga();
+}
+function onSignedOut(){ setPanelVisible(false); if(TICK){ clearInterval(TICK); TICK=null; } }
+
+function init(){
+if(!(window.supabase&&window.supabase.createClient)) return;
+sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+sb.auth.getSession().then(function(r){ var s=r.data&&r.data.session; if(s) onAuthed(s.user&&s.user.email); else onSignedOut(); });
+sb.auth.onAuthStateChange(function(evt,session){ if(session) onAuthed(session.user&&session.user.email); else onSignedOut(); });
+}
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(init,60); });
+else setTimeout(init,60);
 })();
 </script>
 </body>

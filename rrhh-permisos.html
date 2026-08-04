@@ -162,6 +162,7 @@
       <button class="tab" data-tab="hist">Historial <span class="n" id="nHist">0</span></button>
       <button class="tab" data-tab="cola">Colaboradores <span class="n" id="nCola">0</span></button>
       <button class="tab" data-tab="rep">Reporte</button>
+      <button class="tab" data-tab="uso">📊 Uso del tiempo</button>
       <button class="tab" data-tab="guia">Guía de Permisos</button>
     </div>
 
@@ -406,6 +407,27 @@
         </div>
       </div>
       <div id="repSalida"></div>
+    </section>
+
+    <!-- ========== USO DEL TIEMPO ========== -->
+    <section class="view" id="sec-uso">
+      <div class="card">
+        <h2>Uso del tiempo <small>quién está usando más el tope de personales, mes a mes</small></h2>
+        <div class="note mint">Ordenado por el que más está usando el tope este mes primero. La tendencia muestra los últimos 3 meses — si sube fuerte de un mes a otro, salta a la vista. La lectura de si eso es normal o es fuga la haces tú.</div>
+        <div class="filters">
+          <input type="month" id="usoMes">
+          <input type="text" id="usoBuscar" placeholder="Buscar por nombre…" style="max-width:220px">
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Colaborador</th><th>Este mes</th><th>Tendencia (3 meses)</th><th>Motivo más usado</th><th>Semáforo</th>
+            </tr></thead>
+            <tbody id="tbUso"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="emptyUso" style="display:none">No hay colaboradores que coincidan con la búsqueda.</div>
+      </div>
     </section>
 
     <!-- ========== GUÍA ========== -->
@@ -669,7 +691,7 @@ function cargarTodo(){
     if(rs[0].error||rs[1].error){toast('Error cargando datos: '+((rs[0].error||rs[1].error).message));return;}
     colaboradores=rs[0].data||[];permisos=rs[1].data||[];
     recurrentes=(rs[2]&&!rs[2].error&&rs[2].data)?rs[2].data:[];
-    pintarSelects();pintarCola();pintarHist();pintarRecurrentes();actualizarTope();
+    pintarSelects();pintarCola();pintarHist();pintarRecurrentes();actualizarTope();pintarUso();
     $('nCola').textContent=colaboradores.filter(function(c){return c.activo;}).length;
     $('nHist').textContent=permisos.length;
     $('noCola').style.display=colaboradores.length?'none':'block';
@@ -770,6 +792,53 @@ function actualizarTope(){
   $('topeBar').style.width=Math.min(100,(tot/TOPE_MES)*100)+'%';
   $('topeTxt').textContent=(Math.round(tot*10)/10)+' / '+TOPE_MES+' h'+(nuevas?' (incluye este)':'');
   evaluarSemaforo();
+}
+
+// ---------- USO DEL TIEMPO (ranking de todo el equipo, para detectar la fuga) ----------
+function mesISOMenos(mesISO,n){
+  var p=mesISO.split('-'),y=+p[0],m=+p[1]-1-n;
+  y+=Math.floor(m/12);m=((m%12)+12)%12;
+  return y+'-'+String(m+1).padStart(2,'0');
+}
+function motivoTopMes(colaId,mesISO){
+  var cont={};
+  permisos.forEach(function(p){
+    if(p.colaborador_id!==colaId)return;
+    if(!TIPOS[p.tipo]||!TIPOS[p.tipo].personal)return;
+    if((p.fecha_inicio||'').slice(0,7)!==mesISO)return;
+    if(p.estado==='Rechazado'||p.estado==='Anulado')return;
+    cont[p.tipo]=(cont[p.tipo]||0)+1;
+  });
+  var top=null;
+  Object.keys(cont).forEach(function(t){if(!top||cont[t]>cont[top])top=t;});
+  return top?{tipo:top,n:cont[top]}:null;
+}
+function usoMesActualISO(){return ($('usoMes')&&$('usoMes').value)||hoyISO().slice(0,7);}
+function pintarUso(){
+  if(!$('tbUso'))return;
+  var mesSel=usoMesActualISO();
+  var mes1=mesISOMenos(mesSel,1),mes2=mesISOMenos(mesSel,2);
+  var busc=(($('usoBuscar')&&$('usoBuscar').value)||'').trim().toLowerCase();
+  var act=colaboradores.filter(function(c){return c.activo&&(!busc||(c.nombre||'').toLowerCase().indexOf(busc)>=0);});
+  var filas=act.map(function(c){
+    var h0=horasPersonalesMes(c.id,mesSel),h1=horasPersonalesMes(c.id,mes1),h2=horasPersonalesMes(c.id,mes2);
+    var top=motivoTopMes(c.id,mesSel);
+    var subeFuerte=h1>0&&h0>h1*1.5;
+    var nivel=(h0>=TOPE_MES)?'red':((h0>=TOPE_MES*0.5||subeFuerte)?'warn':'ok');
+    var icono={red:'🔴',warn:'🟡',ok:'🟢'}[nivel];
+    return {c:c,h0:h0,h1:h1,h2:h2,top:top,nivel:nivel,icono:icono};
+  }).sort(function(a,b){return b.h0-a.h0;});
+  $('tbUso').innerHTML=filas.map(function(f){
+    var tend=(Math.round(f.h2*10)/10)+'h → '+(Math.round(f.h1*10)/10)+'h → '+(Math.round(f.h0*10)/10)+'h'+(f.h0>f.h1?' ↑':(f.h0<f.h1?' ↓':''));
+    var motivo=f.top?(esc(f.top.tipo)+' ('+f.top.n+'×)'):'—';
+    return '<tr class="rowlink" data-usover="'+f.c.id+'" style="cursor:pointer">'+
+      '<td>'+esc(f.c.nombre)+'</td>'+
+      '<td class="mono">'+(Math.round(f.h0*10)/10)+' / '+TOPE_MES+' h</td>'+
+      '<td class="mono" style="color:var(--faint)">'+esc(tend)+'</td>'+
+      '<td>'+motivo+'</td>'+
+      '<td><span class="pill '+f.nivel+'">'+f.icono+'</span></td></tr>';
+  }).join('');
+  $('emptyUso').style.display=filas.length?'none':'block';
 }
 
 // ===== SEMÁFORO DE PREAPROBACIÓN (protocolo v2) =====
@@ -978,7 +1047,7 @@ function textoSelloRechazado(){
 function copiarSello(){
   var img=$('insigniaImg'),msg=$('insigniaMsg');
   var estado=$('mEstado').value;
-  var html='<img src="'+img.src+'" width="360" style="display:block;border:0;max-width:100%">';
+  var html='<img src="'+img.src+'" width="520" style="display:block;border:0;max-width:100%">';
   if(ESCALA_ESTADOS.indexOf(estado)>=0&&gestionP)html+=textoSelloEscalado(gestionP);
   else if(estado==='Rechazado'&&gestionP)html+=textoSelloRechazado();
   copyHTML(html,function(ok){
@@ -1642,7 +1711,7 @@ document.addEventListener('click',function(e){
     return;
   }
   if(e.target.closest('#btnPedirDato')){
-    var htmlPedir='<img src="https://protectgo.github.io/quick-quotes/insignias/b-amarillo.png" width="360" style="display:block;border:0;max-width:100%"><p>'+esc(pedirDatoTexto)+'</p>';
+    var htmlPedir='<img src="https://protectgo.github.io/quick-quotes/insignias/b-amarillo.png" width="520" style="display:block;border:0;max-width:100%"><p>'+esc(pedirDatoTexto)+'</p>';
     copyHTML(htmlPedir,function(ok){
       toast(ok?'Sello copiado — pégalo en tu respuesta de Gmail':'No se pudo copiar — intenta de nuevo');
     });
@@ -1652,6 +1721,15 @@ document.addEventListener('click',function(e){
   var cr=e.target.closest('[data-cerrarrec]');if(cr){cerrarRecurrente(cr.getAttribute('data-cerrarrec'));return;}
   var ar=e.target.closest('[data-anularrec]');if(ar){anularRecurrente(ar.getAttribute('data-anularrec'));return;}
   var g=e.target.closest('[data-gestion]');if(g){abrirGestion(g.getAttribute('data-gestion'));return;}
+  var uv=e.target.closest('[data-usover]');
+  if(uv){
+    var cid=uv.getAttribute('data-usover');
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('act');});
+    document.querySelectorAll('.view').forEach(function(s){s.classList.remove('act');});
+    document.querySelector('[data-tab="rep"]').classList.add('act');$('sec-rep').classList.add('act');
+    $('repColab').value=cid;generarReporte();
+    return;
+  }
   var ed=e.target.closest('[data-edit]');if(ed){editarCola(ed.getAttribute('data-edit'));return;}
   if(e.target.id==='modalBg')$('modalBg').style.display='none';
 });
@@ -1699,6 +1777,10 @@ function wire(){
   $('btnGenerarReporte').addEventListener('click',generarReporte);
   $('btnImprimirReporte').addEventListener('click',imprimirReporte);
   repFechasDefault();
+  // Uso del tiempo
+  $('usoMes').value=hoyISO().slice(0,7);
+  $('usoMes').addEventListener('change',pintarUso);
+  $('usoBuscar').addEventListener('input',pintarUso);
 }
 
 function init(){
@@ -1718,7 +1800,7 @@ else setTimeout(init,60);
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="rrhh-permisos.html";
-var PGV_VERSION=2;
+var PGV_VERSION=3;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');

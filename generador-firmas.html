@@ -232,7 +232,7 @@ render();
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="generador-firmas.html";
-var PGV_VERSION=5;
+var PGV_VERSION=6;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
@@ -309,7 +309,7 @@ window.pgRevisarNovedades=function(sbClient,area){
     var bloquea=items.some(function(n){return n.bloqueante!==false;});
     var total=0;
     items.forEach(function(n){ var s=parseInt(n.segundos_lectura,10); if(n.bloqueante!==false&&s>total) total=s; });
-    if(bloquea&&!total) total=180;
+    if(bloquea&&!total) total=90;
     function tragaEscape(ev){ if(ev.key==='Escape'||ev.keyCode===27){ ev.preventDefault(); ev.stopImmediatePropagation(); } }
     function fondo(on){ try{ document.documentElement.style.overflow=on?'hidden':''; document.body.style.overflow=on?'hidden':''; }catch(e){} }
     var ov=document.createElement('div'); ov.id='pgnovOv'; ov.className='pgnov-ov';

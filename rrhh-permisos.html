@@ -514,19 +514,18 @@
     <div id="insigniaBox" style="margin-top:14px;padding:14px;border:1px solid var(--hairline);border-radius:10px;background:#FAFBFC">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
         <div>
-          <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--teal-2)">Insignia de respuesta</div>
-          <div style="font-size:12.5px;color:var(--faint);margin-top:2px">Cambia sola según el Estado de arriba — cópiala y pégala en tu respuesta de Gmail.</div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--teal-2)">Sello de respuesta</div>
+          <div id="selloHint" style="font-size:12.5px;color:var(--faint);margin-top:2px">Cambia solo según el Estado de arriba — un clic la copia (con el mensaje si aplica) lista para pegar en tu respuesta de Gmail.</div>
         </div>
-        <button class="btn sec mini" id="btnCopiarInsignia" type="button">📋 Copiar imagen</button>
+        <button class="btn sec mini" id="btnCopiarInsignia" type="button">📋 Copiar sello</button>
       </div>
       <img id="insigniaImg" src="insignias/b-amarillo.png" alt="Insignia de respuesta" style="max-width:100%;width:100%;margin-top:10px;border-radius:6px;border:1px solid var(--hairline);display:block">
       <div id="insigniaMsg" style="font-size:11.5px;color:var(--faint);margin-top:6px;min-height:14px"></div>
     </div>
     <div id="escalarBox" style="display:none;margin-top:14px;padding:14px;border:1px solid var(--hairline);border-radius:10px;background:#FAFBFC">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--teal-2)">Escalar al jefe directo</div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--teal-2)">Este permiso necesita decisión</div>
       <div id="escalarJefe" style="font-size:12.5px;color:var(--muted);margin-top:6px"></div>
-      <button class="btn sec mini" id="btnEscalar" type="button" style="margin-top:10px">📨 Copiar texto de escalamiento</button>
-      <div id="escalarMsg" style="font-size:11.5px;color:var(--faint);margin-top:6px;min-height:14px"></div>
+      <div style="font-size:11.5px;color:var(--faint);margin-top:6px">El sello de arriba ya incluye el mensaje para el jefe — solo dale "Copiar sello".</div>
     </div>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button class="btn" id="mGuardar">Guardar cambios</button>
@@ -613,6 +612,25 @@ function copiarTexto(text,cb){
   function fallback(){try{var ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);done();}catch(e){cb&&cb(false);}}
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback);}
   else fallback();
+}
+// Copia HTML (imagen hospedada + texto) en un solo pegado — misma técnica que el generador de firmas,
+// así el sello se pega en Gmail tal como una firma (sin tener que recortar imágenes).
+function copyHTML(html,cb){
+  var done=function(){cb&&cb(true);};
+  function fallback(){
+    try{
+      var dv=document.createElement('div');dv.contentEditable=true;dv.style.position='fixed';dv.style.left='-9999px';dv.innerHTML=html;
+      document.body.appendChild(dv);
+      var rg=document.createRange();rg.selectNodeContents(dv);
+      var s=getSelection();s.removeAllRanges();s.addRange(rg);
+      document.execCommand('copy');
+      s.removeAllRanges();dv.remove();
+      done();
+    }catch(e){cb&&cb(false);}
+  }
+  if(navigator.clipboard&&window.ClipboardItem){
+    navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([html],{type:'text/plain'})})]).then(done,fallback);
+  }else fallback();
 }
 function listaNatural(arr){if(arr.length<=1)return arr[0]||'';return arr.slice(0,-1).join(', ')+' y '+arr[arr.length-1];}
 function fdate(d){if(!d)return '';var p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
@@ -932,19 +950,39 @@ function actualizarInsignia(){
   var img=$('insigniaImg');if(!img)return;
   img.src=INSIGNIAS[$('mEstado').value]||INSIGNIAS['Solicitado'];
   $('insigniaMsg').textContent='';
+  var hint=$('selloHint');
+  if(hint){
+    var st=$('mEstado').value;
+    if(ESCALA_ESTADOS.indexOf(st)>=0)hint.textContent='Este estado necesita decisión — el sello va con el mensaje al jefe y a Jorge, listo para pegar.';
+    else if(st==='Rechazado')hint.textContent='El sello va con una línea corta — revisa/edita el motivo en Notas antes de copiar.';
+    else hint.textContent='Cambia solo según el Estado de arriba — un clic la copia lista para pegar en tu respuesta de Gmail.';
+  }
 }
-function copiarInsignia(){
+// ---------- SELLO DE RESPUESTA (insignia + mensaje automático cuando aplica) ----------
+var JORGE_NOMBRE='Jorge López';
+var JORGE_CORREO='andres.lopez@protectgoservices.com';
+var ESCALA_ESTADOS=['Solicitado','Sin proceso'];
+function textoSelloEscalado(p){
+  var c=colaDe(p);
+  var jefe=c&&c.jefe_inmediato?c.jefe_inmediato:'tu jefe directo';
+  var correoJefe=c&&c.correo_jefe?c.correo_jefe:'';
+  var nombre=(p.colaborador&&p.colaborador.nombre)?p.colaborador.nombre:(c?c.nombre:'el colaborador');
+  var fechas=fdate(p.fecha_inicio)+(p.fecha_fin&&p.fecha_fin!==p.fecha_inicio?(' a '+fdate(p.fecha_fin)):'');
+  var horas=p.horas_permiso?(p.horas_permiso+' h'):'';
+  return '<p>@'+esc(jefe)+(correoJefe?(' ('+esc(correoJefe)+')'):'')+' / @'+JORGE_NOMBRE+' ('+JORGE_CORREO+'): por favor indícanos si autorizan o no este permiso de <b>'+esc(nombre)+'</b> ('+esc(fechas)+(horas?(', '+esc(horas)):'')+', motivo: '+esc(p.motivo||'—')+'). RRHH lo registra con su respuesta.</p>';
+}
+function textoSelloRechazado(){
+  var motivo=($('mNotas')&&$('mNotas').value||'').trim();
+  return '<p>Este permiso no fue autorizado'+(motivo?(': '+esc(motivo)):'.')+' Cualquier duda, respóndenos por este medio.</p>';
+}
+function copiarSello(){
   var img=$('insigniaImg'),msg=$('insigniaMsg');
-  fetch(img.src).then(function(r){return r.blob();}).then(function(blob){
-    if(navigator.clipboard&&window.ClipboardItem){
-      return navigator.clipboard.write([new window.ClipboardItem({'image/png':blob})]).then(function(){
-        msg.textContent='Copiada ✓ — pégala en tu respuesta de Gmail (Ctrl/Cmd+V).';
-      });
-    }
-    throw new Error('sin-clipboard');
-  }).catch(function(){
-    window.open(img.src,'_blank');
-    msg.textContent='Tu navegador no deja copiar directo — se abrió la imagen en otra pestaña, guárdala y arrástrala al correo.';
+  var estado=$('mEstado').value;
+  var html='<img src="'+img.src+'" width="360" style="display:block;border:0;max-width:100%">';
+  if(ESCALA_ESTADOS.indexOf(estado)>=0&&gestionP)html+=textoSelloEscalado(gestionP);
+  else if(estado==='Rechazado'&&gestionP)html+=textoSelloRechazado();
+  copyHTML(html,function(ok){
+    msg.textContent=ok?'Copiado ✓ — pégalo en tu respuesta de Gmail (Ctrl/Cmd+V).':'No se pudo copiar directo — vuelve a intentar o copia la imagen manualmente desde insignias/.';
   });
 }
 function abrirGestion(id){
@@ -968,13 +1006,12 @@ function abrirGestion(id){
 function actualizarEscalar(){
   var box=$('escalarBox');if(!box)return;
   var st=$('mEstado').value;
-  var show=(st==='Solicitado'||st==='Rechazado'||st==='Sin proceso');
+  var show=ESCALA_ESTADOS.indexOf(st)>=0;
   box.style.display=show?'block':'none';
-  $('escalarMsg').textContent='';
   if(show){
     var c=colaDe(gestionP);
-    if(c&&c.jefe_inmediato){$('escalarJefe').innerHTML=esc(c.jefe_inmediato)+' · '+esc(c.correo_jefe||'—');}
-    else{$('escalarJefe').textContent='Sin jefe cargado — consulta a Andrés';}
+    if(c&&c.jefe_inmediato){$('escalarJefe').innerHTML='Se incluirá en el sello: '+esc(c.jefe_inmediato)+' · '+esc(c.correo_jefe||'—')+' + '+JORGE_NOMBRE+'.';}
+    else{$('escalarJefe').textContent='Sin jefe cargado — consulta a Andrés (el sello igual incluirá a '+JORGE_NOMBRE+').';}
   }
 }
 function textoEscalamiento(p){
@@ -1251,7 +1288,7 @@ function leerCorreo(){
     var nom=col?norm(col.nombre).split(/\s+/)[0]:'equipo';
     if(col){nom=col.nombre.split(/\s+/)[0];}
     pedirDatoTexto='Hola '+nom+', para registrar tu permiso me falta: '+listaNatural(faltantes)+'. Respóndeme este correo con ese dato y quedas registrado. Gracias.';
-    parseHtml+='<br><button class="btn sec mini" id="btnPedirDato" type="button" style="margin-top:8px">📨 Pedir el dato que falta</button>';
+    parseHtml+='<br><button class="btn sec mini" id="btnPedirDato" type="button" style="margin-top:8px">📋 Copiar sello — pedir el dato que falta</button>';
   }
   // M2 · si el correo describe un acuerdo recurrente, cambia solo la modalidad y precarga lo detectado
   if(/solicitud de permiso recurrente|(todos|cada)\s+(los\s+)?(lunes|martes|miercoles|jueves|viernes|sabados?)/.test(nTxt)){
@@ -1605,8 +1642,10 @@ document.addEventListener('click',function(e){
     return;
   }
   if(e.target.closest('#btnPedirDato')){
-    copiarTexto(pedirDatoTexto,function(){});
-    toast('Mensaje copiado — pégalo en tu respuesta de Gmail');
+    var htmlPedir='<img src="https://protectgo.github.io/quick-quotes/insignias/b-amarillo.png" width="360" style="display:block;border:0;max-width:100%"><p>'+esc(pedirDatoTexto)+'</p>';
+    copyHTML(htmlPedir,function(ok){
+      toast(ok?'Sello copiado — pégalo en tu respuesta de Gmail':'No se pudo copiar — intenta de nuevo');
+    });
     return;
   }
   var md=e.target.closest('[data-modo]');if(md){setModo(md.getAttribute('data-modo'));return;}
@@ -1643,8 +1682,7 @@ function wire(){
   $('mCerrar').addEventListener('click',function(){$('modalBg').style.display='none';});
   $('mEliminar').addEventListener('click',eliminarGestion);
   $('mEstado').addEventListener('change',function(){actualizarInsignia();actualizarEscalar();});
-  $('btnCopiarInsignia').addEventListener('click',copiarInsignia);
-  $('btnEscalar').addEventListener('click',function(){escalar('escalarMsg');});
+  $('btnCopiarInsignia').addEventListener('click',copiarSello);
   $('btnEscalarVenc').addEventListener('click',function(){escalar('escalarVencMsg','vencida');});
   $('btnReprogramar').addEventListener('click',function(){$('reprogBox').style.display='flex';});
   $('btnReprogConfirmar').addEventListener('click',reprogramarLimite);
@@ -1680,7 +1718,7 @@ else setTimeout(init,60);
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="rrhh-permisos.html";
-var PGV_VERSION=1;
+var PGV_VERSION=2;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');

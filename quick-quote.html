@@ -4335,6 +4335,7 @@
     "use strict";
     var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
     var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+    var EDITORES=["kam@protectgoservices.com","andres.lopez@protectgoservices.com"];
     var sb=null, currentId=null, currentUserId=null, userEmail="";
 
     function snapKey(e,counts){
@@ -4689,7 +4690,7 @@ pgRevisarNovedades(sb,'general');
       else { q=sb.from("quick_quotes").insert(row).select("id").single(); }
       showToast("Guardando…");
       q.then(function(r){ if(r.error){ showToast("Error al guardar"); alert("No se pudo guardar: "+r.error.message); return; } if(r.data&&r.data.id) currentId=r.data.id; showToast("Quote guardada ✓"); }); }
-    function openPanel(){ panel.classList.add("open"); var ttl=document.getElementById("qqPanelTitle"); if(ttl) ttl.textContent=(userEmail==="kam@protectgoservices.com")?"Todas las Quotes":"Mis Quotes"; var srch=document.getElementById("qqSearch"); if(srch) srch.value=""; var list=document.getElementById("qqList"); list.innerHTML='<div class="qq-empty">Cargando…</div>';
+    function openPanel(){ panel.classList.add("open"); var ttl=document.getElementById("qqPanelTitle"); if(ttl) ttl.textContent=(EDITORES.indexOf((userEmail||"").toLowerCase())>=0)?"Todas las Quotes":"Mis Quotes"; var srch=document.getElementById("qqSearch"); if(srch) srch.value=""; var list=document.getElementById("qqList"); list.innerHTML='<div class="qq-empty">Cargando…</div>';
       sb.from("quick_quotes").select("id,account_name,quote_number,status,updated_at").order("updated_at",{ascending:false}).then(function(r){
         if(r.error){ list.innerHTML='<div class="qq-empty">Error: '+r.error.message+'</div>'; return; }
         var rows=r.data||[]; if(!rows.length){ list.innerHTML='<div class="qq-empty">Aún no tienes quotes guardadas.<br>Llena una y dale <b>Guardar</b>.</div>'; return; }
@@ -4705,7 +4706,7 @@ pgRevisarNovedades(sb,'general');
           list.appendChild(d);
         });
       }); }
-    function openQuote(id){ showToast("Abriendo…"); sb.from("quick_quotes").select("data,user_id").eq("id",id).single().then(function(r){ if(r.error){ alert(r.error.message); return; } restore(r.data&&r.data.data?r.data.data:{}); var mine=!r.data||!r.data.user_id||r.data.user_id===currentUserId; currentId=mine?id:null; panel.classList.remove("open"); showToast(mine?"Quote cargada ✓":"Quote de agente — al Guardar se crea tu copia"); window.scrollTo(0,0); }); }
+    function openQuote(id){ showToast("Abriendo…"); sb.from("quick_quotes").select("data,user_id").eq("id",id).single().then(function(r){ if(r.error){ alert(r.error.message); return; } restore(r.data&&r.data.data?r.data.data:{}); var esEditor=EDITORES.indexOf((userEmail||"").toLowerCase())>=0; var mine=!r.data||!r.data.user_id||r.data.user_id===currentUserId||esEditor; currentId=mine?id:null; panel.classList.remove("open"); showToast(mine?"Quote cargada ✓":"Quote de agente — al Guardar se crea tu copia"); window.scrollTo(0,0); }); }
 
     function init(){
       buildUI();
@@ -4770,7 +4771,7 @@ pgRevisarNovedades(sb,'general');
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="quick-quote.html";
-var PGV_VERSION=7;
+var PGV_VERSION=8;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
@@ -5966,7 +5967,7 @@ setTimeout(wireBinderBtn,1500);
 
 /* ============ ESTAMPA DE VERSION (diagnostico de cache) ============ */
 (function(){
-  var VER="pv-suite v7.21";
+  var VER="pv-suite v7.22";
   window.__pvVer=VER;
   function stamp(){
     if(!document.body || document.getElementById("pv-ver")) return;

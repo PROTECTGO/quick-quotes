@@ -3,251 +3,1402 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Novedades · Admin — ProtectGo</title>
+<title>ProtectGo · Novedades (Admin)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-
   :root{
-    --navy:#002F3D; --navy-2:#0a5b54; --teal:#229A82; --teal-2:#1a7a68;
-    --mint:#BADFCE; --mint-soft:#E4F2EB; --mint-ghost:#F2F8F5;
-    --amber:#FFB400; --amber-soft:#fff7e0; --papel:#FAF9F5; --surface:#fff;
-    --ink:#0D141A; --muted:#5a6a6e; --faint:#8a989a; --hairline:#d8e0de; --line:#e6ebe9;
-    --grad:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%);
-    --r-sm:10px; --r-md:14px; --r-lg:20px; --r-pill:999px;
-    --shadow-2:0 8px 24px -10px rgba(0,47,61,.16),0 2px 4px rgba(0,47,61,.05);
-    --font-title:"Montserrat",system-ui,sans-serif; --font-text:"Inter",system-ui,sans-serif; --font-mono:"IBM Plex Mono",monospace;
+    --pg-ink:#1B2D3A; --pg-ink-2:#162630; --pg-mint:#2DBFA3; --pg-mint-soft:#C4E8DF; --pg-mint-deep:#229A82;
+    --pg-bg:#F4F7FA; --pg-card:#FFFFFF; --pg-line:#E7EDF2; --pg-txt:#28323B; --pg-muted:#6B7D89;
+    --pg-pos:#1F9D6B; --pg-neg:#D5594F; --pg-warn:#B8841F;
+    --tipo-felicitacion:#00C864; --tipo-novedad:#229A82; --tipo-aviso:#FFB400; --tipo-recordatorio:#8da0ad;
   }
-  *,*::before,*::after{box-sizing:border-box;}
+  *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
-  body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-height:100vh;}
+  body{
+    background:var(--pg-bg);
+    color:var(--pg-txt);
+    font-family:'Inter',Arial,Helvetica,sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Montserrat',Arial,Helvetica,sans-serif;margin:0 0 4px 0;color:var(--pg-ink);}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  button{font-family:inherit;cursor:pointer;}
+  input,textarea,select{font-family:inherit;}
+  .hidden{display:none !important;}
 
-  .pg-bar{position:sticky;top:0;z-index:40;height:58px;display:flex;align-items:center;gap:12px;padding:0 22px;background:var(--navy);color:#fff;box-shadow:0 2px 14px -6px rgba(0,0,0,.45);}
-  .pg-bar .logo{font-family:var(--font-title);font-weight:800;font-size:16px;letter-spacing:.2px;}
-  .pg-bar .logo i{color:var(--teal);font-style:normal;}
-  .pg-bar .area-tag{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;background:rgba(255,255,255,.12);color:var(--mint);padding:5px 10px;border-radius:var(--r-pill);}
-  .pg-bar .sp{flex:1;}
-  .pg-bar .user{font-family:var(--font-mono);font-size:12px;color:#9fc6bd;}
-  .pg-b{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;padding:8px 14px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;}
-  .pg-b:hover{background:rgba(255,255,255,.08);}
+  /* ---------- Top bar ---------- */
+  .topbar{
+    background:var(--pg-ink);
+    color:#fff;
+    padding:14px 26px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:0 2px 10px rgba(0,0,0,.18);
+  }
+  .topbar .brand{
+    font-family:'Montserrat',Arial,Helvetica,sans-serif;
+    font-weight:800;
+    font-size:17px;
+    letter-spacing:.2px;
+  }
+  .topbar .brand span{color:var(--pg-mint);}
+  .topbar .session{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    font-size:13px;
+    color:#c9d6dd;
+  }
+  .topbar .session b{color:#fff;font-weight:600;}
+  .btn-logout{
+    background:transparent;
+    border:1px solid #3c5a68;
+    color:#fff;
+    padding:7px 14px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:600;
+    transition:.15s;
+  }
+  .btn-logout:hover{background:#243c48;}
 
-  .hero{padding:36px 22px 10px;max-width:820px;margin:0 auto;}
-  .hero .kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-2);font-weight:600;}
-  .hero h1{font-family:var(--font-title);font-weight:800;font-size:30px;line-height:1.1;margin:8px 0 6px;color:var(--navy);}
-  .hero p{margin:0;color:var(--muted);font-size:14px;max-width:620px;}
+  /* ---------- Generic layout ---------- */
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:26px 20px 60px;
+  }
+  .card{
+    background:var(--pg-card);
+    border:1px solid var(--pg-line);
+    border-radius:16px;
+    padding:22px;
+    box-shadow:0 2px 14px rgba(27,45,58,.05);
+  }
 
-  .wrap{max-width:820px;margin:0 auto;padding:14px 22px 70px;}
-  .pg-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px 24px;box-shadow:var(--shadow-2);margin-bottom:20px;}
-  .pg-card h2{font-family:var(--font-title);font-size:16px;margin:0 0 4px;color:var(--navy);}
-  .h2sub{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
-  .field{margin-bottom:13px;}
-  .field label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
-  .field select,.field input,.field textarea{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid var(--hairline);border-radius:9px;font-size:13.5px;font-family:inherit;}
-  .field textarea{resize:vertical;min-height:80px;}
-  .field select:focus,.field input:focus,.field textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.15);}
-  .pg-btn{background:var(--navy);color:#fff;border:none;border-radius:10px;padding:12px 18px;font:inherit;font-weight:700;font-size:13.5px;cursor:pointer;}
-  .pg-btn:hover{background:var(--navy-2);}
-  .pg-btn.alt{background:transparent;color:#c0392b;border:1px solid #e3b7ae;}
-  .pg-btn.alt:hover{background:#fdf1ef;}
+  /* ---------- Tabs ---------- */
+  .tabs{
+    display:flex;
+    gap:6px;
+    margin-bottom:20px;
+    border-bottom:1px solid var(--pg-line);
+  }
+  .tab-btn{
+    background:transparent;
+    border:none;
+    border-bottom:3px solid transparent;
+    padding:12px 18px;
+    font-weight:700;
+    font-family:'Montserrat',Arial,Helvetica,sans-serif;
+    font-size:14px;
+    color:var(--pg-muted);
+    transition:.15s;
+  }
+  .tab-btn:hover{color:var(--pg-ink);}
+  .tab-btn.active{
+    color:var(--pg-ink);
+    border-bottom-color:var(--pg-mint);
+  }
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
 
-  .nov-row{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
-  .nov-row .nrow-top{display:flex;align-items:center;gap:10px;justify-content:space-between;}
-  .nov-tag{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--mint-soft);color:var(--teal-2);padding:4px 9px;border-radius:var(--r-pill);}
-  .nov-titulo{font-weight:700;font-size:14px;color:var(--navy);margin:6px 0 3px;}
-  .nov-cuerpo{font-size:12.5px;color:var(--muted);white-space:pre-wrap;margin-bottom:8px;}
-  .nov-meta{font-size:11px;color:var(--faint);font-family:var(--font-mono);}
-  .nov-inactivo{opacity:.5;}
+  /* ---------- Login / Restricted ---------- */
+  .center-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .auth-card{
+    background:var(--pg-card);
+    border:1px solid var(--pg-line);
+    border-radius:18px;
+    padding:36px 34px;
+    width:100%;
+    max-width:380px;
+    box-shadow:0 8px 30px rgba(27,45,58,.10);
+    text-align:center;
+  }
+  .auth-card .logo-mark{
+    width:52px;height:52px;border-radius:14px;
+    background:linear-gradient(135deg,var(--pg-mint),var(--pg-mint-deep));
+    margin:0 auto 16px;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:24px;font-weight:800;
+  }
+  .auth-card h1{font-size:19px;margin-bottom:4px;}
+  .auth-card p.sub{color:var(--pg-muted);font-size:13px;margin:0 0 22px 0;}
+  .field{text-align:left;margin-bottom:14px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--pg-muted);margin-bottom:5px;}
+  .field input{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--pg-line);
+    border-radius:9px;
+    font-size:14px;
+    color:var(--pg-txt);
+    background:#fbfcfd;
+  }
+  .field input:focus{outline:none;border-color:var(--pg-mint);background:#fff;}
+  .btn-primary{
+    width:100%;
+    background:var(--pg-mint);
+    color:#fff;
+    border:none;
+    padding:11px 14px;
+    border-radius:9px;
+    font-weight:700;
+    font-size:14px;
+    margin-top:6px;
+    transition:.15s;
+  }
+  .btn-primary:hover{background:var(--pg-mint-deep);}
+  .btn-primary:disabled{opacity:.6;cursor:default;}
+  .auth-error{
+    background:#FBEAE8;
+    color:var(--pg-neg);
+    border:1px solid #f3cfcb;
+    border-radius:8px;
+    padding:9px 11px;
+    font-size:12.5px;
+    margin-bottom:14px;
+    text-align:left;
+  }
+  .restricted-icon{
+    width:56px;height:56px;border-radius:50%;
+    background:#FBEAE8;color:var(--pg-neg);
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;margin:0 auto 16px;
+  }
+  .restricted-email{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    background:#F4F7FA;
+    border:1px solid var(--pg-line);
+    border-radius:8px;
+    padding:8px 10px;
+    margin:14px 0 20px;
+    word-break:break-all;
+  }
+  .link-back{
+    display:inline-block;
+    margin-top:14px;
+    font-size:13px;
+    color:var(--pg-muted);
+    text-decoration:none;
+  }
+  .link-back:hover{color:var(--pg-ink);text-decoration:underline;}
 
-  .ov{position:fixed;inset:0;z-index:90;background:rgba(0,30,38,.6);display:flex;align-items:center;justify-content:center;padding:18px;}
-  .ov .card-l{background:#fff;border-radius:18px;padding:34px 30px;width:380px;max-width:94vw;box-shadow:0 30px 80px -25px rgba(0,0,0,.55);}
-  .ov .brand{font-family:var(--font-title);font-weight:800;font-size:15px;color:var(--navy);margin-bottom:18px;}
-  .ov .brand i{color:var(--teal);font-style:normal;}
-  .ov h2{font-family:var(--font-title);margin:0 0 4px;color:var(--navy);font-size:22px;}
-  .ov p{margin:0 0 16px;color:var(--muted);font-size:13px;}
-  .ov label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin:13px 0 5px;text-transform:uppercase;letter-spacing:.04em;}
-  .ov input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--hairline);border-radius:10px;font-size:14px;font-family:inherit;}
-  .ov input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.15);}
-  .ov .btn-l{background:var(--navy);color:#fff;width:100%;justify-content:center;margin-top:20px;padding:13px;border:none;border-radius:10px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;}
-  .ov .btn-l:hover{background:var(--navy-2);}
-  .msg{font-size:12.5px;margin-top:12px;min-height:16px;}
-  .msg.err{color:#c0392b;}.msg.ok{color:var(--teal-2);}
-  #app{display:none;}
-  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;display:none;box-shadow:0 10px 30px -10px rgba(0,0,0,.4);}
+  /* ---------- Publicar tab ---------- */
+  .publicar-grid{
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:22px;
+    align-items:start;
+  }
+  @media (max-width:860px){
+    .publicar-grid{grid-template-columns:1fr;}
+  }
+  .field-label{
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--pg-ink);
+    margin:0 0 8px 0;
+    display:block;
+  }
+  .tipo-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-bottom:20px;
+  }
+  .tipo-btn{
+    border:2px solid var(--pg-line);
+    background:#fff;
+    border-radius:13px;
+    padding:14px 10px;
+    text-align:center;
+    font-weight:700;
+    font-size:13.5px;
+    color:var(--pg-txt);
+    transition:.15s;
+  }
+  .tipo-btn .emoji{display:block;font-size:22px;margin-bottom:6px;}
+  .tipo-btn:hover{border-color:var(--tipo-color,var(--pg-mint));}
+  .tipo-btn.selected{
+    border-color:var(--tipo-color);
+    background:var(--tipo-bg);
+    color:var(--tipo-color);
+  }
+  .form-row{margin-bottom:18px;}
+  .form-row input[type=text],
+  .form-row textarea{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid var(--pg-line);
+    border-radius:10px;
+    font-size:14px;
+    color:var(--pg-txt);
+    background:#fbfcfd;
+    resize:vertical;
+  }
+  .form-row textarea{min-height:140px;line-height:1.5;}
+  .form-row input:focus,.form-row textarea:focus{outline:none;border-color:var(--pg-mint);background:#fff;}
+
+  .dropzone{
+    border:2px dashed var(--pg-line);
+    border-radius:13px;
+    padding:22px 14px;
+    text-align:center;
+    color:var(--pg-muted);
+    font-size:13px;
+    cursor:pointer;
+    transition:.15s;
+    background:#fbfcfd;
+  }
+  .dropzone.drag{
+    border-color:var(--pg-mint);
+    background:var(--pg-mint-soft);
+    color:var(--pg-ink);
+  }
+  .dropzone .dz-icon{font-size:26px;display:block;margin-bottom:6px;}
+  .foto-preview-wrap{margin-top:12px;}
+  .foto-preview-wrap img{
+    max-width:100%;
+    max-height:160px;
+    border-radius:10px;
+    border:1px solid var(--pg-line);
+    display:block;
+  }
+  .foto-status{font-size:12.5px;margin-top:8px;}
+  .foto-status.err{color:var(--pg-neg);}
+  .foto-status.ok{color:var(--pg-pos);}
+  .foto-status.busy{color:var(--pg-muted);}
+
+  .btn-publicar{
+    width:100%;
+    background:var(--pg-ink);
+    color:#fff;
+    border:none;
+    padding:13px 16px;
+    border-radius:11px;
+    font-weight:700;
+    font-size:14.5px;
+    margin-top:6px;
+    transition:.15s;
+  }
+  .btn-publicar:hover{background:var(--pg-ink-2);}
+  .btn-publicar:disabled{opacity:.55;cursor:default;}
+
+  /* Preview card (must mirror the reader widget) */
+  .preview-label{
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:.4px;
+    text-transform:uppercase;
+    color:var(--pg-muted);
+    margin-bottom:10px;
+  }
+  .preview-card{
+    background:#fff;
+    border:1px solid var(--pg-line);
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(27,45,58,.10);
+    position:sticky;
+    top:20px;
+  }
+  .preview-card .franja-wrap{
+    display:flex;
+  }
+  .preview-card .franja{
+    width:7px;
+    flex-shrink:0;
+    background:var(--tipo-color,#8da0ad);
+  }
+  .preview-card .content{
+    flex:1;
+    padding:0;
+  }
+  .preview-card img.foto{
+    width:100%;
+    height:180px;
+    object-fit:cover;
+    display:block;
+  }
+  .preview-inner{padding:18px 20px 20px;}
+  .preview-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:11.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    color:var(--tipo-color,#8da0ad);
+    margin-bottom:10px;
+  }
+  .preview-titulo{
+    font-family:'Montserrat',Arial,Helvetica,sans-serif;
+    font-weight:800;
+    font-size:19px;
+    color:var(--pg-ink);
+    margin:0 0 8px 0;
+    line-height:1.3;
+  }
+  .preview-cuerpo{
+    font-size:14px;
+    line-height:1.55;
+    color:var(--pg-txt);
+    white-space:pre-wrap;
+    word-wrap:break-word;
+  }
+  .preview-pie{
+    margin-top:12px;
+    font-size:12px;
+    color:var(--pg-muted);
+    font-style:italic;
+  }
+  .preview-empty{
+    color:var(--pg-muted);
+    font-size:13px;
+  }
+
+  /* ---------- Activas tab ---------- */
+  .activas-list{display:flex;flex-direction:column;gap:10px;}
+  .activa-item{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    border:1px solid var(--pg-line);
+    border-radius:13px;
+    padding:14px 16px;
+    background:#fff;
+    cursor:pointer;
+    transition:.15s;
+  }
+  .activa-item:hover{border-color:var(--pg-mint);box-shadow:0 4px 14px rgba(27,45,58,.06);}
+  .activa-tipo-dot{
+    width:10px;height:10px;border-radius:50%;
+    flex-shrink:0;
+    background:var(--tipo-color,#8da0ad);
+  }
+  .activa-main{flex:1;min-width:0;}
+  .activa-titulo{font-weight:700;color:var(--pg-ink);font-size:14.5px;margin-bottom:3px;}
+  .activa-meta{font-size:12px;color:var(--pg-muted);display:flex;gap:10px;flex-wrap:wrap;}
+  .activa-lecturas{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:600;
+    font-size:13px;
+    color:var(--pg-mint-deep);
+    white-space:nowrap;
+  }
+  .btn-bajar{
+    background:#fff;
+    border:1px solid #f3cfcb;
+    color:var(--pg-neg);
+    padding:8px 13px;
+    border-radius:8px;
+    font-size:12.5px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .btn-bajar:hover{background:#FBEAE8;}
+  .empty-state{
+    text-align:center;
+    color:var(--pg-muted);
+    font-size:13.5px;
+    padding:40px 10px;
+  }
+
+  /* ---------- Modal (detalle lecturas) ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;
+    background:rgba(22,38,48,.45);
+    display:flex;align-items:center;justify-content:center;
+    z-index:500;
+    padding:20px;
+  }
+  .modal-box{
+    background:#fff;
+    border-radius:16px;
+    max-width:480px;
+    width:100%;
+    max-height:80vh;
+    display:flex;flex-direction:column;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+  }
+  .modal-head{
+    padding:18px 20px;
+    border-bottom:1px solid var(--pg-line);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .modal-head h3{font-size:16px;margin:0;}
+  .modal-close{
+    background:transparent;border:none;font-size:18px;color:var(--pg-muted);
+    line-height:1;padding:4px 6px;border-radius:6px;
+  }
+  .modal-close:hover{background:var(--pg-bg);}
+  .modal-body{padding:14px 20px 20px;overflow-y:auto;}
+  .lectura-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:9px 0;
+    border-bottom:1px solid var(--pg-line);
+    font-size:13px;
+  }
+  .lectura-row:last-child{border-bottom:none;}
+  .lectura-email{color:var(--pg-txt);font-weight:500;}
+  .lectura-hora{font-family:'JetBrains Mono',monospace;color:var(--pg-muted);font-size:12px;white-space:nowrap;margin-left:10px;}
+
+  /* ---------- Ajustes tab ---------- */
+  .ajustes-current{
+    text-align:center;
+    padding:26px 10px 30px;
+    border-bottom:1px solid var(--pg-line);
+    margin-bottom:24px;
+  }
+  .ajustes-current .lbl{font-size:12px;color:var(--pg-muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;}
+  .ajustes-current .big{
+    font-family:'JetBrains Mono',monospace;
+    font-size:46px;
+    font-weight:600;
+    color:var(--pg-ink);
+  }
+  .ajustes-current .big small{font-size:16px;color:var(--pg-muted);margin-left:4px;}
+  .duracion-opts{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(100px,1fr));
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .dur-btn{
+    border:2px solid var(--pg-line);
+    background:#fff;
+    border-radius:11px;
+    padding:12px 8px;
+    font-weight:700;
+    font-size:13.5px;
+    font-family:'JetBrains Mono',monospace;
+    color:var(--pg-txt);
+    transition:.15s;
+  }
+  .dur-btn:hover{border-color:var(--pg-mint);}
+  .dur-btn.selected{
+    border-color:var(--pg-mint);
+    background:var(--pg-mint-soft);
+    color:var(--pg-mint-deep);
+  }
+  .dur-custom{margin-top:6px;margin-bottom:18px;}
+  .dur-custom input{
+    width:140px;
+    padding:10px 12px;
+    border:1px solid var(--pg-line);
+    border-radius:9px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:14px;
+  }
+  .btn-guardar{
+    background:var(--pg-mint);
+    color:#fff;
+    border:none;
+    padding:12px 22px;
+    border-radius:10px;
+    font-weight:700;
+    font-size:14px;
+  }
+  .btn-guardar:hover{background:var(--pg-mint-deep);}
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;
+    bottom:24px;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--pg-ink);
+    color:#fff;
+    padding:13px 20px;
+    border-radius:11px;
+    font-size:13.5px;
+    font-weight:600;
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+    opacity:0;
+    pointer-events:none;
+    transition:.25s;
+    z-index:999;
+    max-width:90vw;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast.err{background:var(--pg-neg);}
+  .toast.ok{background:var(--pg-pos);}
 </style>
 </head>
 <body>
 
-<div id="app">
-  <header class="pg-bar">
-    <span class="logo">Protect<i>Go</i> · <span style="color:var(--teal)">Novedades</span></span>
-    <span class="area-tag">◆ ADMIN</span>
-    <span class="sp"></span>
-    <span class="user" id="pgUser"></span>
-    <button class="pg-b" data-act="logout">Salir</button>
-  </header>
+<!-- ===================== LOGIN ===================== -->
+<div id="loginScreen" class="center-screen hidden">
+  <div class="auth-card">
+    <div class="logo-mark">PG</div>
+    <h1>ProtectGo · Novedades</h1>
+    <p class="sub">Panel de administración</p>
+    <div id="loginErrorBox" class="auth-error hidden"></div>
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginEmail">Correo</label>
+        <input type="email" id="loginEmail" autocomplete="username" value="sales@protectgoservices.com" required>
+      </div>
+      <div class="field">
+        <label for="loginPass">Contraseña</label>
+        <input type="password" id="loginPass" autocomplete="current-password" required>
+      </div>
+      <button type="submit" id="loginBtn" class="btn-primary">Entrar</button>
+    </form>
+  </div>
+</div>
 
-  <section class="hero">
-    <div class="kicker">Panel de anuncios</div>
-    <h1>Novedades</h1>
-    <p>Publica un aviso para una herramienta o para todas ("general"). A cada usuario le aparece una sola vez, bloqueado hasta que confirme que lo leyó — sin comunicados.</p>
-  </section>
+<!-- ===================== RESTRICTED ===================== -->
+<div id="restrictedScreen" class="center-screen hidden">
+  <div class="auth-card">
+    <div class="restricted-icon">🚫</div>
+    <h1>Acceso restringido</h1>
+    <p class="sub">Esta página es solo para el administrador de Novedades.</p>
+    <div class="restricted-email" id="restrictedEmail"></div>
+    <button type="button" id="btnRestrictedLogout" class="btn-primary">Cerrar sesión y volver a intentar</button>
+    <div><a class="link-back" href="index.html">← Volver al portal</a></div>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="appScreen" class="hidden">
+  <div class="topbar">
+    <div class="brand">ProtectGo · <span>Novedades</span></div>
+    <div class="session">
+      <span><b id="sessionEmail"></b></span>
+      <button type="button" id="btnLogout" class="btn-logout">Salir</button>
+    </div>
+  </div>
 
   <div class="wrap">
-    <div class="pg-card">
-      <h2>Publicar novedad</h2>
-      <div class="h2sub">"General" aparece en Quick Quote y Endorsement. Las demás áreas solo le aparecen a esa herramienta.</div>
-      <div class="field">
-        <label>Área</label>
-        <select id="nvArea">
-          <option value="general">General (Quick Quote + Endorsement)</option>
-          <option value="fam">FAM</option>
-          <option value="rrhh">RRHH</option>
-          <option value="kam">KAM</option>
-          <option value="coi">COI</option>
-          <option value="amazon">Amazon Relay</option>
-        </select>
+    <div class="tabs">
+      <button type="button" class="tab-btn active" data-tab="publicar">Publicar</button>
+      <button type="button" class="tab-btn" data-tab="activas">Activas</button>
+      <button type="button" class="tab-btn" data-tab="ajustes">Ajustes</button>
+    </div>
+
+    <!-- ---------- TAB PUBLICAR ---------- -->
+    <div id="tab-publicar" class="tab-panel active">
+      <div class="publicar-grid">
+        <div class="card">
+          <span class="field-label">Tipo de novedad</span>
+          <div class="tipo-grid" id="tipoGrid"></div>
+
+          <div class="form-row">
+            <span class="field-label">Título</span>
+            <input type="text" id="fldTitulo" maxlength="120" placeholder="Ej: Cambió el horario de atención">
+          </div>
+
+          <div class="form-row">
+            <span class="field-label">Cuerpo</span>
+            <textarea id="fldCuerpo" maxlength="2000" placeholder="Escribe el mensaje completo..."></textarea>
+          </div>
+
+          <div class="form-row hidden" id="fotoSection">
+            <span class="field-label">Foto</span>
+            <div class="dropzone" id="dropZone">
+              <span class="dz-icon">📷</span>
+              Arrastra una imagen aquí o haz clic para elegirla
+              <input type="file" id="fldFoto" accept="image/*" class="hidden">
+            </div>
+            <div class="foto-preview-wrap hidden" id="fotoPreviewWrap">
+              <img id="fotoPreviewImg" src="" alt="Vista previa">
+            </div>
+            <div class="foto-status hidden" id="fotoStatus"></div>
+
+            <div class="form-row" style="margin-top:14px;margin-bottom:0;">
+              <span class="field-label">Pie de foto</span>
+              <input type="text" id="fldPie" maxlength="140" placeholder="Ej: Camila Restrepo · Mejor vendedora · Semana 31">
+            </div>
+          </div>
+
+          <button type="button" id="btnPublicar" class="btn-publicar">Publicar</button>
+        </div>
+
+        <div>
+          <div class="preview-label">Así se va a ver</div>
+          <div class="preview-card">
+            <div class="franja-wrap">
+              <div class="franja" id="previewFranja"></div>
+              <div class="content">
+                <img id="previewFoto" class="foto hidden" src="" alt="">
+                <div class="preview-inner">
+                  <div class="preview-badge" id="previewBadge"></div>
+                  <h3 class="preview-titulo" id="previewTitulo">Título de la novedad</h3>
+                  <div class="preview-cuerpo" id="previewCuerpo">El cuerpo del mensaje aparecerá aquí a medida que escribas.</div>
+                  <div class="preview-pie hidden" id="previewPie"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="field"><label>Título</label><input id="nvTitulo" placeholder="Ej: Nuevo formato de invoice"></div>
-      <div class="field"><label>Mensaje</label><textarea id="nvCuerpo" placeholder="Explica el cambio en pocas líneas…"></textarea></div>
-      <button class="pg-btn" onclick="publicar()">Publicar novedad</button>
     </div>
 
-    <div class="pg-card">
-      <h2>Novedades publicadas</h2>
-      <div class="h2sub">Las más recientes primero. Puedes desactivar una si ya no aplica.</div>
-      <div id="lista">Cargando…</div>
+    <!-- ---------- TAB ACTIVAS ---------- -->
+    <div id="tab-activas" class="tab-panel">
+      <div class="card">
+        <h2 style="margin-bottom:14px;">Novedades activas</h2>
+        <div id="activasList" class="activas-list">
+          <div class="empty-state">Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- TAB AJUSTES ---------- -->
+    <div id="tab-ajustes" class="tab-panel">
+      <div class="card" style="max-width:520px;">
+        <h2 style="margin-bottom:6px;">Duración del bloqueo</h2>
+        <p style="color:var(--pg-muted);font-size:13px;margin:0 0 4px 0;">Cuánto tiempo debe permanecer bloqueada la pantalla hasta que la persona confirme que leyó la novedad.</p>
+        <div class="ajustes-current">
+          <div class="lbl">Valor vigente</div>
+          <div class="big" id="ajustesActual">-- <small>seg</small></div>
+        </div>
+        <span class="field-label">Nueva duración</span>
+        <div class="duracion-opts" id="duracionOpts"></div>
+        <div class="dur-custom hidden" id="durCustomWrap">
+          <span class="field-label">Segundos personalizados</span>
+          <input type="number" id="durCustomInput" min="5" max="3600" placeholder="Ej: 45">
+        </div>
+        <button type="button" id="btnGuardarDuracion" class="btn-guardar">Guardar</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- LOGIN -->
-<div class="ov" id="ov">
-  <div class="card-l">
-    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">Novedades</span></div>
-    <h2>Acceso administrador</h2>
-    <p>Ingresa con la cuenta admin para publicar novedades.</p>
-    <label>Email</label>
-    <input id="email" type="email" autocomplete="username" value="sales@protectgoservices.com">
-    <label>Contraseña</label>
-    <input id="pass" type="password" autocomplete="current-password">
-    <button class="btn-l" data-act="login">Entrar</button>
-    <div class="msg" id="msg"></div>
+<!-- ===================== MODAL DETALLE LECTURAS ===================== -->
+<div id="modalOverlay" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modalTitulo">Lecturas</h3>
+      <button type="button" class="modal-close" id="modalCloseBtn">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
   </div>
 </div>
 
-<!-- BLOQUEO: solo admin -->
-<div class="ov" id="ovBlock" style="display:none">
-  <div class="card-l">
-    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">Novedades</span></div>
-    <h2>Acceso restringido</h2>
-    <p>Este panel es exclusivo del administrador. Tu cuenta <b id="ovBlockMail"></b> no tiene acceso.</p>
-    <button class="btn-l" data-act="logout">Salir e ingresar con otra cuenta</button>
-    <a href="index.html" style="display:block;text-align:center;margin-top:13px;color:var(--teal-2);font-weight:600;font-size:13px;text-decoration:none">&#8592; Volver al portal</a>
-  </div>
-</div>
+<div id="toast" class="toast"></div>
 
-<div class="toast" id="toast"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-(function(){
 "use strict";
+
+/* =========================================================
+   CONFIG / CLIENTE SUPABASE
+========================================================= */
 var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var sb=null;
+
 var PERMITIDOS=['sales@protectgoservices.com'];
-var AREA_LBL={general:'General',fam:'FAM',rrhh:'RRHH',kam:'KAM',coi:'COI',amazon:'Amazon Relay'};
 
-var $=function(id){return document.getElementById(id);};
-function toast(m){var t=$('toast');t.textContent=m;t.style.display='block';setTimeout(function(){t.style.display='none';},2600);}
-function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-function msg(t,cls){var m=$('msg');if(m){m.textContent=t||'';m.className='msg '+(cls||'');}}
+var TIPOS={
+  felicitacion:{emoji:'🎉',label:'Felicitación',color:'#00C864',bg:'#E6FBEF'},
+  novedad:     {emoji:'🔧',label:'Novedad',      color:'#229A82',bg:'#E4F5F1'},
+  aviso:       {emoji:'⚠️',label:'Aviso',        color:'#FFB400',bg:'#FFF6E0'},
+  recordatorio:{emoji:'📌',label:'Recordatorio', color:'#8da0ad',bg:'#EEF2F4'}
+};
 
-function doLogin(){
-  var em=$('email').value.trim(),pw=$('pass').value;
-  if(!em||!pw){msg('Escribe email y contraseña.','err');return;}
-  msg('Entrando…');
-  sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){if(r.error)msg(r.error.message,'err');else msg('');});
+var duracionCache=90; // se sincroniza con novedades_config al cargar
+
+var state={
+  tipo:'novedad',
+  imagen_url:null,
+  subiendo:false,
+  publicando:false
+};
+
+/* =========================================================
+   HELPERS
+========================================================= */
+function $(id){return document.getElementById(id);}
+
+function escapeHtml(str){
+  if(str===null||str===undefined)return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
 }
+
+var toastTimer=null;
+function toast(msg,tipo){
+  var el=$('toast');
+  el.textContent=msg;
+  el.className='toast show'+(tipo?(' '+tipo):'');
+  if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){el.className='toast';},3200);
+}
+
+function formatFecha(iso){
+  try{
+    var d=new Date(iso);
+    var dias=['dom','lun','mar','mié','jue','vie','sáb'];
+    var meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    var hh=d.getHours();
+    var mm=d.getMinutes();
+    var ampm=hh>=12?'pm':'am';
+    var hh12=hh%12;if(hh12===0)hh12=12;
+    var mmStr=mm<10?('0'+mm):mm;
+    return dias[d.getDay()]+' '+d.getDate()+' '+meses[d.getMonth()]+' · '+hh12+':'+mmStr+ampm;
+  }catch(e){return iso;}
+}
+
+function formatDuracion(seg){
+  seg=Number(seg)||0;
+  if(seg<60)return seg+' seg';
+  var m=Math.floor(seg/60);
+  var s=seg%60;
+  if(s===0)return m+' min';
+  return m+':'+(s<10?'0'+s:s)+' min';
+}
+
+function sanitizeFileName(name){
+  var parts=String(name).split('.');
+  var ext=parts.length>1?parts.pop():'jpg';
+  var base=parts.join('.');
+  try{base=base.normalize('NFD').replace(/[̀-ͯ]/g,'');}catch(e){}
+  base=base.replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();
+  if(!base)base='foto';
+  return Date.now()+'-'+base+'.'+ext.toLowerCase();
+}
+
+/* =========================================================
+   AUTENTICACIÓN / GUARDIA DE ACCESO
+========================================================= */
+var currentEmail='';
+
+function showOnly(id){
+  var ids=['loginScreen','restrictedScreen','appScreen'];
+  for(var i=0;i<ids.length;i++){
+    $(ids[i]).classList.toggle('hidden',ids[i]!==id);
+  }
+}
+
 function onAuthed(session){
   var email=(session&&session.user?session.user.email:'')||'';
+  currentEmail=email;
   if(PERMITIDOS.indexOf(email.toLowerCase())<0){
-    $('app').style.display='none';$('ov').style.display='none';
-    $('ovBlockMail').textContent=email;$('ovBlock').style.display='flex';
+    $('restrictedEmail').textContent=email||'(sin correo detectado)';
+    showOnly('restrictedScreen');
     return;
   }
-  $('ovBlock').style.display='none';
-  $('pgUser').textContent=email;
-  $('ov').style.display='none';$('app').style.display='block';
-  cargarLista();
-}
-function onSignedOut(){$('app').style.display='none';$('ovBlock').style.display='none';$('ov').style.display='flex';}
-
-document.addEventListener('click',function(e){
-  var b=e.target.closest('[data-act]');if(!b)return;
-  var a=b.getAttribute('data-act');
-  if(a==='login')doLogin();else if(a==='logout')sb.auth.signOut();
-});
-document.addEventListener('keydown',function(e){if(e.key==='Enter'&&$('ov').style.display!=='none')doLogin();});
-
-async function publicar(){
-  var area=$('nvArea').value,titulo=$('nvTitulo').value.trim(),cuerpo=$('nvCuerpo').value.trim();
-  if(!titulo||!cuerpo){toast('Falta título o mensaje');return;}
-  var {error}=await sb.from('novedades').insert({area:area,titulo:titulo,cuerpo:cuerpo,created_by:'sales@protectgoservices.com'});
-  if(error){toast('Error: '+error.message);return;}
-  $('nvTitulo').value='';$('nvCuerpo').value='';
-  toast('Novedad publicada ✓');
-  cargarLista();
+  $('sessionEmail').textContent=email;
+  showOnly('appScreen');
+  iniciarApp();
 }
 
-async function desactivar(id){
-  var {error}=await sb.from('novedades').update({activo:false}).eq('id',id);
-  if(error){toast('Error: '+error.message);return;}
-  toast('Novedad desactivada');
-  cargarLista();
-}
-window.desactivar=desactivar;
-
-async function cargarLista(){
-  var {data,error}=await sb.from('novedades').select('*').order('created_at',{ascending:false}).limit(50);
-  if(error){$('lista').innerHTML='<div style="color:var(--muted);font-size:13px">Error: '+esc(error.message)+'</div>';return;}
-  var rows=data||[];
-  if(!rows.length){$('lista').innerHTML='<div style="color:var(--muted);font-size:13px">Sin novedades aún.</div>';return;}
-  var ids=rows.map(function(r){return r.id;});
-  var conteo={};
-  var lec=await sb.from('novedades_lecturas').select('novedad_id').in('novedad_id',ids);
-  (lec.data||[]).forEach(function(l){conteo[l.novedad_id]=(conteo[l.novedad_id]||0)+1;});
-  $('lista').innerHTML=rows.map(function(r){
-    var f=(r.created_at||'').slice(0,16).replace('T',' ');
-    return '<div class="nov-row'+(r.activo?'':' nov-inactivo')+'"><div class="nrow-top"><span class="nov-tag">'+esc(AREA_LBL[r.area]||r.area)+'</span>'+
-      (r.activo?'<button class="pg-btn alt" style="padding:5px 11px;font-size:11.5px" onclick="desactivar(\''+r.id+'\')">Desactivar</button>':'<span style="font-size:11px;color:var(--faint)">Inactiva</span>')+
-      '</div><div class="nov-titulo">'+esc(r.titulo)+'</div><div class="nov-cuerpo">'+esc(r.cuerpo)+'</div>'+
-      '<div class="nov-meta">'+f+' · '+(conteo[r.id]||0)+' confirmaron lectura</div></div>';
-  }).join('');
+function onNoSession(){
+  currentEmail='';
+  showOnly('loginScreen');
 }
 
-function init(){
-  if(!(window.supabase&&window.supabase.createClient)){msg('No se pudo cargar Supabase (revisa tu conexión).','err');$('ov').style.display='flex';return;}
+function handleSession(session){
+  if(!session){onNoSession();return;}
+  onAuthed(session);
+}
+
+function bootSupabase(){
+  if(!(window.supabase&&window.supabase.createClient)){
+    showOnly('loginScreen');
+    var eb=$('loginErrorBox');
+    eb.textContent='No se pudo cargar Supabase (revisa tu conexión). Recarga la página para reintentar.';
+    eb.classList.remove('hidden');
+    $('loginBtn').disabled=true;
+    return;
+  }
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-  sb.auth.getSession().then(function(r){if(r.data&&r.data.session)onAuthed(r.data.session);else onSignedOut();});
-  sb.auth.onAuthStateChange(function(evt,session){if(session)onAuthed(session);else onSignedOut();});
+  sb.auth.getSession().then(function(res){
+    handleSession(res && res.data ? res.data.session : null);
+  });
+  sb.auth.onAuthStateChange(function(event,session){
+    handleSession(session);
+  });
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,60);});
-else setTimeout(init,60);
-})();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(bootSupabase,30);});
+else setTimeout(bootSupabase,30);
+
+/* Login form */
+$('loginForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  if(!sb)return;
+  var email=$('loginEmail').value.trim();
+  var pass=$('loginPass').value;
+  var errBox=$('loginErrorBox');
+  errBox.classList.add('hidden');
+  var btn=$('loginBtn');
+  btn.disabled=true;
+  btn.textContent='Entrando...';
+  sb.auth.signInWithPassword({email:email,password:pass}).then(function(res){
+    btn.disabled=false;
+    btn.textContent='Entrar';
+    if(res.error){
+      errBox.textContent=res.error.message||'No se pudo iniciar sesión.';
+      errBox.classList.remove('hidden');
+    }
+  })["catch"](function(err){
+    btn.disabled=false;
+    btn.textContent='Entrar';
+    errBox.textContent=(err&&err.message)||'Error de conexión.';
+    errBox.classList.remove('hidden');
+  });
+});
+
+$('btnLogout').addEventListener('click',function(){
+  if(sb)sb.auth.signOut();
+});
+$('btnRestrictedLogout').addEventListener('click',function(){
+  if(sb)sb.auth.signOut();
+});
+
+var appIniciado=false;
+function iniciarApp(){
+  if(appIniciado)return;
+  appIniciado=true;
+  initTabs();
+  initTipoSelector();
+  initFormListeners();
+  initFotoUpload();
+  initPublicar();
+  initAjustes();
+  initActivas();
+  initModal();
+  cargarConfigYActivas();
+}
+
+function cargarConfigYActivas(){
+  cargarConfig();
+  loadActivas();
+}
+
+/* =========================================================
+   TABS
+========================================================= */
+function initTabs(){
+  var btns=document.querySelectorAll('.tab-btn');
+  for(var i=0;i<btns.length;i++){
+    btns[i].addEventListener('click',function(){
+      var tab=this.getAttribute('data-tab');
+      var allBtns=document.querySelectorAll('.tab-btn');
+      var allPanels=document.querySelectorAll('.tab-panel');
+      var j;
+      for(j=0;j<allBtns.length;j++)allBtns[j].classList.remove('active');
+      for(j=0;j<allPanels.length;j++)allPanels[j].classList.remove('active');
+      this.classList.add('active');
+      $('tab-'+tab).classList.add('active');
+      if(tab==='activas')loadActivas();
+    });
+  }
+}
+
+/* =========================================================
+   PUBLICAR — selector de tipo
+========================================================= */
+function initTipoSelector(){
+  var grid=$('tipoGrid');
+  grid.innerHTML='';
+  var keys=['felicitacion','novedad','aviso','recordatorio'];
+  for(var i=0;i<keys.length;i++){
+    (function(key){
+      var t=TIPOS[key];
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.className='tipo-btn';
+      btn.setAttribute('data-tipo',key);
+      btn.style.setProperty('--tipo-color',t.color);
+      btn.style.setProperty('--tipo-bg',t.bg);
+      btn.innerHTML='<span class="emoji">'+t.emoji+'</span>'+t.label;
+      btn.addEventListener('click',function(){
+        state.tipo=key;
+        actualizarSelectorTipo();
+        actualizarVisibilidadFoto();
+        actualizarPreview();
+      });
+      grid.appendChild(btn);
+    })(keys[i]);
+  }
+  actualizarSelectorTipo();
+}
+
+function actualizarSelectorTipo(){
+  var btns=document.querySelectorAll('.tipo-btn');
+  for(var i=0;i<btns.length;i++){
+    var key=btns[i].getAttribute('data-tipo');
+    btns[i].classList.toggle('selected',key===state.tipo);
+  }
+}
+
+function actualizarVisibilidadFoto(){
+  $('fotoSection').classList.toggle('hidden',state.tipo!=='felicitacion');
+}
+
+/* =========================================================
+   PUBLICAR — inputs + vista previa en vivo
+========================================================= */
+function initFormListeners(){
+  $('fldTitulo').addEventListener('input',actualizarPreview);
+  $('fldCuerpo').addEventListener('input',actualizarPreview);
+  $('fldPie').addEventListener('input',actualizarPreview);
+  actualizarVisibilidadFoto();
+  actualizarPreview();
+}
+
+function actualizarPreview(){
+  var t=TIPOS[state.tipo];
+  var titulo=$('fldTitulo').value.trim();
+  var cuerpo=$('fldCuerpo').value.trim();
+  var pie=$('fldPie').value.trim();
+
+  $('previewFranja').style.background=t.color;
+  $('previewBadge').style.color=t.color;
+  $('previewBadge').innerHTML=t.emoji+' '+t.label;
+  $('previewTitulo').textContent=titulo||'Título de la novedad';
+  $('previewCuerpo').textContent=cuerpo||'El cuerpo del mensaje aparecerá aquí a medida que escribas.';
+
+  var fotoImg=$('previewFoto');
+  var piePrev=$('previewPie');
+  if(state.tipo==='felicitacion'&&state.imagen_url){
+    fotoImg.src=state.imagen_url;
+    fotoImg.classList.remove('hidden');
+  }else{
+    fotoImg.classList.add('hidden');
+    fotoImg.src='';
+  }
+  if(state.tipo==='felicitacion'&&pie){
+    piePrev.textContent=pie;
+    piePrev.classList.remove('hidden');
+  }else{
+    piePrev.classList.add('hidden');
+  }
+}
+
+/* =========================================================
+   PUBLICAR — subida de foto
+========================================================= */
+function initFotoUpload(){
+  var dz=$('dropZone');
+  var input=$('fldFoto');
+
+  dz.addEventListener('click',function(){input.click();});
+  input.addEventListener('change',function(){
+    if(input.files&&input.files[0])manejarArchivo(input.files[0]);
+  });
+
+  dz.addEventListener('dragover',function(e){
+    e.preventDefault();
+    dz.classList.add('drag');
+  });
+  dz.addEventListener('dragleave',function(){
+    dz.classList.remove('drag');
+  });
+  dz.addEventListener('drop',function(e){
+    e.preventDefault();
+    dz.classList.remove('drag');
+    if(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]){
+      manejarArchivo(e.dataTransfer.files[0]);
+    }
+  });
+}
+
+function setFotoStatus(msg,cls){
+  var el=$('fotoStatus');
+  el.textContent=msg;
+  el.className='foto-status'+(cls?(' '+cls):'');
+  if(msg)el.classList.remove('hidden');else el.classList.add('hidden');
+}
+
+function manejarArchivo(file){
+  if(!file.type||file.type.indexOf('image/')!==0){
+    setFotoStatus('El archivo debe ser una imagen.','err');
+    return;
+  }
+
+  var reader=new FileReader();
+  reader.onload=function(e){
+    $('fotoPreviewImg').src=e.target.result;
+    $('fotoPreviewWrap').classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+
+  state.subiendo=true;
+  setFotoStatus('Subiendo foto...','busy');
+
+  var path=sanitizeFileName(file.name);
+  sb.storage.from('novedades').upload(path,file).then(function(res){
+    state.subiendo=false;
+    if(res.error){
+      state.imagen_url=null;
+      setFotoStatus('No se pudo subir la foto ('+res.error.message+'). Puedes publicar sin foto.','err');
+      actualizarPreview();
+      return;
+    }
+    var pub=sb.storage.from('novedades').getPublicUrl(path);
+    state.imagen_url=(pub&&pub.data)?pub.data.publicUrl:null;
+    setFotoStatus('Foto lista ✓','ok');
+    actualizarPreview();
+  })["catch"](function(err){
+    state.subiendo=false;
+    state.imagen_url=null;
+    setFotoStatus('No se pudo subir la foto. Puedes publicar sin foto.','err');
+    actualizarPreview();
+  });
+}
+
+/* =========================================================
+   PUBLICAR — publicar novedad
+========================================================= */
+function initPublicar(){
+  $('btnPublicar').addEventListener('click',publicarNovedad);
+}
+
+function limpiarFormularioPublicar(){
+  $('fldTitulo').value='';
+  $('fldCuerpo').value='';
+  $('fldPie').value='';
+  $('fldFoto').value='';
+  $('fotoPreviewWrap').classList.add('hidden');
+  $('fotoPreviewImg').src='';
+  setFotoStatus('','');
+  state.imagen_url=null;
+  state.tipo='novedad';
+  actualizarSelectorTipo();
+  actualizarVisibilidadFoto();
+  actualizarPreview();
+}
+
+function publicarNovedad(){
+  var titulo=$('fldTitulo').value.trim();
+  var cuerpo=$('fldCuerpo').value.trim();
+  var pie=$('fldPie').value.trim();
+
+  if(!titulo){toast('Falta el título.','err');return;}
+  if(!cuerpo){toast('Falta el cuerpo del mensaje.','err');return;}
+  if(state.subiendo){toast('Espera a que termine de subir la foto.','err');return;}
+
+  var ok=confirm('Esto le va a salir a todo el personal. ¿Publicar?');
+  if(!ok)return;
+
+  var esFelicitacion=state.tipo==='felicitacion';
+  var payload={
+    area:'general',
+    tipo:state.tipo,
+    titulo:titulo,
+    cuerpo:cuerpo,
+    imagen_url:esFelicitacion?(state.imagen_url||null):null,
+    pie_foto:esFelicitacion?(pie||null):null,
+    created_by:'sales@protectgoservices.com',
+    segundos_lectura:duracionCache
+  };
+
+  var btn=$('btnPublicar');
+  btn.disabled=true;
+  btn.textContent='Publicando...';
+
+  sb.from('novedades').insert(payload).then(function(res){
+    btn.disabled=false;
+    btn.textContent='Publicar';
+    if(res.error){
+      toast('Error al publicar: '+res.error.message,'err');
+      return;
+    }
+    toast('Novedad publicada ✓','ok');
+    limpiarFormularioPublicar();
+    loadActivas();
+  })["catch"](function(err){
+    btn.disabled=false;
+    btn.textContent='Publicar';
+    toast('Error al publicar.','err');
+  });
+}
+
+/* =========================================================
+   ACTIVAS
+========================================================= */
+function initActivas(){
+  $('activasList').addEventListener('click',function(e){
+    var bajarBtn=e.target.closest?e.target.closest('.btn-bajar'):null;
+    if(bajarBtn){
+      e.stopPropagation();
+      var id=bajarBtn.getAttribute('data-id');
+      bajarNovedad(id);
+      return;
+    }
+    var item=e.target.closest?e.target.closest('.activa-item'):null;
+    if(item){
+      var nid=item.getAttribute('data-id');
+      var titulo=item.getAttribute('data-titulo');
+      abrirDetalleLecturas(nid,titulo);
+    }
+  });
+}
+
+function loadActivas(){
+  var list=$('activasList');
+  list.innerHTML='<div class="empty-state">Cargando...</div>';
+
+  sb.from('novedades').select('id,titulo,tipo,created_at').eq('activo',true).order('created_at',{ascending:false}).then(function(res){
+    if(res.error){
+      list.innerHTML='<div class="empty-state">Error al cargar: '+escapeHtml(res.error.message)+'</div>';
+      return;
+    }
+    var rows=res.data||[];
+    if(rows.length===0){
+      list.innerHTML='<div class="empty-state">No hay novedades activas.</div>';
+      return;
+    }
+    var ids=[];
+    for(var i=0;i<rows.length;i++)ids.push(rows[i].id);
+
+    sb.from('novedades_lecturas').select('novedad_id').in('novedad_id',ids).then(function(lres){
+      var counts={};
+      if(!lres.error&&lres.data){
+        for(var j=0;j<lres.data.length;j++){
+          var nid=lres.data[j].novedad_id;
+          counts[nid]=(counts[nid]||0)+1;
+        }
+      }
+      renderActivas(rows,counts);
+    })["catch"](function(){
+      renderActivas(rows,{});
+    });
+  })["catch"](function(err){
+    list.innerHTML='<div class="empty-state">Error al cargar.</div>';
+  });
+}
+
+function renderActivas(rows,counts){
+  var list=$('activasList');
+  var html='';
+  for(var i=0;i<rows.length;i++){
+    var n=rows[i];
+    var t=TIPOS[n.tipo]||TIPOS.novedad;
+    var count=counts[n.id]||0;
+    html+='<div class="activa-item" data-id="'+escapeHtml(n.id)+'" data-titulo="'+escapeHtml(n.titulo)+'">'+
+      '<span class="activa-tipo-dot" style="--tipo-color:'+t.color+'"></span>'+
+      '<div class="activa-main">'+
+        '<div class="activa-titulo">'+t.emoji+' '+escapeHtml(n.titulo)+'</div>'+
+        '<div class="activa-meta"><span>'+t.label+'</span><span>'+formatFecha(n.created_at)+'</span></div>'+
+      '</div>'+
+      '<div class="activa-lecturas mono">'+count+' leído'+(count===1?'':'s')+'</div>'+
+      '<button type="button" class="btn-bajar" data-id="'+escapeHtml(n.id)+'">Bajar</button>'+
+    '</div>';
+  }
+  list.innerHTML=html;
+}
+
+function bajarNovedad(id){
+  var ok=confirm('¿Bajar esta novedad? Dejará de mostrarse al equipo.');
+  if(!ok)return;
+  sb.from('novedades').update({activo:false}).eq('id',id).then(function(res){
+    if(res.error){
+      toast('Error al bajar: '+res.error.message,'err');
+      return;
+    }
+    toast('Novedad bajada ✓','ok');
+    loadActivas();
+  })["catch"](function(){
+    toast('Error al bajar la novedad.','err');
+  });
+}
+
+/* =========================================================
+   MODAL — detalle de lecturas
+========================================================= */
+function initModal(){
+  $('modalCloseBtn').addEventListener('click',cerrarModal);
+  $('modalOverlay').addEventListener('click',function(e){
+    if(e.target===$('modalOverlay'))cerrarModal();
+  });
+}
+
+function cerrarModal(){
+  $('modalOverlay').classList.add('hidden');
+}
+
+function abrirDetalleLecturas(novedadId,titulo){
+  $('modalTitulo').textContent='Lecturas · '+titulo;
+  $('modalBody').innerHTML='<div class="empty-state">Cargando...</div>';
+  $('modalOverlay').classList.remove('hidden');
+
+  sb.from('novedades_lecturas').select('user_email,leido_at').eq('novedad_id',novedadId).order('leido_at',{ascending:false}).then(function(res){
+    if(res.error){
+      $('modalBody').innerHTML='<div class="empty-state">Error al cargar: '+escapeHtml(res.error.message)+'</div>';
+      return;
+    }
+    var rows=res.data||[];
+    if(rows.length===0){
+      $('modalBody').innerHTML='<div class="empty-state">Nadie la ha leído todavía.</div>';
+      return;
+    }
+    var html='';
+    for(var i=0;i<rows.length;i++){
+      html+='<div class="lectura-row">'+
+        '<span class="lectura-email">'+escapeHtml(rows[i].user_email)+'</span>'+
+        '<span class="lectura-hora mono">'+formatFecha(rows[i].leido_at)+'</span>'+
+      '</div>';
+    }
+    $('modalBody').innerHTML=html;
+  })["catch"](function(){
+    $('modalBody').innerHTML='<div class="empty-state">Error al cargar.</div>';
+  });
+}
+
+/* =========================================================
+   AJUSTES
+========================================================= */
+var DURACIONES=[30,60,90,120,180];
+var duracionSeleccionada=90;
+
+function initAjustes(){
+  var opts=$('duracionOpts');
+  opts.innerHTML='';
+  for(var i=0;i<DURACIONES.length;i++){
+    (function(seg){
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.className='dur-btn';
+      btn.setAttribute('data-seg',seg);
+      btn.textContent=formatDuracion(seg);
+      btn.addEventListener('click',function(){
+        duracionSeleccionada=seg;
+        $('durCustomWrap').classList.add('hidden');
+        actualizarSelectorDuracion();
+      });
+      opts.appendChild(btn);
+    })(DURACIONES[i]);
+  }
+  var customBtn=document.createElement('button');
+  customBtn.type='button';
+  customBtn.className='dur-btn';
+  customBtn.setAttribute('data-seg','custom');
+  customBtn.textContent='Personalizado';
+  customBtn.addEventListener('click',function(){
+    duracionSeleccionada='custom';
+    $('durCustomWrap').classList.remove('hidden');
+    actualizarSelectorDuracion();
+  });
+  opts.appendChild(customBtn);
+
+  $('btnGuardarDuracion').addEventListener('click',guardarDuracion);
+}
+
+function actualizarSelectorDuracion(){
+  var btns=document.querySelectorAll('.dur-btn');
+  for(var i=0;i<btns.length;i++){
+    var seg=btns[i].getAttribute('data-seg');
+    var match=(seg==='custom'&&duracionSeleccionada==='custom')||(Number(seg)===duracionSeleccionada);
+    btns[i].classList.toggle('selected',match);
+  }
+}
+
+function cargarConfig(){
+  sb.from('novedades_config').select('duracion_segundos').eq('id',true).maybeSingle().then(function(res){
+    if(res.error||!res.data){
+      $('ajustesActual').innerHTML=formatoActualHtml(duracionCache);
+      preseleccionarDuracion(duracionCache);
+      return;
+    }
+    duracionCache=res.data.duracion_segundos||90;
+    $('ajustesActual').innerHTML=formatoActualHtml(duracionCache);
+    preseleccionarDuracion(duracionCache);
+  })["catch"](function(){
+    $('ajustesActual').innerHTML=formatoActualHtml(duracionCache);
+    preseleccionarDuracion(duracionCache);
+  });
+}
+
+function formatoActualHtml(seg){
+  return seg+' <small>seg ('+formatDuracion(seg)+')</small>';
+}
+
+function preseleccionarDuracion(seg){
+  if(DURACIONES.indexOf(seg)>=0){
+    duracionSeleccionada=seg;
+    $('durCustomWrap').classList.add('hidden');
+  }else{
+    duracionSeleccionada='custom';
+    $('durCustomInput').value=seg;
+    $('durCustomWrap').classList.remove('hidden');
+  }
+  actualizarSelectorDuracion();
+}
+
+function guardarDuracion(){
+  var nuevoValor;
+  if(duracionSeleccionada==='custom'){
+    nuevoValor=parseInt($('durCustomInput').value,10);
+    if(!nuevoValor||nuevoValor<5){
+      toast('Ingresa un número de segundos válido.','err');
+      return;
+    }
+  }else{
+    nuevoValor=duracionSeleccionada;
+  }
+
+  var btn=$('btnGuardarDuracion');
+  btn.disabled=true;
+  btn.textContent='Guardando...';
+
+  sb.from('novedades_config').update({duracion_segundos:nuevoValor,updated_at:new Date().toISOString()}).eq('id',true).then(function(res){
+    if(res.error){
+      btn.disabled=false;
+      btn.textContent='Guardar';
+      toast('Error al guardar: '+res.error.message,'err');
+      return;
+    }
+    sb.from('novedades').update({segundos_lectura:nuevoValor}).eq('activo',true).then(function(res2){
+      btn.disabled=false;
+      btn.textContent='Guardar';
+      if(res2.error){
+        toast('Duración guardada, pero no se pudo actualizar las activas: '+res2.error.message,'err');
+      }else{
+        toast('Duración actualizada ✓','ok');
+      }
+      duracionCache=nuevoValor;
+      $('ajustesActual').innerHTML=formatoActualHtml(duracionCache);
+    })["catch"](function(){
+      btn.disabled=false;
+      btn.textContent='Guardar';
+      duracionCache=nuevoValor;
+      $('ajustesActual').innerHTML=formatoActualHtml(duracionCache);
+      toast('Duración guardada, pero hubo un error actualizando las activas.','err');
+    });
+  })["catch"](function(){
+    btn.disabled=false;
+    btn.textContent='Guardar';
+    toast('Error al guardar la duración.','err');
+  });
+}
 </script>
+
+<!-- =========================================================
+     AUTO-DETECCIÓN DE VERSIÓN NUEVA
+========================================================= -->
 <script>
 (function(){
 "use strict";
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="novedades-admin.html";
-var PGV_VERSION=1;
+var PGV_VERSION=2;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
   b.id='pgvBar';
   b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
-  b.innerHTML='\uD83D\uDD04 Hay una versi\u00f3n nueva de esta p\u00e1gina. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
+  b.innerHTML='🔄 Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
   document.body.appendChild(b);
   document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
 }
@@ -272,5 +1423,6 @@ else setTimeout(pgvCheck,400);
 setInterval(pgvCheck,600000);
 })();
 </script>
+
 </body>
 </html>

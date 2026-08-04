@@ -1505,7 +1505,7 @@ document.addEventListener('DOMContentLoaded', () => {
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="Endorsement Request - Documento Final.html";
-var PGV_VERSION=6;
+var PGV_VERSION=7;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
@@ -1547,8 +1547,12 @@ st.textContent='.pgnov-ov{position:fixed;inset:0;z-index:2147483000;background:r
 +'.pgnov-head .k{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#A8D4CF;margin-bottom:5px;}'
 +'.pgnov-head h2{margin:0;font-size:21px;font-family:Montserrat,Inter,Arial,sans-serif;font-weight:800;letter-spacing:-.01em;}'
 +'.pgnov-head .s{margin:5px 0 0;font-size:12.5px;color:#9dbac4;}'
++'.pgnov-list-wrap{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}'
 +'.pgnov-list{padding:6px 28px 4px;overflow-y:auto;flex:1;}'
-+'.pgnov-it{border-left:4px solid #229A82;background:#F4F9F8;border-radius:0 12px 12px 0;padding:15px 18px;margin:14px 0;}'
++'.pgnov-scrollhint{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:11px;font-weight:700;color:#5b6b72;background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,.96) 55%);padding:26px 0 9px;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .25s;}'
++'.pgnov-scrollhint.vis{opacity:1;visibility:visible;}'
++'.pgnov-sep{height:1px;background:#e6edef;margin:18px 0 14px;}'
++'.pgnov-it{border-left:4px solid #229A82;background:#F4F9F8;border-radius:0 12px 12px 0;padding:16px 19px;margin:16px 0;}'
 +'.pgnov-it .t{font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#229A82;margin-bottom:6px;}'
 +'.pgnov-it h4{margin:0 0 7px;font-size:15.5px;line-height:1.35;color:#0D3040;font-family:Montserrat,Inter,Arial,sans-serif;font-weight:700;}'
 +'.pgnov-it p{margin:0;font-size:13.5px;line-height:1.62;color:#3a4a50;white-space:pre-wrap;}'
@@ -1559,6 +1563,14 @@ st.textContent='.pgnov-ov{position:fixed;inset:0;z-index:2147483000;background:r
 +'.pgnov-it.felicitacion{border-color:#00C864;background:#EAFBF1;}.pgnov-it.felicitacion .t{color:#0a8c47;}'
 +'.pgnov-it.aviso{border-color:#FFB400;background:#FFF8E6;}.pgnov-it.aviso .t{color:#a67400;}'
 +'.pgnov-it.recordatorio{border-color:#8da0ad;background:#F3F6F7;}.pgnov-it.recordatorio .t{color:#5b6b72;}'
++'.pgnov-hero-card{border:1px solid #b9ecd2;border-top:5px solid #00C864;border-radius:16px;overflow:hidden;background:#EAFBF1;margin:14px 0 20px;box-shadow:0 6px 18px rgba(0,150,90,.1);}'
++'.pgnov-hero-foto{margin:0;background:#d7f5e4;}'
++'.pgnov-hero-foto img{display:block;width:100%;height:240px;object-fit:cover;}'
++'.pgnov-hero-body{padding:18px 20px 20px;}'
++'.pgnov-hero-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#0a8c47;background:#fff;border:1px solid #b9ecd2;padding:4px 11px;border-radius:99px;margin-bottom:11px;}'
++'.pgnov-hero-title{margin:0 0 8px;font-size:19.5px;line-height:1.3;color:#0D3040;font-family:Montserrat,Inter,Arial,sans-serif;font-weight:800;}'
++'.pgnov-hero-text{margin:0;font-size:13.5px;line-height:1.64;color:#3a4a50;white-space:pre-wrap;}'
++'.pgnov-hero-pie{margin-top:13px;display:inline-block;font-size:12px;font-weight:700;color:#0a8c47;background:#fff;border:1px solid #b9ecd2;border-radius:9px;padding:7px 13px;}'
 +'.pgnov-foot{padding:16px 28px 22px;border-top:1px solid #e6edef;background:#fff;}'
 +'.pgnov-bar{height:6px;border-radius:99px;background:#e6edef;overflow:hidden;margin:0 0 14px;}'
 +'.pgnov-bar i{display:block;height:100%;width:0;background:#FFB400;transition:width .95s linear;}'
@@ -1587,25 +1599,56 @@ window.pgRevisarNovedades=function(sbClient,area){
     function fondo(on){ try{ document.documentElement.style.overflow=on?'hidden':''; document.body.style.overflow=on?'hidden':''; }catch(e){} }
     var ov=document.createElement('div'); ov.id='pgnovOv'; ov.className='pgnov-ov';
     var n1=items.length;
+    // Partición estable: felicitaciones primero (tarjeta héroe), el resto conserva su orden original
+    var heroItems=items.filter(function(n){ return (n.tipo||'novedad')==='felicitacion'; });
+    var compactItems=items.filter(function(n){ return (n.tipo||'novedad')!=='felicitacion'; });
+    var nFelic=heroItems.length;
     var titulo = n1===1 ? 'Tienes algo por leer' : 'Tienes '+n1+' cosas por leer';
+    if(nFelic>0){ titulo += ' · '+nFelic+(nFelic===1?' felicitación':' felicitaciones')+' 🎉'; }
     var html='<div class="pgnov-card"><div class="pgnov-head"><div class="k">📢 ProtectGo · al día</div>'
       +'<h2>'+titulo+'</h2><p class="s">Tómate un momento. Esto es lo que pasó desde la última vez que entraste.</p></div>'
-      +'<div class="pgnov-list">';
-    items.forEach(function(n){
+      +'<div class="pgnov-list-wrap"><div class="pgnov-list" id="pgnovList">';
+    heroItems.forEach(function(n){
+      var t=TIPOS[(n.tipo||'novedad')]||TIPOS.felicitacion;
+      var foto = n.imagen_url ? '<div class="pgnov-hero-foto"><img alt="" loading="lazy"></div>' : '';
+      html+='<div class="pgnov-hero-card">'+foto+'<div class="pgnov-hero-body">'
+        +'<div class="pgnov-hero-badge">'+t.e+' '+t.n+'</div>'
+        +'<h3 class="pgnov-hero-title"></h3><p class="pgnov-hero-text"></p>'
+        +'<div class="pgnov-hero-pie"></div></div></div>';
+    });
+    // Separador sutil solo si hay ambas secciones (héroes + tarjetas compactas)
+    if(heroItems.length && compactItems.length){ html+='<div class="pgnov-sep"></div>'; }
+    compactItems.forEach(function(n){
       var t=TIPOS[(n.tipo||'novedad')]||TIPOS.novedad;
       var foto = n.imagen_url ? '<div class="pgnov-foto"><img alt="" loading="lazy"><div class="pgnov-pie"></div></div>' : '';
       html+='<div class="pgnov-it '+t.c+'"><div class="t">'+t.e+' '+t.n+'</div>'
         +'<h4></h4>'+foto+'<p></p></div>';
     });
-    html+='</div><div class="pgnov-foot"><div class="pgnov-pausa" id="pgnovPausa">⏸️ Contador detenido — vuelve a esta ventana para que siga corriendo</div>'
+    html+='</div><div class="pgnov-scrollhint" id="pgnovScrollHint">desliza para ver más ▾</div></div>'
+      +'<div class="pgnov-foot"><div class="pgnov-pausa" id="pgnovPausa">⏸️ Contador detenido — vuelve a esta ventana para que siga corriendo</div>'
       +'<div class="pgnov-bar" id="pgnovBar"><i id="pgnovFill"></i></div>'
       +'<button id="pgnovBtn" type="button">Ya lo leí, entendido</button>'
       +'<div class="pgnov-note" id="pgnovC"></div></div></div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);
-    // texto por nodo (evita inyeccion de HTML desde la base)
+    // Relleno de texto por datos vía textContent (nunca HTML crudo) — tarjetas héroe (felicitación)
+    var heroEls=ov.querySelectorAll('.pgnov-hero-card');
+    heroItems.forEach(function(n,i){
+      var el=heroEls[i]; if(!el)return;
+      el.querySelector('.pgnov-hero-title').textContent=n.titulo||'';
+      el.querySelector('.pgnov-hero-text').textContent=n.cuerpo||'';
+      var img=el.querySelector('.pgnov-hero-foto img');
+      if(img && n.imagen_url){
+        img.src=n.imagen_url;
+        img.alt=n.pie_foto||n.titulo||'';
+        img.onerror=function(){ var c=this.closest('.pgnov-hero-foto'); if(c) c.remove(); };
+      }
+      var pie=el.querySelector('.pgnov-hero-pie');
+      if(pie){ if(n.pie_foto) pie.textContent=n.pie_foto; else pie.remove(); }
+    });
+    // Relleno de texto — tarjetas compactas (novedad / aviso / recordatorio), igual que antes
     var its=ov.querySelectorAll('.pgnov-it');
-    items.forEach(function(n,i){
+    compactItems.forEach(function(n,i){
       if(!its[i])return;
       its[i].querySelector('h4').textContent=n.titulo||'';
       its[i].querySelector('p').textContent=n.cuerpo||'';
@@ -1618,6 +1661,18 @@ window.pgRevisarNovedades=function(sbClient,area){
         if(pie){ if(n.pie_foto) pie.textContent=n.pie_foto; else pie.remove(); }
       }
     });
+    // Indicador de scroll: solo aparece si el contenido no cabe, y se apaga cerca del final del scroll
+    var listEl=ov.querySelector('#pgnovList'), hint=ov.querySelector('#pgnovScrollHint');
+    function actualizaScrollHint(){
+      if(!listEl||!hint)return;
+      var haySobra=listEl.scrollHeight>listEl.clientHeight+2;
+      if(!haySobra){ hint.classList.remove('vis'); return; }
+      var cercaFinal=(listEl.scrollTop+listEl.clientHeight)>=(listEl.scrollHeight-8);
+      if(cercaFinal) hint.classList.remove('vis'); else hint.classList.add('vis');
+    }
+    if(listEl) listEl.addEventListener('scroll',actualizaScrollHint);
+    window.addEventListener('resize',actualizaScrollHint);
+    requestAnimationFrame(actualizaScrollHint);
     fondo(bloquea);
     document.addEventListener('keydown',tragaEscape,true);
     var btn=ov.querySelector('#pgnovBtn'), fill=ov.querySelector('#pgnovFill'),
@@ -1634,7 +1689,6 @@ window.pgRevisarNovedades=function(sbClient,area){
         if(tick){clearInterval(tick);tick=null;}
         ov.remove(); fondo(false);
         document.removeEventListener('keydown',tragaEscape,true);
-        /* al confirmar, devolver al portal (index) para que arranquen desde ahi */
         try{
           var ruta=location.pathname.replace(/[^\/]*$/,'');
           var enIndex=/(^|\/)index\.html$/i.test(location.pathname)||/\/$/.test(location.pathname);
@@ -1647,8 +1701,6 @@ window.pgRevisarNovedades=function(sbClient,area){
     if(!bloquea||total<=0){ barra.style.display='none'; nota.textContent=''; return; }
     var restante=total;
     btn.disabled=true;
-    /* solo cuenta si la pestana esta visible Y la ventana tiene el foco:
-       si se van a otra pestana, a otra ventana o a otra aplicacion, se detiene */
     function leyendo(){
       try{ return document.visibilityState==='visible' && document.hasFocus(); }
       catch(e){ return document.visibilityState==='visible'; }

@@ -364,6 +364,7 @@ else setTimeout(init,60);
 var MAPA={"rrhh@protectgoservices.com":"card-rrhh","coi@protectgoservices.com":"card-coi","kam@protectgoservices.com":"card-kam","fam@protectgoservices.com":"card-fam"};
 var EXTERNOS=["gerencia@leonis-go.com"];
 var EXTRA={"endorsement@protectgoservices.com":"card-end","sales@protectgoservices.com":"card-novedades-admin"};
+var NOVADMIN=["sales@protectgoservices.com","andres.lopez@protectgoservices.com"];
 var AMAZON={"amazonaud@protectgoservices.com":"card-amazon"};
 var PUESTOS={"brahian.toro@protectgoservices.com":"card-mapa"};
 // Reporte de breaks: varias cuentas ven la MISMA tarjeta.
@@ -379,6 +380,8 @@ Object.keys(EXTRA).forEach(function(k){
 var el=document.getElementById(EXTRA[k]);
 if(el) el.style.display=(email===k)?"flex":"none";
 });
+var elNov=document.getElementById("card-novedades-admin");
+if(elNov) elNov.style.display=(NOVADMIN.indexOf(email)>=0)?"flex":"none";
 Object.keys(AMAZON).forEach(function(k){
 var el=document.getElementById(AMAZON[k]);
 if(el) el.style.display=(email===k)?"flex":"none";

@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recuperar contraseña · ProtectGo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --azul:#0D3040; --verde:#229A82; --verde2:#1a7a68; --brillante:#00C864;
+    --ambar:#FFB400; --suave:#F4F9F8; --borde:#e6edef;
+    --txt2:#5b6b72; --txt3:#8da0ad;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--azul);
+    font-family:Inter,Arial,Helvetica,sans-serif;color:var(--azul);
+    display:flex;align-items:center;justify-content:center;padding:22px;
+  }
+  .card{
+    background:#fff;border-radius:18px;width:100%;max-width:420px;
+    padding:30px 30px 26px;box-shadow:0 24px 70px rgba(0,0,0,.34);
+  }
+  .brand{
+    font-family:Montserrat,Arial,Helvetica,sans-serif;font-weight:800;
+    font-size:21px;letter-spacing:.01em;color:var(--azul);margin-bottom:3px;
+  }
+  .brand i{font-style:normal;color:var(--verde)}
+  .sub{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt3);font-weight:700;margin-bottom:20px}
+  h1{font-family:Montserrat,Arial,Helvetica,sans-serif;font-size:19px;margin:0 0 8px;color:var(--azul)}
+  p.lead{font-size:13.5px;line-height:1.6;color:var(--txt2);margin:0 0 18px}
+  label{display:block;font-size:12px;font-weight:600;color:var(--azul);margin:0 0 5px}
+  input[type=password],input[type=text],input[type=email]{
+    width:100%;padding:11px 12px;border:1px solid #cdd9dd;border-radius:11px;
+    font-size:14px;font-family:Inter,Arial,Helvetica,sans-serif;color:var(--azul);background:#fff;
+  }
+  input:focus{outline:none;border-color:var(--verde);box-shadow:0 0 0 3px rgba(34,154,130,.14)}
+  .campo{margin-bottom:13px}
+  .btn{
+    width:100%;padding:12px;border:none;border-radius:11px;background:var(--verde);
+    color:#fff;font:700 14px Inter,Arial,Helvetica,sans-serif;cursor:pointer;margin-top:4px;
+  }
+  .btn:hover{background:var(--verde2)}
+  .btn[disabled]{opacity:.55;cursor:default}
+  .btn-sec{background:var(--suave);color:var(--azul);border:1px solid var(--borde)}
+  .btn-sec:hover{background:#e9f1ef}
+  .ver{
+    background:none;border:none;color:var(--verde);font:600 11.5px Inter,Arial,Helvetica,sans-serif;
+    cursor:pointer;padding:0;margin-top:7px;
+  }
+  .ver:hover{text-decoration:underline}
+  .pista{font-size:11.5px;margin-top:6px;min-height:15px;color:var(--txt2)}
+  .pista.ok{color:var(--verde)}
+  .pista.mal{color:#c0392b}
+  .aviso{
+    font-size:12.5px;line-height:1.55;border-radius:11px;padding:11px 13px;margin:14px 0 0;display:none;
+  }
+  .aviso.ver{display:block}
+  .aviso.err{background:#fdecec;color:#a02c22;border:1px solid #f6cfcb}
+  .aviso.ok{background:#e8f7f2;color:#166b58;border:1px solid #bfe6da}
+  .aviso.alerta{background:#fff6e2;color:#8a5b00;border:1px solid #f6e0b0}
+  .salida{
+    font-size:11.5px;line-height:1.6;color:var(--txt2);margin-top:16px;
+    border-top:1px solid var(--borde);padding-top:13px;
+  }
+  .salida a{color:var(--verde);font-weight:600;text-decoration:none}
+  .salida a:hover{text-decoration:underline}
+  .pantalla{display:none}
+  .pantalla.ver{display:block}
+  .cargando{font-size:13px;color:var(--txt2)}
+  .icono{font-size:30px;line-height:1;margin-bottom:10px}
+  @media(max-width:430px){
+    body{padding:14px}
+    .card{padding:24px 20px 22px;border-radius:16px}
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="brand">Protect<i>Go</i></div>
+  <div class="sub">Herramientas internas</div>
+
+  <!-- ============ 1. CARGANDO ============ -->
+  <div id="pCargando" class="pantalla ver">
+    <h1>Un momento…</h1>
+    <p class="lead cargando">Estamos validando tu enlace.</p>
+  </div>
+
+  <!-- ============ 2. CLAVE NUEVA ============ -->
+  <div id="pClave" class="pantalla">
+    <h1>Crea tu contraseña nueva</h1>
+    <p class="lead">Mínimo 8 caracteres. Escríbela dos veces para confirmar.</p>
+
+    <div class="campo">
+      <label for="c1">Contraseña nueva</label>
+      <input id="c1" type="password" autocomplete="new-password" placeholder="••••••••">
+    </div>
+    <div class="campo">
+      <label for="c2">Repite la contraseña</label>
+      <input id="c2" type="password" autocomplete="new-password" placeholder="••••••••">
+      <div class="pista" id="pista"></div>
+      <button type="button" class="ver" id="btnVer">Ver contraseña</button>
+    </div>
+
+    <button type="button" class="btn" id="btnGuardar">Guardar contraseña</button>
+    <div class="aviso" id="avisoClave"></div>
+  </div>
+
+  <!-- ============ 3. LISTO ============ -->
+  <div id="pListo" class="pantalla">
+    <div class="icono">✅</div>
+    <h1>Contraseña actualizada</h1>
+    <p class="lead">Ya puedes entrar con tu contraseña nueva. Te llevamos al portal en unos segundos…</p>
+    <a class="btn" style="display:block;text-align:center;text-decoration:none"
+       href="https://protectgo.github.io/quick-quotes/">Ir al portal ahora</a>
+  </div>
+
+  <!-- ============ 4. ENLACE VENCIDO ============ -->
+  <div id="pVencido" class="pantalla">
+    <div class="icono">⏱️</div>
+    <h1>Este enlace ya venció</h1>
+    <p class="lead">Los enlaces duran 1 hora y se usan una sola vez. Escribe tu correo y te mandamos uno nuevo.</p>
+
+    <div class="campo">
+      <label for="mailNuevo">Tu correo o usuario</label>
+      <input id="mailNuevo" type="text" autocomplete="username" placeholder="nombre.apellido">
+    </div>
+    <button type="button" class="btn" id="btnNuevo">Enviar uno nuevo</button>
+    <div class="aviso" id="avisoNuevo"></div>
+  </div>
+
+  <div class="salida">
+    ¿Es una cuenta de área (fam@, kam@, coi@…) o no te llega nada?
+    Escríbele a <a href="mailto:sales@protectgoservices.com">sales@protectgoservices.com</a>
+    para que te la restablezca.
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+
+/* SEGURIDAD (H2) — SE LEE DE PRIMERO, NO LO MUEVAS NI LO "SIMPLIFIQUES".
+   Guardamos aquí, en la primerísima línea, cómo venía la dirección al abrir la
+   página. Apenas se crea el cliente de Supabase (más abajo), él mismo BORRA el
+   "#..." de la barra de direcciones. Si preguntáramos después, ya no habría
+   rastro del enlace y no podríamos distinguir "esta persona llegó por un correo
+   de recuperación" de "esta persona simplemente tenía una sesión abierta".
+   Esa diferencia es justamente lo que evita que cualquiera le cambie la
+   contraseña a quien dejó el computador abierto. */
+var HASH_INICIAL  = String(location.hash || "");
+var QUERY_INICIAL = String(location.search || "");
+var VIENE_DE_ENLACE = (HASH_INICIAL.indexOf("type=recovery") >= 0 ||
+                       HASH_INICIAL.indexOf("access_token") >= 0 ||
+                       /[?&]code=/.test(QUERY_INICIAL));
+
+/* ------------------------------------------------------------------ config */
+var SUPABASE_URL = "https://bwqzypuiqgxzsrtsueab.supabase.co";
+var SUPABASE_KEY = "sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PORTAL       = "https://protectgo.github.io/quick-quotes/";
+var REDIRECT_URL = "https://protectgo.github.io/quick-quotes/recuperar.html";
+var DOMINIO      = "@protectgoservices.com";
+
+var MSG_OK_ENVIO = "Si ese correo tiene cuenta, ya te llegó un enlace para crear tu " +
+                   "contraseña nueva. Revisa tu bandeja (y el correo no deseado). " +
+                   "El enlace dura 1 hora.";
+var MSG_LIMITE   = "Ya se pidió un enlace hace poco. Espera un minuto y vuelve a intentar.";
+
+var sb = null;
+var haySesion = false;
+var yaDecidi  = false;   // para no cambiar de pantalla dos veces
+
+/* --------------------------------------------------------------- utilidad */
+function $(id){ return document.getElementById(id); }
+
+function mostrar(cual){
+  var todas = ["pCargando","pClave","pListo","pVencido"];
+  for (var i=0;i<todas.length;i++){
+    var el = $(todas[i]);
+    if (el) el.className = "pantalla" + (todas[i]===cual ? " ver" : "");
+  }
+}
+
+function aviso(id, texto, tipo){
+  var a = $(id);
+  if(!a) return;
+  a.textContent = texto;
+  a.className = "aviso ver " + (tipo || "err");
+}
+
+function limpiarAviso(id){
+  var a = $(id);
+  if(a) a.className = "aviso";
+}
+
+// Misma regla del login de las apps: si no trae @, le ponemos el dominio.
+function normalizarCorreo(v){
+  var s = String(v||"").trim().toLowerCase();
+  if(!s) return "";
+  if(s.indexOf("@") < 0) s += DOMINIO;
+  return s;
+}
+
+function esLimiteDeEnvio(err){
+  if(!err) return false;
+  if(err.status === 429 || err.statusCode === 429) return true;
+  var m = String(err.message || err.error_description || err.code || "").toLowerCase();
+  return (m.indexOf("rate limit")>=0 || m.indexOf("over_email_send_rate_limit")>=0 ||
+          m.indexOf("too many requests")>=0 || m.indexOf("email rate")>=0);
+}
+
+/* Traducimos los errores de Supabase: al usuario NUNCA le sale inglés crudo. */
+function enEspanol(err){
+  var m = String((err && (err.message || err.error_description)) || "").toLowerCase();
+  if(!m) return "No se pudo guardar la contraseña. Intenta otra vez.";
+  if(m.indexOf("different from the old password")>=0 || m.indexOf("should be different")>=0)
+    return "La contraseña nueva tiene que ser distinta a la anterior.";
+  if(m.indexOf("at least")>=0 || m.indexOf("password should be")>=0 || m.indexOf("too short")>=0)
+    return "La contraseña es muy corta. Usa mínimo 8 caracteres.";
+  if(m.indexOf("weak")>=0 || m.indexOf("pwned")>=0)
+    return "Esa contraseña es muy fácil de adivinar. Usa una con letras, números y algún símbolo.";
+  if(m.indexOf("expired")>=0 || m.indexOf("invalid")>=0 || m.indexOf("token")>=0)
+    return "El enlace ya venció o no es válido. Pide uno nuevo abajo.";
+  if(esLimiteDeEnvio(err)) return MSG_LIMITE;
+  if(m.indexOf("network")>=0 || m.indexOf("failed to fetch")>=0)
+    return "No hay conexión. Revisa tu internet y vuelve a intentar.";
+  if(m.indexOf("session")>=0 || m.indexOf("not authenticated")>=0)
+    return "Se perdió la sesión de recuperación. Pide un enlace nuevo abajo.";
+  return "No se pudo completar la operación. Intenta otra vez o escribe a sales@protectgoservices.com.";
+}
+
+/* ------------------------------------------------- validación de la clave */
+function revisarPista(){
+  var a = $("c1").value, b = $("c2").value, p = $("pista");
+  if(!a && !b){ p.textContent=""; p.className="pista"; return; }
+  if(a.length < 8){ p.textContent="Te faltan caracteres (mínimo 8)."; p.className="pista mal"; return; }
+  if(!b){ p.textContent="Ahora repítela."; p.className="pista"; return; }
+  if(a === b){ p.textContent="Las dos coinciden ✔"; p.className="pista ok"; }
+  else{ p.textContent="No coinciden todavía."; p.className="pista mal"; }
+}
+
+/* ------------------------------------------------------- guardar la clave */
+function guardar(){
+  var a = $("c1").value, b = $("c2").value;
+  limpiarAviso("avisoClave");
+
+  if(a.length < 8){ aviso("avisoClave","La contraseña debe tener mínimo 8 caracteres.","err"); return; }
+  if(a !== b){ aviso("avisoClave","Las dos contraseñas no coinciden.","err"); return; }
+  if(!sb){ aviso("avisoClave","No se pudo conectar. Recarga la página.","err"); return; }
+
+  var btn = $("btnGuardar");
+  btn.disabled = true; btn.textContent = "Guardando…";
+
+  sb.auth.updateUser({ password: a }).then(function(r){
+    btn.disabled = false; btn.textContent = "Guardar contraseña";
+    if(r && r.error){ aviso("avisoClave", enEspanol(r.error), "err"); return; }
+    mostrar("pListo");
+    /* SEGURIDAD (H2) — cerramos la sesión de recuperación apenas se usa.
+       Si se quedara viva en la gaveta de esta página, el próximo que abriera
+       esta dirección con un enlace cualquiera se la encontraría servida. */
+    try{ if(sb.auth.signOut) sb.auth.signOut(); }catch(e){}
+    setTimeout(function(){ location.href = PORTAL; }, 3000);
+  }).catch(function(e){
+    btn.disabled = false; btn.textContent = "Guardar contraseña";
+    aviso("avisoClave", enEspanol(e), "err");
+  });
+}
+
+/* ------------------------------------------------ pedir un enlace nuevo */
+function pedirNuevo(){
+  var correo = normalizarCorreo($("mailNuevo").value);
+  limpiarAviso("avisoNuevo");
+
+  if(!correo || correo.indexOf("@") < 1){
+    aviso("avisoNuevo","Escribe tu usuario o tu correo completo.","alerta"); return;
+  }
+  if(!sb){ aviso("avisoNuevo","No se pudo conectar. Recarga la página.","err"); return; }
+
+  var btn = $("btnNuevo");
+  btn.disabled = true; btn.textContent = "Enviando…";
+
+  sb.auth.resetPasswordForEmail(correo, { redirectTo: REDIRECT_URL }).then(function(r){
+    btn.disabled = false; btn.textContent = "Enviar uno nuevo";
+    if(r && r.error && esLimiteDeEnvio(r.error)){ aviso("avisoNuevo", MSG_LIMITE, "alerta"); return; }
+    // Exista o no la cuenta, siempre el mismo mensaje.
+    aviso("avisoNuevo", MSG_OK_ENVIO, "ok");
+  }).catch(function(e){
+    btn.disabled = false; btn.textContent = "Enviar uno nuevo";
+    if(esLimiteDeEnvio(e)){ aviso("avisoNuevo", MSG_LIMITE, "alerta"); return; }
+    aviso("avisoNuevo", MSG_OK_ENVIO, "ok");
+  });
+}
+
+/* --------------------------------------------------------------- arranque */
+/* El enlace de Supabase puede llegar de DOS formas:
+   1) hash:  #access_token=...&type=recovery      (flujo implícito)
+   2) PKCE:  ?code=...                            (flujo nuevo)
+   Cubrimos las dos: escuchamos PASSWORD_RECOVERY, revisamos getSession()
+   y, si viene ?code=, hacemos exchangeCodeForSession. */
+
+function conSesion(){
+  if(yaDecidi) return;
+  yaDecidi = true; haySesion = true;
+  mostrar("pClave");
+  try{ $("c1").focus(); }catch(e){}
+}
+
+function sinSesion(){
+  if(yaDecidi) return;
+  yaDecidi = true;
+  mostrar("pVencido");
+  // Si el enlace traía el correo, lo precargamos para ahorrarle el paso.
+  try{
+    var qs = new URLSearchParams(location.search);
+    var m = qs.get("email") || qs.get("correo");
+    if(m) $("mailNuevo").value = m;
+  }catch(e){}
+}
+
+function errorDelEnlace(){
+  // Supabase manda ?error=... o #error=... cuando el enlace ya se usó o venció.
+  // Usamos la dirección ORIGINAL (ver arriba): la de ahora ya viene limpia.
+  return (HASH_INICIAL.indexOf("error") >= 0 || QUERY_INICIAL.indexOf("error=") >= 0);
+}
+
+function init(){
+  if(!(window.supabase && window.supabase.createClient)){
+    mostrar("pVencido");
+    aviso("avisoNuevo","No se pudo cargar el sistema. Revisa tu conexión y recarga la página.","err");
+    return;
+  }
+
+  /* SEGURIDAD (H1) — "storageKey" ES OBLIGATORIO, NO LO QUITES.
+     Todas las herramientas (KAM, Quick Quote, COI…) viven en este mismo
+     dominio y guardan su sesión en la gaveta por defecto. Si esta página usara
+     esa misma gaveta, abrirla le REEMPLAZARÍA la sesión a quien estuviera
+     trabajando en otra pestaña. Con gaveta propia ("pg-recuperacion") esta
+     página solo se pisa a sí misma.
+     (H8) flowType "implicit" tiene que ser igual al de pg-auth.js, que es quien
+     manda el correo; si no coinciden, un enlace recién hecho se puede ver como
+     vencido. persistSession sigue en true porque esta página necesita mantener
+     su propia sesión de recuperación para poder guardar la contraseña. */
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: {
+      detectSessionInUrl: true,
+      flowType: "implicit",
+      persistSession: true,
+      storageKey: "pg-recuperacion"
+    }
+  });
+
+  /* 1) SEGURIDAD (H2) — SOLO el evento PASSWORD_RECOVERY, NO "cualquier sesión".
+     Antes esto también aceptaba (session && session.user), y eso significaba
+     que a un computador desatendido y logueado cualquiera le podía abrir esta
+     página y cambiarle la contraseña sin pedir la anterior. */
+  sb.auth.onAuthStateChange(function(evt){
+    if(evt === "PASSWORD_RECOVERY") conSesion();
+  });
+
+  /* 2) Red de seguridad para enlaces viejos que todavía lleguen con ?code=.
+     Con flowType "implicit" casi nunca se usa, pero se deja por si acaso.
+     Si el canje falla (lo normal: en este navegador no está la contraseña
+     temporal que el enlace necesita), NO se muestra el error crudo: se cae
+     calladito a la pantalla de "pide un enlace nuevo". */
+  var code = null;
+  try{ code = new URLSearchParams(QUERY_INICIAL).get("code"); }catch(e){}
+
+  if(code && sb.auth.exchangeCodeForSession){
+    try{
+      sb.auth.exchangeCodeForSession(code).then(function(r){
+        if(r && r.data && r.data.session) conSesion();
+        else sinSesion();
+      }).catch(function(){ sinSesion(); });
+    }catch(e){ sinSesion(); }
+  }else{
+    revisarSesion();
+  }
+
+  // 3) Red de seguridad: a los 3 s decidimos con lo que haya
+  setTimeout(function(){
+    if(!yaDecidi){
+      if(errorDelEnlace()) sinSesion();
+      else revisarSesion(true);
+    }
+  }, 3000);
+}
+
+/* SEGURIDAD (H2) — LA SESIÓN SOLA NO BASTA, NO QUITES "VIENE_DE_ENLACE".
+   Una sesión guardada en el navegador NO prueba que la persona haya pedido
+   recuperar su contraseña; solo prueba que alguien entró alguna vez. El
+   formulario de contraseña nueva únicamente se abre si además la dirección
+   traía las señales del correo de recuperación. Sin esas señales siempre
+   mandamos a "pide un enlace nuevo", aunque haya sesión válida. */
+function revisarSesion(forzar){
+  if(!sb) return;
+  sb.auth.getSession().then(function(r){
+    var haySesionAbierta = !!(r && r.data && r.data.session);
+    if(haySesionAbierta && VIENE_DE_ENLACE) conSesion();
+    else if(forzar || errorDelEnlace() || !HASH_INICIAL) sinSesion();
+    else setTimeout(function(){ revisarSesion(true); }, 900);
+  }).catch(function(){ sinSesion(); });
+}
+
+/* ------------------------------------------------------------- listeners */
+function listeners(){
+  $("c1").addEventListener("input", revisarPista);
+  $("c2").addEventListener("input", revisarPista);
+  $("btnGuardar").addEventListener("click", guardar);
+  $("btnNuevo").addEventListener("click", pedirNuevo);
+
+  $("btnVer").addEventListener("click", function(){
+    var esTexto = $("c1").type === "text";
+    $("c1").type = esTexto ? "password" : "text";
+    $("c2").type = esTexto ? "password" : "text";
+    this.textContent = esTexto ? "Ver contraseña" : "Ocultar contraseña";
+  });
+
+  $("c2").addEventListener("keydown", function(e){ if(e.keyCode===13) guardar(); });
+  $("mailNuevo").addEventListener("keydown", function(e){ if(e.keyCode===13) pedirNuevo(); });
+}
+
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", function(){ listeners(); init(); });
+}else{
+  listeners(); init();
+}
+})();
+</script>
+
+<!-- ===================== BLOQUE DE VERSIÓN (PGV) ===================== -->
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PGV_ARCHIVO="recuperar.html";
+var PGV_VERSION="1.0.0";
+/* Las demás páginas guardan la versión como número entero; aquí la pidieron
+   como texto "1.0.0", así que comparamos por partes (1.0.1 > 1.0.0) y también
+   funciona si en app_versiones queda un entero simple.
+   TODO: registrar la fila 'recuperar.html' en la tabla app_versiones. */
+function pgvMayor(remota, local){
+  var a=String(remota).split("."), b=String(local).split("."), i, x, y;
+  for(i=0;i<Math.max(a.length,b.length);i++){
+    x=parseInt(a[i]||"0",10)||0; y=parseInt(b[i]||"0",10)||0;
+    if(x>y) return true;
+    if(x<y) return false;
+  }
+  return false;
+}
+function pgvBanner(){
+  if(document.getElementById('pgvBar'))return;
+  var b=document.createElement('div');
+  b.id='pgvBar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
+  b.innerHTML='🔄 Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
+  document.body.appendChild(b);
+  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+}
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{auth:{persistSession:false,detectSessionInUrl:false,storageKey:'pgv-recuperar'}});
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(pgvMayor(r.data.version,PGV_VERSION))pgvBanner();
+    });
+  }catch(e){}
+}
+function pgvCheck(){
+  if(window.supabase&&window.supabase.createClient){pgvRun();return;}
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload=pgvRun;
+  document.head.appendChild(s);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);});
+else setTimeout(pgvCheck,400);
+setInterval(pgvCheck,600000);
+})();
+</script>
+</body>
+</html>

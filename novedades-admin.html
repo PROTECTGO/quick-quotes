@@ -534,7 +534,109 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .toast.err{background:var(--pg-neg);}
   .toast.ok{background:var(--pg-pos);}
+
+  /* ---------- Accesos tab ---------- */
+  .acceso-toolbar{margin-bottom:16px;}
+  .acceso-toolbar input{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--pg-line);
+    border-radius:9px;
+    font-size:14px;
+    color:var(--pg-txt);
+    background:#fbfcfd;
+  }
+  .acceso-toolbar input:focus{outline:none;border-color:var(--pg-mint);background:#fff;}
+  .acceso-list{display:flex;flex-direction:column;gap:10px;}
+  .acceso-item{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    border:1px solid var(--pg-line);
+    border-radius:13px;
+    padding:14px 16px;
+    background:#fff;
+  }
+  .acceso-main{flex:1;min-width:0;}
+  .acceso-email{font-weight:700;color:var(--pg-ink);font-size:14px;word-break:break-all;}
+  .acceso-meta{font-size:12px;color:var(--pg-muted);margin-top:3px;}
+  .acceso-badge-area{
+    display:inline-block;
+    font-size:10.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.3px;
+    color:var(--pg-warn);
+    background:#FFF6E0;
+    border:1px solid #f3e1ac;
+    border-radius:6px;
+    padding:2px 7px;
+    margin-left:6px;
+    vertical-align:middle;
+  }
+  .acceso-confirm{
+    border:1px solid var(--pg-line);
+    border-left:3px solid var(--pg-mint);
+    border-radius:10px;
+    background:var(--pg-bg);
+    padding:14px 16px;
+    margin-top:-2px;
+    font-size:13.5px;
+    color:var(--pg-txt);
+  }
+  .acceso-confirm-area{border-left-color:var(--pg-neg);}
+  .acceso-confirm-warn{color:var(--pg-neg);font-weight:700;display:block;margin-top:6px;}
+  .acceso-confirm-btns{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+  .acceso-btn-secundario{
+    background:#fff;
+    border:1px solid var(--pg-line);
+    color:var(--pg-ink);
+    padding:9px 16px;
+    border-radius:9px;
+    font-weight:700;
+    font-size:13px;
+  }
+  .acceso-btn-secundario:hover{background:var(--pg-bg);}
+  .acceso-pass-box{max-width:440px;}
+  .acceso-pass-label{font-size:13px;color:var(--pg-muted);margin-bottom:10px;}
+  .acceso-pass-valor{
+    font-family:'JetBrains Mono',monospace;
+    font-size:30px;
+    font-weight:700;
+    color:var(--pg-ink);
+    background:var(--pg-mint-soft);
+    border:1px solid var(--pg-mint);
+    border-radius:11px;
+    padding:16px 14px;
+    text-align:center;
+    letter-spacing:.5px;
+    word-break:break-all;
+    margin-bottom:14px;
+  }
+  .acceso-pass-mensaje{
+    font-size:13px;
+    line-height:1.5;
+    color:var(--pg-txt);
+    background:#fbfcfd;
+    border:1px solid var(--pg-line);
+    border-radius:10px;
+    padding:12px 13px;
+    margin:6px 0 14px;
+  }
+  .acceso-pass-aviso{
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--pg-neg);
+    background:#FBEAE8;
+    border:1px solid #f3cfcb;
+    border-radius:8px;
+    padding:9px 11px;
+    margin-bottom:14px;
+  }
 </style>
+
+<!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
+<script defer src="https://protectgo.github.io/quick-quotes/pg-auth.js"></script>
 </head>
 <body>
 
@@ -586,6 +688,7 @@
       <button type="button" class="tab-btn active" data-tab="publicar">Publicar</button>
       <button type="button" class="tab-btn" data-tab="activas">Activas</button>
       <button type="button" class="tab-btn" data-tab="ajustes">Ajustes</button>
+      <button type="button" class="tab-btn hidden" data-tab="accesos" id="tabBtnAccesos">Accesos</button>
     </div>
 
     <!-- ---------- TAB PUBLICAR ---------- -->
@@ -674,6 +777,46 @@
         <button type="button" id="btnGuardarDuracion" class="btn-guardar">Guardar</button>
       </div>
     </div>
+
+    <!-- ---------- TAB ACCESOS ---------- -->
+    <div id="tab-accesos" class="tab-panel">
+      <div class="card">
+        <h2 style="margin-bottom:6px;">Restablecer accesos</h2>
+        <p style="color:var(--pg-muted);font-size:13px;margin:0 0 16px 0;">Para restablecer la clave de alguien que la olvidó y no tiene buzón (cuentas de área) o que no le llega el correo de recuperación.</p>
+
+        <div class="acceso-toolbar">
+          <input type="text" id="accesoBuscar" placeholder="Buscar por correo...">
+        </div>
+
+        <div id="accesoListWrap">
+          <div class="empty-state">Cargando...</div>
+        </div>
+
+        <h2 style="margin:30px 0 4px;">Últimos resets</h2>
+        <p style="color:var(--pg-muted);font-size:13px;margin:0 0 14px 0;">Los 20 más recientes.</p>
+        <div id="accesoHistWrap">
+          <div class="empty-state">Cargando...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL CLAVE TEMPORAL (ACCESOS) ===================== -->
+<div id="accesoPassOverlay" class="modal-overlay hidden">
+  <div class="modal-box acceso-pass-box">
+    <div class="modal-head">
+      <h3>Clave temporal generada</h3>
+      <button type="button" class="modal-close" id="accesoPassCerrarX">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="acceso-pass-label">Cuenta: <b id="accesoPassEmail"></b></div>
+      <div class="acceso-pass-valor" id="accesoPassValor"></div>
+      <button type="button" class="btn-primary" id="accesoPassCopiar">Copiar clave y mensaje</button>
+      <div class="acceso-pass-mensaje" id="accesoPassMensaje"></div>
+      <div class="acceso-pass-aviso">⚠️ Esta clave no se vuelve a mostrar. Cópiala antes de cerrar.</div>
+      <button type="button" class="acceso-btn-secundario" id="accesoPassCerrar" style="width:100%;">Cerrar</button>
+    </div>
   </div>
 </div>
 
@@ -718,10 +861,42 @@ var state={
   publicando:false
 };
 
+/* ---- Accesos (reset de clave por admin) ---- */
+var ACCESOS_ADMIN_EMAIL='sales@protectgoservices.com';
+var ACCESOS_FN_URL='https://bwqzypuiqgxzsrtsueab.supabase.co/functions/v1/admin-reset-password';
+var CUENTAS_AREA=['fam@','kam@','coi@','rrhh@','sales@','endorsement@','renewal@','retention@','amazonaud@'];
+var accesosCache=[];
+var accesosFiltro='';
+var accesosConfirmEmail=null;
+var accesosPassActual=null;
+var accesosInicializado=false;
+
 /* =========================================================
    HELPERS
 ========================================================= */
 function $(id){return document.getElementById(id);}
+
+/* Traducimos los errores de Supabase: al usuario NUNCA le sale inglés crudo.
+   El detalle técnico original siempre se manda a console.log('[novedades-admin] ...'). */
+function enEspanol(err){
+  var m=String((err&&(err.message||err.error_description||err.code))||"").toLowerCase();
+  if(!m)return "No se pudo completar. Intenta de nuevo; si sigue igual, avísale a soporte.";
+  if(m.indexOf("invalid login credentials")>=0)
+    return "Correo o contraseña incorrectos.";
+  if(m.indexOf("rate limit")>=0||m.indexOf("too many requests")>=0||m.indexOf("over_email_send_rate_limit")>=0)
+    return "Se hicieron muchos intentos seguidos. Espera un minuto y vuelve a intentar.";
+  if(m.indexOf("failed to fetch")>=0||m.indexOf("network")>=0)
+    return "No hay conexión. Revisa tu internet y vuelve a intentar.";
+  if(m.indexOf("jwt")>=0||m.indexOf("session")>=0||m.indexOf("not authenticated")>=0||m.indexOf("token")>=0)
+    return "Se venció la sesión. Vuelve a iniciar sesión.";
+  if(m.indexOf("row-level security")>=0||m.indexOf("permission denied")>=0||m.indexOf("rls")>=0||m.indexOf("403")>=0)
+    return "No tienes permiso para hacer esto. Avísale a soporte.";
+  if(m.indexOf("timeout")>=0||m.indexOf("timed out")>=0)
+    return "La operación tardó demasiado. Vuelve a intentar.";
+  if(m.indexOf("payload too large")>=0||m.indexOf("too large")>=0||m.indexOf("exceeded")>=0)
+    return "El archivo es muy pesado. Usa una foto más liviana.";
+  return "No se pudo completar. Intenta de nuevo; si sigue igual, avísale a soporte.";
+}
 
 function escapeHtml(str){
   if(str===null||str===undefined)return '';
@@ -845,13 +1020,15 @@ $('loginForm').addEventListener('submit',function(e){
     btn.disabled=false;
     btn.textContent='Entrar';
     if(res.error){
-      errBox.textContent=res.error.message||'No se pudo iniciar sesión.';
+      console.log('[novedades-admin] error de login:',res.error);
+      errBox.textContent=enEspanol(res.error);
       errBox.classList.remove('hidden');
     }
   })["catch"](function(err){
     btn.disabled=false;
     btn.textContent='Entrar';
-    errBox.textContent=(err&&err.message)||'Error de conexión.';
+    console.log('[novedades-admin] error de conexión en login:',err);
+    errBox.textContent=enEspanol(err);
     errBox.classList.remove('hidden');
   });
 });
@@ -875,6 +1052,7 @@ function iniciarApp(){
   initAjustes();
   initActivas();
   initModal();
+  initAccesos();
   cargarConfigYActivas();
 }
 
@@ -899,6 +1077,7 @@ function initTabs(){
       this.classList.add('active');
       $('tab-'+tab).classList.add('active');
       if(tab==='activas')loadActivas();
+      if(tab==='accesos'){cargarListaAccesos();cargarHistorialAccesos();}
     });
   }
 }
@@ -1040,7 +1219,8 @@ function manejarArchivo(file){
     state.subiendo=false;
     if(res.error){
       state.imagen_url=null;
-      setFotoStatus('No se pudo subir la foto ('+res.error.message+'). Puedes publicar sin foto.','err');
+      console.log('[novedades-admin] error al subir foto:',res.error);
+      setFotoStatus('No se pudo subir la foto ('+enEspanol(res.error)+'). Puedes publicar sin foto.','err');
       actualizarPreview();
       return;
     }
@@ -1110,7 +1290,8 @@ function publicarNovedad(){
     btn.disabled=false;
     btn.textContent='Publicar';
     if(res.error){
-      toast('Error al publicar: '+res.error.message,'err');
+      console.log('[novedades-admin] error al publicar:',res.error);
+      toast('Error al publicar: '+enEspanol(res.error),'err');
       return;
     }
     toast('Novedad publicada ✓','ok');
@@ -1150,7 +1331,8 @@ function loadActivas(){
 
   sb.from('novedades').select('id,titulo,tipo,created_at').eq('activo',true).order('created_at',{ascending:false}).then(function(res){
     if(res.error){
-      list.innerHTML='<div class="empty-state">Error al cargar: '+escapeHtml(res.error.message)+'</div>';
+      console.log('[novedades-admin] error al cargar activas:',res.error);
+      list.innerHTML='<div class="empty-state">Error al cargar: '+escapeHtml(enEspanol(res.error))+'</div>';
       return;
     }
     var rows=res.data||[];
@@ -1203,7 +1385,8 @@ function bajarNovedad(id){
   if(!ok)return;
   sb.from('novedades').update({activo:false}).eq('id',id).then(function(res){
     if(res.error){
-      toast('Error al bajar: '+res.error.message,'err');
+      console.log('[novedades-admin] error al bajar novedad:',res.error);
+      toast('Error al bajar: '+enEspanol(res.error),'err');
       return;
     }
     toast('Novedad bajada ✓','ok');
@@ -1234,7 +1417,8 @@ function abrirDetalleLecturas(novedadId,titulo){
 
   sb.from('novedades_lecturas').select('user_email,leido_at').eq('novedad_id',novedadId).order('leido_at',{ascending:false}).then(function(res){
     if(res.error){
-      $('modalBody').innerHTML='<div class="empty-state">Error al cargar: '+escapeHtml(res.error.message)+'</div>';
+      console.log('[novedades-admin] error al cargar lecturas:',res.error);
+      $('modalBody').innerHTML='<div class="empty-state">Error al cargar: '+escapeHtml(enEspanol(res.error))+'</div>';
       return;
     }
     var rows=res.data||[];
@@ -1355,14 +1539,16 @@ function guardarDuracion(){
     if(res.error){
       btn.disabled=false;
       btn.textContent='Guardar';
-      toast('Error al guardar: '+res.error.message,'err');
+      console.log('[novedades-admin] error al guardar duración:',res.error);
+      toast('Error al guardar: '+enEspanol(res.error),'err');
       return;
     }
     sb.from('novedades').update({segundos_lectura:nuevoValor}).eq('activo',true).then(function(res2){
       btn.disabled=false;
       btn.textContent='Guardar';
       if(res2.error){
-        toast('Duración guardada, pero no se pudo actualizar las activas: '+res2.error.message,'err');
+        console.log('[novedades-admin] error al actualizar segundos_lectura de activas:',res2.error);
+        toast('Duración guardada, pero no se pudo actualizar las activas: '+enEspanol(res2.error),'err');
       }else{
         toast('Duración actualizada ✓','ok');
       }
@@ -1381,6 +1567,265 @@ function guardarDuracion(){
     toast('Error al guardar la duración.','err');
   });
 }
+
+/* =========================================================
+   ACCESOS — restablecer clave (solo sales@)
+========================================================= */
+function esCuentaArea(email){
+  var local=String(email||'').split('@')[0].toLowerCase()+'@';
+  return CUENTAS_AREA.indexOf(local)>=0;
+}
+
+function formatUltimoAcceso(iso){
+  if(!iso)return 'Nunca ha entrado';
+  try{
+    var d=new Date(iso);
+    var diffSeg=Math.floor((Date.now()-d.getTime())/1000);
+    if(diffSeg<0)diffSeg=0;
+    if(diffSeg<60)return 'hace unos segundos';
+    var diffMin=Math.floor(diffSeg/60);
+    if(diffMin<60)return 'hace '+diffMin+(diffMin===1?' minuto':' minutos');
+    var diffHoras=Math.floor(diffMin/60);
+    if(diffHoras<24)return 'hace '+diffHoras+(diffHoras===1?' hora':' horas');
+    var diffDias=Math.floor(diffHoras/24);
+    if(diffDias<30)return 'hace '+diffDias+(diffDias===1?' día':' días');
+    try{
+      return d.toLocaleDateString('es-CO',{timeZone:'America/Bogota',day:'numeric',month:'long',year:'numeric'});
+    }catch(e2){
+      return formatFecha(iso);
+    }
+  }catch(e){return String(iso);}
+}
+
+function accesosLlamar(payload){
+  return sb.auth.getSession().then(function(r){
+    var session=(r&&r.data)?r.data.session:null;
+    var token=session?session.access_token:null;
+    if(!token)return Promise.reject(new Error('No hay sesión activa. Vuelve a iniciar sesión.'));
+    return fetch(ACCESOS_FN_URL,{
+      method:'POST',
+      headers:{
+        'Authorization':'Bearer '+token,
+        'apikey':SUPABASE_KEY,
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify(payload)
+    }).then(function(resp){
+      return resp.json()["catch"](function(){
+        console.log('[accesos] respuesta no era JSON válido, status '+resp.status);
+        throw new Error('Por ahora no se puede completar esta acción de accesos. Vuelve a intentar en un momento; si sigue igual, avísale a soporte.');
+      }).then(function(data){
+        if(!resp.ok||!data||data.ok===false){
+          // El detalle técnico (status, mensaje del servidor, a veces en inglés)
+          // se queda en la consola; a pantalla solo va un mensaje humano.
+          console.log('[accesos] error del servidor, status '+resp.status+':',(data&&data.error)?data.error:'(sin detalle)');
+          throw new Error('Por ahora no se puede completar esta acción de accesos. Vuelve a intentar en un momento; si sigue igual, avísale a soporte.');
+        }
+        return data;
+      });
+    });
+  });
+}
+
+function initAccesos(){
+  var esSales=String(currentEmail||'').toLowerCase()===ACCESOS_ADMIN_EMAIL;
+  var tabBtn=$('tabBtnAccesos');
+  if(tabBtn)tabBtn.classList.toggle('hidden',!esSales);
+  if(!esSales)return; // guardia: solo sales@ ve/usa esta pestaña
+  if(accesosInicializado)return;
+  accesosInicializado=true;
+
+  $('accesoBuscar').addEventListener('input',function(){
+    accesosFiltro=this.value.trim().toLowerCase();
+    renderAccesosFiltrado();
+  });
+
+  $('accesoListWrap').addEventListener('click',function(e){
+    var btnReset=e.target.closest?e.target.closest('.acceso-btn-reset'):null;
+    if(btnReset){
+      accesosConfirmEmail=btnReset.getAttribute('data-email');
+      renderAccesosFiltrado();
+      return;
+    }
+    var btnCancelar=e.target.closest?e.target.closest('.acceso-btn-cancelar'):null;
+    if(btnCancelar){
+      accesosConfirmEmail=null;
+      renderAccesosFiltrado();
+      return;
+    }
+    var btnConfirmar=e.target.closest?e.target.closest('.acceso-btn-confirmar'):null;
+    if(btnConfirmar){
+      ejecutarResetClave(btnConfirmar.getAttribute('data-email'),btnConfirmar);
+      return;
+    }
+  });
+
+  $('accesoPassCerrarX').addEventListener('click',cerrarAccesoPassCard);
+  $('accesoPassCerrar').addEventListener('click',cerrarAccesoPassCard);
+  $('accesoPassCopiar').addEventListener('click',copiarAccesoPass);
+}
+
+function cargarListaAccesos(){
+  if(String(currentEmail||'').toLowerCase()!==ACCESOS_ADMIN_EMAIL)return;
+  var wrap=$('accesoListWrap');
+  wrap.innerHTML='<div class="empty-state">Cargando...</div>';
+  accesosLlamar({action:'list'}).then(function(data){
+    accesosCache=(data&&data.usuarios)?data.usuarios:[];
+    renderAccesosFiltrado();
+  })["catch"](function(err){
+    console.log('[accesos] no se pudo cargar la lista:',(err&&err.message)||err);
+    wrap.innerHTML='<div class="empty-state">No se pudo cargar la lista de accesos. Vuelve a intentar en un momento; si sigue igual, avísale a soporte.</div>';
+  });
+}
+
+function renderAccesosFiltrado(){
+  var rows=accesosCache;
+  if(accesosFiltro){
+    rows=[];
+    for(var i=0;i<accesosCache.length;i++){
+      if(String(accesosCache[i].email||'').toLowerCase().indexOf(accesosFiltro)>=0)rows.push(accesosCache[i]);
+    }
+  }
+  renderAccesosList(rows);
+}
+
+function renderAccesosList(rows){
+  var wrap=$('accesoListWrap');
+  if(!rows||rows.length===0){
+    wrap.innerHTML='<div class="empty-state">No hay cuentas que coincidan.</div>';
+    return;
+  }
+  var html='<div class="acceso-list">';
+  for(var i=0;i<rows.length;i++){
+    var u=rows[i];
+    var email=u.email||'';
+    var esArea=esCuentaArea(email);
+    var pendiente=(accesosConfirmEmail===email);
+    html+='<div class="acceso-item">'+
+      '<div class="acceso-main">'+
+        '<div class="acceso-email">'+escapeHtml(email)+(esArea?' <span class="acceso-badge-area">Área (clave compartida)</span>':'')+'</div>'+
+        '<div class="acceso-meta">Último acceso: '+escapeHtml(formatUltimoAcceso(u.ultimo_acceso))+'</div>'+
+      '</div>'+
+      '<button type="button" class="btn-bajar acceso-btn-reset" data-email="'+escapeHtml(email)+'">Resetear clave</button>'+
+    '</div>';
+    if(pendiente){
+      html+='<div class="acceso-confirm'+(esArea?' acceso-confirm-area':'')+'">'+
+        'Vas a restablecer la clave de <b>'+escapeHtml(email)+'</b>.'+
+        (esArea?'<span class="acceso-confirm-warn">Es una cuenta de área: el cambio afecta a todas las personas que la usan.</span>':'')+
+        '<div class="acceso-confirm-btns">'+
+          '<button type="button" class="btn-publicar acceso-btn-confirmar" data-email="'+escapeHtml(email)+'" style="width:auto;padding:9px 18px;">Confirmar reset</button>'+
+          '<button type="button" class="acceso-btn-secundario acceso-btn-cancelar">Cancelar</button>'+
+        '</div>'+
+      '</div>';
+    }
+  }
+  html+='</div>';
+  wrap.innerHTML=html;
+}
+
+function ejecutarResetClave(email,btn){
+  if(btn){btn.disabled=true;btn.textContent='Restableciendo...';}
+  accesosLlamar({action:'reset',email:email}).then(function(data){
+    accesosConfirmEmail=null;
+    if(!data||!data.password_temporal){
+      toast('La función no devolvió una clave temporal.','err');
+      renderAccesosFiltrado();
+      return;
+    }
+    mostrarAccesoPassCard(data.email||email,data.password_temporal);
+    toast('Clave restablecida ✓','ok');
+    cargarListaAccesos();
+    cargarHistorialAccesos();
+  })["catch"](function(err){
+    accesosConfirmEmail=null;
+    console.log('[accesos] error al resetear la clave:',(err&&err.message)||err);
+    toast('Por ahora no se puede restablecer claves desde aquí. Vuelve a intentar en un momento; si sigue igual, avísale a soporte.','err');
+    renderAccesosFiltrado();
+  });
+}
+
+function mostrarAccesoPassCard(email,passwordTemporal){
+  accesosPassActual=passwordTemporal;
+  var mensaje='Tu clave temporal es '+passwordTemporal+'. Entra con ella y cámbiala desde "¿Olvidaste tu contraseña?" en cualquier momento.';
+  $('accesoPassEmail').textContent=email;
+  $('accesoPassValor').textContent=passwordTemporal;
+  $('accesoPassMensaje').textContent=mensaje;
+  $('accesoPassOverlay').classList.remove('hidden');
+}
+
+function cerrarAccesoPassCard(){
+  accesosPassActual=null;
+  $('accesoPassEmail').textContent='';
+  $('accesoPassValor').textContent='';
+  $('accesoPassMensaje').textContent='';
+  $('accesoPassOverlay').classList.add('hidden');
+}
+
+function copiarAccesoPassFallback(texto,cb){
+  try{
+    var tmp=document.createElement('input');
+    tmp.type='text';
+    tmp.value=texto;
+    tmp.style.position='fixed';
+    tmp.style.left='-9999px';
+    tmp.style.top='0';
+    document.body.appendChild(tmp);
+    tmp.focus();
+    tmp.select();
+    document.execCommand('copy');
+    document.body.removeChild(tmp);
+    if(cb)cb();
+  }catch(e){
+    toast('No se pudo copiar automáticamente. Selecciona el texto y cópialo a mano.','err');
+  }
+}
+
+function copiarAccesoPass(){
+  if(!accesosPassActual)return;
+  var texto=$('accesoPassMensaje').textContent;
+  var btn=$('accesoPassCopiar');
+  function ok(){
+    if(!btn)return;
+    var prev=btn.textContent;
+    btn.textContent='Copiado ✓';
+    setTimeout(function(){btn.textContent=prev;},1800);
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(texto).then(ok)["catch"](function(){
+      copiarAccesoPassFallback(texto,ok);
+    });
+  }else{
+    copiarAccesoPassFallback(texto,ok);
+  }
+}
+
+function cargarHistorialAccesos(){
+  if(String(currentEmail||'').toLowerCase()!==ACCESOS_ADMIN_EMAIL)return;
+  var wrap=$('accesoHistWrap');
+  wrap.innerHTML='<div class="empty-state">Cargando...</div>';
+  sb.from('accesos_resets').select('admin_email,target_email,created_at').order('created_at',{ascending:false}).limit(20).then(function(res){
+    if(res.error){
+      console.log('[accesos] no se pudo cargar el historial:',res.error);
+      wrap.innerHTML='<div class="empty-state">No se pudo cargar el historial de restablecimientos.</div>';
+      return;
+    }
+    var rows=res.data||[];
+    if(rows.length===0){
+      wrap.innerHTML='<div class="empty-state">Todavía no hay resets registrados.</div>';
+      return;
+    }
+    var html='';
+    for(var i=0;i<rows.length;i++){
+      html+='<div class="lectura-row">'+
+        '<span class="lectura-email">'+escapeHtml(rows[i].target_email)+' <span style="color:var(--pg-muted);font-weight:400;">por '+escapeHtml(rows[i].admin_email)+'</span></span>'+
+        '<span class="lectura-hora mono">'+formatFecha(rows[i].created_at)+'</span>'+
+      '</div>';
+    }
+    wrap.innerHTML=html;
+  })["catch"](function(){
+    wrap.innerHTML='<div class="empty-state">No se pudo cargar el historial.</div>';
+  });
+}
 </script>
 
 <!-- =========================================================
@@ -1392,7 +1837,7 @@ function guardarDuracion(){
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="novedades-admin.html";
-var PGV_VERSION=3;
+var PGV_VERSION=5;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');

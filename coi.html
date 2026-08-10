@@ -90,6 +90,10 @@
   #det{display:none;}
   #det.on{display:block;}
 </style>
+
+<!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
+<script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
+<script defer src="https://protectgo.github.io/quick-quotes/pg-auth.js"></script>
 </head>
 <body>
 
@@ -299,7 +303,7 @@ else setTimeout(init,60);
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="coi.html";
-var PGV_VERSION=1;
+var PGV_VERSION=2;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');

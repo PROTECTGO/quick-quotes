@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GABI · Vista de Jeff / FAM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+:root{
+  --pg-mint:#2DBFA3; --pg-mint-deep:#229A82; --pg-mint-deep2:#1B8E78;
+  --pg-ink:#28323B; --pg-ink-2:#1B2D3A; --pg-muted:#6B7D89;
+  --pg-bg:#F4F7FA; --pg-card:#FFFFFF; --pg-line:#E7EDF2;
+  --pg-pos:#1F9D6B; --pg-neg:#D5594F; --pg-warn:#B8841F;
+  --pg-font-gabi:"Fraunces", Georgia, serif;
+  --pg-font-title:"Montserrat","Arial Black",sans-serif;
+  --pg-font-body:"Inter",Arial,Helvetica,sans-serif;
+  --pg-font-num:"JetBrains Mono","Courier New",monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--pg-bg);}
+.pg-app{background:var(--pg-bg);color:var(--pg-ink);font-family:var(--pg-font-body);min-height:100vh;}
+
+.pg-viewbar{background:var(--pg-ink-2);padding:14px 30px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:30;}
+.pg-brand{display:flex;align-items:center;gap:10px;margin-right:6px;}
+.pg-logo{width:34px;height:34px;border-radius:9px;background:var(--pg-mint);display:flex;align-items:center;justify-content:center;font-family:var(--pg-font-title);font-weight:800;color:var(--pg-ink);font-size:13px;}
+.pg-wordmark{font-family:var(--pg-font-gabi);font-style:italic;font-weight:800;font-size:21px;color:#fff;letter-spacing:-0.5px;}
+.pg-badge{background:var(--pg-mint);color:var(--pg-ink);border:1px solid var(--pg-mint);font-weight:700;font-size:12px;padding:9px 15px;border-radius:999px;letter-spacing:.02em;white-space:nowrap;}
+.pg-viewbar .pg-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.pg-note{color:#8da0ad;font-size:11px;}
+.pg-btn{background:var(--pg-ink);color:#fff;border:none;border-radius:999px;padding:10px 18px;font-family:var(--pg-font-body);font-weight:700;font-size:13px;cursor:pointer;}
+.pg-btn:hover{background:#0f1b23;}
+.pg-btn.mint{background:var(--pg-mint);color:var(--pg-ink);}
+.pg-btn.ghost{background:transparent;border:1px solid #3d4f5c;color:#cfdbe2;}
+.pg-btn.sm{padding:6px 13px;font-size:11.5px;}
+.pg-input{background:#26343d;border:1px solid #3d4f5c;color:#fff;border-radius:8px;padding:9px 12px;font-size:13px;font-family:var(--pg-font-body);}
+.pg-input::placeholder{color:#8da0ad;}
+
+.pg-main{padding:30px 38px 60px;max-width:1320px;margin:0 auto;}
+.pg-top{margin-bottom:22px;}
+.pg-top h1{font-family:var(--pg-font-title);font-size:26px;font-weight:800;color:var(--pg-ink);margin:0;}
+.pg-top .pg-sub{color:var(--pg-muted);font-size:14px;margin-top:5px;max-width:780px;}
+.pg-eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--pg-mint-deep2);margin-bottom:6px;}
+.pg-section-divider{display:flex;align-items:center;gap:14px;margin:34px 0 18px;}
+.pg-section-divider .sd-line{flex:1;height:1px;background:var(--pg-line);}
+.pg-section-divider .sd-lbl{font-family:var(--pg-font-title);font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--pg-ink);background:var(--pg-bg);padding:0 4px;}
+
+.pg-kpis{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
+.pg-kpi{flex:1;min-width:180px;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:16px;padding:16px 18px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(27,45,58,.04);}
+.pg-kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--pg-mint);}
+.pg-kpi.neg::before{background:var(--pg-neg);}
+.pg-kpi.warn::before{background:var(--pg-warn);}
+.pg-kpi .lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted);}
+.pg-kpi .val{font-family:var(--pg-font-num);font-size:24px;font-weight:600;color:var(--pg-ink);margin:7px 0 3px;font-variant-numeric:tabular-nums;}
+.pg-kpi .val.neg{color:var(--pg-neg);} .pg-kpi .val.pos{color:var(--pg-pos);} .pg-kpi .val.warn{color:var(--pg-warn);}
+.pg-kpi .sub{font-size:11.5px;color:var(--pg-muted);}
+/* FIX RONDA 3 — FALLA 4: pastilla de ALCANCE, igual a la de VISTA_BRAHIAN_v3 (el modelo).
+   Regla dura: toda cifra lleva etiqueta y alcance ("qué es · de quién · de cuándo"). */
+.pg-scope{display:inline-block;font-size:10.5px;color:var(--pg-muted);background:#F1F5F8;border:1px solid var(--pg-line);border-radius:999px;padding:2px 9px;margin-top:6px;font-weight:600}
+
+.pg-card{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:18px;padding:22px;margin-bottom:20px;box-shadow:0 1px 3px rgba(27,45,58,.04);}
+.pg-card h2{font-family:var(--pg-font-title);font-size:17.5px;font-weight:800;color:var(--pg-ink);margin:0 0 4px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.pg-card .pg-purpose{color:var(--pg-muted);font-size:13px;margin:0 0 14px;}
+.pg-card.err{border-color:#EAD09A;background:#FFFDF7;}
+.pg-err-note{background:#FBF3E2;border:1px solid #EAD09A;border-radius:10px;padding:10px 14px;color:#8a6a1d;font-size:12.5px;}
+.pg-empty-note{color:var(--pg-muted);font-size:13px;font-style:italic;padding:10px 2px;}
+
+.pg-table{width:100%;border-collapse:collapse;}
+.pg-table th{text-align:left;font-size:11px;color:var(--pg-muted);text-transform:uppercase;letter-spacing:.04em;padding:9px 8px;border-bottom:2px solid var(--pg-ink);font-weight:700;white-space:nowrap;}
+.pg-table td{padding:10px 8px;font-size:13px;color:#3a4751;border-bottom:1px solid var(--pg-line);vertical-align:middle;}
+.pg-table tr:hover td{background:#FAFCFD;}
+.pg-table td.num{font-family:var(--pg-font-num);font-variant-numeric:tabular-nums;color:var(--pg-ink);font-weight:600;white-space:nowrap;}
+.pg-table td.num.neg{color:var(--pg-neg);} .pg-table td.num.pos{color:var(--pg-pos);}
+.pg-table-wrap{overflow-x:auto;}
+
+.pg-pill{display:inline-block;padding:4px 11px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;}
+.pg-pill.ok{background:#E3F4EF;color:var(--pg-pos);}
+.pg-pill.due{background:#FCEEEC;color:var(--pg-neg);}
+.pg-pill.warn{background:#FBF3E2;color:var(--pg-warn);}
+.pg-pill.muted{background:#EEF2F5;color:var(--pg-muted);}
+
+.pg-headline{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px;}
+.pg-semaforo{width:18px;height:18px;border-radius:50%;flex-shrink:0;margin-top:3px;box-shadow:0 0 0 5px rgba(0,0,0,.04);}
+.pg-semaforo.green{background:var(--pg-pos);} .pg-semaforo.amber{background:var(--pg-warn);} .pg-semaforo.red{background:var(--pg-neg);}
+.pg-headline-text{font-family:var(--pg-font-title);font-size:19px;font-weight:800;color:var(--pg-ink);line-height:1.3;margin:0;}
+.pg-headline-sub{color:var(--pg-muted);font-size:13px;margin-top:5px;}
+
+.pg-grid-2{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;}
+.pg-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media (max-width:980px){.pg-grid-2,.pg-grid-3{grid-template-columns:1fr;}}
+.pg-chart-wrap{position:relative;height:230px;}
+.pg-chart-wrap.tall{height:300px;}
+
+.pg-alert-card{border:1px solid var(--pg-line);border-radius:14px;padding:14px 16px;background:#FAFCFD;}
+.pg-alert-card .ac-top{display:flex;justify-content:space-between;align-items:baseline;}
+.pg-alert-card .ac-lbl{font-weight:700;font-size:13px;color:var(--pg-ink);}
+.pg-alert-card .ac-num{font-family:var(--pg-font-num);font-size:20px;font-weight:700;}
+.pg-alert-card .ac-detail{font-size:11.5px;color:var(--pg-muted);margin-top:6px;line-height:1.4;}
+
+.pg-sql-box{display:none;margin-top:8px;background:#182129;border-radius:10px;padding:10px 12px;}
+.pg-sql-box.on{display:block;}
+.pg-sql-box code{color:#9be5cf;font-family:var(--pg-font-num);font-size:11.5px;word-break:break-all;}
+.pg-sql-box .sql-actions{margin-top:8px;display:flex;gap:8px;}
+
+.pg-days-badge{font-family:var(--pg-font-num);font-weight:700;}
+.pg-days-badge.d90{color:var(--pg-neg);} .pg-days-badge.d30{color:var(--pg-warn);} .pg-days-badge.d0{color:var(--pg-ink);}
+
+.pg-login-wrap{max-width:380px;margin:80px auto;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:18px;padding:32px;text-align:center;}
+.pg-login-wrap h2{font-family:var(--pg-font-title);font-size:19px;margin:14px 0 6px;}
+.pg-login-wrap p{color:var(--pg-muted);font-size:13px;margin-bottom:20px;}
+.pg-login-wrap form{display:flex;flex-direction:column;gap:10px;}
+.pg-login-wrap input{padding:11px 14px;border-radius:10px;border:1px solid var(--pg-line);font-size:14px;font-family:var(--pg-font-body);}
+.pg-login-err{color:var(--pg-neg);font-size:12.5px;margin-top:8px;min-height:16px;}
+
+.pg-footnote{font-size:11.5px;color:var(--pg-muted);margin-top:26px;border-top:1px solid var(--pg-line);padding-top:14px;line-height:1.6;}
+.pg-skel{color:var(--pg-muted);font-size:13px;padding:20px 0;}
+</style>
+</head>
+<body>
+<!--
+  VISTA FAM (Jeff) — Ecosistema GABI. Paquete de acceso: flujo_alertas.
+  QUÉ VE: el movimiento (quién vende y qué flujo entra) · patrones y alertas de cobro ·
+  cola de fees sin cobrar · por cobrar / por pagar (corte 30/90) · cierre de liquidación
+  mensual con validador de actas de bonos.
+  NO VE — explícitamente FUERA de esta pantalla (paquete liquidez_core, no se consulta aquí):
+  liquidez de socios, retiros, caja, tarjetas, colchón proyectado. Ninguna consulta de este
+  archivo toca esas tablas/vistas.
+
+  TODO: gabi_accesos hoy NO tiene fila para fam@protectgoservices.com (solo sales@ y
+       andres.lopez@ tienen paquete flujo_alertas). Falta una fila para que el acceso de Jeff
+       quede formalmente registrado (aunque el login funcione igual vía Supabase Auth).
+
+  TODO: el cableado de tiene_paquete()/RLS solo está conectado en incentivos_config. Hasta
+       que se conecte en el resto de tablas (por_cobrar, por_pagar, bos_registros, etc.), esta
+       vista con la sesión de fam@ puede ver un subconjunto o casi nada de las filas (todas son
+       de sales@ hoy). No se corrige aquí — es tarea aparte de candados.
+-->
+<!-- AUDITORIA 11-ago-2026 (Pieza 5/6, hallazgo GRAVE de estetica): igual que en
+     VISTA_ASESOR_plantilla.html, este comentario tenia dos comentarios HTML anidados dentro
+     (los dos TODO). El navegador cerraba el comentario de arriba en el primer TODO, y el
+     cierre suelto que seguia quedaba como texto visible justo antes de la pantalla de
+     login/app. Se corrigio aplanando todo en un solo comentario sin anidar. -->
+<div class="pg-app" id="app">
+  <div class="pg-viewbar">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+    <span class="pg-badge">Vista de: Jeff / FAM · Financiera-Administrativa</span>
+    <div class="pg-right" id="viewbarRight"></div>
+  </div>
+  <main class="pg-main" id="root"><div class="pg-skel">Cargando…</div></main>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://hivpqsepwsfmafamxkzy.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpdnBxc2Vwd3NmbWFmYW14a3p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTIxNjUsImV4cCI6MjA5MTk2ODE2NX0.pPe1qtWJhnx8Ffo4bvuwVF-tVrkPSmO63Kl7pKWQYqM';
+const SB = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+/* =========================================================================
+   AJUSTE 1 (10-ago-2026) — LAS VENTAS SE CUENTAN POR CLIENTE, NO POR PÓLIZA
+   Una venta real es un PAQUETE: GL + Liability + Cargo al MISMO cliente, y
+   cada cobertura trae su propio número de póliza. Contar pólizas infla al
+   vendedor (medido en vivo 2026: entre 1.55x y 4.00x, y REORDENA el ranking).
+   Fuente: vista v_ventas_por_cliente — una fila = un cliente en un mes.
+   Llave: DOT (o INSURED normalizado si no hay DOT) + año + mes.
+   OJO: la vista todavía NO ESTÁ APLICADA en la base. El SQL listo está en
+   ventas_por_cliente.sql y lo aplica el chat madre. Si la vista no existe
+   (42P01 / PGRST205), estos bloques degradan a "pendiente de aplicar el SQL"
+   en vez de romper la pantalla.
+   ========================================================================= */
+const VPC_VIEW = 'v_ventas_por_cliente';
+const VPC_COLS = 'seller,cliente_key,insured,dba,sales_year,sales_month,polizas,coberturas_txt,policy_nums_txt,premium_paquete,fee_agencia_paquete,tiene_fee,cargos_carrier_paquete';
+const VPC = { ok:null, err:'' };
+function vpcFaltaVista(error){
+  const c = String((error && error.code) || '');
+  const m = String((error && error.message) || '');
+  return c === '42P01' || c === 'PGRST205' || c === 'PGRST202' ||
+         /does not exist|schema cache|could not find the table/i.test(m);
+}
+async function vpcRows(build){
+  let q = SB.from(VPC_VIEW).select(VPC_COLS).limit(5000);
+  if (build) q = build(q);
+  const { data, error } = await q;
+  if (error){
+    if (vpcFaltaVista(error)){ VPC.ok = false; VPC.err = error.message || ''; return null; }
+    throw error;
+  }
+  VPC.ok = true;
+  return data || [];
+}
+function vpcEsc(s){ return (s===null||s===undefined) ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function vpcUSD(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US',{maximumFractionDigits:0}); }
+const VPC_PENDIENTE = (que) => '<div class="vpc-pend"><b>Pendiente de aplicar el SQL.</b> ' + que +
+  ' ahora se cuenta por <b>cliente cerrado</b> (el paquete completo, no cada póliza) y sale de la vista <code>v_ventas_por_cliente</code>, que todavía no está creada en la base. El archivo listo es <code>ventas_por_cliente.sql</code>. Mientras no se aplique, este bloque no muestra el número, para no publicar un conteo por póliza.</div>';
+const VPC_NOTA = '<div class="vpc-nota"><b>Cambió cómo se cuenta.</b> 1 venta = 1 <b>cliente cerrado</b>, no 1 póliza. Un cliente con GL + Liability + Cargo antes contaba 3 ventas; ahora cuenta 1, y sus 3 coberturas se ven al abrir el cliente. Por eso estos números son más bajos que los de la preview anterior. Las métricas de fee también van por paquete: el fee se negocia por cliente, no por póliza.</div>';
+function vpcPorVendedor(rows){
+  const m = {};
+  (rows||[]).forEach(r=>{
+    const k = r.seller || '(sin vendedor)';
+    if(!m[k]) m[k] = { agente:k, clientes:0, polizas:0, clientes_con_fee:0, fee_agencia:0, premium:0, detalle:[] };
+    const g = m[k];
+    g.clientes += 1;
+    g.polizas  += Number(r.polizas||0);
+    if(r.tiene_fee) g.clientes_con_fee += 1;
+    g.fee_agencia += Number(r.fee_agencia_paquete||0);
+    g.premium     += Number(r.premium_paquete||0);
+    g.detalle.push(r);
+  });
+  return Object.values(m).map(g=>{
+    g.tasa_cobro    = g.clientes ? (g.clientes_con_fee / g.clientes * 100) : 0;
+    g.fee_x_cliente = g.clientes ? (g.fee_agencia / g.clientes) : 0;
+    return g;
+  });
+}
+function vpcIndicePorAgente(rows){
+  const idx = {};
+  vpcPorVendedor(rows).forEach(g => { idx[String(g.agente).trim().toLowerCase()] = g; });
+  return idx;
+}
+/* --- EL DETALLE DE PÓLIZAS QUEDA UN CLIC ADENTRO (fila expandible) ------- */
+let VPC_SEQ = 0;
+function vpcDetalleHTML(rows){
+  if(!rows || !rows.length) return '<div class="vpc-det-vacio">Sin clientes en el periodo.</div>';
+  return rows.slice().sort((a,b)=>Number(b.polizas||0)-Number(a.polizas||0)).map(r=>{
+    const np = Number(r.polizas||0);
+    return '<div class="vpc-cli">' +
+      '<div class="vpc-cli-top"><b>' + vpcEsc(r.insured || r.cliente_key) + '</b>' +
+      (r.dba ? ' <span class="vpc-dim">(' + vpcEsc(r.dba) + ')</span>' : '') +
+      ' <span class="vpc-badge">este cliente llevó ' + np + ' cobertura' + (np===1?'':'s') + '</span></div>' +
+      '<div class="vpc-cli-mid">' + vpcEsc(r.coberturas_txt || '—') + '</div>' +
+      '<div class="vpc-cli-bot">fee de agencia del paquete <b>' + vpcUSD(r.fee_agencia_paquete) + '</b>' +
+      ' · premium del paquete ' + vpcUSD(r.premium_paquete) +
+      ' · pólizas: ' + vpcEsc(r.policy_nums_txt || '—') +
+      ' · cargos del carrier ' + vpcUSD(r.cargos_carrier_paquete) + ' <i>(no son ingreso de la agencia)</i></div>' +
+      '</div>';
+  }).join('');
+}
+function vpcFilaExpandible(rows, colspan){
+  const id = 'vpcdet' + (++VPC_SEQ);
+  return {
+    id: id,
+    boton: '<button type="button" class="vpc-btn" onclick="vpcToggle(\'' + id + '\')">ver coberturas</button>',
+    fila: '<tr id="' + id + '" class="vpc-det" style="display:none"><td colspan="' + colspan + '">' + vpcDetalleHTML(rows) + '</td></tr>'
+  };
+}
+function vpcToggle(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.style.display = (el.style.display === 'none' || !el.style.display) ? 'table-row' : 'none';
+}
+(function vpcCSS(){
+  const css = '.vpc-pend{background:#FFF6E5;border:1px solid #F0DCB4;border-radius:10px;padding:12px 14px;color:#7A5A16;font-size:13px;line-height:1.5;margin:8px 0}'
+  + '.vpc-pend code{background:#fff;border:1px solid #F0DCB4;border-radius:4px;padding:0 4px;font-family:"JetBrains Mono",monospace;font-size:11.5px}'
+  + '.vpc-nota{background:#F1FAF7;border:1px solid #CDEBE2;border-left:3px solid #2DBFA3;border-radius:8px;padding:10px 12px;color:#28323B;font-size:12.5px;line-height:1.5;margin:8px 0}'
+  + '.vpc-btn{border:1px solid #E7EDF2;background:#fff;color:#1B8E78;border-radius:999px;padding:3px 10px;font-size:11.5px;cursor:pointer;font-family:inherit}'
+  + '.vpc-btn:hover{background:#F1FAF7}'
+  + '.vpc-det>td{background:#F4F7FA;padding:10px 14px}'
+  + '.vpc-cli{border-bottom:1px solid #E7EDF2;padding:6px 0}.vpc-cli:last-child{border-bottom:0}'
+  + '.vpc-cli-top{font-size:13px;color:#28323B}.vpc-cli-mid{font-size:12.5px;color:#6B7D89;margin:2px 0}'
+  + '.vpc-cli-bot{font-size:11.5px;color:#6B7D89;font-family:"JetBrains Mono",monospace}'
+  + '.vpc-badge{background:#E9F7F3;color:#1B8E78;border-radius:999px;padding:1px 8px;font-size:11px;margin-left:4px}'
+  + '.vpc-dim{color:#6B7D89}.vpc-det-vacio{color:#6B7D89;font-size:12.5px}';
+  const s = document.createElement('style'); s.textContent = css; document.head.appendChild(s);
+})();
+
+
+// ---------- helpers ----------
+const fmtUSD = (n) => (n===null||n===undefined||isNaN(n)) ? "—" : "$" + Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtUSD0 = (n) => (n===null||n===undefined||isNaN(n)) ? "—" : "$" + Number(n).toLocaleString("en-US",{maximumFractionDigits:0});
+const fmtPct = (n,d=1) => (n===null||n===undefined||isNaN(n)) ? "—" : Number(n).toFixed(d) + "%";
+const fmtDate = (s) => { if(!s) return "—"; const d=new Date(s+"T00:00:00"); if(isNaN(d)) return s; const meses=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"]; return String(d.getDate()).padStart(2,"0")+"-"+meses[d.getMonth()]+"-"+d.getFullYear(); };
+const esc = (s) => (s===null||s===undefined) ? "" : String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const semaforoDot = (color) => `<div class="pg-semaforo ${color}"></div>`;
+const sectionDivider = (label) => `<div class="pg-section-divider"><span class="sd-lbl">${label}</span><div class="sd-line"></div></div>`;
+const daysSince = (fecha) => { if(!fecha) return null; const d = new Date(fecha+"T00:00:00"); const hoy = new Date(); hoy.setHours(0,0,0,0); return Math.round((hoy - d) / 86400000); };
+const errBox = (nombre, msg) => `<div class="pg-err-note">No se pudo cargar <b>${esc(nombre)}</b> en este momento. (${esc(msg)})</div>`;
+const emptyNote = (msg) => `<div class="pg-empty-note">${esc(msg)}</div>`;
+
+const charts = {}; // registry para destruir antes de recrear
+function mkChart(id, cfg){ if(charts[id]) charts[id].destroy(); const el = document.getElementById(id); if(!el) return; charts[id] = new Chart(el, cfg); }
+
+async function seccion(nombre, contenedorId, fn){
+  const el = document.getElementById(contenedorId);
+  try { await fn(); }
+  catch(e){ console.error(nombre, e); if(el) el.innerHTML = errBox(nombre, e.message || String(e)); }
+}
+
+function copySQL(btn){
+  const box = btn.closest('.pg-sql-box');
+  const code = box.querySelector('code').innerText;
+  navigator.clipboard.writeText(code).then(()=>{ btn.innerText = "Copiado ✓"; setTimeout(()=>btn.innerText="Copiar SQL", 1500); });
+}
+function toggleSQL(id){ document.getElementById(id).classList.toggle('on'); }
+window.copySQL = copySQL; window.toggleSQL = toggleSQL;
+
+// ---------- auth ----------
+async function boot(){
+  const { data: { session } } = await SB.auth.getSession();
+  if(!session){ renderLogin(); } else { renderShell(session); }
+}
+SB.auth.onAuthStateChange((_event, session) => {
+  if(session) renderShell(session); else renderLogin();
+});
+
+function renderLogin(){
+  document.getElementById('viewbarRight').innerHTML = `<span class="pg-note">Sin sesión iniciada</span>`;
+  document.getElementById('root').innerHTML = `
+    <div class="pg-login-wrap">
+      <div class="pg-logo" style="margin:0 auto 10px;">PG</div>
+      <h2>Acceso · Jeff / FAM</h2>
+      <p>Inicia sesión con tu cuenta de Protect GO para ver el movimiento financiero-administrativo en vivo.</p>
+      <form id="loginForm">
+        <input type="email" id="loginEmail" placeholder="fam@protectgoservices.com" required>
+        <input type="password" id="loginPass" placeholder="Contraseña" required>
+        <button class="pg-btn mint" type="submit" style="margin-top:6px;">Entrar</button>
+      </form>
+      <div class="pg-login-err" id="loginErr"></div>
+    </div>`;
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPass').value;
+    const errEl = document.getElementById('loginErr');
+    errEl.textContent = "Entrando…";
+    const { error } = await SB.auth.signInWithPassword({ email, password });
+    if(error){ errEl.textContent = "No se pudo entrar: " + error.message; }
+  });
+}
+
+function renderShell(session){
+  document.getElementById('viewbarRight').innerHTML = `
+    <span class="pg-note" id="selloHora"></span>
+    <span class="pg-note">${esc(session.user.email)}</span>
+    <button class="pg-btn ghost sm" id="btnRefresh">Actualizar</button>
+    <button class="pg-btn ghost sm" id="btnLogout">Cerrar sesión</button>`;
+  document.getElementById('btnRefresh').addEventListener('click', loadAll);
+  document.getElementById('btnLogout').addEventListener('click', () => SB.auth.signOut());
+
+  document.getElementById('root').innerHTML = `
+    <div class="pg-top">
+      <div class="pg-eyebrow">Jeff / FAM · financiera-administrativa</div>
+      <h1>El movimiento del mes — flujo, cobro y liquidación</h1>
+      <div class="pg-sub">En vivo desde Supabase GABI. Solo lo que le corresponde a FAM: quién vende y cobra, patrones de riesgo de cobro, la cola de fees pendientes, por cobrar/por pagar, y el cierre de liquidación con su validador de actas. Sin liquidez de socios, caja, tarjetas ni colchón.</div>
+      <div class="pg-err-note" style="margin-top:14px;">Esta pantalla <b>NO muestra</b> liquidez de socios, caja de la agencia, tarjetas ni retiros — es a propósito. Esa información vive en GABI 360 (paquete liquidez_core), no aquí.</div>
+    </div>
+
+    ${sectionDivider("1 · El movimiento")}
+    <div id="secMovimiento"><div class="pg-skel">Cargando…</div></div>
+
+    ${sectionDivider("2 · Patrones y alertas de cobro")}
+    <div id="secPatrones"><div class="pg-skel">Cargando…</div></div>
+
+    ${sectionDivider("3 · Cola de fees sin cobrar")}
+    <div id="secColaFees"><div class="pg-skel">Cargando…</div></div>
+
+    ${sectionDivider("4 · Por cobrar / por pagar")}
+    <div id="secCobrarPagar"><div class="pg-skel">Cargando…</div></div>
+
+    ${sectionDivider("5 · Cierre de liquidación mensual — validador de actas")}
+    <div id="secLiquidacion"><div class="pg-skel">Cargando…</div></div>
+
+    <div class="pg-footnote">
+      Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy) vía supabase-js —
+      v_ingreso_mensual, bos_registros, v_alertas_patrones, v_patrones_agente, v_cola_fees_sin_cobro,
+      por_cobrar, por_pagar, liquidaciones_mensuales, actas_bonos,
+      v_payout_mensual, payout_real. Fuera de esta vista: caja, tarjetas, retiros, colchón (paquete
+      liquidez_core) — no se consultan aquí.
+      <br><br><b>Fee</b> en esta pantalla es siempre el <b>fee de agencia</b> (<code>seller_fees</code>) — los cargos del carrier (<code>policy_fees</code>) no son ingreso de la agencia y no se muestran aquí. Las <b>ventas se cuentan por cliente cerrado</b> (paquete), no por póliza.
+    </div>`;
+  loadAll();
+}
+
+async function loadAll(){
+  document.getElementById('selloHora').textContent = "datos al " + new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  await Promise.all([
+    seccion('El movimiento','secMovimiento', loadMovimiento),
+    seccion('Patrones y alertas de cobro','secPatrones', loadPatrones),
+    seccion('Cola de fees sin cobrar','secColaFees', loadColaFees),
+    seccion('Por cobrar / por pagar','secCobrarPagar', loadCobrarPagar),
+    seccion('Cierre de liquidación mensual','secLiquidacion', loadLiquidacion),
+  ]);
+}
+
+// ---------- 1. EL MOVIMIENTO ----------
+async function loadMovimiento(){
+  const hoy = new Date();
+  const y = hoy.getFullYear(), m = hoy.getMonth()+1;
+
+  const { data: ingresos, error: e1 } = await SB.from('v_ingreso_mensual').select('*').order('mes',{ascending:false}).limit(6);
+  if(e1) throw e1;
+  // GLOSARIO DE FEES (ajuste 2): el fee de agencia es SELLER_FEES y nada más.
+  // policy_fees = cargos del carrier (no son ingreso de la agencia) → NO se pide aquí,
+  // porque esta sección es una métrica de agentes. policy_premium sí, pero SOLO como premium.
+  const { data: ventasMes, error: e2 } = await SB.from('bos_registros').select('seller,seller_fees,policy_premium').eq('sales_year', y).eq('sales_month', m).limit(5000);
+  if(e2) throw e2;
+
+  const ranking = {};
+  (ventasMes||[]).forEach(v => {
+    const k = v.seller || '(sin vendedor)';
+    if(!ranking[k]) ranking[k] = {agente:k, ventas:0, fees:0, premium:0};
+    ranking[k].ventas += 1;
+    ranking[k].fees += Number(v.seller_fees||0);   // fee de agencia (seller_fees)
+    ranking[k].premium += Number(v.policy_premium||0);
+  });
+  const rankArr = Object.values(ranking).sort((a,b)=>b.fees-a.fees);
+  const mesActual = (ingresos||[])[0];
+
+  // AJUSTE 1 — el ranking de producción se cuenta por CLIENTE CERRADO (paquete), no por póliza.
+  // Si v_ventas_por_cliente todavía no está aplicada, este bloque degrada y avisa (no rompe).
+  let rankCli = null;
+  try {
+    const vpcMes = await vpcRows(q => q.eq('sales_year', y).eq('sales_month', m));
+    if (vpcMes) rankCli = vpcPorVendedor(vpcMes).sort((a,b)=> (b.clientes-a.clientes) || (b.fee_agencia-a.fee_agencia));
+  } catch(e){ console.error('[FAM] v_ventas_por_cliente', e); }
+  const totClientes = rankCli ? rankCli.reduce((a,r)=>a+r.clientes,0) : null;
+  const totPolizas  = rankCli ? rankCli.reduce((a,r)=>a+r.polizas,0)
+                              : (mesActual ? Number(mesActual.num_ventas||0) : (ventasMes||[]).length);
+
+  const el = document.getElementById('secMovimiento');
+  el.innerHTML = `
+    <div class="pg-kpis">
+      <div class="pg-kpi"><div class="lbl">Ventas este mes · clientes cerrados</div><div class="val">${totClientes===null ? "—" : totClientes}</div><div class="sub">${totClientes===null ? "pendiente: falta aplicar <code>v_ventas_por_cliente</code>" : `${totPolizas} pólizas en total — 1 venta = 1 cliente (paquete), no 1 póliza`}</div></div>
+      <div class="pg-kpi"><div class="lbl">Fee de agencia negociado (cobrado + prometido) · toda la agencia · del mes</div><div class="val pos">${fmtUSD(rankArr.reduce((a,r)=>a+r.fees,0))}</div><div class="sub">suma de <code>seller_fees</code> (bos_registros), sin importar si ya entró la plata. NO incluye cargos del carrier. Lo <b>cobrado</b> se ve en la sección 3.</div></div>
+      <div class="pg-kpi"><div class="lbl">Premium vendido · toda la agencia · del mes</div><div class="val">${fmtUSD0(mesActual ? mesActual.premium_neto : rankArr.reduce((a,r)=>a+r.premium,0))}</div><div class="sub">premium neto (policy_premium) — es premium, no fee</div></div>
+      <div class="pg-kpi"><div class="lbl">Ingreso de la agencia · Regla de Oro · del mes</div><div class="val">${fmtUSD0(mesActual ? mesActual.ingreso_agencia : null)}</div><div class="sub">meta combinada (<code>fees_meta_comb</code>) + comisiones MGA — v_ingreso_mensual</div></div>
+    </div>
+    <div class="pg-card">
+      <h2>Ingreso de la agencia — últimos meses</h2>
+      <p class="pg-purpose">Regla de Oro del ingreso: meta combinada (<code>fees_meta_comb</code>) + comisiones MGA, mes a mes (v_ingreso_mensual). Esta cifra NO es el fee de agencia de los vendedores y no se usa para medirlos.</p>
+      <div class="pg-chart-wrap"><canvas id="chIngreso"></canvas></div>
+    </div>
+    <div class="pg-card">
+      <h2>Quién vende y cobra este mes</h2>
+      <p class="pg-purpose">Ranking de producción del mes en curso, contado por <b>clientes cerrados</b> (v_ventas_por_cliente). <b>El fee es el de agencia (<code>seller_fees</code>)</b>: lo que negocia el vendedor, y va por paquete. Los cargos del carrier (<code>policy_fees</code>) NO están aquí porque no son ingreso de la agencia.</p>
+      ${VPC_NOTA}
+      <div class="pg-table-wrap">
+      ${ rankCli === null ? VPC_PENDIENTE('El ranking de producción')
+       : rankCli.length ? `<table class="pg-table"><thead><tr><th>Agente</th><th>Ventas (clientes cerrados) · del mes</th><th>Pólizas del paquete</th><th>Premium del paquete · del mes</th><th>Fee de agencia · por cliente · del mes</th><th>Detalle</th></tr></thead>
+      <tbody>${rankCli.map(r=>{ const d = vpcFilaExpandible(r.detalle, 6);
+        return `<tr><td>${esc(r.agente)}</td><td class="num">${r.clientes}</td><td class="num">${r.polizas}</td><td class="num">${fmtUSD0(r.premium)}</td><td class="num pos">${fmtUSD(r.fee_x_cliente)}</td><td>${d.boton}</td></tr>${d.fila}`;
+      }).join("")}</tbody></table>`
+      : emptyNote("Sin ventas registradas para este mes todavía.") }
+      </div>
+    </div>`;
+
+  if((ingresos||[]).length){
+    const ordenado = [...ingresos].reverse();
+    mkChart('chIngreso', { type:'bar', data:{ labels: ordenado.map(i=>i.mes), datasets:[
+      { label:'Meta combinada (Regla de Oro)', data: ordenado.map(i=>Number(i.fees||0)), backgroundColor:'#2DBFA3', borderRadius:6, stack:'a' },
+      { label:'Comisiones MGA', data: ordenado.map(i=>Number(i.comisiones_mga||0)), backgroundColor:'#1B8E78', borderRadius:6, stack:'a' }
+    ]}, options:{ plugins:{ legend:{ position:'bottom' } }, scales:{ x:{ stacked:true }, y:{ stacked:true } } } });
+  }
+}
+
+// ---------- 2. PATRONES Y ALERTAS DE COBRO ----------
+async function loadPatrones(){
+  const { data: alertas, error: e1 } = await SB.from('v_alertas_patrones').select('*').order('casos',{ascending:false}).limit(5000);
+  if(e1) throw e1;
+  const { data: patronesAgente, error: e2 } = await SB.from('v_patrones_agente').select('*').order('mes',{ascending:false}).limit(5000);
+  if(e2) throw e2;
+
+  const urgencia = { 'VENDE_SIN_COBRAR':0, 'MAS_PROMETIDO_QUE_COBRADO':1, 'VENDE_MAS_COBRA_MENOS':2, 'CAIDA_DE_RITMO':3, 'ok':9 };
+  const ordenado = [...(patronesAgente||[])].sort((a,b)=>{
+    const ua = urgencia[a.patron] ?? 5, ub = urgencia[b.patron] ?? 5;
+    if(ua!==ub) return ua-ub;
+    return Number(b.fees_sin_cobrar||0) - Number(a.fees_sin_cobrar||0);
+  });
+
+  const pillFor = (p) => p==='ok' ? '<span class="pg-pill ok">ok</span>'
+    : p==='VENDE_SIN_COBRAR' ? '<span class="pg-pill due">vende sin cobrar</span>'
+    : p==='VENDE_MAS_COBRA_MENOS' ? '<span class="pg-pill warn">vende más, cobra menos</span>'
+    : p==='CAIDA_DE_RITMO' ? '<span class="pg-pill warn">caída de ritmo</span>'
+    : p==='MAS_PROMETIDO_QUE_COBRADO' ? '<span class="pg-pill due">más prometido que cobrado</span>'
+    : `<span class="pg-pill muted">${esc(p||'—')}</span>`;
+
+  const el = document.getElementById('secPatrones');
+  el.innerHTML = `
+    <div class="pg-grid-3" style="margin-bottom:20px;">
+      ${ (alertas||[]).length ? alertas.map(a => `
+        <div class="pg-alert-card">
+          <div class="ac-top"><span class="ac-lbl">${esc((a.patron||'').replaceAll('_',' '))}</span><span class="ac-num ${a.casos>0?'warn':''}">${a.casos}</span></div>
+          <div class="ac-detail">${(a.plata_en_riesgo!==null && a.plata_en_riesgo!==undefined) ? fmtUSD(a.plata_en_riesgo)+' de fee de agencia en riesgo · ' : ''}${(a.agentes && a.agentes.length) ? esc(a.agentes.join(', ')) : 'sin casos actuales'}</div>
+        </div>`).join("") : `<div class="pg-empty-note">Sin datos de v_alertas_patrones.</div>` }
+    </div>
+    <div class="pg-card">
+      <h2>Detalle por agente — ordenado por urgencia</h2>
+      <p class="pg-purpose">Mes más reciente de cada agente vs el anterior (v_patrones_agente). Todo lo que dice "fee" aquí es <b>fee de agencia</b> (<code>seller_fees</code>), por agente y por mes.</p>
+      <div class="pg-table-wrap">
+      ${ ordenado.length ? `<table class="pg-table"><thead><tr><th>Agente</th><th>Mes</th><th>Pólizas</th><th>Pólizas mes prev.</th><th>Fee de agencia cobrado · del mes</th><th>Fee de agencia prometido sin cobrar · del mes</th><th>Patrón</th></tr></thead>
+      <tbody>${ordenado.map(p=>`<tr>
+        <td>${esc(p.agente)}</td><td class="num">${esc(p.mes)}</td>
+        <td class="num">${p.ventas??'—'}</td><td class="num">${p.ventas_prev??'—'}</td>
+        <td class="num pos">${fmtUSD(p.fees_cobrados)}</td>
+        <td class="num ${Number(p.fees_sin_cobrar||0)>0?'neg':''}">${fmtUSD(p.fees_sin_cobrar)}</td>
+        <td>${pillFor(p.patron)}</td>
+      </tr>`).join("")}</tbody></table>` : emptyNote("Sin datos de patrones por agente.") }
+      </div>
+    </div>`;
+}
+
+// ---------- 3. COLA DE FEES SIN COBRAR ----------
+async function loadColaFees(){
+  const { data, error } = await SB.from('v_cola_fees_sin_cobro').select('*').order('dias_transcurridos',{ascending:false}).limit(5000);
+  if(error) throw error;
+  const rows = data || [];
+  const totalPendiente = rows.reduce((a,r)=>a+Number(r.fee_prometido||0),0);
+  const urgentes = rows.filter(r=>r.urgente).length;
+
+  const el = document.getElementById('secColaFees');
+  el.innerHTML = `
+    <div class="pg-kpis">
+      <div class="pg-kpi"><div class="lbl">Fee de agencia prometido y no cobrado · toda la agencia</div><div class="val neg">${fmtUSD(totalPendiente)}</div><div class="sub">${rows.length} pólizas en cola · <code>seller_fees</code> sin fecha de pago</div></div>
+      <div class="pg-kpi warn"><div class="lbl">Urgentes</div><div class="val warn">${urgentes}</div><div class="sub">marcadas urgente=true</div><span class="pg-scope">por tarea · toda la agencia · pendientes abiertos · corte de hoy</span></div>
+    </div>
+    <div class="pg-card">
+      <h2>Cola completa — de más vieja a más nueva</h2>
+      <p class="pg-purpose">v_cola_fees_sin_cobro, ordenado por días transcurridos desde la venta.</p>
+      <div class="pg-table-wrap">
+      ${ rows.length ? `<table class="pg-table"><thead><tr><th>Agente</th><th>Póliza</th><th>Fecha venta</th><th>Días</th><th>Fee de agencia prometido · por póliza</th><th>Urgente</th></tr></thead>
+      <tbody>${rows.map(r=>{
+        const dcls = r.dias_transcurridos>90?'d90':(r.dias_transcurridos>30?'d30':'d0');
+        return `<tr><td>${esc(r.agente)}</td><td>${esc(r.poliza||'—')}</td><td class="num">${fmtDate(r.fecha_venta)}</td>
+        <td class="num pg-days-badge ${dcls}">${r.dias_transcurridos}</td>
+        <td class="num neg">${fmtUSD(r.fee_prometido)}</td>
+        <td>${r.urgente ? '<span class="pg-pill due">urgente</span>' : '<span class="pg-pill muted">—</span>'}</td></tr>`;
+      }).join("")}</tbody></table>` : emptyNote("No hay fees pendientes de cobro en este momento.") }
+      </div>
+    </div>`;
+}
+
+// ---------- 4. POR COBRAR / POR PAGAR ----------
+function bucketRows(rows){
+  const b = { menos30:[], entre30y90:[], mas90:[] };
+  rows.forEach(r => {
+    const d = daysSince(r.fecha);
+    r._dias = d;
+    if(d===null){ b.menos30.push(r); return; }
+    if(d > 90) b.mas90.push(r);
+    else if(d >= 30) b.entre30y90.push(r);
+    else b.menos30.push(r);
+  });
+  return b;
+}
+function tablaCobrarPagar(tabla, rows){
+  if(!rows.length) return emptyNote("Sin filas pendientes.");
+  return `<table class="pg-table"><thead><tr><th>Descripción</th><th>Fecha</th><th>Días</th><th>Monto</th><th>Tipo</th><th></th></tr></thead>
+  <tbody>${rows.map(r=>{
+    const rid = tabla+'_'+r.id;
+    const dcls = (r._dias||0)>90?'d90':((r._dias||0)>=30?'d30':'d0');
+    return `<tr>
+      <td>${esc(r.descripcion||'—')}</td>
+      <td class="num">${fmtDate(r.fecha)}</td>
+      <td class="num pg-days-badge ${dcls}">${r._dias===null?'—':r._dias}</td>
+      <td class="num">${fmtUSD(r.monto)}</td>
+      <td>${r.tipo ? `<span class="pg-pill muted">${esc(r.tipo)}</span>` : '—'}</td>
+      <td><button class="pg-btn ghost sm" style="background:var(--pg-ink);color:#fff;" onclick="toggleSQL('sql_${rid}')">Marcar ejecutada</button>
+        <div class="pg-sql-box" id="sql_${rid}">
+          <code>DELETE FROM ${tabla} WHERE id='${esc(r.id)}';</code>
+          <!-- TODO: conectar este botón para ejecutar el DELETE real (con confirmación); hoy solo copia el SQL, no borra nada. -->
+          <div class="sql-actions"><button class="pg-btn mint sm" onclick="copySQL(this)">Copiar SQL</button></div>
+        </div>
+      </td>
+    </tr>`;
+  }).join("")}</tbody></table>`;
+}
+async function loadCobrarPagar(){
+  const [{data: cobrar, error: e1}, {data: pagar, error: e2}] = await Promise.all([
+    SB.from('por_cobrar').select('*').order('fecha',{ascending:true}).limit(5000),
+    SB.from('por_pagar').select('*').order('fecha',{ascending:true}).limit(5000),
+  ]);
+  if(e1) throw e1; if(e2) throw e2;
+  const bc = bucketRows(cobrar||[]);
+  const bp = bucketRows(pagar||[]);
+  const totalCobrar = (cobrar||[]).reduce((a,r)=>a+Number(r.monto||0),0);
+  const totalPagar = (pagar||[]).reduce((a,r)=>a+Number(r.monto||0),0);
+  const total90c = bc.mas90.reduce((a,r)=>a+Number(r.monto||0),0);
+  const total90p = bp.mas90.reduce((a,r)=>a+Number(r.monto||0),0);
+
+  const el = document.getElementById('secCobrarPagar');
+  el.innerHTML = `
+    <div class="pg-kpis">
+      <div class="pg-kpi"><div class="lbl">Por cobrar (total)</div><div class="val pos">${fmtUSD(totalCobrar)}</div><div class="sub">${(cobrar||[]).length} filas</div><span class="pg-scope">plata por entrar · toda la agencia · saldo vivo a hoy · fuente por_cobrar</span></div>
+      <div class="pg-kpi warn"><div class="lbl">Por cobrar +90 días</div><div class="val warn">${fmtUSD(total90c)}</div><div class="sub">${bc.mas90.length} filas vencidas</div></div>
+      <div class="pg-kpi neg"><div class="lbl">Por pagar (total)</div><div class="val neg">${fmtUSD(totalPagar)}</div><div class="sub">${(pagar||[]).length} filas</div><span class="pg-scope">plata por salir · toda la agencia · saldo vivo a hoy · fuente por_pagar</span></div>
+      <div class="pg-kpi warn"><div class="lbl">Por pagar +90 días</div><div class="val warn">${fmtUSD(total90p)}</div><div class="sub">${bp.mas90.length} filas vencidas</div></div>
+    </div>
+    <div class="pg-err-note" style="margin-bottom:18px;">Convención operativa: cuando un cobro entra o un pago se ejecuta, la fila se BORRA de esta tabla (el saldo de caja ya lo refleja). El botón "Marcar ejecutada" solo te deja el DELETE listo para copiar — no borra nada todavía.</div>
+
+    <div class="pg-card">
+      <h2>Por cobrar — vencido +90 días</h2>
+      <div class="pg-table-wrap">${tablaCobrarPagar('por_cobrar', bc.mas90)}</div>
+    </div>
+    <div class="pg-card">
+      <h2>Por cobrar — entre 30 y 90 días</h2>
+      <div class="pg-table-wrap">${tablaCobrarPagar('por_cobrar', bc.entre30y90)}</div>
+    </div>
+    <div class="pg-card">
+      <h2>Por cobrar — menos de 30 días</h2>
+      <div class="pg-table-wrap">${tablaCobrarPagar('por_cobrar', bc.menos30)}</div>
+    </div>
+
+    <div class="pg-card">
+      <h2>Por pagar — vencido +90 días</h2>
+      <div class="pg-table-wrap">${tablaCobrarPagar('por_pagar', bp.mas90)}</div>
+    </div>
+    <div class="pg-card">
+      <h2>Por pagar — entre 30 y 90 días</h2>
+      <div class="pg-table-wrap">${tablaCobrarPagar('por_pagar', bp.entre30y90)}</div>
+    </div>
+    <div class="pg-card">
+      <h2>Por pagar — menos de 30 días</h2>
+      <div class="pg-table-wrap">${tablaCobrarPagar('por_pagar', bp.menos30)}</div>
+    </div>`;
+}
+
+// ---------- 5. CIERRE DE LIQUIDACIÓN MENSUAL — VALIDADOR DE ACTAS ----------
+async function loadLiquidacion(){
+  const [
+    { data: liquidaciones, error: e1 },
+    { data: payoutMensual, error: e2 },
+    { data: payoutReal, error: e3 },
+    { data: actas, error: e4 },
+  ] = await Promise.all([
+    SB.from('liquidaciones_mensuales').select('*').order('mes',{ascending:false}).limit(5000),
+    SB.from('v_payout_mensual').select('*').order('mes',{ascending:false}).limit(6),
+    SB.from('payout_real').select('*').order('mes',{ascending:false}).limit(5000),
+    SB.from('actas_bonos').select('*').limit(5000),
+  ]);
+  if(e1) throw e1; if(e2) throw e2; if(e3) throw e3; if(e4) throw e4;
+
+  // agrupar payout_real por mes+persona
+  const grupos = {};
+  (payoutReal||[]).forEach(p => {
+    const k = p.mes + '||' + p.persona;
+    if(!grupos[k]) grupos[k] = { mes: p.mes, persona: p.persona, monto: 0 };
+    grupos[k].monto += Number(p.monto||0);
+  });
+  const filas = Object.values(grupos).sort((a,b)=> b.mes.localeCompare(a.mes) || a.persona.localeCompare(b.persona));
+
+  const actaFor = (mes, persona) => (actas||[]).find(a => String(a.mes)===String(mes) && String(a.ganador||'').trim().toLowerCase()===String(persona||'').trim().toLowerCase());
+
+  const validadas = filas.map(f => {
+    const acta = actaFor(f.mes, f.persona);
+    let estado = 'red', txt = 'sin acta';
+    if(acta && acta.validada_fam){ estado = 'green'; txt = 'firmada y validada'; }
+    else if(acta){ estado = 'amber'; txt = 'acta existe, falta validar FAM'; }
+    return { ...f, estado, txt, acta };
+  });
+  const faltantes = validadas.filter(v => v.estado !== 'green');
+  const mesUltimo = (payoutMensual||[])[0];
+
+  const el = document.getElementById('secLiquidacion');
+  el.innerHTML = `
+    <div class="pg-kpis">
+      <div class="pg-kpi"><div class="lbl">Payout del mes más reciente</div><div class="val">${mesUltimo?fmtUSD(mesUltimo.payout_mes):'—'}</div><div class="sub">${mesUltimo?esc(mesUltimo.mes)+' · '+mesUltimo.personas+' personas':'—'}</div><span class="pg-scope">${mesUltimo?'incentivos pagados · toda la agencia · '+esc(mesUltimo.mes)+' (último mes cerrado)':'incentivos pagados · toda la agencia · último mes cerrado'}</span></div>
+      <div class="pg-kpi ${faltantes.length?'neg':''}"><div class="lbl">Bonos sin acta validada</div><div class="val ${faltantes.length?'neg':'pos'}">${faltantes.length}</div><div class="sub">de ${filas.length} pagos registrados en payout_real</div><span class="pg-scope">por bono pagado · toda la agencia · histórico completo · fuente payout_real vs actas_bonos</span></div>
+      <div class="pg-kpi"><div class="lbl">Liquidaciones cerradas</div><div class="val">${(liquidaciones||[]).length}</div><div class="sub">liquidaciones_mensuales</div><span class="pg-scope">por mes cerrado · toda la agencia · histórico completo</span></div>
+    </div>
+
+    ${ (liquidaciones||[]).length ? '' : `<div class="pg-err-note" style="margin-bottom:18px;">No hay filas en <b>liquidaciones_mensuales</b> todavía — ningún mes se ha cerrado formalmente con esa tabla. El validador de abajo funciona igual, cruzando payout_real contra actas_bonos.</div>` }
+
+    <div class="pg-card">
+      <h2>Validador de actas — payout vs acta firmada</h2>
+      <p class="pg-purpose">Por cada persona con pago registrado en payout_real (Cal Comm), ¿existe su acta en actas_bonos y está validada por FAM?</p>
+      <div class="pg-table-wrap">
+      ${ validadas.length ? `<table class="pg-table"><thead><tr><th>Semáforo</th><th>Mes</th><th>Persona</th><th>Payout</th><th>Estado del acta</th></tr></thead>
+      <tbody>${validadas.map(v=>`<tr>
+        <td>${semaforoDot(v.estado)}</td>
+        <td class="num">${esc(v.mes)}</td>
+        <td>${esc(v.persona)}</td>
+        <td class="num">${fmtUSD(v.monto)}</td>
+        <td>${v.estado==='green'?'<span class="pg-pill ok">'+esc(v.txt)+'</span>':v.estado==='amber'?'<span class="pg-pill warn">'+esc(v.txt)+'</span>':'<span class="pg-pill due">'+esc(v.txt)+'</span>'}</td>
+      </tr>`).join("")}</tbody></table>` : emptyNote("Sin pagos registrados en payout_real.") }
+      </div>
+    </div>
+
+    <div class="pg-card">
+      <h2>Faltantes — sin acta validada</h2>
+      <p class="pg-purpose">Lista corta para seguimiento directo de FAM.</p>
+      ${ faltantes.length ? faltantes.map(f=>`<div class="pg-alert-card" style="margin-bottom:8px;"><div class="ac-top"><span class="ac-lbl">${esc(f.persona)} · ${esc(f.mes)}</span><span class="ac-num neg">${fmtUSD(f.monto)}</span></div><div class="ac-detail">${esc(f.txt)}</div></div>`).join("")
+      : `<div class="pg-empty-note">Todos los bonos pagados tienen acta firmada y validada.</div>` }
+    </div>`;
+}
+
+boot();
+</script>
+</body>
+</html>

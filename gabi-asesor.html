@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GABI · Mi mes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+:root {
+  --pg-ink:        #28323B;
+  --pg-ink-2:      #1B2D3A;
+  --pg-mint:       #2DBFA3;
+  --pg-mint-dark:  #229A82;
+  --pg-mint-deep:  #1B8E78;
+  --pg-mint-soft:  #C4E8DF;
+  --pg-bg:         #F4F7FA;
+  --pg-card:       #FFFFFF;
+  --pg-line:       #E7EDF2;
+  --pg-txt:        #28323B;
+  --pg-muted:      #6B7D89;
+  --pg-pos:        #1F9D6B;
+  --pg-neg:        #D5594F;
+  --pg-warn:       #B8841F;
+  --pg-font-gabi:  "Fraunces", Georgia, serif;
+  --pg-font-title: "Montserrat", "Arial Black", sans-serif;
+  --pg-font-body:  "Inter", Arial, Helvetica, sans-serif;
+  --pg-font-num:   "JetBrains Mono", "Courier New", monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--pg-bg); }
+.pg-app { background: var(--pg-bg); color: var(--pg-txt); font-family: var(--pg-font-body); min-height: 100vh; }
+
+.pg-viewbar { background: var(--pg-ink-2); padding: 16px 30px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; position:sticky; top:0; z-index:20; }
+.pg-viewbar .pg-brand { display:flex; align-items:center; gap:10px; margin-right: 6px; }
+.pg-viewbar .pg-logo { width:34px; height:34px; border-radius:9px; background:var(--pg-mint); display:flex; align-items:center; justify-content:center; font-family:var(--pg-font-title); font-weight:800; color:var(--pg-ink-2); font-size:13px; }
+.pg-viewbar .pg-wordmark { font-family: var(--pg-font-gabi); font-style: italic; font-weight: 800; font-size: 21px; color: #fff; letter-spacing: -0.5px; }
+.pg-badge { background: var(--pg-mint); color: var(--pg-ink-2); border:1px solid var(--pg-mint); font-family: var(--pg-font-body); font-weight:700; font-size:12px; padding: 9px 15px; border-radius:999px; letter-spacing:.02em; }
+.pg-viewbar .pg-actions { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.pg-btn { font-family: var(--pg-font-body); font-weight:700; font-size:12.5px; border-radius:999px; padding:9px 16px; border:1px solid rgba(255,255,255,.25); background:transparent; color:#dfe8ec; cursor:pointer; }
+.pg-btn:hover { background: rgba(255,255,255,.08); }
+.pg-btn.primary { background: var(--pg-mint); color:var(--pg-ink-2); border-color:var(--pg-mint); }
+.pg-stamp { color:#8da0ad; font-size:11px; }
+
+.pg-main { padding: 30px 38px 60px; max-width: 1180px; margin: 0 auto; }
+.pg-top { margin-bottom: 22px; }
+.pg-top h1 { font-family: var(--pg-font-title); font-size: 26px; font-weight: 800; color: var(--pg-ink); margin: 0; }
+.pg-top .pg-sub { color: var(--pg-muted); font-size: 14px; margin-top: 5px; max-width:760px; }
+.pg-eyebrow { font-family: var(--pg-font-body); font-size: 11.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--pg-mint-deep); margin-bottom: 6px; }
+.pg-section-divider { display:flex; align-items:center; gap:14px; margin: 34px 0 18px; }
+.pg-section-divider .sd-line { flex:1; height:1px; background: var(--pg-line); }
+.pg-section-divider .sd-lbl { font-family: var(--pg-font-title); font-weight:800; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color: var(--pg-ink); background: var(--pg-bg); padding: 0 4px; }
+
+.pg-kpis { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.pg-kpi { flex: 1; min-width: 175px; background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 16px; padding: 16px 18px; position: relative; overflow: hidden; box-shadow: 0 1px 3px rgba(27,45,58,.04); }
+.pg-kpi::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--pg-mint); }
+.pg-kpi .lbl { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--pg-muted); }
+.pg-kpi .val { font-family: var(--pg-font-num); font-size: 25px; font-weight: 600; color: var(--pg-ink); margin: 7px 0 3px; font-variant-numeric: tabular-nums; }
+.pg-kpi .val.neg { color: var(--pg-neg); }
+.pg-kpi .val.pos { color: var(--pg-pos); }
+.pg-kpi .sub { font-size: 11.5px; color: var(--pg-muted); }
+/* FIX RONDA 3 — FALLA 4: pastilla de ALCANCE, igual a la de VISTA_BRAHIAN_v3 (el modelo).
+   Regla dura: toda cifra lleva etiqueta y alcance ("qué es · de quién · de cuándo"). */
+.pg-scope{display:inline-block;font-size:10.5px;color:var(--pg-muted);background:#F1F5F8;border:1px solid var(--pg-line);border-radius:999px;padding:2px 9px;margin-top:6px;font-weight:600}
+
+.pg-card { background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 18px; padding: 22px; margin-bottom:20px; box-shadow: 0 1px 3px rgba(27,45,58,.04); }
+.pg-card h2 { font-family: var(--pg-font-title); font-size: 17.5px; font-weight: 800; color: var(--pg-ink); margin: 0 0 4px; display:flex; align-items:center; gap:8px; }
+.pg-card .pg-purpose { color: var(--pg-muted); font-size: 13px; margin: 0 0 14px; }
+
+.pg-pill { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space:nowrap;}
+.pg-pill.ok   { background: #E3F4EF; color: var(--pg-pos); }
+.pg-pill.due  { background: #FCEEEC; color: var(--pg-neg); }
+.pg-pill.warn { background: #FBF3E2; color: var(--pg-warn); }
+.pg-pill.muted{ background:#EEF2F5; color:var(--pg-muted); }
+
+.pg-warn-box   { background: #FBF3E2; border: 1px solid #EAD09A; border-radius: 12px; padding: 13px 17px; color: #8a6a1d; font-size:13px; }
+.pg-warn-box b { color: var(--pg-warn); }
+.pg-ok-box { background:#E3F4EF; border:1px solid #A8DBC9; border-radius:12px; padding:13px 17px; color:#1c6e50; font-size:13px;}
+.pg-ok-box b { color: var(--pg-pos); }
+.pg-error-box { background:#FCEEEC; border:1px solid #F1BEB6; border-radius:12px; padding:11px 15px; color:#8a352c; font-size:12.5px; }
+
+.pg-headline { display:flex; align-items:flex-start; gap:14px; margin-bottom: 18px; }
+.pg-semaforo { width:20px; height:20px; border-radius:50%; flex-shrink:0; margin-top:4px; box-shadow: 0 0 0 5px rgba(0,0,0,.04); }
+.pg-semaforo.green { background: var(--pg-pos); }
+.pg-semaforo.amber { background: var(--pg-warn); }
+.pg-semaforo.red { background: var(--pg-neg); }
+.pg-headline-text { font-family: var(--pg-font-title); font-size: 22px; font-weight:800; color: var(--pg-ink); line-height:1.3; margin:0;}
+.pg-headline-sub { color: var(--pg-muted); font-size:13px; margin-top:5px; }
+
+.pg-context-row { display:flex; align-items:center; gap: 22px; background:#FAFCFD; border:1px solid var(--pg-line); border-radius:12px; padding: 12px 16px; margin: 10px 0 16px; flex-wrap:wrap; }
+.pg-context-row .cx-item { display:flex; flex-direction:column; gap:2px; }
+.pg-context-row .cx-lbl { font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--pg-muted); font-weight:700; }
+.pg-context-row .cx-val { font-family: var(--pg-font-num); font-size:15px; font-weight:700; color:var(--pg-ink); }
+.cx-goldrule { font-size: 10.5px; color: var(--pg-mint-deep); font-weight:700; margin-left:auto; }
+
+.pg-progress-block { margin-bottom: 16px; }
+.pg-progress-block .pl-top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; gap:10px; }
+.pg-progress-block .pl-lbl { font-size: 13px; font-weight:700; color: var(--pg-ink); }
+.pg-progress-block .pl-val { font-family: var(--pg-font-num); font-size: 12.5px; color: var(--pg-muted); text-align:right; }
+.pg-progress-track { height: 14px; background: var(--pg-line); border-radius: 999px; overflow:hidden; }
+.pg-progress-fill { height: 100%; border-radius: 999px; background: var(--pg-mint); transition: width .3s; }
+.pg-progress-fill.warn { background: var(--pg-warn); }
+.pg-progress-fill.neg  { background: var(--pg-neg); }
+.pg-progress-fill.pos  { background: var(--pg-pos); }
+.pg-progress-block .pl-note { font-size:11.5px; color: var(--pg-muted); margin-top: 5px; }
+
+.pg-rank { display:flex; justify-content:space-between; align-items:center; padding:10px 4px; border-bottom:1px solid var(--pg-line); gap:10px; }
+.pg-rank:last-child { border-bottom:none; }
+.pg-rank .rk-name { font-weight:700; color:var(--pg-ink); font-size:13.5px; }
+.pg-rank .rk-badge { font-family: var(--pg-font-num); font-size: 11.5px; color: var(--pg-mint-deep); font-weight:700; text-align:right; }
+
+.pg-grid-2 { display:grid; grid-template-columns: 1.25fr 1fr; gap: 20px; }
+@media (max-width: 980px) { .pg-grid-2 { grid-template-columns: 1fr; } }
+.pg-chart-wrap { position:relative; height: 200px; }
+
+.pg-translator { background: var(--pg-ink-2); color:#fff; border-radius:14px; padding:18px 20px; margin: 14px 0; font-size:14px; line-height:1.6; }
+.pg-translator b { color: var(--pg-mint); }
+
+.pg-skel { height:14px; background:linear-gradient(90deg,#eef2f5,#f7f9fb,#eef2f5); background-size:200% 100%; animation:pgshimmer 1.2s infinite; border-radius:6px; margin:6px 0; }
+@keyframes pgshimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+.pg-footnote { font-size: 11.5px; color: var(--pg-muted); margin-top: 26px; border-top:1px solid var(--pg-line); padding-top:14px; line-height:1.6; }
+
+/* ---- pantalla de login ---- */
+.pg-login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; background: var(--pg-ink-2); }
+.pg-login-card { background:#fff; border-radius:20px; padding:36px 34px; width:100%; max-width:360px; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+.pg-login-card .pg-brand { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+.pg-login-card .pg-logo { width:36px; height:36px; border-radius:9px; background:var(--pg-mint); display:flex; align-items:center; justify-content:center; font-family:var(--pg-font-title); font-weight:800; color:var(--pg-ink-2); font-size:13px; }
+.pg-login-card .pg-wordmark { font-family: var(--pg-font-gabi); font-style: italic; font-weight: 800; font-size: 22px; color: var(--pg-ink-2); }
+.pg-login-card label { font-size:12px; font-weight:700; color:var(--pg-muted); display:block; margin:12px 0 5px; }
+.pg-login-card input { width:100%; padding:11px 13px; border-radius:10px; border:1px solid var(--pg-line); font-size:14px; font-family:var(--pg-font-body); }
+.pg-login-card button { width:100%; margin-top:18px; padding:12px; border-radius:999px; border:none; background:var(--pg-mint); color:var(--pg-ink-2); font-weight:800; font-size:14px; cursor:pointer; }
+.pg-login-card button:hover { background:var(--pg-mint-dark); }
+.pg-login-msg { font-size:12.5px; color:var(--pg-neg); margin-top:10px; min-height:16px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================================
+  GABI · Plantilla de asesor (Producto 3 del Ecosistema GABI)
+  Esta plantilla NO es de una persona: se personaliza sola con quien inicie
+  sesión. No duplicar este archivo por asesor -- un solo archivo sirve para
+  Juan Baquero, Karen Suaza, o cualquier comercial nuevo.
+
+  Cómo se resuelve "quién soy": el login usa Supabase Auth del proyecto GABI
+  (hivpqsepwsfmafamxkzy). Con la sesión activa se llama la función
+  current_agente_id() (SECURITY DEFINER, NO se toca) que devuelve el id del
+  agente cuyo agentes.auth_user_id = auth.uid(). Con ese id se lee
+  agentes.nombre, y ese nombre es el que filtra TODAS las vistas de abajo
+  (v_meta_por_asesor.agente = nombre, agente_contexto.agente = nombre, etc.)
+
+  TODO: hoy la tabla `agentes` solo tiene auth_user_id cableado para
+       Brahian Toro y Jorge Lopez (auth de andres.lopez@). El resto de
+       comerciales (Juan Baquero incluido) NO tiene auth_user_id todavía,
+       así que hasta que se les cree login + se les llene esa columna,
+       esta plantilla les mostrará "no encontramos tu ficha de agente"
+       en vez de sus datos. Esa es una tarea de cableado aparte, no de
+       este archivo.
+============================================================================ -->
+<!-- AUDITORIA 11-ago-2026 (Pieza 5/6, hallazgo GRAVE de estetica): el comentario de arriba
+     tenia un comentario HTML anidado dentro de otro (el bloque TODO). HTML no permite
+     comentarios anidados: el navegador cerraba el comentario justo al terminar el TODO
+     interno, y la linea de signos igual que seguia quedaba como TEXTO VISIBLE encima de
+     la pantalla de login del asesor. Se corrigio quitando los delimitadores del comentario
+     interno, dejando un solo comentario grande sin anidar. -->
+<!-- AUDITORIA 11-ago-2026 (Pieza 5/6): fuga de policy_fees NO encontrada en este archivo,
+     todo lo que dice fee ya esta anclado a seller_fees y aclarado en el pie de pagina. -->
+
+<div id="pg-login-screen" class="pg-login-wrap">
+  <div class="pg-login-card">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+    <div style="font-size:13px;color:#6B7D89;">Mi mes — entra con tu usuario del equipo.</div>
+    <label>Correo</label>
+    <input type="email" id="pg-login-email" autocomplete="username" placeholder="tunombre@protectgoservices.com">
+    <label>Contraseña</label>
+    <input type="password" id="pg-login-pass" autocomplete="current-password">
+    <button id="pg-login-btn">Entrar</button>
+    <div class="pg-login-msg" id="pg-login-msg"></div>
+  </div>
+</div>
+
+<div class="pg-app" id="pg-app" style="display:none;">
+  <div class="pg-viewbar">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+    <span class="pg-badge" id="pg-badge-nombre">Vista de: —</span>
+    <div class="pg-actions">
+      <span class="pg-stamp" id="pg-stamp">datos al —</span>
+      <button class="pg-btn" id="pg-btn-refresh">Actualizar</button>
+      <button class="pg-btn" id="pg-btn-logout">Cerrar sesión</button>
+    </div>
+  </div>
+  <main class="pg-main" id="pg-root"></main>
+</div>
+
+<script>
+/* =====================================================================
+   1) CONEXIÓN — proyecto GABI (motor financiero). Ver SPEC_COMUN.md.
+   ===================================================================== */
+const SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpdnBxc2Vwd3NmbWFmYW14a3p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTIxNjUsImV4cCI6MjA5MTk2ODE2NX0.pPe1qtWJhnx8Ffo4bvuwVF-tVrkPSmO63Kl7pKWQYqM";
+const SB = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+/* =========================================================================
+   AJUSTE 1 (10-ago-2026) — LAS VENTAS SE CUENTAN POR CLIENTE, NO POR PÓLIZA
+   Una venta real es un PAQUETE: GL + Liability + Cargo al MISMO cliente, y
+   cada cobertura trae su propio número de póliza. Contar pólizas infla al
+   vendedor (medido en vivo 2026: entre 1.55x y 4.00x, y REORDENA el ranking).
+   Fuente: vista v_ventas_por_cliente — una fila = un cliente en un mes.
+   Llave: DOT (o INSURED normalizado si no hay DOT) + año + mes.
+   OJO: la vista todavía NO ESTÁ APLICADA en la base. El SQL listo está en
+   ventas_por_cliente.sql y lo aplica el chat madre. Si la vista no existe
+   (42P01 / PGRST205), estos bloques degradan a "pendiente de aplicar el SQL"
+   en vez de romper la pantalla.
+   ========================================================================= */
+const VPC_VIEW = 'v_ventas_por_cliente';
+const VPC_COLS = 'seller,cliente_key,insured,dba,sales_year,sales_month,polizas,coberturas_txt,policy_nums_txt,premium_paquete,fee_agencia_paquete,tiene_fee,cargos_carrier_paquete';
+const VPC = { ok:null, err:'' };
+function vpcFaltaVista(error){
+  const c = String((error && error.code) || '');
+  const m = String((error && error.message) || '');
+  return c === '42P01' || c === 'PGRST205' || c === 'PGRST202' ||
+         /does not exist|schema cache|could not find the table/i.test(m);
+}
+async function vpcRows(build){
+  let q = SB.from(VPC_VIEW).select(VPC_COLS).limit(5000); // FIX RONDA 3 — FALLA 2: tope explícito (el default de Supabase corta en 1.000 filas SIN dar error)
+  if (build) q = build(q);
+  const { data, error } = await q;
+  if (error){
+    if (vpcFaltaVista(error)){ VPC.ok = false; VPC.err = error.message || ''; return null; }
+    throw error;
+  }
+  VPC.ok = true;
+  return data || [];
+}
+function vpcEsc(s){ return (s===null||s===undefined) ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function vpcUSD(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US',{maximumFractionDigits:0}); }
+const VPC_PENDIENTE = (que) => '<div class="vpc-pend"><b>Pendiente de aplicar el SQL.</b> ' + que +
+  ' ahora se cuenta por <b>cliente cerrado</b> (el paquete completo, no cada póliza) y sale de la vista <code>v_ventas_por_cliente</code>, que todavía no está creada en la base. El archivo listo es <code>ventas_por_cliente.sql</code>. Mientras no se aplique, este bloque no muestra el número, para no publicar un conteo por póliza.</div>';
+const VPC_NOTA = '<div class="vpc-nota"><b>Cambió cómo se cuenta.</b> 1 venta = 1 <b>cliente cerrado</b>, no 1 póliza. Un cliente con GL + Liability + Cargo antes contaba 3 ventas; ahora cuenta 1, y sus 3 coberturas se ven al abrir el cliente. Por eso estos números son más bajos que los de la preview anterior. Las métricas de fee también van por paquete: el fee se negocia por cliente, no por póliza.</div>';
+function vpcPorVendedor(rows){
+  const m = {};
+  (rows||[]).forEach(r=>{
+    const k = r.seller || '(sin vendedor)';
+    if(!m[k]) m[k] = { agente:k, clientes:0, polizas:0, clientes_con_fee:0, fee_agencia:0, premium:0, detalle:[] };
+    const g = m[k];
+    g.clientes += 1;
+    g.polizas  += Number(r.polizas||0);
+    if(r.tiene_fee) g.clientes_con_fee += 1;
+    g.fee_agencia += Number(r.fee_agencia_paquete||0);
+    g.premium     += Number(r.premium_paquete||0);
+    g.detalle.push(r);
+  });
+  return Object.values(m).map(g=>{
+    g.tasa_cobro    = g.clientes ? (g.clientes_con_fee / g.clientes * 100) : 0;
+    g.fee_x_cliente = g.clientes ? (g.fee_agencia / g.clientes) : 0;
+    return g;
+  });
+}
+function vpcIndicePorAgente(rows){
+  const idx = {};
+  vpcPorVendedor(rows).forEach(g => { idx[String(g.agente).trim().toLowerCase()] = g; });
+  return idx;
+}
+/* --- EL DETALLE DE PÓLIZAS QUEDA UN CLIC ADENTRO (fila expandible) ------- */
+let VPC_SEQ = 0;
+function vpcDetalleHTML(rows){
+  if(!rows || !rows.length) return '<div class="vpc-det-vacio">Sin clientes en el periodo.</div>';
+  return rows.slice().sort((a,b)=>Number(b.polizas||0)-Number(a.polizas||0)).map(r=>{
+    const np = Number(r.polizas||0);
+    return '<div class="vpc-cli">' +
+      '<div class="vpc-cli-top"><b>' + vpcEsc(r.insured || r.cliente_key) + '</b>' +
+      (r.dba ? ' <span class="vpc-dim">(' + vpcEsc(r.dba) + ')</span>' : '') +
+      ' <span class="vpc-badge">este cliente llevó ' + np + ' cobertura' + (np===1?'':'s') + '</span></div>' +
+      '<div class="vpc-cli-mid">' + vpcEsc(r.coberturas_txt || '—') + '</div>' +
+      '<div class="vpc-cli-bot">fee de agencia del paquete <b>' + vpcUSD(r.fee_agencia_paquete) + '</b>' +
+      ' · premium del paquete ' + vpcUSD(r.premium_paquete) +
+      ' · pólizas: ' + vpcEsc(r.policy_nums_txt || '—') +
+      ' · cargos del carrier ' + vpcUSD(r.cargos_carrier_paquete) + ' <i>(no son ingreso de la agencia)</i></div>' +
+      '</div>';
+  }).join('');
+}
+function vpcFilaExpandible(rows, colspan){
+  const id = 'vpcdet' + (++VPC_SEQ);
+  return {
+    id: id,
+    boton: '<button type="button" class="vpc-btn" onclick="vpcToggle(\'' + id + '\')">ver coberturas</button>',
+    fila: '<tr id="' + id + '" class="vpc-det" style="display:none"><td colspan="' + colspan + '">' + vpcDetalleHTML(rows) + '</td></tr>'
+  };
+}
+function vpcToggle(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.style.display = (el.style.display === 'none' || !el.style.display) ? 'table-row' : 'none';
+}
+(function vpcCSS(){
+  const css = '.vpc-pend{background:#FFF6E5;border:1px solid #F0DCB4;border-radius:10px;padding:12px 14px;color:#7A5A16;font-size:13px;line-height:1.5;margin:8px 0}'
+  + '.vpc-pend code{background:#fff;border:1px solid #F0DCB4;border-radius:4px;padding:0 4px;font-family:"JetBrains Mono",monospace;font-size:11.5px}'
+  + '.vpc-nota{background:#F1FAF7;border:1px solid #CDEBE2;border-left:3px solid #2DBFA3;border-radius:8px;padding:10px 12px;color:#28323B;font-size:12.5px;line-height:1.5;margin:8px 0}'
+  + '.vpc-btn{border:1px solid #E7EDF2;background:#fff;color:#1B8E78;border-radius:999px;padding:3px 10px;font-size:11.5px;cursor:pointer;font-family:inherit}'
+  + '.vpc-btn:hover{background:#F1FAF7}'
+  + '.vpc-det>td{background:#F4F7FA;padding:10px 14px}'
+  + '.vpc-cli{border-bottom:1px solid #E7EDF2;padding:6px 0}.vpc-cli:last-child{border-bottom:0}'
+  + '.vpc-cli-top{font-size:13px;color:#28323B}.vpc-cli-mid{font-size:12.5px;color:#6B7D89;margin:2px 0}'
+  + '.vpc-cli-bot{font-size:11.5px;color:#6B7D89;font-family:"JetBrains Mono",monospace}'
+  + '.vpc-badge{background:#E9F7F3;color:#1B8E78;border-radius:999px;padding:1px 8px;font-size:11px;margin-left:4px}'
+  + '.vpc-dim{color:#6B7D89}.vpc-det-vacio{color:#6B7D89;font-size:12.5px}';
+  const s = document.createElement('style'); s.textContent = css; document.head.appendChild(s);
+})();
+
+
+// Estándar de fees cobrados/mes — es un parámetro PERMANENTE de política de
+// incentivos (piso mensual, no techo), pero el VALOR se lee en vivo del plan
+// vigente en incentivos_config.umbrales.estandar_equipo_usd_mes (no se
+// escribe a mano). 1500 es solo el fallback si esa lectura falla.
+let ESTANDAR_USD = 1500;
+
+async function resolverEstandarVigente() {
+  const hoyISO = new Date().toISOString().slice(0,10);
+  const { data, error } = await SB.from('incentivos_config')
+    .select('umbrales,vigencia_desde,vigencia_hasta')
+    .lte('vigencia_desde', hoyISO)
+    .or(`vigencia_hasta.is.null,vigencia_hasta.gte.${hoyISO}`)
+    .order('vigencia_desde', { ascending:false }).limit(1);
+  if (error || !data || !data.length) return; // se queda con el fallback de 1500
+  const v = data[0].umbrales && data[0].umbrales.estandar_equipo_usd_mes;
+  if (v != null && !isNaN(Number(v))) ESTANDAR_USD = Number(v);
+}
+
+const fmtUSD = (n) => (n===null||n===undefined||isNaN(n)) ? "—" : "$" + Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtUSD0 = (n) => (n===null||n===undefined||isNaN(n)) ? "—" : "$" + Number(n).toLocaleString("en-US",{maximumFractionDigits:0});
+const fmtPct = (n,d=0) => (n===null||n===undefined||isNaN(n)) ? "—" : Number(n).toFixed(d) + "%";
+const clamp = (n,lo,hi) => Math.max(lo, Math.min(hi, isFinite(n)?n:lo));
+const semaforoDot = (color) => `<div class="pg-semaforo ${color}"></div>`;
+const sectionDivider = (label) => `<div class="pg-section-divider"><span class="sd-lbl">${label}</span><div class="sd-line"></div></div>`;
+function sparkSVG(serie, w=200, h=50, color="#2DBFA3") {
+  if (!serie || !serie.length) return "";
+  const vals = serie.map(p => Number(p.fees||0));
+  const max = Math.max(...vals, 1);
+  const stepX = w / (vals.length - 1 || 1);
+  const pts = vals.map((v,i) => `${(i*stepX).toFixed(1)},${(h - (v/max)*h).toFixed(1)}`).join(" ");
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+function progressBar(label, valorTxt, pct, cls="", nota="") {
+  return `<div class="pg-progress-block">
+    <div class="pl-top"><span class="pl-lbl">${label}</span><span class="pl-val">${valorTxt}</span></div>
+    <div class="pg-progress-track"><div class="pg-progress-fill ${cls}" style="width:${clamp(pct,0,100)}%"></div></div>
+    ${nota ? `<div class="pl-note">${nota}</div>` : ""}
+  </div>`;
+}
+function skeletonBlock(lines=3){ return Array.from({length:lines}).map((_,i)=>`<div class="pg-skel" style="width:${90-i*12}%"></div>`).join(""); }
+function errorBanner(nombreSeccion, msg){
+  return `<div class="pg-error-box">No pudimos cargar "${nombreSeccion}" ahora mismo. ${msg?('Detalle: '+msg):''} — reintenta con "Actualizar".</div>`;
+}
+
+/* =====================================================================
+   2) ESTADO / SESIÓN
+   ===================================================================== */
+let MI_AGENTE_ID = null;
+let MI_NOMBRE = null;
+
+async function resolverMiAgente() {
+  // current_agente_id(): función SECURITY DEFINER ya montada — NO se toca.
+  const { data: idData, error: idErr } = await SB.rpc('current_agente_id');
+  if (idErr) throw idErr;
+  if (!idData) return null; // sesión válida pero sin fila en `agentes` ligada (auth_user_id sin cablear)
+  const { data: agRow, error: agErr } = await SB.from('agentes').select('id,nombre').eq('id', idData).maybeSingle();
+  if (agErr) throw agErr;
+  return agRow || null;
+}
+
+// FIX RONDA 3 — FALLA 4: pastilla de alcance debajo de cada cifra grande.
+function scope(txt){ return '<span class="pg-scope">' + String(txt) + '</span>'; }
+
+/* =====================================================================
+   3) CARGA POR SECCIONES AISLADAS (una que falle no tumba a las demás)
+   ===================================================================== */
+async function seccion(nombre, mountId, fn) {
+  const el = document.getElementById(mountId);
+  if (!el) return;
+  try {
+    await fn(el);
+  } catch (e) {
+    console.error("[GABI asesor] seccion caída:", nombre, e);
+    el.innerHTML = errorBanner(nombre, e.message);
+  }
+}
+
+/* ---- Sección: Mi mes vs estándar $1,500 (piso) --------------------- */
+async function cargarMiMes(el) {
+  el.innerHTML = skeletonBlock(4);
+  try { await resolverEstandarVigente(); } catch (e) { console.error("[GABI asesor] no se pudo leer el estándar vigente, usando fallback:", e); }
+  const { data: metaRows, error: e1 } = await SB.from('v_meta_por_asesor').select('*').eq('agente', MI_NOMBRE).limit(1);
+  if (e1) throw e1;
+  const { data: liqRows, error: e2 } = await SB.from('v_liquidacion_incentivos').select('*').eq('agente', MI_NOMBRE).order('mes', { ascending:false }).limit(1);
+  if (e2) throw e2;
+
+  const mm = (metaRows && metaRows[0]) || null;
+  const mes = (liqRows && liqRows[0]) || null;
+
+  if (!mm && !mes) { el.innerHTML = `<div class="pg-warn-box">Sin datos de este mes para tu usuario todavía. Se actualiza con cada venta registrada.</div>`; return; }
+
+  const llevaCobrado = mm ? Number(mm.lleva_cobrado||0) : (mes ? Number(mes.fees_cobrados||0) : 0);
+  // "Te faltan" del estándar SIEMPRE sale de restar contra ESTANDAR_USD (el piso de $1,500 leído
+  // en vivo) — nunca de v_meta_por_asesor.le_falta, que está calculado contra la META PERSONAL
+  // (otra base, casi siempre distinta). Mezclar las dos en una sola frase da aritmética que no cuadra.
+  const leFaltaEstandar = Math.max(0, ESTANDAR_USD - llevaCobrado);
+  const ventasMes = mm ? Number(mm.ventas_mes||0) : (mes ? Number(mes.ventas||0) : 0);
+  const feesRiesgo = mm ? Number(mm.en_riesgo||0) : (mes ? Number(mes.fees_en_riesgo||0) : 0);
+  const pctEstandar = clamp(llevaCobrado / ESTANDAR_USD * 100, 0, 100);
+  const tieneMetaPersonal = mm && mm.meta_personal_mes != null;
+  const metaPersonal = tieneMetaPersonal ? Number(mm.meta_personal_mes) : null;
+  const leFaltaMetaPersonal = tieneMetaPersonal ? Number(mm.le_falta||0) : null;
+
+  // AJUSTE 1 — "ventas" = CLIENTES CERRADOS (el paquete), no pólizas. `ventasMes` (de las vistas
+  // del motor) cuenta pólizas y queda solo como respaldo/detalle. Si v_ventas_por_cliente no está
+  // aplicada todavía, se muestra "—" + aviso, nunca el número por póliza disfrazado de venta.
+  const _hoyVPC = new Date();
+  let misPaquetes = null;
+  try {
+    misPaquetes = await vpcRows(q => q.eq('seller', MI_NOMBRE)
+      .eq('sales_year', _hoyVPC.getFullYear()).eq('sales_month', _hoyVPC.getMonth()+1));
+  } catch(e){ console.error("[GABI asesor] v_ventas_por_cliente", e); }
+  const misClientes    = misPaquetes ? misPaquetes.length : null;
+  const misPolizas     = misPaquetes ? misPaquetes.reduce((s,r)=>s+Number(r.polizas||0),0) : ventasMes;
+  const miFeePaquetes  = misPaquetes ? misPaquetes.reduce((s,r)=>s+Number(r.fee_agencia_paquete||0),0) : null;
+  const misConFee      = misPaquetes ? misPaquetes.filter(r=>r.tiene_fee).length : null;
+  const miFeeXCliente  = (misClientes && misClientes>0) ? (miFeePaquetes/misClientes) : null;
+
+  el.innerHTML = `
+    <div class="pg-headline">
+      ${semaforoDot(pctEstandar>=100 ? "green" : pctEstandar>=50 ? "amber" : "red")}
+      <div>
+        <p class="pg-headline-text">Llevas ${fmtUSD0(llevaCobrado)} cobrado de tu estándar de ${fmtUSD0(ESTANDAR_USD)} este mes (${fmtPct(pctEstandar)}).</p>
+        <div class="pg-headline-sub">Te faltan ${fmtUSD0(leFaltaEstandar)} para el estándar · llevas ${misClientes===null ? "—" : misClientes} venta(s) este mes ${misClientes===null ? "(pendiente de aplicar v_ventas_por_cliente)" : `= ${misClientes} cliente(s) cerrado(s), ${misPolizas} póliza(s)`} · fees en riesgo: ${fmtUSD0(feesRiesgo)}.</div>
+        ${tieneMetaPersonal ? `<div class="pg-headline-sub">Tu <b>meta personal</b> (no es el estándar, es otra base) es ${fmtUSD0(metaPersonal)} — te faltan ${fmtUSD0(leFaltaMetaPersonal)} para cumplirla.</div>` : ""}
+      </div>
+    </div>
+    <div class="pg-card" style="margin-top:6px;">
+      <h2>Fee de agencia cobrado · tuyo · del mes vs estándar ${fmtUSD0(ESTANDAR_USD)}</h2>
+      <p class="pg-purpose">El estándar es un <b>piso</b>, no un techo: es lo mínimo esperado, no el límite. Solo cuenta el fee <b>COBRADO</b>, no el prometido. "Fee" aquí siempre es el <b>fee de agencia</b> (<code>seller_fees</code>), lo que tú negociaste — los cargos del carrier (<code>policy_fees</code>) no son ingreso de la agencia y no cuentan.</p>
+      ${progressBar("Tu avance", `${fmtUSD0(llevaCobrado)} / ${fmtUSD0(ESTANDAR_USD)}`, pctEstandar, pctEstandar>=100?"pos":pctEstandar>=50?"warn":"neg")}
+      <div class="pg-chart-wrap"><canvas id="chEstandar"></canvas></div>
+    </div>
+    <div class="pg-kpis">
+      <div class="pg-kpi"><div class="lbl">Ventas este mes (clientes cerrados)</div><div class="val">${misClientes===null ? "—" : misClientes}</div><div class="sub">${misClientes===null ? "pendiente: falta aplicar v_ventas_por_cliente" : `${misPolizas} póliza(s) en total · 1 venta = 1 cliente (paquete)`}</div>${scope("por cliente cerrado · tuyo · del mes en curso · fuente v_ventas_por_cliente")}</div>
+      <div class="pg-kpi"><div class="lbl">Fee de agencia por cliente · tuyo · del mes</div><div class="val">${miFeeXCliente!=null ? fmtUSD(miFeeXCliente) : "—"}</div><div class="sub">${miFeeXCliente!=null ? `seller_fees del mes ÷ ${misClientes} cliente(s) cerrado(s) — el fee se negocia por cliente, no por póliza` : "pendiente: falta aplicar v_ventas_por_cliente"}</div>${scope("fee de agencia · por cliente · tuyo · del mes en curso · fuente seller_fees")}</div>
+      <div class="pg-kpi"><div class="lbl">Fee de agencia prometido sin cobrar · tuyo · del mes</div><div class="val ${feesRiesgo>0?'neg':'pos'}">${fmtUSD0(feesRiesgo)}</div><div class="sub">seller_fees sin fecha de pago</div>${scope("fee de agencia prometido sin cobrar · tuyo · del mes en curso")}</div>
+      <div class="pg-kpi"><div class="lbl">Premium neto</div><div class="val">${mes ? fmtUSD0(mes.premium_neto) : "—"}</div><div class="sub">no es ingreso de la agencia: es lo que paga el cliente por su seguro</div>${scope("premium neto · tuyo · del mes en curso · fuente policy_premium")}</div>
+    </div>
+    <div class="pg-card" style="margin-top:6px;">
+      <h2>Tus clientes de este mes — el detalle de coberturas</h2>
+      <p class="pg-purpose">Cada bloque es UNA venta = UN cliente. Adentro están las coberturas (pólizas) que llevó ese cliente.</p>
+      ${VPC_NOTA}
+      ${misPaquetes === null ? VPC_PENDIENTE("Tus ventas del mes") : vpcDetalleHTML(misPaquetes)}
+      ${misPaquetes ? `<div class="pg-purpose" style="margin-top:8px;">Tasa de cobro del mes: <b>${misConFee} de ${misClientes} cliente(s) cerrado(s) con fee de agencia cobrado</b> — de cada 10 clientes, cobras en ${misClientes ? Math.round(misConFee/misClientes*10) : 0}.</div>` : ""}
+    </div>`;
+
+  new Chart(document.getElementById("chEstandar"), {
+    type: "bar",
+    data: { labels: ["Tu mes"], datasets: [
+      { label: "Cobrado", data: [llevaCobrado], backgroundColor: "#2DBFA3", borderRadius: 6 },
+      { label: "Estándar " + fmtUSD0(ESTANDAR_USD), data: [ESTANDAR_USD], backgroundColor: "#E7EDF2", borderRadius: 6 }
+    ]},
+    options: { indexAxis: "y", plugins: { legend: { position:"bottom" } }, scales: { x: { ticks: { callback: v => "$"+v } } } }
+  });
+}
+
+/* ---- Sección: Mi ficha (mediana + perfil + serie) ------------------- */
+async function cargarMiFicha(el) {
+  el.innerHTML = skeletonBlock(4);
+  const { data, error } = await SB.from('agente_contexto').select('*').eq('agente', MI_NOMBRE).maybeSingle();
+  if (error) throw error;
+  if (!data) { el.innerHTML = `<div class="pg-warn-box">Todavía no hay suficiente historial para construir tu ficha.</div>`; return; }
+
+  const promedio = Number(data.promedio_fees_mes||0);
+  const mediana = Number(data.mediana_fees_mes||0);
+  const perfil = data.perfil || "—";
+  const perfilPillClass = perfil === "CONSTANTE" ? "ok" : perfil === "ESPORADICO" ? "due" : "warn";
+
+  // AUDITORÍA 11-ago-2026 (Pieza 5/6, hallazgo tono): esta pantalla es la vista PERSONAL del
+  // asesor — el tono prohíbe jerga estadística visible ("promedio", "mediana", "proyectado",
+  // "percentil"). Los dos números se siguen mostrando (son útiles), pero relabelados en plata
+  // sencilla; los nombres de variable en el código se dejan igual porque no se ven en pantalla.
+  el.innerHTML = `
+    <h2>Tu ficha con contexto</h2>
+    <p class="pg-purpose">Perfil: <span class="pg-pill ${perfilPillClass}">${perfil}</span></p>
+    <div class="pg-context-row">
+      <div class="cx-item"><span class="cx-lbl">Tu ritmo mensual</span><span class="cx-val">${fmtUSD(promedio)}</span></div>
+      <div class="cx-item"><span class="cx-lbl">Tu mes típico</span><span class="cx-val">${fmtUSD(mediana)}</span></div>
+      <div class="cx-item"><span class="cx-lbl">Meses activos</span><span class="cx-val">${data.meses_activos ?? "—"}/7</span></div>
+    </div>
+    <p style="font-size:13px; color:var(--pg-muted); margin:0 0 10px;">
+      ${promedio > mediana*1.3
+        ? `Tu ritmo mensual (${fmtUSD0(promedio)}) sale alto porque uno o dos meses fuertes lo jalaron para arriba — lo que cobraste en un mes típico (${fmtUSD0(mediana)}) te da una idea más real de lo normal.`
+        : `Tu ritmo mensual (${fmtUSD0(promedio)}) y tu mes típico (${fmtUSD0(mediana)}) están parejos — vas consistente mes a mes.`}
+      Así se ve tu serie de los últimos meses:
+    </p>
+    ${sparkSVG(data.serie_mensual)}`;
+}
+
+/* ---- Sección: Mi tasa de cobro explicada (fee es contextual) -------- */
+async function cargarMiTasaCobro(el) {
+  el.innerHTML = skeletonBlock(4);
+  const { data, error } = await SB.from('v_desempeno_fee_justo').select('*').eq('agente', MI_NOMBRE).order('mes', { ascending:false }).limit(5000);
+  if (error) throw error;
+  if (!data || !data.length) { el.innerHTML = `<div class="pg-warn-box">Aún no hay ventas suficientes para calcular tu tasa de cobro.</div>`; return; }
+
+  // Agregado simple sobre las filas disponibles (evita comparar "fee promedio" entre agentes;
+  // la métrica que se usa es SIEMPRE tasa de cobro + captura vs banda, nunca fee promedio absoluto).
+  const totVentas = data.reduce((s,r)=>s+Number(r.ventas||0),0);
+  const totConFee = data.reduce((s,r)=>s+Number(r.ventas_con_fee||0),0);
+  const tasaCobro = totVentas>0 ? (totConFee/totVentas*100) : 0;
+  const capturas = data.map(r=>r.captura_vs_tipico).filter(v=>v!=null).map(Number);
+  const capturaProm = capturas.length ? (capturas.reduce((a,b)=>a+b,0)/capturas.length) : null;
+
+  // AJUSTE 1 — la tasa de cobro se mide POR CLIENTE CERRADO (el fee se negocia por cliente, no por
+  // póliza): así deja de castigar a quien vende paquetes. La tasa por póliza queda como referencia.
+  let misPq = null;
+  try { misPq = await vpcRows(q => q.eq('seller', MI_NOMBRE)); }
+  catch(e){ console.error("[GABI asesor] v_ventas_por_cliente (tasa)", e); }
+  const cliTot    = misPq ? misPq.length : null;
+  const cliConFee = misPq ? misPq.filter(r=>r.tiene_fee).length : null;
+  const tasaCli   = (cliTot && cliTot>0) ? (cliConFee/cliTot*100) : null;
+
+  el.innerHTML = `
+    <h2>Tu tasa de cobro — el dato clave</h2>
+    <p class="pg-purpose">De cada 10 <b>clientes cerrados</b>, ¿en cuántos terminas cobrando el fee de agencia? El fee depende de qué tan complicado es cada caso, no del premium — por eso aquí no se mide quién cobra más por venta ni se te compara con nadie.</p>
+    ${VPC_NOTA}
+    <div class="pg-kpis">
+      <div class="pg-kpi"><div class="lbl">Tasa de cobro · por cliente cerrado</div><div class="val">${tasaCli!=null ? fmtPct(tasaCli) : "—"}</div><div class="sub">${tasaCli!=null ? `${cliConFee} de ${cliTot} cliente(s) cerrado(s) con fee de agencia cobrado` : "pendiente: falta aplicar v_ventas_por_cliente"}</div>${scope("tasa de cobro · por cliente cerrado · tuyo · del mes en curso")}</div>
+      <div class="pg-kpi"><div class="lbl">Referencia · por póliza (así se medía antes)</div><div class="val" style="color:var(--pg-muted)">${fmtPct(tasaCobro)}</div><div class="sub">${totConFee} de ${totVentas} pólizas con fee — castiga a quien vende paquetes</div>${scope("tasa de cobro · por póliza (medida vieja) · tuyo · del mes en curso")}</div>
+      <div class="pg-kpi"><div class="lbl">Captura vs banda</div><div class="val pos">${capturaProm!=null ? capturaProm.toFixed(2)+"x" : "—"}</div><div class="sub">cuando cobras, vs. lo típico para ese tipo de riesgo</div>${scope("captura vs banda · tuyo · del mes en curso · fuente v_desempeno_fee_justo")}</div>
+    </div>
+    <div class="pg-translator">
+      ${capturaProm!=null
+        ? `Tienes una tasa de cobro del <b>${tasaCli!=null ? fmtPct(tasaCli) : fmtPct(tasaCobro)}</b> — de cada 10 ${tasaCli!=null ? "clientes cerrados" : "pólizas"}, cobras fee en unas ${Math.round((tasaCli!=null?tasaCli:tasaCobro)/10)}. Cuando sí cobras, tu captura es de <b>${capturaProm.toFixed(2)}x</b> lo típico para ese tipo de póliza. En palabras simples: ${capturaProm>=1 ? 'cobras por encima de lo esperado cuando cobras' : 'cobras algo por debajo de lo esperado cuando cobras'}. El reto no es solo "cobrar mejor" — es <b>cobrar más seguido</b>.`
+        : `Tienes una tasa de cobro del <b>${fmtPct(tasaCobro)}</b>. Todavía no hay suficientes ventas con fee cobrado para comparar contra la banda típica.`}
+    </div>`;
+}
+
+/* ---- Sección: fees en riesgo (cola) ---------------------------------- */
+async function cargarFeesEnRiesgo(el) {
+  el.innerHTML = skeletonBlock(2);
+  const { data, error } = await SB.from('v_cola_fees_sin_cobro').select('*').eq('agente', MI_NOMBRE).order('dias_transcurridos', { ascending:false }).limit(5000);
+  if (error) throw error;
+  if (!data || !data.length) { el.innerHTML = `<div class="pg-ok-box"><b>Sin pólizas pendientes de cobro</b> ahora mismo.</div>`; return; }
+  const total = data.reduce((s,r)=>s+Number(r.fee_prometido||0),0);
+  el.innerHTML = `
+    <div class="pg-warn-box" style="margin-bottom:12px;"><b>${fmtUSD0(total)}</b> en fees prometidos sin cobrar, en ${data.length} póliza(s).</div>
+    ${data.slice(0,8).map(r => `<div class="pg-rank"><span class="rk-name">${r.poliza || '—'}</span><span class="rk-badge">${fmtUSD0(r.fee_prometido)} · ${r.dias_transcurridos ?? '—'}d${r.urgente ? ' · <span style=\"color:var(--pg-neg)\">urgente</span>' : ''}</span></div>`).join("")}
+    ${data.length>8 ? `<div style="font-size:11.5px;color:var(--pg-muted);margin-top:8px;">+${data.length-8} más.</div>` : ""}`;
+}
+
+/* ---- Sección: leaderboard del equipo (último mes cerrado) ------------ */
+const MESES_ES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const MESES_ES_ABR = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+// `mes` en v_candidatos_bonos es tipo DATE, siempre día 1 (ej. "2026-08-01"). Se parsea a mano
+// (split, no `new Date(str)`) para no correr riesgo de que el timezone del navegador la recorra
+// un día y cambie el mes mostrado.
+function partesMes(mesStr) {
+  const [y, m] = String(mesStr).split("-").map(Number);
+  return { y, m }; // m es 1..12
+}
+function fmtMesLargo(mesStr) { const { y, m } = partesMes(mesStr); return `${MESES_ES[m-1]} de ${y}`; }
+function fmtMesCorto(mesStr) { const { y, m } = partesMes(mesStr); return `${MESES_ES_ABR[m-1]}-${y}`; }
+
+async function cargarLeaderboard(el) {
+  el.innerHTML = skeletonBlock(4);
+  const { data, error } = await SB.from('v_candidatos_bonos').select('*').order('mes', { ascending:false }).limit(5000);
+  if (error) throw error;
+  if (!data || !data.length) { el.innerHTML = `<div class="pg-warn-box">Sin datos de leaderboard todavía.</div>`; return; }
+
+  // Mes en curso (según el reloj real), en formato "YYYY-MM-01" para comparar contra la columna `mes`.
+  const hoy = new Date();
+  const mesActualStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,"0")}-01`;
+
+  // "Top del equipo" es del último mes CERRADO -- nunca el mes en curso, y nunca una fila
+  // "fantasma" (mes futuro o mes con todo en cero porque aún no hay liquidación real). Se
+  // recorren los meses únicos, de más reciente a más antiguo, y se toma el primero que:
+  //  a) sea estrictamente anterior al mes en curso, y
+  //  b) tenga al menos una fila con datos reales (ventas, fees o premium > 0).
+  const mesesUnicos = [...new Set(data.map(r => r.mes))].sort().reverse();
+  let mesReciente = null;
+  for (const m of mesesUnicos) {
+    if (m >= mesActualStr) continue; // excluye mes en curso y cualquier fila futura/fantasma
+    const filasMes = data.filter(r => r.mes === m);
+    const tieneDatos = filasMes.some(r => Number(r.ventas||0) > 0 || Number(r.fees_cobrados||0) > 0 || Number(r.premium_neto||0) > 0);
+    if (tieneDatos) { mesReciente = m; break; }
+  }
+
+  if (!mesReciente) {
+    el.innerHTML = `<div class="pg-warn-box">Todavía no hay un mes cerrado con datos en el leaderboard. El mes en curso (${MESES_ES[hoy.getMonth()]}) entra cuando cierre.</div>`;
+    return;
+  }
+
+  const filas = data.filter(r => r.mes === mesReciente);
+  // AJUSTE 1 — el leaderboard también cuenta por CLIENTES cerrados, no por pólizas.
+  let topCli = null, topCliPend = false;
+  try {
+    const _p = partesMes(mesReciente);
+    const rowsMesVPC = await vpcRows(q => q.eq('sales_year', _p.y).eq('sales_month', _p.m));
+    if (rowsMesVPC) topCli = vpcPorVendedor(rowsMesVPC).sort((a,b)=>b.clientes-a.clientes)[0] || null;
+    else topCliPend = true;
+  } catch(e){ console.error("[GABI asesor] leaderboard por cliente", e); }
+  const topFee = [...filas].sort((a,b)=>Number(b.fees_cobrados||0)-Number(a.fees_cobrados||0))[0];
+  const topPremium = [...filas].sort((a,b)=>Number(b.premium_neto||0)-Number(a.premium_neto||0))[0];
+  // FIX RONDA 3 — FALLA 3: antes esto armaba una lista con los NOMBRES de los compañeros que
+  // cumplían superación y la publicaba en la pantalla PERSONAL del asesor. Eso es un
+  // comparativo entre pares (prohibido aquí): quien no aparecía leía su ausencia como un
+  // señalamiento. Ahora solo se mira si EL PROPIO asesor es candidato — ningún nombre ajeno.
+  const soyCandidatoSuperacion = filas.some(r => r.cumple_superacion && r.agente === MI_NOMBRE);
+  const esMesInmediatoAnterior = (() => {
+    const { y, m } = partesMes(mesReciente);
+    const anteriorY = hoy.getMonth() === 0 ? hoy.getFullYear()-1 : hoy.getFullYear();
+    const anteriorM = hoy.getMonth() === 0 ? 12 : hoy.getMonth();
+    return y === anteriorY && m === anteriorM;
+  })();
+
+  el.innerHTML = `
+    <h2>Reconocimientos del mes — ${fmtMesLargo(mesReciente)}</h2>
+    <p class="pg-purpose">Aquí se celebra a quien la rompió el mes pasado. No es un ranking ni una lista de quién va bien y quién va mal: son tres reconocimientos, por fee de agencia cobrado, por premium neto y por clientes cerrados. Tu propio mes está más arriba en esta pantalla, y no se compara con el de nadie.
+      ${!esMesInmediatoAnterior ? ` Último mes calculado: ${fmtMesCorto(mesReciente)} — ${MESES_ES[hoy.getMonth()]} entra cuando cierre.` : ` Este es el último mes cerrado — ${MESES_ES[hoy.getMonth()]} entra cuando cierre.`}
+    </p>
+    ${topFee ? `<div class="pg-rank"><span class="rk-name">🏆 Top fee — ${topFee.agente}</span><span class="rk-badge">${fmtUSD0(topFee.fees_cobrados)} cobrado</span></div>` : ""}
+    ${topPremium ? `<div class="pg-rank"><span class="rk-name">🏆 Top premium — ${topPremium.agente}</span><span class="rk-badge">${fmtUSD0(topPremium.premium_neto)} premium neto</span></div>` : ""}
+    ${topCli ? `<div class="pg-rank"><span class="rk-name">🏆 Top ventas (clientes cerrados) — ${vpcEsc(topCli.agente)}</span><span class="rk-badge">${topCli.clientes} cliente(s) · ${topCli.polizas} póliza(s)</span></div>` : (topCliPend ? VPC_PENDIENTE("El top de ventas") : "")}
+    ${scope("fee de agencia cobrado, premium neto y clientes cerrados · el mejor de cada uno · " + fmtMesCorto(mesReciente) + " (último mes cerrado)")}
+    ${soyCandidatoSuperacion ? `<div class="pg-rank" style="margin-top:14px;"><span class="rk-name"><b>Tú eres candidato a superación</b> — superaste tu propio trimestre anterior</span><span class="rk-badge">✓ candidato</span></div>` : ""}`;
+}
+
+/* =====================================================================
+   4) ARRANQUE
+   ===================================================================== */
+function footnote() {
+  return `<div class="pg-footnote">
+    Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy): v_meta_por_asesor, v_liquidacion_incentivos,
+    agente_contexto, v_desempeno_fee_justo, v_cola_fees_sin_cobro, v_candidatos_bonos, incentivos_config (estándar
+    vigente). Esta plantilla se personaliza sola según quien inicie sesión (current_agente_id()) — solo tu mes
+    personal + reconocimientos del mes, sin datos de otros agentes en detalle, sin sueldos, sin liquidez de la empresa.
+    <br><br><b>Fee</b> en esta pantalla es siempre el <b>fee de agencia</b> (<code>seller_fees</code>) — los cargos del carrier (<code>policy_fees</code>) no son ingreso de la agencia y no se muestran aquí. Las <b>ventas se cuentan por cliente cerrado</b> (paquete), no por póliza.
+  </div>`;
+}
+
+function pintarEsqueleto() {
+  document.getElementById("pg-root").innerHTML = `
+    <div class="pg-top">
+      <div class="pg-eyebrow">${MI_NOMBRE} · asesor</div>
+      <h1>Mi mes</h1>
+      <div class="pg-sub">Tu estándar, tu ficha y tu tasa de cobro — se actualiza con cada venta.</div>
+    </div>
+    <div class="pg-card" id="s-mimes"></div>
+    ${sectionDivider("Tu ficha")}
+    <div class="pg-card" id="s-ficha"></div>
+    <div class="pg-card" id="s-tasacobro"></div>
+    ${sectionDivider("Fees pendientes de cobro")}
+    <div class="pg-card" id="s-riesgo"></div>
+    ${sectionDivider("Reconocimientos del mes")}
+    <div class="pg-card" id="s-leaderboard"></div>
+    ${footnote()}
+  `;
+}
+
+async function cargarTodo() {
+  document.getElementById("pg-stamp").textContent = "cargando…";
+  await Promise.all([
+    seccion("Mi mes", "s-mimes", cargarMiMes),
+    seccion("Mi ficha", "s-ficha", cargarMiFicha),
+    seccion("Mi tasa de cobro", "s-tasacobro", cargarMiTasaCobro),
+    seccion("Fees en riesgo", "s-riesgo", cargarFeesEnRiesgo),
+    seccion("Leaderboard", "s-leaderboard", cargarLeaderboard),
+  ]);
+  document.getElementById("pg-stamp").textContent = "datos al " + new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+}
+
+async function mostrarApp() {
+  document.getElementById("pg-login-screen").style.display = "none";
+  document.getElementById("pg-app").style.display = "block";
+
+  let agRow;
+  try {
+    agRow = await resolverMiAgente();
+  } catch (e) {
+    document.getElementById("pg-root").innerHTML = `<div class="pg-error-box">No pudimos identificar tu usuario: ${e.message}</div>`;
+    return;
+  }
+  if (!agRow) {
+    document.getElementById("pg-root").innerHTML = `
+      <div class="pg-warn-box">
+        No encontramos tu ficha de agente todavía. Tu login existe, pero tu usuario no está ligado
+        a un registro en la tabla <code>agentes</code> (columna <code>auth_user_id</code>).
+        Pídele a Andrés que te vincule para ver tu mes aquí.
+      </div>`;
+    return;
+  }
+  MI_AGENTE_ID = agRow.id;
+  MI_NOMBRE = agRow.nombre;
+  document.getElementById("pg-badge-nombre").textContent = `Vista de: ${MI_NOMBRE} · Asesor`;
+  pintarEsqueleto();
+  await cargarTodo();
+}
+
+document.getElementById("pg-login-btn").addEventListener("click", async () => {
+  const email = document.getElementById("pg-login-email").value.trim();
+  const pass = document.getElementById("pg-login-pass").value;
+  const msgEl = document.getElementById("pg-login-msg");
+  msgEl.textContent = "";
+  const { error } = await SB.auth.signInWithPassword({ email, password: pass });
+  if (error) { msgEl.textContent = "No pudimos iniciar sesión: " + error.message; return; }
+  await mostrarApp();
+});
+
+document.getElementById("pg-btn-refresh").addEventListener("click", cargarTodo);
+document.getElementById("pg-btn-logout").addEventListener("click", async () => {
+  await SB.auth.signOut();
+  location.reload();
+});
+
+(async function init() {
+  const { data: { session } } = await SB.auth.getSession();
+  if (session) { await mostrarApp(); }
+})();
+</script>
+</body>
+</html>
+<!-- TODO: cablear agentes.auth_user_id para cada asesor (Juan Baquero y demás) al crearles login en el portal/GABI -->
+<!-- TODO: agregar v_estandar_racha (racha de meses cumpliendo el estándar) si Andrés lo quiere visible aquí -->

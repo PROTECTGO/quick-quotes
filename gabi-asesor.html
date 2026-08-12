@@ -123,6 +123,14 @@ body { margin: 0; background: var(--pg-bg); }
 
 .pg-footnote { font-size: 11.5px; color: var(--pg-muted); margin-top: 26px; border-top:1px solid var(--pg-line); padding-top:14px; line-height:1.6; }
 
+/* ---- TU PROCESO (Fase 2) — tarjetas de hito/record ---- */
+.pg-hitos-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(185px,1fr)); gap:14px; }
+.pg-hito { background: linear-gradient(180deg,#F7FCFA,#FFFFFF); border:1px solid var(--pg-line); border-left:4px solid var(--pg-mint); border-radius:14px; padding:14px 16px; }
+.pg-hito .hito-ico { font-size:20px; line-height:1; }
+.pg-hito .hito-lbl { font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--pg-muted); margin-top:6px; }
+.pg-hito .hito-val { font-family:var(--pg-font-num); font-size:21px; font-weight:600; color:var(--pg-ink); margin:3px 0 2px; font-variant-numeric:tabular-nums; }
+.pg-hito .hito-sub { font-size:11.5px; color:var(--pg-muted); }
+
 /* ---- pantalla de login ---- */
 .pg-login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; background: var(--pg-ink-2); }
 .pg-login-card { background:#fff; border-radius:20px; padding:36px 34px; width:100%; max-width:360px; box-shadow:0 10px 40px rgba(0,0,0,.25); }
@@ -391,7 +399,11 @@ async function seccion(nombre, mountId, fn) {
 async function cargarMiMes(el) {
   el.innerHTML = skeletonBlock(4);
   try { await resolverEstandarVigente(); } catch (e) { console.error("[GABI asesor] no se pudo leer el estándar vigente, usando fallback:", e); }
-  const { data: metaRows, error: e1 } = await SB.from('v_meta_por_asesor').select('*').eq('agente', MI_NOMBRE).limit(1);
+  // Mi mes (meta) vía RPC SECURITY DEFINER: devuelve SOLO la meta del propio asesor, sin exponer
+  // el roster del equipo. v_meta_por_asesor arma su lista de activos desde bases_turbo (que trae los
+  // baselines de TODOS los asesores) — no se le abre a un asesor por el principio "solo lo tuyo".
+  // La RPC resuelve al llamante por dentro (current_agente_id) y trae los mismos campos que usa mm.
+  const { data: metaRows, error: e1 } = await SB.rpc('mi_meta_del_mes');
   if (e1) throw e1;
   const { data: liqRows, error: e2 } = await SB.from('v_liquidacion_incentivos').select('*').eq('agente', MI_NOMBRE).order('mes', { ascending:false }).limit(1);
   if (e2) throw e2;
@@ -540,6 +552,140 @@ async function cargarMiTasaCobro(el) {
     </div>`;
 }
 
+/* ---- Sección: TU PROCESO (Fase 2) — toda tu historia, tu evolución ----
+   Reemplaza la vieja idea de "costo del puesto" (descartada por Andrés): aquí
+   NO se habla de lo que cuestas, ni de nómina, ni de utilidad, ni se te compara
+   con NADIE. Es SOLO tu proceso: cómo evolucionó tu fee cobrado y tu premium
+   mes a mes, tus mejores marcas y tu crecimiento desde que empezaste. El piso
+   (leído en vivo) es un PISO, no un techo.
+   Fuentes (todas ya visibles para ti por RLS, sin permisos ni funciones nuevas):
+     · v_liquidacion_incentivos  -> fee cobrado / premium / estandar_ok por mes
+     · v_ventas_por_cliente      -> clientes cerrados (paquete) por mes, tuyos
+     · agente_contexto           -> meses activos (respaldo)                     */
+let CH_PROCESO = null;
+async function cargarMiProceso(el) {
+  el.innerHTML = skeletonBlock(5);
+  try { await resolverEstandarVigente(); } catch (e) { console.error("[GABI asesor] estándar (proceso)", e); }
+
+  // 1) Historia fee/premium/estandar por mes, cronológica.
+  const { data: histRaw, error: eHist } = await SB.from('v_liquidacion_incentivos')
+    .select('mes,fees_cobrados,premium_neto,ventas,estandar_ok')
+    .eq('agente', MI_NOMBRE).order('mes', { ascending:true }).limit(5000);
+  if (eHist) throw eHist;
+  const hist = (histRaw || []).filter(r => r.mes);
+  if (!hist.length) {
+    el.innerHTML = `<div class="pg-warn-box">Todavía no hay historial para construir tu proceso. Aparecerá aquí con tus primeros meses de ventas.</div>`;
+    return;
+  }
+
+  // 2) Clientes cerrados (paquete) por mes — del propio seller (RLS: solo lo tuyo).
+  let pqRows = null;
+  try { pqRows = await vpcRows(q => q.eq('seller', MI_NOMBRE)); }
+  catch (e) { console.error("[GABI asesor] v_ventas_por_cliente (proceso)", e); }
+  const cliPorMes = {};              // 'YYYY-MM' -> nº de clientes
+  let cliAcum = null;
+  if (pqRows) {
+    cliAcum = pqRows.length;
+    pqRows.forEach(r => {
+      const k = `${r.sales_year}-${String(r.sales_month).padStart(2,'0')}`;
+      cliPorMes[k] = (cliPorMes[k] || 0) + 1;
+    });
+  }
+  const cliDeMes = (mesStr) => { const { y, m } = partesMes(mesStr); return cliPorMes[`${y}-${String(m).padStart(2,'0')}`] ?? null; };
+
+  // 3) Mes en curso (punto hueco "en curso"): no cierra todavía, no cuenta para la racha.
+  const hoyP = new Date();
+  const mesActualYM = `${hoyP.getFullYear()}-${String(hoyP.getMonth()+1).padStart(2,'0')}`;
+  const esMesEnCurso = (mesStr) => String(mesStr).slice(0,7) === mesActualYM;
+
+  // 4) Marcas, récords, racha y crecimiento.
+  const feeVals  = hist.map(r => Number(r.fees_cobrados||0));
+  const premVals = hist.map(r => Number(r.premium_neto||0));
+  const maxFee   = Math.max(...feeVals);
+  const maxPrem  = Math.max(...premVals);
+  const idxBestFee  = feeVals.indexOf(maxFee);
+  const idxBestPrem = premVals.indexOf(maxPrem);
+  let bestCliMes = null, bestCliN = -1;
+  Object.keys(cliPorMes).forEach(k => { if (cliPorMes[k] > bestCliN) { bestCliN = cliPorMes[k]; bestCliMes = k; } });
+  // Racha más larga cumpliendo el piso (estandar_ok consecutivos), sin el mes en curso.
+  let rachaMax = 0, rachaCur = 0;
+  hist.forEach(r => {
+    if (esMesEnCurso(r.mes)) return;
+    if (r.estandar_ok) { rachaCur++; if (rachaCur > rachaMax) rachaMax = rachaCur; } else rachaCur = 0;
+  });
+  // Crecimiento: promedio de tus primeros vs tus últimos meses activos (fee).
+  const activos = hist.filter(r => Number(r.fees_cobrados||0) > 0 || Number(r.ventas||0) > 0);
+  const mesesActivos = activos.length;
+  // Crecimiento: SOLO meses cerrados (excluye el mes en curso, que va incompleto) —
+  // consistente con la racha, que tampoco cuenta el mes en curso.
+  const activosCerrados = activos.filter(r => !esMesEnCurso(r.mes));
+  const tomaN = Math.min(3, Math.max(1, Math.floor(activosCerrados.length/2)));
+  const prom = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
+  const feePrimeros = prom(activosCerrados.slice(0, tomaN).map(r => Number(r.fees_cobrados||0)));
+  const feeUltimos  = prom(activosCerrados.slice(-tomaN).map(r => Number(r.fees_cobrados||0)));
+  const crecPct = (activosCerrados.length >= 2 && feePrimeros > 0) ? ((feeUltimos - feePrimeros) / feePrimeros * 100) : null;
+  const premAcum = premVals.reduce((a,b)=>a+b,0);
+
+  el.innerHTML = `
+    <h2>Tu proceso — toda tu historia</h2>
+    <p class="pg-purpose">Así ha evolucionado <b>tu</b> fee de agencia cobrado y tu premium, mes a mes, desde que empezaste. La línea gris punteada es <b>tu piso</b> de ${fmtUSD0(ESTANDAR_USD)} — es un <b>piso, no un techo</b>. Los puntos verdes son meses en o sobre el piso; los dorados, meses por debajo. Aquí no hay comparación con nadie: es solo tu camino.</p>
+    <div class="pg-chart-wrap" style="height:280px;"><canvas id="chProceso"></canvas></div>
+
+    <div class="pg-section-divider" style="margin:24px 0 14px;"><span class="sd-lbl">Los grandes éxitos de tu proceso</span><div class="sd-line"></div></div>
+    <div class="pg-hitos-grid">
+      <div class="pg-hito"><div class="hito-ico">🏅</div><div class="hito-lbl">Tu mejor mes de fee</div><div class="hito-val">${maxFee>0 ? fmtUSD0(maxFee) : "—"}</div><div class="hito-sub">${maxFee>0 ? fmtMesLargo(hist[idxBestFee].mes) : "aún sin fee cobrado"}</div></div>
+      <div class="pg-hito"><div class="hito-ico">🏅</div><div class="hito-lbl">Tu mejor mes de premium</div><div class="hito-val">${maxPrem>0 ? fmtUSD0(maxPrem) : "—"}</div><div class="hito-sub">${maxPrem>0 ? fmtMesLargo(hist[idxBestPrem].mes) : "aún sin premium"}</div></div>
+      <div class="pg-hito"><div class="hito-ico">🏅</div><div class="hito-lbl">Tu mejor mes de clientes</div><div class="hito-val">${bestCliMes ? bestCliN : "—"}</div><div class="hito-sub">${bestCliMes ? `${bestCliN} cliente(s) cerrado(s) · ${fmtMesCorto(bestCliMes+"-01")}` : (pqRows===null ? "pendiente: falta aplicar v_ventas_por_cliente" : "aún sin clientes registrados")}</div></div>
+      <div class="pg-hito"><div class="hito-ico">🔥</div><div class="hito-lbl">Tu racha más larga en el piso</div><div class="hito-val">${rachaMax}</div><div class="hito-sub">mes(es) seguidos en o sobre tu piso</div></div>
+    </div>
+
+    <div class="pg-section-divider" style="margin:24px 0 14px;"><span class="sd-lbl">Rendimiento de tu proceso</span><div class="sd-line"></div></div>
+    <div class="pg-kpis">
+      <div class="pg-kpi"><div class="lbl">Meses activos</div><div class="val">${mesesActivos}</div><div class="sub">meses con ventas o fee cobrado</div>${scope("meses activos · tuyo · histórico · fuente v_liquidacion_incentivos")}</div>
+      <div class="pg-kpi"><div class="lbl">Crecimiento desde tus inicios</div><div class="val ${crecPct==null?"":(crecPct>=0?"pos":"neg")}">${crecPct==null ? "—" : (crecPct>=0?"+":"")+crecPct.toFixed(0)+"%"}</div><div class="sub">${crecPct==null ? "aún no hay suficientes meses" : `promedio de tus primeros ${tomaN} vs tus últimos ${tomaN} meses activos`}</div>${scope("crecimiento de fee · primeros vs últimos meses · tuyo · histórico")}</div>
+      <div class="pg-kpi"><div class="lbl">Premium acumulado</div><div class="val">${fmtUSD0(premAcum)}</div><div class="sub">no es ingreso de la agencia: es lo que han pagado tus clientes por su seguro</div>${scope("premium neto · tuyo · acumulado histórico · fuente v_liquidacion_incentivos")}</div>
+      <div class="pg-kpi"><div class="lbl">Clientes cerrados acumulados</div><div class="val">${cliAcum==null ? "—" : cliAcum}</div><div class="sub">${cliAcum==null ? (pqRows===null ? "pendiente: falta aplicar v_ventas_por_cliente" : "—") : "clientes cerrados (paquetes) en toda tu historia"}</div>${scope("clientes cerrados · tuyo · acumulado histórico · fuente v_ventas_por_cliente")}</div>
+    </div>
+    ${pqRows===null ? VPC_PENDIENTE("Los datos de clientes de tu proceso") : ""}`;
+
+  // --- Gráfica dinámica de curvas (referencia visual: Utilidad por persona de GABI 360) ---
+  if (CH_PROCESO) { try { CH_PROCESO.destroy(); } catch (e) {} }
+  const ptBg = hist.map(r => esMesEnCurso(r.mes) ? "#FFFFFF" : (r.estandar_ok ? "#1F9D6B" : "#B8841F"));
+  const ptBd = hist.map(r => esMesEnCurso(r.mes) ? "#2DBFA3" : (r.estandar_ok ? "#1F9D6B" : "#B8841F"));
+  const ptR  = hist.map((r,i) => i===idxBestFee ? 6 : (esMesEnCurso(r.mes) ? 5.5 : 3.5));
+  CH_PROCESO = new Chart(document.getElementById("chProceso"), {
+    data: {
+      labels: hist.map(r => fmtMesCorto(r.mes)),
+      datasets: [
+        { type:"line", label:"Fee de agencia cobrado", data:feeVals, yAxisID:"y", order:0,
+          borderColor:"#2DBFA3", borderWidth:2.6, tension:.35, fill:true,
+          backgroundColor:(ctx)=>{ const ch=ctx.chart, {ctx:c2,chartArea}=ch; if(!chartArea) return "rgba(45,191,163,.14)"; const g=c2.createLinearGradient(0,chartArea.top,0,chartArea.bottom); g.addColorStop(0,"rgba(45,191,163,.30)"); g.addColorStop(1,"rgba(45,191,163,0)"); return g; },
+          pointBackgroundColor:ptBg, pointBorderColor:ptBd, pointBorderWidth:2, pointRadius:ptR, pointHoverRadius:7, pointStyle:"circle" },
+        { type:"line", label:"Premium neto", data:premVals, yAxisID:"y2", order:2,
+          borderColor:"#1F9D6B", borderWidth:1.8, borderDash:[5,4], tension:.35, fill:false, pointRadius:0, pointHoverRadius:0 },
+        { type:"line", label:`Tu piso (${fmtUSD0(ESTANDAR_USD)})`, data:hist.map(()=>ESTANDAR_USD), yAxisID:"y", order:3,
+          borderColor:"#9AA9B4", borderWidth:1.4, borderDash:[4,4], tension:0, fill:false, pointRadius:0, pointHoverRadius:0 }
+      ]
+    },
+    options: {
+      maintainAspectRatio:false,
+      interaction:{ mode:"index", intersect:false },
+      plugins:{
+        legend:{ position:"bottom", labels:{ usePointStyle:true, pointStyle:"circle", boxWidth:8, font:{size:12} } },
+        tooltip:{ filter:(it)=>it.datasetIndex===0, callbacks:{
+          title:(items)=>{ const i=items[0].dataIndex; let t=fmtMesLargo(hist[i].mes); if(i===idxBestFee && maxFee>0) t="🏅 "+t+" · tu récord"; if(esMesEnCurso(hist[i].mes)) t+=" · en curso"; return t; },
+          label:(item)=>{ const i=item.dataIndex; const c=cliDeMes(hist[i].mes); return ["Fee cobrado: "+fmtUSD0(feeVals[i]), "Premium neto: "+fmtUSD0(premVals[i]), "Clientes: "+(c==null?"—":c)]; }
+        } }
+      },
+      scales:{
+        y:{ beginAtZero:true, position:"left", ticks:{ callback:v=>"$"+Number(v).toLocaleString("en-US") }, title:{ display:true, text:"Fee cobrado (US$)" } },
+        y2:{ beginAtZero:true, position:"right", grid:{ drawOnChartArea:false }, ticks:{ callback:v=>"$"+(Number(v)/1000).toLocaleString("en-US",{maximumFractionDigits:0})+"k" }, title:{ display:true, text:"Premium (US$, miles)" } },
+        x:{ grid:{ display:false } }
+      }
+    }
+  });
+}
+
 /* ---- Sección: fees en riesgo (cola) ---------------------------------- */
 async function cargarFeesEnRiesgo(el) {
   el.innerHTML = skeletonBlock(2);
@@ -568,65 +714,62 @@ function fmtMesCorto(mesStr) { const { y, m } = partesMes(mesStr); return `${MES
 
 async function cargarLeaderboard(el) {
   el.innerHTML = skeletonBlock(4);
-  const { data, error } = await SB.from('v_candidatos_bonos').select('*').order('mes', { ascending:false }).limit(5000);
-  if (error) throw error;
-  if (!data || !data.length) { el.innerHTML = `<div class="pg-warn-box">Sin datos de leaderboard todavía.</div>`; return; }
 
-  // Mes en curso (según el reloj real), en formato "YYYY-MM-01" para comparar contra la columna `mes`.
+  // FIX (Fase 2): el top del equipo se calcula SERVER-SIDE con la RPC
+  // reconocimientos_del_mes(year, month) — SECURITY DEFINER, ve a TODOS los
+  // vendedores. Antes se calculaba en el navegador sobre v_candidatos_bonos /
+  // v_ventas_por_cliente, que son security_invoker (RLS al propio usuario): cada
+  // asesor terminaba viéndose a sí mismo como el top. Esa RPC cierra ese bug.
+  // La RPC devuelve hasta 3 filas: categoria in ('fee','premium','clientes'),
+  // con nombre (agente/seller), cifra (fee cobrado / premium neto / nº clientes)
+  // y detalle. Fee y premium son COBRADO y NETO — misma regla de toda la página.
   const hoy = new Date();
-  const mesActualStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,"0")}-01`;
 
-  // "Top del equipo" es del último mes CERRADO -- nunca el mes en curso, y nunca una fila
-  // "fantasma" (mes futuro o mes con todo en cero porque aún no hay liquidación real). Se
-  // recorren los meses únicos, de más reciente a más antiguo, y se toma el primero que:
-  //  a) sea estrictamente anterior al mes en curso, y
-  //  b) tenga al menos una fila con datos reales (ventas, fees o premium > 0).
-  const mesesUnicos = [...new Set(data.map(r => r.mes))].sort().reverse();
-  let mesReciente = null;
-  for (const m of mesesUnicos) {
-    if (m >= mesActualStr) continue; // excluye mes en curso y cualquier fila futura/fantasma
-    const filasMes = data.filter(r => r.mes === m);
-    const tieneDatos = filasMes.some(r => Number(r.ventas||0) > 0 || Number(r.fees_cobrados||0) > 0 || Number(r.premium_neto||0) > 0);
-    if (tieneDatos) { mesReciente = m; break; }
+  // Mes de reconocimientos = ÚLTIMO MES CERRADO con datos. Se busca hacia atrás
+  // desde el mes calendario anterior (nunca el mes en curso) y se toma el primero
+  // que la RPC devuelva con datos. Hasta 6 meses atrás por si el arranque es nuevo.
+  let reconRows = null, usY = null, usM = null;
+  for (let back = 1; back <= 6; back++) {
+    const d = new Date(hoy.getFullYear(), hoy.getMonth() - back, 1);
+    const py = d.getFullYear(), pm = d.getMonth() + 1;
+    const { data, error } = await SB.rpc('reconocimientos_del_mes', { p_year: py, p_month: pm });
+    if (error) throw error;
+    if (data && data.length) { reconRows = data; usY = py; usM = pm; break; }
   }
 
-  if (!mesReciente) {
-    el.innerHTML = `<div class="pg-warn-box">Todavía no hay un mes cerrado con datos en el leaderboard. El mes en curso (${MESES_ES[hoy.getMonth()]}) entra cuando cierre.</div>`;
+  if (!reconRows) {
+    el.innerHTML = `<div class="pg-warn-box">Todavía no hay un mes cerrado con datos para reconocimientos. El mes en curso (${MESES_ES[hoy.getMonth()]}) entra cuando cierre.</div>`;
     return;
   }
 
-  const filas = data.filter(r => r.mes === mesReciente);
-  // AJUSTE 1 — el leaderboard también cuenta por CLIENTES cerrados, no por pólizas.
-  let topCli = null, topCliPend = false;
-  try {
-    const _p = partesMes(mesReciente);
-    const rowsMesVPC = await vpcRows(q => q.eq('sales_year', _p.y).eq('sales_month', _p.m));
-    if (rowsMesVPC) topCli = vpcPorVendedor(rowsMesVPC).sort((a,b)=>b.clientes-a.clientes)[0] || null;
-    else topCliPend = true;
-  } catch(e){ console.error("[GABI asesor] leaderboard por cliente", e); }
-  const topFee = [...filas].sort((a,b)=>Number(b.fees_cobrados||0)-Number(a.fees_cobrados||0))[0];
-  const topPremium = [...filas].sort((a,b)=>Number(b.premium_neto||0)-Number(a.premium_neto||0))[0];
-  // FIX RONDA 3 — FALLA 3: antes esto armaba una lista con los NOMBRES de los compañeros que
-  // cumplían superación y la publicaba en la pantalla PERSONAL del asesor. Eso es un
-  // comparativo entre pares (prohibido aquí): quien no aparecía leía su ausencia como un
-  // señalamiento. Ahora solo se mira si EL PROPIO asesor es candidato — ningún nombre ajeno.
-  const soyCandidatoSuperacion = filas.some(r => r.cumple_superacion && r.agente === MI_NOMBRE);
+  const mesReciente = `${usY}-${String(usM).padStart(2,"0")}-01`;
+  const rowByCat = (c) => reconRows.find(r => r.categoria === c) || null;
+  const rFee = rowByCat('fee'), rPrem = rowByCat('premium'), rCli = rowByCat('clientes');
+
   const esMesInmediatoAnterior = (() => {
-    const { y, m } = partesMes(mesReciente);
-    const anteriorY = hoy.getMonth() === 0 ? hoy.getFullYear()-1 : hoy.getFullYear();
-    const anteriorM = hoy.getMonth() === 0 ? 12 : hoy.getMonth();
-    return y === anteriorY && m === anteriorM;
+    const antD = new Date(hoy.getFullYear(), hoy.getMonth()-1, 1);
+    return usY === antD.getFullYear() && usM === (antD.getMonth()+1);
   })();
+
+  // "Candidato a superación" SÍ es dato propio (es sobre TI, RLS-apropiado): se
+  // sigue leyendo de v_candidatos_bonos filtrado a tu nombre y al mes mostrado.
+  // Ningún nombre ajeno se publica en esta pantalla personal.
+  let soyCandidatoSuperacion = false;
+  try {
+    const { data: cand } = await SB.from('v_candidatos_bonos')
+      .select('cumple_superacion,agente,mes').eq('agente', MI_NOMBRE).eq('mes', mesReciente).limit(1);
+    soyCandidatoSuperacion = !!(cand && cand[0] && cand[0].cumple_superacion);
+  } catch (e) { console.error("[GABI asesor] candidato superación", e); }
 
   el.innerHTML = `
     <h2>Reconocimientos del mes — ${fmtMesLargo(mesReciente)}</h2>
     <p class="pg-purpose">Aquí se celebra a quien la rompió el mes pasado. No es un ranking ni una lista de quién va bien y quién va mal: son tres reconocimientos, por fee de agencia cobrado, por premium neto y por clientes cerrados. Tu propio mes está más arriba en esta pantalla, y no se compara con el de nadie.
       ${!esMesInmediatoAnterior ? ` Último mes calculado: ${fmtMesCorto(mesReciente)} — ${MESES_ES[hoy.getMonth()]} entra cuando cierre.` : ` Este es el último mes cerrado — ${MESES_ES[hoy.getMonth()]} entra cuando cierre.`}
     </p>
-    ${topFee ? `<div class="pg-rank"><span class="rk-name">🏆 Top fee — ${topFee.agente}</span><span class="rk-badge">${fmtUSD0(topFee.fees_cobrados)} cobrado</span></div>` : ""}
-    ${topPremium ? `<div class="pg-rank"><span class="rk-name">🏆 Top premium — ${topPremium.agente}</span><span class="rk-badge">${fmtUSD0(topPremium.premium_neto)} premium neto</span></div>` : ""}
-    ${topCli ? `<div class="pg-rank"><span class="rk-name">🏆 Top ventas (clientes cerrados) — ${vpcEsc(topCli.agente)}</span><span class="rk-badge">${topCli.clientes} cliente(s) · ${topCli.polizas} póliza(s)</span></div>` : (topCliPend ? VPC_PENDIENTE("El top de ventas") : "")}
-    ${scope("fee de agencia cobrado, premium neto y clientes cerrados · el mejor de cada uno · " + fmtMesCorto(mesReciente) + " (último mes cerrado)")}
+    ${rFee ? `<div class="pg-rank"><span class="rk-name">🏆 Top fee — ${vpcEsc(rFee.nombre)}</span><span class="rk-badge">${fmtUSD0(rFee.cifra)} cobrado</span></div>` : ""}
+    ${rPrem ? `<div class="pg-rank"><span class="rk-name">🏆 Top premium — ${vpcEsc(rPrem.nombre)}</span><span class="rk-badge">${fmtUSD0(rPrem.cifra)} premium neto</span></div>` : ""}
+    ${rCli ? `<div class="pg-rank"><span class="rk-name">🏆 Top ventas (clientes cerrados) — ${vpcEsc(rCli.nombre)}</span><span class="rk-badge">${Number(rCli.cifra)} cliente(s)${rCli.detalle ? ` · ${vpcEsc(rCli.detalle)} póliza(s)` : ""}</span></div>` : ""}
+    ${scope("fee de agencia cobrado, premium neto y clientes cerrados · el mejor de cada uno · " + fmtMesCorto(mesReciente) + " (último mes cerrado) · fuente reconocimientos_del_mes (server-side, todos los vendedores)")}
     ${soyCandidatoSuperacion ? `<div class="pg-rank" style="margin-top:14px;"><span class="rk-name"><b>Tú eres candidato a superación</b> — superaste tu propio trimestre anterior</span><span class="rk-badge">✓ candidato</span></div>` : ""}`;
 }
 
@@ -654,6 +797,8 @@ function pintarEsqueleto() {
     ${sectionDivider("Tu ficha")}
     <div class="pg-card" id="s-ficha"></div>
     <div class="pg-card" id="s-tasacobro"></div>
+    ${sectionDivider("Tu proceso")}
+    <div class="pg-card" id="s-proceso"></div>
     ${sectionDivider("Fees pendientes de cobro")}
     <div class="pg-card" id="s-riesgo"></div>
     ${sectionDivider("Reconocimientos del mes")}
@@ -668,6 +813,7 @@ async function cargarTodo() {
     seccion("Mi mes", "s-mimes", cargarMiMes),
     seccion("Mi ficha", "s-ficha", cargarMiFicha),
     seccion("Mi tasa de cobro", "s-tasacobro", cargarMiTasaCobro),
+    seccion("Tu proceso", "s-proceso", cargarMiProceso),
     seccion("Fees en riesgo", "s-riesgo", cargarFeesEnRiesgo),
     seccion("Leaderboard", "s-leaderboard", cargarLeaderboard),
   ]);

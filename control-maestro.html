@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control Maestro · ProtectGo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --pg-ink:#28323B; --pg-ink-2:#1B2D3A; --pg-mint:#2DBFA3; --pg-mint-dark:#229A82; --pg-mint-deep:#1B8E78;
+  --pg-bg:#F4F7FA; --pg-card:#FFFFFF; --pg-line:#E7EDF2; --pg-txt:#28323B; --pg-muted:#6B7D89;
+  --pg-pos:#1F9D6B; --pg-neg:#D5594F; --pg-warn:#B8841F;
+  --f-gabi:"Fraunces",Georgia,serif; --f-title:"Montserrat",Arial,sans-serif; --f-body:"Inter",Arial,sans-serif; --f-num:"JetBrains Mono",monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--f-body)}
+.pg-viewbar{background:var(--pg-ink-2);padding:16px 30px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+.pg-brand{display:flex;align-items:center;gap:10px}
+.pg-logo{width:34px;height:34px;border-radius:9px;background:var(--pg-mint);display:flex;align-items:center;justify-content:center;font-family:var(--f-title);font-weight:800;color:var(--pg-ink-2);font-size:13px}
+.pg-wordmark{font-family:var(--f-gabi);font-style:italic;font-weight:800;font-size:21px;color:#fff;letter-spacing:-.5px}
+.pg-badge{background:var(--pg-mint);color:var(--pg-ink-2);font-family:var(--f-body);font-weight:700;font-size:12px;padding:9px 15px;border-radius:999px}
+.pg-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
+.pg-btn{font-family:var(--f-body);font-weight:700;font-size:12.5px;border-radius:999px;padding:9px 16px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#dfe8ec;cursor:pointer}
+.pg-btn:hover{background:rgba(255,255,255,.08)}
+.pg-main{padding:28px 34px 70px;max-width:1080px;margin:0 auto}
+.pg-top h1{font-family:var(--f-title);font-size:25px;font-weight:800;color:var(--pg-ink);margin:0}
+.pg-eyebrow{font-family:var(--f-body);font-size:11.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--pg-mint-deep);margin-bottom:6px}
+.pg-sub{color:var(--pg-muted);font-size:14px;margin-top:5px;max-width:760px}
+.pg-area{margin-top:26px}
+.pg-area-h{font-family:var(--f-title);font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--pg-ink);display:flex;align-items:center;gap:12px;margin:0 0 12px}
+.pg-area-h .ln{flex:1;height:1px;background:var(--pg-line)}
+.wrow{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:14px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(27,45,58,.04)}
+.wrow.off{border-left:4px solid var(--pg-neg)}
+.wrow.on{border-left:4px solid var(--pg-pos)}
+.wtop{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.wname{font-weight:700;font-size:15px;color:var(--pg-ink)}
+.wclave{font-family:var(--f-num);font-size:11.5px;color:var(--pg-muted);background:#F1F5F8;border:1px solid var(--pg-line);border-radius:6px;padding:1px 7px}
+.wstamp{font-size:11px;color:var(--pg-muted);margin-left:auto;text-align:right}
+.wctrls{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:12px}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--pg-muted);font-weight:700}
+.fld select,.fld input[type=number],.fld input[type=text]{font-family:var(--f-body);font-size:13px;border:1px solid var(--pg-line);border-radius:8px;padding:7px 9px;background:#fff}
+.msgfld{flex:1;min-width:240px}
+.msgfld input{width:100%}
+/* toggle */
+.sw{position:relative;display:inline-block;width:46px;height:26px}
+.sw input{opacity:0;width:0;height:0}
+.sw .sl{position:absolute;inset:0;background:#C7D2DA;border-radius:999px;transition:.2s;cursor:pointer}
+.sw .sl:before{content:"";position:absolute;height:20px;width:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.sw input:checked + .sl{background:var(--pg-mint)}
+.sw input:checked + .sl:before{transform:translateX(20px)}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.pill.on{background:#E3F4EF;color:var(--pg-pos)} .pill.off{background:#FCEEEC;color:var(--pg-neg)}
+.wsave{margin-left:auto;display:flex;align-items:center;gap:10px}
+.btn-guardar{font-family:var(--f-body);font-weight:800;font-size:12.5px;border:none;border-radius:999px;padding:9px 18px;background:var(--pg-mint);color:var(--pg-ink-2);cursor:pointer}
+.btn-guardar:disabled{opacity:.5;cursor:default}
+.btn-guardar:hover:not(:disabled){background:var(--pg-mint-dark)}
+.rowmsg{font-size:12px;margin-top:8px;min-height:15px}
+.rowmsg.ok{color:var(--pg-pos)} .rowmsg.err{color:var(--pg-neg)}
+.pg-logpanel{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:14px;padding:18px 20px;margin-top:30px}
+.pg-logpanel h2{font-family:var(--f-title);font-size:16px;font-weight:800;margin:0 0 4px}
+.logrow{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--pg-line);font-size:12.5px}
+.logrow:last-child{border-bottom:none}
+.logrow .lc{font-family:var(--f-num);color:var(--pg-mint-deep);min-width:120px}
+.logrow .lw{color:var(--pg-muted);margin-left:auto;font-size:11.5px}
+.pg-note{font-size:11.5px;color:var(--pg-muted);margin-top:22px;border-top:1px solid var(--pg-line);padding-top:12px;line-height:1.6}
+/* login */
+.ov{position:fixed;inset:0;background:var(--pg-ink-2);display:flex;align-items:center;justify-content:center;z-index:50}
+.lcard{background:#fff;border-radius:20px;padding:34px 32px;width:100%;max-width:360px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.lcard .pg-wordmark{color:var(--pg-ink-2)}
+.lcard label{font-size:12px;font-weight:700;color:var(--pg-muted);display:block;margin:12px 0 5px}
+.lcard input{width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--pg-line);font-size:14px;font-family:var(--f-body)}
+.lcard button{width:100%;margin-top:18px;padding:12px;border-radius:999px;border:none;background:var(--pg-mint);color:var(--pg-ink-2);font-weight:800;font-size:14px;cursor:pointer}
+.lmsg{font-size:12.5px;color:var(--pg-neg);margin-top:10px;min-height:16px}
+.denied{background:#FCEEEC;border:1px solid #F1BEB6;border-radius:12px;padding:16px 18px;color:#8a352c;font-size:14px}
+.skel{height:60px;background:linear-gradient(90deg,#eef2f5,#f7f9fb,#eef2f5);background-size:200% 100%;animation:sh 1.2s infinite;border-radius:12px;margin:10px 0}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+</head>
+<body>
+
+<div class="ov" id="ov">
+  <div class="lcard">
+    <div class="pg-brand" style="margin-bottom:14px"><div class="pg-logo">PG</div><span class="pg-wordmark">Control Maestro</span></div>
+    <div style="font-size:13px;color:#6B7D89">Panel de administración de widgets — solo <b>sales@</b>.</div>
+    <label>Correo</label>
+    <input id="email" type="email" autocomplete="username" value="sales@protectgoservices.com">
+    <label>Contraseña</label>
+    <input id="pass" type="password" autocomplete="current-password">
+    <button id="loginBtn">Entrar</button>
+    <div class="lmsg" id="lmsg"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="pg-viewbar">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">Control Maestro</span></div>
+    <span class="pg-badge" id="who">sales@</span>
+    <div class="pg-actions">
+      <button class="pg-btn" id="refreshBtn">Actualizar</button>
+      <button class="pg-btn" id="logoutBtn">Cerrar sesión</button>
+    </div>
+  </div>
+  <main class="pg-main">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Fase 3 · Control Maestro de widgets</div>
+      <h1>Prender y apagar herramientas del ecosistema</h1>
+      <div class="pg-sub">Cada tarjeta del portal consulta este registro al cargar. <b>Apagado + oculto</b>: la tarjeta no se pinta. <b>Apagado + mantenimiento</b>: la tarjeta sale gris con tu mensaje. Todo cambio queda registrado con quién y cuándo. Si este panel se cae, el portal muestra todo (fail-open).</div>
+    </div>
+    <div id="lista"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+    <div class="pg-logpanel" id="logPanel" style="display:none">
+      <h2>Últimos cambios</h2>
+      <div id="logList"></div>
+    </div>
+    <div class="pg-note">Datos en vivo de Supabase Portal (proyecto bwqzypuiqgxzsrtsueab): tablas <code>widgets_registro</code> y <code>widgets_log</code>. La escritura está restringida a <code>sales@protectgoservices.com</code> por RLS (<code>widgets_registro_escribe_sales</code>) — este panel no puede saltarse esa regla; solo la usa.</div>
+  </main>
+</div>
+
+<script>
+const SUPABASE_URL = "https://bwqzypuiqgxzsrtsueab.supabase.co";
+const SUPABASE_KEY = "sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+const SB = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SALES = "sales@protectgoservices.com";
+
+const AREAS_LBL = {ventas:"Ventas",comercial:"Comercial",direccion:"Dirección",fam:"FAM",kam:"KAM",coi:"COI",rrhh:"RRHH",endorsement:"Endorsement",amazon:"Amazon",equipo:"Equipo",admin:"Administración",general:"General"};
+let MI_EMAIL = "";
+let SNAP = {};   // clave -> snapshot original (para valor_anterior del log)
+
+function esc(s){ return String(s===null||s===undefined?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function fstamp(s){ if(!s) return "—"; try{ const d=new Date(s); return d.toLocaleString("es-CO",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }catch(e){ return String(s); } }
+
+async function entrar(){
+  const email=document.getElementById("email").value.trim();
+  const pass=document.getElementById("pass").value;
+  const m=document.getElementById("lmsg"); m.textContent="";
+  const { error } = await SB.auth.signInWithPassword({ email, password: pass });
+  if(error){ m.textContent="No pudimos iniciar sesión: "+error.message; return; }
+  await verificarAcceso();
+}
+
+async function verificarAcceso(){
+  const { data:{ session } } = await SB.auth.getSession();
+  if(!session){ return; }
+  MI_EMAIL = String(session.user.email||"").toLowerCase();
+  document.getElementById("ov").style.display="none";
+  document.getElementById("app").style.display="block";
+  document.getElementById("who").textContent = MI_EMAIL;
+  if(MI_EMAIL !== SALES){
+    document.getElementById("lista").innerHTML =
+      '<div class="denied"><b>Este panel es solo para sales@protectgoservices.com.</b><br>Tu usuario ('+esc(MI_EMAIL)+') puede ver el ecosistema, pero no administrar el Control Maestro. La base de datos también lo impide (RLS).</div>';
+    document.getElementById("logPanel").style.display="none";
+    return;
+  }
+  await cargar();
+}
+
+async function cargar(){
+  document.getElementById("lista").innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
+  const { data, error } = await SB.from("widgets_registro").select("*")
+    .order("area",{ascending:true}).order("orden",{ascending:true}).order("clave",{ascending:true});
+  if(error){ document.getElementById("lista").innerHTML='<div class="denied">No se pudo cargar el registro: '+esc(error.message)+'</div>'; return; }
+  SNAP = {}; (data||[]).forEach(w=>{ SNAP[w.clave]=Object.assign({},w); });
+  renderLista(data||[]);
+  cargarLog();
+}
+
+function renderLista(rows){
+  const porArea={};
+  rows.forEach(w=>{ (porArea[w.area]=porArea[w.area]||[]).push(w); });
+  const areas=Object.keys(porArea).sort((a,b)=>(AREAS_LBL[a]||a).localeCompare(AREAS_LBL[b]||b));
+  let html="";
+  areas.forEach(area=>{
+    html+='<div class="pg-area"><div class="pg-area-h">'+esc(AREAS_LBL[area]||area)+'<span class="ln"></span></div>';
+    porArea[area].forEach(w=>{ html+=filaHTML(w); });
+    html+='</div>';
+  });
+  document.getElementById("lista").innerHTML=html;
+}
+
+function filaHTML(w){
+  const on=!!w.habilitado;
+  const modo=w.modo_apagado||"oculto";
+  return ''+
+  '<div class="wrow '+(on?"on":"off")+'" id="row-'+esc(w.clave)+'">'+
+    '<div class="wtop">'+
+      '<span class="wname">'+esc(w.nombre)+'</span>'+
+      '<span class="wclave">'+esc(w.clave)+'</span>'+
+      '<span class="pill '+(on?"on":"off")+'" id="pill-'+esc(w.clave)+'">'+(on?"Activo":"Apagado")+'</span>'+
+      '<span class="wstamp">Último cambio:<br>'+esc(w.actualizado_por||"—")+' · '+fstamp(w.actualizado_en)+'</span>'+
+    '</div>'+
+    '<div class="wctrls">'+
+      '<div class="fld"><label>Habilitado</label>'+
+        '<label class="sw"><input type="checkbox" id="hab-'+esc(w.clave)+'" '+(on?"checked":"")+' onchange="onToggle(\''+esc(w.clave)+'\')"><span class="sl"></span></label></div>'+
+      '<div class="fld"><label>Al apagar</label>'+
+        '<select id="modo-'+esc(w.clave)+'" '+(on?"disabled":"")+' onchange="onModo(\''+esc(w.clave)+'\')">'+
+          '<option value="oculto"'+(modo==="oculto"?" selected":"")+'>Ocultar tarjeta</option>'+
+          '<option value="mantenimiento"'+(modo==="mantenimiento"?" selected":"")+'>En mantenimiento (gris)</option>'+
+        '</select></div>'+
+      '<div class="fld"><label>Orden</label><input type="number" id="ord-'+esc(w.clave)+'" value="'+Number(w.orden||100)+'" style="width:80px"></div>'+
+      '<div class="fld msgfld" id="msgfld-'+esc(w.clave)+'" style="'+((!on&&modo==="mantenimiento")?"":"display:none")+'"><label>Mensaje de mantenimiento</label>'+
+        '<input type="text" id="msg-'+esc(w.clave)+'" value="'+esc(w.mensaje_mantenimiento||"")+'" placeholder="Ej: Volvemos a las 3pm"></div>'+
+      '<div class="wsave"><button class="btn-guardar" id="save-'+esc(w.clave)+'" onclick="guardar(\''+esc(w.clave)+'\')">Guardar</button></div>'+
+    '</div>'+
+    '<div class="rowmsg" id="rowmsg-'+esc(w.clave)+'"></div>'+
+  '</div>';
+}
+
+function onToggle(clave){
+  const on=document.getElementById("hab-"+clave).checked;
+  document.getElementById("modo-"+clave).disabled=on;
+  const pill=document.getElementById("pill-"+clave);
+  pill.className="pill "+(on?"on":"off"); pill.textContent=on?"Activo":"Apagado";
+  document.getElementById("row-"+clave).className="wrow "+(on?"on":"off");
+  syncMsgFld(clave);
+}
+function onModo(clave){ syncMsgFld(clave); }
+function syncMsgFld(clave){
+  const on=document.getElementById("hab-"+clave).checked;
+  const modo=document.getElementById("modo-"+clave).value;
+  document.getElementById("msgfld-"+clave).style.display=(!on&&modo==="mantenimiento")?"flex":"none";
+}
+
+async function guardar(clave){
+  const btn=document.getElementById("save-"+clave); const rm=document.getElementById("rowmsg-"+clave);
+  const habilitado=document.getElementById("hab-"+clave).checked;
+  const modo_apagado=document.getElementById("modo-"+clave).value;
+  const orden=parseInt(document.getElementById("ord-"+clave).value,10);
+  const mensaje_mantenimiento=(document.getElementById("msg-"+clave).value||"").trim() || null;
+  const nuevo={ habilitado, modo_apagado, orden:(isNaN(orden)?100:orden), mensaje_mantenimiento };
+  const anterior=SNAP[clave] ? { habilitado:SNAP[clave].habilitado, modo_apagado:SNAP[clave].modo_apagado, orden:SNAP[clave].orden, mensaje_mantenimiento:SNAP[clave].mensaje_mantenimiento } : null;
+
+  btn.disabled=true; rm.className="rowmsg"; rm.textContent="Guardando…";
+  const upd = Object.assign({}, nuevo, { actualizado_por: MI_EMAIL, actualizado_en: new Date().toISOString() });
+  const { error:e1 } = await SB.from("widgets_registro").update(upd).eq("clave", clave);
+  if(e1){ rm.className="rowmsg err"; rm.textContent="No se pudo guardar: "+e1.message; btn.disabled=false; return; }
+  // log manual (no hay trigger): quien/cuando salen por default del jwt/now()
+  const { error:e2 } = await SB.from("widgets_log").insert({
+    clave, accion:"cambio", valor_anterior:anterior, valor_nuevo:nuevo, nota:null
+  });
+  if(e2){ rm.className="rowmsg err"; rm.textContent="Guardado, pero el log falló: "+e2.message; }
+  else { rm.className="rowmsg ok"; rm.textContent="Guardado ✓"; }
+  SNAP[clave]=Object.assign({}, SNAP[clave], upd);
+  btn.disabled=false;
+  cargarLog();
+  setTimeout(()=>{ if(rm) rm.textContent=""; }, 3500);
+}
+
+async function cargarLog(){
+  const { data, error } = await SB.from("widgets_log").select("clave,accion,quien,cuando,nota")
+    .order("cuando",{ascending:false}).limit(25);
+  if(error){ return; }
+  document.getElementById("logPanel").style.display="block";
+  document.getElementById("logList").innerHTML = (data||[]).length
+    ? data.map(l=>'<div class="logrow"><span class="lc">'+esc(l.clave)+'</span><span>'+esc(l.accion)+(l.nota?" — "+esc(l.nota):"")+'</span><span class="lw">'+esc(l.quien||"—")+' · '+fstamp(l.cuando)+'</span></div>').join("")
+    : '<div style="color:var(--pg-muted);font-size:12.5px">Sin cambios registrados todavía.</div>';
+}
+
+document.getElementById("loginBtn").addEventListener("click", entrar);
+document.getElementById("pass").addEventListener("keydown", e=>{ if(e.key==="Enter") entrar(); });
+document.getElementById("refreshBtn").addEventListener("click", ()=>{ if(MI_EMAIL===SALES) cargar(); });
+document.getElementById("logoutBtn").addEventListener("click", async ()=>{ await SB.auth.signOut(); location.reload(); });
+
+(async function init(){ await verificarAcceso(); })();
+</script>
+</body>
+</html>

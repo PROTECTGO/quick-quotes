@@ -43,7 +43,7 @@
 
   /* Si el archivo se cargó dos veces, no volvemos a definir nada. */
   if (window.PG_NOVEDADES_VERSION) { return; }
-  window.PG_NOVEDADES_VERSION = '3.0';
+  window.PG_NOVEDADES_VERSION = '3.1';
 
   /* --------------------------------------------------------------------- */
   /* Constantes                                                            */
@@ -150,6 +150,17 @@
       + 'border:1px solid rgba(255,255,255,.12);max-width:100%;}'
       + '.pgnov-foto img{display:block;width:100%;max-height:34vh;object-fit:cover;}'
 
+      /* ---------- 📚 Enseñanza del mes — bloque opcional, cualquier tipo ---------- */
+      + '.pgnov-ens{width:100%;box-sizing:border-box;text-align:left;border-radius:16px;'
+      + 'border:1px solid rgba(255,180,0,.32);border-left:4px solid #FFB400;'
+      + 'background:rgba(6,32,42,.34);padding:clamp(14px,2.2vh,22px) clamp(16px,2.4vw,26px);'
+      + 'display:flex;flex-direction:column;gap:10px;}'
+      + '.pgnov-ens-badge{align-self:flex-start;font-size:10.5px;font-weight:800;'
+      + 'letter-spacing:.12em;text-transform:uppercase;padding:5px 12px;border-radius:99px;'
+      + 'background:#A8D4CF;color:#06202A;}'
+      + '.pgnov-ens-texto{margin:0;line-height:1.6;color:#DCEFE7;font-size:clamp(14.5px,1.6vw,18px);}'
+      + '.pgnov-ens-acento{color:#FFCB57;font-weight:800;}'
+
       /* ---------- 🎉 FELICITACIÓN — la estrella del formato ---------- */
       + '.pgnov-ov.t-felicitacion{background:radial-gradient(120% 90% at 50% 0%,#0E3B3A 0%,#06202A 62%);}'
       + '.t-felicitacion .pgnov-dots i.on{background:#00C864;}'
@@ -251,6 +262,8 @@
       + '.t-aviso .pgnov-cue,.t-novedad .pgnov-cue,.t-recordatorio .pgnov-cue{font-size:16px;}'
       + '.t-aviso .pgnov-marco{padding:18px 16px;}'
       + '.pgnov-foto img{max-height:26vh;}'
+      + '.pgnov-ens{padding:14px 16px;}'
+      + '.pgnov-ens-texto{font-size:14.5px;}'
       + '.pgnov-bot button,.pgnov-bar{width:100%;}'
       + '}'
 
@@ -625,6 +638,35 @@
       return caja;
     }
 
+    /* Escribe texto con **acentos** en dorado, sin innerHTML (nunca HTML crudo). */
+    function pintarConAcento(elemento, texto) {
+      var partes = String(texto).split('**');
+      var i, s;
+      for (i = 0; i < partes.length; i++) {
+        if (partes[i] === '') { continue; }
+        if (i % 2 === 1) {
+          s = document.createElement('strong');
+          s.className = 'pgnov-ens-acento';
+          s.textContent = partes[i];
+          elemento.appendChild(s);
+        } else {
+          elemento.appendChild(document.createTextNode(partes[i]));
+        }
+      }
+    }
+
+    /* Bloque opcional "Enseñanza del mes": disponible en cualquier tipo. */
+    function bloqueEnsenanza(texto) {
+      var caja = document.createElement('div');
+      caja.className = 'pgnov-ens';
+      caja.appendChild(nodo('div', 'pgnov-ens-badge', 'ENSEÑANZA DEL MES'));
+      var p = document.createElement('p');
+      p.className = 'pgnov-ens-texto';
+      pintarConAcento(p, texto);
+      caja.appendChild(p);
+      return caja;
+    }
+
     function armarConfeti(encender) {
       confeti.innerHTML = '';
       if (!encender) { return; }
@@ -671,6 +713,7 @@
         caja.appendChild(nodo('h2', 'pgnov-tit', n.titulo || ''));
         if (n.cuerpo) { caja.appendChild(nodo('p', 'pgnov-cue', n.cuerpo)); }
         if (n.pie_foto) { caja.appendChild(nodo('div', 'pgnov-pie', n.pie_foto)); }
+        if (n.ensenanza) { caja.appendChild(bloqueEnsenanza(n.ensenanza)); }
         cuerpo.appendChild(caja);
 
       } else if (t === 'aviso') {
@@ -681,6 +724,7 @@
         if (fa) { marco.appendChild(fa); }
         if (n.cuerpo) { marco.appendChild(nodo('p', 'pgnov-cue', n.cuerpo)); }
         if (n.pie_foto) { marco.appendChild(nodo('div', 'pgnov-pie', n.pie_foto)); }
+        if (n.ensenanza) { marco.appendChild(bloqueEnsenanza(n.ensenanza)); }
         caja.appendChild(marco);
         cuerpo.appendChild(caja);
 
@@ -691,6 +735,7 @@
         if (fo) { caja.appendChild(fo); }
         if (n.cuerpo) { caja.appendChild(nodo('p', 'pgnov-cue', n.cuerpo)); }
         if (n.pie_foto) { caja.appendChild(nodo('div', 'pgnov-pie', n.pie_foto)); }
+        if (n.ensenanza) { caja.appendChild(bloqueEnsenanza(n.ensenanza)); }
         cuerpo.appendChild(caja);
       }
 

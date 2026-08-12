@@ -463,6 +463,35 @@
   .pv-t-recordatorio .pv-cuerpo{color:#9DBAC4;font-size:22px;}
   .pv-t-recordatorio .pv-foto{max-height:298px;height:auto;}
 
+  .pv-ens{
+    width:100%;
+    box-sizing:border-box;
+    text-align:left;
+    border-radius:16px;
+    border:1px solid rgba(255,180,0,.32);
+    border-left:4px solid #FFB400;
+    background:rgba(6,32,42,.34);
+    padding:20px 24px;
+    margin:22px auto 0;
+    max-width:52ch;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .pv-ens-badge{
+    align-self:flex-start;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    padding:5px 12px;
+    border-radius:99px;
+    background:#A8D4CF;
+    color:#06202A;
+  }
+  .pv-ens-texto{margin:0;line-height:1.6;color:#DCEFE7;font-size:19px;}
+  .pv-ens-acento{color:#FFCB57;font-weight:800;}
+
   .pv-caption{
     font-size:12px;
     color:var(--pg-muted);
@@ -810,6 +839,11 @@
             <textarea id="fldCuerpo" maxlength="2000" placeholder="Escribe el mensaje completo..."></textarea>
           </div>
 
+          <div class="form-row">
+            <span class="field-label">Enseñanza del mes (opcional)</span>
+            <textarea id="fldEnsenanza" maxlength="600" placeholder="Ej: Con **Canal** se puede liberar el **binder** sin necesidad de cambiar la licencia... Usa **doble asterisco** para resaltar en dorado."></textarea>
+          </div>
+
           <div class="form-row hidden" id="fotoSection">
             <span class="field-label">Foto</span>
             <div class="dropzone" id="dropZone">
@@ -854,6 +888,10 @@
                         <h3 class="pv-titulo" id="previewTitulo">Título de la novedad</h3>
                         <div class="pv-cuerpo" id="previewCuerpo">El cuerpo del mensaje aparecerá aquí a medida que escribas.</div>
                         <div class="pv-pie hidden" id="previewPie"></div>
+                        <div class="pv-ens hidden" id="previewEns">
+                          <div class="pv-ens-badge">ENSEÑANZA DEL MES</div>
+                          <div class="pv-ens-texto" id="previewEnsTexto"></div>
+                        </div>
                       </div>
                     </main>
                     <footer class="pv-bot">
@@ -1252,6 +1290,7 @@ function initFormListeners(){
   $('fldTitulo').addEventListener('input',actualizarPreview);
   $('fldCuerpo').addEventListener('input',actualizarPreview);
   $('fldPie').addEventListener('input',actualizarPreview);
+  $('fldEnsenanza').addEventListener('input',actualizarPreview);
   actualizarVisibilidadFoto();
   actualizarPreview();
 }
@@ -1259,11 +1298,30 @@ function initFormListeners(){
 /* Vista previa = maqueta a escala de la pantalla completa (SPEC-pantallas.md).
    Traje por categoría vía clase pv-t-<tipo>; texto SIEMPRE por textContent
    (nunca innerHTML con datos que escribió el usuario). */
+/* Escribe texto con **acentos** en dorado, sin innerHTML (mismo criterio que el lector real). */
+function pintarConAcento(elemento,texto){
+  elemento.textContent='';
+  var partes=String(texto).split('**');
+  var i,s;
+  for(i=0;i<partes.length;i++){
+    if(partes[i]==='')continue;
+    if(i%2===1){
+      s=document.createElement('strong');
+      s.className='pv-ens-acento';
+      s.textContent=partes[i];
+      elemento.appendChild(s);
+    }else{
+      elemento.appendChild(document.createTextNode(partes[i]));
+    }
+  }
+}
+
 function actualizarPreview(){
   var t=TIPOS[state.tipo];
   var titulo=$('fldTitulo').value.trim();
   var cuerpo=$('fldCuerpo').value.trim();
   var pie=$('fldPie').value.trim();
+  var ensenanza=$('fldEnsenanza').value.trim();
 
   var ov=$('pvOv');
   ov.className='pv-ov pv-t-'+state.tipo;
@@ -1292,6 +1350,14 @@ function actualizarPreview(){
   }
 
   $('pvCaptionFoto').classList.toggle('hidden',!esFelicitacion);
+
+  var ensBox=$('previewEns');
+  if(ensenanza){
+    pintarConAcento($('previewEnsTexto'),ensenanza);
+    ensBox.classList.remove('hidden');
+  }else{
+    ensBox.classList.add('hidden');
+  }
 
   ajustarEscalaPreview();
 }
@@ -1394,6 +1460,7 @@ function limpiarFormularioPublicar(){
   $('fldTitulo').value='';
   $('fldCuerpo').value='';
   $('fldPie').value='';
+  $('fldEnsenanza').value='';
   $('fldFoto').value='';
   $('fotoPreviewWrap').classList.add('hidden');
   $('fotoPreviewImg').src='';
@@ -1409,6 +1476,7 @@ function publicarNovedad(){
   var titulo=$('fldTitulo').value.trim();
   var cuerpo=$('fldCuerpo').value.trim();
   var pie=$('fldPie').value.trim();
+  var ensenanza=$('fldEnsenanza').value.trim();
 
   if(!titulo){toast('Falta el título.','err');return;}
   if(!cuerpo){toast('Falta el cuerpo del mensaje.','err');return;}
@@ -1425,6 +1493,7 @@ function publicarNovedad(){
     cuerpo:cuerpo,
     imagen_url:esFelicitacion?(state.imagen_url||null):null,
     pie_foto:esFelicitacion?(pie||null):null,
+    ensenanza:ensenanza||null,
     created_by:'sales@protectgoservices.com',
     segundos_lectura:duracionCache
   };
@@ -1984,7 +2053,7 @@ function cargarHistorialAccesos(){
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="novedades-admin.html";
-var PGV_VERSION=6;
+var PGV_VERSION=7;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');

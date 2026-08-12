@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GABI · Plan de Incentivos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+:root {
+  --pg-ink:#1B2D3A; --pg-ink-2:#162630; --pg-mint:#2DBFA3; --pg-mint-soft:#C4E8DF; --pg-mint-deep:#229A82;
+  --pg-bg:#F4F7FA; --pg-card:#FFFFFF; --pg-line:#E7EDF2; --pg-txt:#28323B; --pg-muted:#6B7D89;
+  --pg-pos:#1F9D6B; --pg-neg:#D5594F; --pg-warn:#B8841F;
+  --pg-font-gabi:"Fraunces",Georgia,serif; --pg-font-title:"Montserrat","Arial Black",sans-serif;
+  --pg-font-body:"Inter",Arial,Helvetica,sans-serif; --pg-font-num:"JetBrains Mono","Courier New",monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--pg-bg); }
+.pg-app { background: var(--pg-bg); color: var(--pg-txt); font-family: var(--pg-font-body); min-height: 100vh; }
+.pg-viewbar { background: var(--pg-ink); padding: 16px 30px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; position:sticky; top:0; z-index:20; }
+.pg-viewbar .pg-brand { display:flex; align-items:center; gap:10px; margin-right: 6px; }
+.pg-viewbar .pg-logo { width:34px; height:34px; border-radius:9px; background:var(--pg-mint); display:flex; align-items:center; justify-content:center; font-family:var(--pg-font-title); font-weight:800; color:var(--pg-ink); font-size:13px; }
+.pg-viewbar .pg-wordmark { font-family: var(--pg-font-gabi); font-style: italic; font-weight: 800; font-size: 21px; color: #fff; letter-spacing: -0.5px; }
+.pg-badge { background: var(--pg-mint); color: var(--pg-ink); font-weight:700; font-size:12px; padding: 9px 15px; border-radius:999px; }
+.pg-viewbar .pg-right { color:#c3d0d8; font-size:12px; margin-left:auto; display:flex; align-items:center; gap:14px; }
+.pg-viewbar .pg-logout { cursor:pointer; text-decoration:underline; color:#c3d0d8; }
+.pg-main { padding: 30px 38px 60px; max-width: 1200px; margin: 0 auto; }
+.pg-top { margin-bottom: 22px; }
+.pg-top h1 { font-family: var(--pg-font-title); font-size: 26px; font-weight: 800; color: var(--pg-ink); margin: 0; }
+.pg-top .pg-sub { color: var(--pg-muted); font-size: 14px; margin-top: 5px; max-width:760px; }
+.pg-eyebrow { font-family: var(--pg-font-body); font-size: 11.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--pg-mint-deep); margin-bottom: 6px; }
+.pg-kpis { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.pg-kpi { flex: 1; min-width: 175px; background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 16px; padding: 16px 18px; position: relative; overflow: hidden; box-shadow: 0 1px 3px rgba(27,45,58,.04); }
+.pg-kpi::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--pg-mint); }
+.pg-kpi .lbl { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--pg-muted); }
+.pg-kpi .val { font-family: var(--pg-font-num); font-size: 25px; font-weight: 600; color: var(--pg-ink); margin: 7px 0 3px; }
+.pg-kpi .val.neg { color: var(--pg-neg); } .pg-kpi .val.pos { color: var(--pg-pos); }
+.pg-kpi .sub { font-size: 11.5px; color: var(--pg-muted); }
+.pg-card { background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 18px; padding: 22px; margin-bottom:20px; box-shadow: 0 1px 3px rgba(27,45,58,.04); }
+.pg-card h2 { font-family: var(--pg-font-title); font-size: 17.5px; font-weight: 800; color: var(--pg-ink); margin: 0 0 4px; }
+.pg-card .pg-purpose { color: var(--pg-muted); font-size: 13px; margin: 0 0 14px; }
+.pg-table { width: 100%; border-collapse: collapse; }
+.pg-table th { text-align: left; font-size: 11px; color: var(--pg-muted); text-transform: uppercase; letter-spacing: .04em; padding: 9px 8px; border-bottom: 2px solid var(--pg-ink); font-weight: 700; }
+.pg-table td { padding: 10px 8px; font-size: 13px; color: #3a4751; border-bottom: 1px solid var(--pg-line); }
+.pg-table td.num { font-family: var(--pg-font-num); color: var(--pg-ink); font-weight: 600; }
+.pg-pill { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.pg-pill.ok   { background: #E3F4EF; color: var(--pg-pos); }
+.pg-pill.due  { background: #FCEEEC; color: var(--pg-neg); }
+.pg-pill.warn { background: #FBF3E2; color: var(--pg-warn); }
+.pg-headline { display:flex; align-items:flex-start; gap:14px; margin-bottom: 18px; }
+.pg-semaforo { width:20px; height:20px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+.pg-semaforo.green { background: var(--pg-pos); } .pg-semaforo.amber { background: var(--pg-warn); } .pg-semaforo.red { background: var(--pg-neg); }
+.pg-headline-text { font-family: var(--pg-font-title); font-size: 21px; font-weight:800; color: var(--pg-ink); margin:0;}
+.pg-headline-sub { color: var(--pg-muted); font-size:13px; margin-top:5px; }
+.pg-progress-block { margin-bottom: 16px; }
+.pg-progress-block .pl-top { display:flex; justify-content:space-between; margin-bottom:6px; }
+.pg-progress-block .pl-lbl { font-size: 13px; font-weight:700; color: var(--pg-ink); }
+.pg-progress-block .pl-val { font-family: var(--pg-font-num); font-size: 12.5px; color: var(--pg-muted); }
+.pg-progress-track { height: 14px; background: var(--pg-line); border-radius: 999px; overflow:hidden; }
+.pg-progress-fill { height: 100%; border-radius: 999px; background: var(--pg-mint); }
+.pg-progress-fill.warn { background: var(--pg-warn); } .pg-progress-fill.pos { background: var(--pg-pos); }
+.pg-recon-box { background: var(--pg-mint-soft); border:1px solid #9cd6c6; border-radius:14px; padding:20px; text-align:center; }
+.pg-recon-box .rn { font-family: var(--pg-font-title); font-size: 20px; font-weight:800; color: var(--pg-ink-2); }
+.pg-recon-box .rs { color: var(--pg-ink-2); font-size:13px; margin-top:6px; }
+.pg-loading { color: var(--pg-muted); font-size:13px; padding:20px 0; }
+.pg-warn-box { background: #FBF3E2; border: 1px solid #EAD09A; border-radius: 12px; padding: 13px 17px; color: #8a6a1d; font-size:13px; }
+.pg-footnote { font-size: 11.5px; color: var(--pg-muted); margin-top: 26px; border-top:1px solid var(--pg-line); padding-top:14px; line-height:1.6; }
+.pg-login-wrap { max-width:380px; margin:80px auto; background:var(--pg-card); border:1px solid var(--pg-line); border-radius:18px; padding:32px; text-align:center; }
+.pg-login-wrap h2 { font-family:var(--pg-font-title); color:var(--pg-ink); margin:8px 0 6px; }
+.pg-login-wrap p { color:var(--pg-muted); font-size:13px; margin:0 0 18px; }
+.pg-login-wrap input { width:100%; padding:11px 13px; margin-bottom:10px; border:1px solid var(--pg-line); border-radius:10px; font-size:14px; }
+.pg-login-wrap .pg-logo { width:44px; height:44px; border-radius:11px; background:var(--pg-mint); display:flex; align-items:center; justify-content:center; font-family:var(--pg-font-title); font-weight:800; color:var(--pg-ink); margin:0 auto 10px; }
+.pg-btn { background: var(--pg-ink); color:#fff; border:none; border-radius: 10px; padding: 11px 20px; font-weight:700; font-size: 13.5px; cursor:pointer; width:100%; }
+.pg-btn.mint { background: var(--pg-mint); color: var(--pg-ink); }
+.pg-login-err { color:var(--pg-neg); font-size:12.5px; margin-top:10px; min-height:16px; }
+</style>
+</head>
+<body>
+<div id="root-outer"></div>
+
+<script>
+/* ============================================================
+GABI · Widget de Incentivos — Fase 1 Tramo D
+Piso EN VIVO desde incentivos_config (nunca quemado). CERO nombres de
+compañeros visibles para rol asesor — ni listas ni desplegables.
+"Reconocimientos del mes" = solo el conteo, sin nombres.
+============================================================ */
+const SB_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
+const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpdnBxc2Vwd3NmbWFmYW14a3p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTIxNjUsImV4cCI6MjA5MTk2ODE2NX0.pPe1qtWJhnx8Ffo4bvuwVF-tVrkPSmO63Kl7pKWQYqM";
+const SB = window.supabase.createClient(SB_URL, SB_ANON);
+
+const esc = (s) => (s===null||s===undefined) ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtUSD = (n) => (n===null||n===undefined||isNaN(n)) ? "—" : "$" + Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtUSD0 = (n) => (n===null||n===undefined||isNaN(n)) ? "—" : "$" + Number(n).toLocaleString("en-US",{maximumFractionDigits:0});
+const fmtPct = (n,d=1) => (n===null||n===undefined||isNaN(n)) ? "—" : Number(n).toFixed(d) + "%";
+const clamp = (n,lo,hi) => Math.max(lo, Math.min(hi, n));
+function semaforoDot(color) { return '<div class="pg-semaforo ' + color + '"></div>'; }
+function loadingHTML(){ return '<div class="pg-loading">Cargando datos en vivo de Supabase…</div>'; }
+function errHTML(view, e){ return '<div class="pg-warn-box"><b>' + esc(view) + ' no cargó.</b> ' + esc((e && e.message) || 'Sin detalle.') + '</div>'; }
+
+// Correos con vista de liderazgo (ven el desglose por equipo, sin nombres cruzados de otros equipos salvo su propio alcance de RLS)
+const CORREOS_LIDERAZGO = ['sales@protectgoservices.com','andres.lopez@protectgoservices.com','fam@protectgoservices.com','brahian@protectgoservices.com'];
+
+async function renderShell(session){
+  const email = (session.user.email || '').toLowerCase();
+  document.getElementById('root-outer').innerHTML = `
+    <div class="pg-app">
+      <div class="pg-viewbar">
+        <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+        <span class="pg-badge">Plan de Incentivos</span>
+        <div class="pg-right">${esc(email)} <span class="pg-logout" id="btnLogout">Cerrar sesión</span></div>
+      </div>
+      <main class="pg-main" id="root">${loadingHTML()}</main>
+    </div>`;
+  document.getElementById('btnLogout').addEventListener('click', () => SB.auth.signOut());
+  const esLiderazgo = CORREOS_LIDERAZGO.includes(email);
+  if (esLiderazgo) renderLiderazgo(document.getElementById('root'), email);
+  else renderAsesor(document.getElementById('root'), email);
+}
+
+async function cargarPiso(){
+  const { data, error } = await SB.from('incentivos_config').select('umbrales,vigencia_desde,vigencia_hasta,nombre_plan').order('created_at',{ascending:false}).limit(1);
+  if (error || !data || !data.length) return { piso: 1500, error };
+  const u = data[0].umbrales || {};
+  return { piso: u.estandar_equipo_usd_mes || 1500, plan: data[0].nombre_plan, u };
+}
+
+/* ===================== VISTA ASESOR — sin nombres de compañeros ===================== */
+async function renderAsesor(root, email){
+  const cfg = await cargarPiso();
+  // Resuelve el agente por auth_user_id; si no hay match, muestra solo el piso general.
+  const { data: agRows } = await SB.from('agentes').select('id,nombre,auth_user_id').eq('auth_user_id', (await SB.auth.getUser()).data.user.id).limit(1);
+  const yo = agRows && agRows[0];
+  let miEstandar = null, elPrimero = null;
+  if (yo) {
+    const { data: est } = await SB.from('v_estandar_agencia').select('agente,mes,ventas,total_fees_cobrados_mes,le_falta_para_el_piso,pct_avance_piso,semaforo_piso').eq('agente', yo.nombre).order('mes',{ascending:false}).limit(1);
+    miEstandar = est && est[0];
+    const { data: todos } = await SB.from('v_estandar_agencia').select('agente,mes,pct_avance_piso').limit(5000);
+    if (todos && todos.length && miEstandar) {
+      const mesFilas = todos.filter(t => t.mes === miEstandar.mes).sort((a,b)=>b.pct_avance_piso-a.pct_avance_piso);
+      if (mesFilas.length) elPrimero = mesFilas[0]; // única excepción de privacidad autorizada: el #1 del mes
+    }
+  }
+  const alarma = miEstandar && miEstandar.semaforo_piso !== 'verde';
+  root.innerHTML = `
+    <div class="pg-top"><div class="pg-eyebrow">Tu mes</div><h1>Tu piso de incentivos</h1>
+      <div class="pg-sub">Solo tus números. Es un piso, no un techo — quien ya cobra más de ${fmtUSD0(cfg.piso)} no baja, esto es el mínimo esperado.</div></div>
+    ${!yo ? '<div class="pg-warn-box">No encontramos tu perfil de agente vinculado a esta cuenta todavía — muestra solo el piso general. TODO: completar auth_user_id en agentes.</div>' : ''}
+    <div class="pg-headline">
+      ${semaforoDot(!miEstandar ? 'amber' : alarma ? 'amber' : 'green')}
+      <div><p class="pg-headline-text">${!miEstandar ? 'Sin ventas registradas todavía este periodo.' : alarma ? `Vas en ${fmtUSD(miEstandar.total_fees_cobrados_mes)} de ${fmtUSD0(cfg.piso)} — te faltan ${fmtUSD(miEstandar.le_falta_para_el_piso)}.` : `Ya superaste el piso de ${fmtUSD0(cfg.piso)} este mes.`}</p>
+      <div class="pg-headline-sub">${miEstandar ? fmtPct(miEstandar.pct_avance_piso,0) + ' de avance · ' + miEstandar.ventas + ' venta(s) este mes' : ''}</div></div>
+    </div>
+    ${miEstandar ? `<div class="pg-progress-block"><div class="pl-top"><span class="pl-lbl">Avance hacia el piso</span><span class="pl-val">${fmtUSD(miEstandar.total_fees_cobrados_mes)} / ${fmtUSD0(cfg.piso)}</span></div>
+      <div class="pg-progress-track"><div class="pg-progress-fill ${alarma?'warn':'pos'}" style="width:${clamp(miEstandar.pct_avance_piso,0,100)}%"></div></div></div>` : ''}
+    ${elPrimero ? `<div class="pg-card"><h2>El primero del mes</h2><p class="pg-purpose">La única vara compartida: quién va primero este mes, como referencia.</p>
+      <div class="pg-recon-box"><div class="rn">${esc(elPrimero.agente)}</div><div class="rs">${fmtPct(elPrimero.pct_avance_piso,0)} de avance sobre el piso</div></div></div>` : ''}
+    <div class="pg-card"><h2>Reconocimientos del mes</h2><p class="pg-purpose">Sin lista de nombres — solo la constancia de que el mes tiene reconocimientos activos.</p>
+      <div class="pg-recon-box"><div class="rn">Plan vigente: ${esc(cfg.plan||'—')}</div><div class="rs">Pregunta a tu líder por los detalles del piloto de bonos.</div></div></div>
+    <div class="pg-footnote">Fuente: incentivos_config (piso en vivo), v_estandar_agencia (tus datos). Nunca se muestran cifras de otros compañeros salvo el #1 del mes, autorizado por Andrés.</div>`;
+}
+
+/* ===================== VISTA LIDERAZGO — desglose de equipo ===================== */
+async function renderLiderazgo(root, email){
+  const cfg = await cargarPiso();
+  const [piloto, estandar] = await Promise.all([
+    SB.from('v_semaforo_piloto').select('mes,ventas,ventas_con_fee,fee_x_venta_equipo,meta_fee_x_venta,pct_ventas_con_fee,meta_pct_ventas_con_fee,alarma_activa').limit(5000),
+    SB.from('v_estandar_agencia').select('agente,mes,ventas,total_fees_cobrados_mes,le_falta_para_el_piso,pct_avance_piso,semaforo_piso').limit(5000)
+  ]);
+  const p = piloto.data && piloto.data[0];
+  const mesActual = estandar.data && estandar.data.length ? estandar.data.reduce((m,e)=> e.mes > m ? e.mes : m, estandar.data[0].mes) : null;
+  const filas = (estandar.data||[]).filter(e => e.mes === mesActual).sort((a,b)=>a.pct_avance_piso-b.pct_avance_piso);
+  const cumplen = filas.filter(e=>e.semaforo_piso==='verde').length;
+  root.innerHTML = `
+    <div class="pg-top"><div class="pg-eyebrow">Plan de incentivos · ${esc(cfg.plan||'')}</div><h1>Piso de ${fmtUSD0(cfg.piso)}/mes — estado del equipo</h1>
+      <div class="pg-sub">Piso leído en vivo de incentivos_config, no quemado en el código.</div></div>
+    <div class="pg-kpis">
+      <div class="pg-kpi"><div class="lbl">Cumplen el piso</div><div class="val">${cumplen}/${filas.length}</div><div class="sub">agentes con venta este mes</div></div>
+      <div class="pg-kpi"><div class="lbl">Fee x venta (equipo)</div><div class="val ${p&&p.alarma_activa?'neg':''}">${p?fmtUSD(p.fee_x_venta_equipo):'—'}</div><div class="sub">meta ${p?fmtUSD0(p.meta_fee_x_venta):'—'}</div></div>
+      <div class="pg-kpi"><div class="lbl">% ventas con fee</div><div class="val">${p?fmtPct(p.pct_ventas_con_fee):'—'}</div><div class="sub">meta ${p?fmtPct(p.meta_pct_ventas_con_fee):'—'}</div></div>
+    </div>
+    <div class="pg-card"><h2>Semáforo por persona — ${esc(mesActual||'')}</h2>
+      <table class="pg-table"><thead><tr><th>Agente</th><th>Ventas</th><th>Cobrado</th><th>Le falta</th><th>% avance</th><th>Semáforo</th></tr></thead>
+      <tbody>${filas.map(e => `<tr><td>${esc(e.agente)}</td><td class="num">${e.ventas}</td><td class="num">${fmtUSD(e.total_fees_cobrados_mes)}</td>
+        <td class="num">${fmtUSD(e.le_falta_para_el_piso)}</td><td class="num">${fmtPct(e.pct_avance_piso,0)}</td>
+        <td>${e.semaforo_piso==='verde'?'<span class="pg-pill ok">cumple</span>':e.semaforo_piso==='amarillo'?'<span class="pg-pill warn">cerca</span>':'<span class="pg-pill due">lejos</span>'}</td></tr>`).join('') || '<tr><td colspan="6">Sin datos.</td></tr>'}</tbody></table>
+    </div>
+    <div class="pg-footnote">Fuente: incentivos_config, v_semaforo_piloto, v_estandar_agencia (.limit(5000) en todo). Vista de liderazgo — RLS decide el alcance real de filas visibles por cuenta.</div>`;
+}
+
+function renderLogin(){
+  document.getElementById('root-outer').innerHTML = `
+    <div class="pg-login-wrap">
+      <div class="pg-logo">PG</div>
+      <h2>Acceso · Plan de Incentivos</h2>
+      <p>Inicia sesión con tu cuenta de Protect GO.</p>
+      <form id="loginForm">
+        <input type="email" id="loginEmail" placeholder="tucorreo@protectgoservices.com" required>
+        <input type="password" id="loginPass" placeholder="Contraseña" required>
+        <button class="pg-btn mint" type="submit" style="margin-top:6px;">Entrar</button>
+      </form>
+      <div class="pg-login-err" id="loginErr"></div>
+    </div>`;
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPass').value;
+    const errEl = document.getElementById('loginErr');
+    errEl.textContent = "Entrando…";
+    const { error } = await SB.auth.signInWithPassword({ email, password });
+    if (error) errEl.textContent = "No se pudo entrar: " + error.message;
+  });
+}
+
+async function boot(){
+  const { data: { session } } = await SB.auth.getSession();
+  if (!session) renderLogin(); else renderShell(session);
+}
+SB.auth.onAuthStateChange((_event, session) => {
+  if (session) renderShell(session); else renderLogin();
+});
+boot();
+</script>
+</body>
+</html>

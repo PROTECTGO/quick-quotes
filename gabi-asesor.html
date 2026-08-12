@@ -612,11 +612,14 @@ async function cargarMiProceso(el) {
   // Crecimiento: promedio de tus primeros vs tus últimos meses activos (fee).
   const activos = hist.filter(r => Number(r.fees_cobrados||0) > 0 || Number(r.ventas||0) > 0);
   const mesesActivos = activos.length;
-  const tomaN = Math.min(3, Math.max(1, Math.floor(mesesActivos/2)));
+  // Crecimiento: SOLO meses cerrados (excluye el mes en curso, que va incompleto) —
+  // consistente con la racha, que tampoco cuenta el mes en curso.
+  const activosCerrados = activos.filter(r => !esMesEnCurso(r.mes));
+  const tomaN = Math.min(3, Math.max(1, Math.floor(activosCerrados.length/2)));
   const prom = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
-  const feePrimeros = prom(activos.slice(0, tomaN).map(r => Number(r.fees_cobrados||0)));
-  const feeUltimos  = prom(activos.slice(-tomaN).map(r => Number(r.fees_cobrados||0)));
-  const crecPct = (mesesActivos >= 2 && feePrimeros > 0) ? ((feeUltimos - feePrimeros) / feePrimeros * 100) : null;
+  const feePrimeros = prom(activosCerrados.slice(0, tomaN).map(r => Number(r.fees_cobrados||0)));
+  const feeUltimos  = prom(activosCerrados.slice(-tomaN).map(r => Number(r.fees_cobrados||0)));
+  const crecPct = (activosCerrados.length >= 2 && feePrimeros > 0) ? ((feeUltimos - feePrimeros) / feePrimeros * 100) : null;
   const premAcum = premVals.reduce((a,b)=>a+b,0);
 
   el.innerHTML = `

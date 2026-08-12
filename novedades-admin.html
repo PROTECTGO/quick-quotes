@@ -294,7 +294,9 @@
   .btn-publicar:hover{background:var(--pg-ink-2);}
   .btn-publicar:disabled{opacity:.55;cursor:default;}
 
-  /* Preview card (must mirror the reader widget) */
+  /* Preview: maqueta a escala de la pantalla completa (SPEC-pantallas.md).
+     Todas las clases nuevas van prefijadas pv- para no chocar jamás con las
+     clases reales pgnov-* del lector (pg-novedades.js). */
   .preview-label{
     font-size:11.5px;
     font-weight:700;
@@ -303,69 +305,169 @@
     color:var(--pg-muted);
     margin-bottom:10px;
   }
-  .preview-card{
-    background:#fff;
-    border:1px solid var(--pg-line);
-    border-radius:16px;
-    overflow:hidden;
-    box-shadow:0 10px 30px rgba(27,45,58,.10);
-    position:sticky;
-    top:20px;
-  }
-  .preview-card .franja-wrap{
-    display:flex;
-  }
-  .preview-card .franja{
-    width:7px;
-    flex-shrink:0;
-    background:var(--tipo-color,#8da0ad);
-  }
-  .preview-card .content{
-    flex:1;
-    padding:0;
-  }
-  .preview-card img.foto{
+  .pv-wrap{position:sticky;top:20px;}
+  .pv-frame{
     width:100%;
-    height:180px;
-    object-fit:cover;
-    display:block;
+    aspect-ratio:16/10;
+    border-radius:14px;
+    overflow:hidden;
+    background:#06202A;
+    box-shadow:0 10px 30px rgba(27,45,58,.18);
+    position:relative;
   }
-  .preview-inner{padding:18px 20px 20px;}
-  .preview-badge{
+  /* Caja de referencia 1400x875 (misma proporción 16/10 que .pv-frame).
+     Se escala por JS (transform:scale) para caber en el ancho disponible;
+     así la tipografía nunca se duplica en dos hojas de estilo distintas. */
+  .pv-scale{
+    width:1400px;
+    height:875px;
+    transform-origin:top left;
+  }
+  .pv-ov{
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Inter',Arial,Helvetica,sans-serif;
+    position:relative;
+  }
+  .pv-slide{
+    max-width:1180px;
+    width:100%;
+    margin:0 auto;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    padding:26px 56px;
+    position:relative;
+  }
+  .pv-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-shrink:0;
+  }
+  .pv-kicker{
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:.04em;
+    color:#A8D4CF;
+  }
+  .pv-prog{display:flex;align-items:center;gap:10px;}
+  .pv-dots{display:flex;align-items:center;gap:5px;}
+  .pv-dots i{
+    display:block;
+    width:10px;height:10px;
+    border-radius:99px;
+    background:rgba(255,255,255,.22);
+  }
+  .pv-dots i.done{background:rgba(255,255,255,.5);}
+  .pv-dots i.on{width:26px;background:var(--pv-acento,#229A82);}
+  .pv-count{font-size:13px;color:#9DBAC4;font-weight:600;}
+  .pv-body{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    display:flex;
+    align-items:center;
+  }
+  .pv-content{width:100%;text-align:center;margin:0 auto;}
+  .pv-badge{
     display:inline-flex;
     align-items:center;
-    gap:6px;
-    font-size:11.5px;
+    gap:8px;
+    font-size:15px;
     font-weight:700;
     text-transform:uppercase;
-    letter-spacing:.4px;
-    color:var(--tipo-color,#8da0ad);
-    margin-bottom:10px;
+    letter-spacing:.12em;
+    color:var(--pv-acento,#229A82);
+    margin-bottom:18px;
+    padding:7px 16px;
+    border-radius:99px;
+    background:rgba(255,255,255,.06);
   }
-  .preview-titulo{
+  .pv-foto{
+    display:block;
+    margin:0 auto 22px;
+    border-radius:22px;
+    object-fit:cover;
+  }
+  .pv-titulo{
     font-family:'Montserrat',Arial,Helvetica,sans-serif;
     font-weight:800;
-    font-size:19px;
-    color:var(--pg-ink);
-    margin:0 0 8px 0;
-    line-height:1.3;
+    line-height:1.06;
+    color:#E8F1F3;
+    margin:0 0 16px 0;
+    font-size:50px;
   }
-  .preview-cuerpo{
-    font-size:14px;
-    line-height:1.55;
-    color:var(--pg-txt);
+  .pv-cuerpo{
+    font-size:23px;
+    line-height:1.62;
+    color:#E8F1F3;
     white-space:pre-wrap;
     word-wrap:break-word;
+    max-width:52ch;
+    margin:0 auto;
   }
-  .preview-pie{
-    margin-top:12px;
-    font-size:12px;
-    color:var(--pg-muted);
+  .pv-pie{
+    margin-top:18px;
+    font-size:18px;
+    color:#9DBAC4;
     font-style:italic;
   }
-  .preview-empty{
+  .pv-bot{flex-shrink:0;padding-top:18px;}
+  .pv-bar{
+    height:6px;
+    border-radius:99px;
+    background:rgba(255,255,255,.14);
+    overflow:hidden;
+    margin:0 0 18px;
+  }
+  .pv-bar i{display:block;height:100%;width:38%;background:var(--pv-acento,#229A82);}
+  .pv-btn{
+    display:block;
+    width:min(420px,100%);
+    margin:0 auto;
+    padding:16px;
+    border-radius:12px;
+    border:none;
+    font-family:'Inter',Arial,Helvetica,sans-serif;
+    font-weight:700;
+    font-size:16px;
+    background:rgba(255,255,255,.14);
+    color:#9DBAC4;
+    cursor:default;
+  }
+
+  /* Traje por categoría — valores tomados de SPEC-pantallas.md */
+  .pv-t-felicitacion{--pv-acento:#00C864;background:radial-gradient(120% 90% at 50% 0%, #0E3B3A 0%, #06202A 62%);}
+  .pv-t-felicitacion .pv-titulo{font-size:74px;}
+  .pv-t-felicitacion.pv-sin-foto .pv-titulo{font-size:96px;}
+  .pv-t-felicitacion .pv-cuerpo{font-size:27px;max-width:none;}
+  .pv-t-felicitacion .pv-foto{height:403px;width:auto;max-width:100%;border:1px solid rgba(0,200,100,.35);}
+
+  .pv-t-aviso{--pv-acento:#FFB400;background:linear-gradient(180deg,#0D3040 0%,#06202A 100%);}
+  .pv-t-aviso .pv-slide{border-top:10px solid #FFB400;}
+  .pv-t-aviso .pv-content{border:2px solid rgba(255,180,0,.55);border-radius:20px;padding:26px;}
+  .pv-t-aviso .pv-titulo{font-size:52px;}
+  .pv-t-aviso .pv-cuerpo{font-size:25px;max-width:none;}
+  .pv-t-aviso .pv-foto{max-height:298px;height:auto;}
+
+  .pv-t-novedad{--pv-acento:#229A82;background:linear-gradient(180deg,#0D3040 0%,#06202A 100%);}
+  .pv-t-novedad .pv-titulo{font-size:50px;}
+  .pv-t-novedad .pv-foto{max-height:298px;height:auto;}
+
+  .pv-t-recordatorio{--pv-acento:#8DA0AD;background:linear-gradient(180deg,#0B2A36 0%,#06202A 100%);}
+  .pv-t-recordatorio .pv-titulo{font-size:44px;}
+  .pv-t-recordatorio .pv-cuerpo{color:#9DBAC4;font-size:22px;}
+  .pv-t-recordatorio .pv-foto{max-height:298px;height:auto;}
+
+  .pv-caption{
+    font-size:12px;
     color:var(--pg-muted);
-    font-size:13px;
+    margin-top:10px;
+    line-height:1.5;
   }
 
   /* ---------- Activas tab ---------- */
@@ -731,19 +833,39 @@
 
         <div>
           <div class="preview-label">Así se va a ver</div>
-          <div class="preview-card">
-            <div class="franja-wrap">
-              <div class="franja" id="previewFranja"></div>
-              <div class="content">
-                <img id="previewFoto" class="foto hidden" src="" alt="">
-                <div class="preview-inner">
-                  <div class="preview-badge" id="previewBadge"></div>
-                  <h3 class="preview-titulo" id="previewTitulo">Título de la novedad</h3>
-                  <div class="preview-cuerpo" id="previewCuerpo">El cuerpo del mensaje aparecerá aquí a medida que escribas.</div>
-                  <div class="preview-pie hidden" id="previewPie"></div>
+          <!-- Maqueta a escala de la pantalla completa (SPEC-pantallas.md).
+               Clases pv-* propias del preview: nunca chocan con pgnov-* del lector real. -->
+          <div class="pv-wrap">
+            <div class="pv-frame" id="pvFrame">
+              <div class="pv-scale" id="pvScale">
+                <div class="pv-ov pv-t-novedad" id="pvOv">
+                  <div class="pv-slide">
+                    <header class="pv-top">
+                      <div class="pv-kicker">📢 ProtectGo · al día</div>
+                      <div class="pv-prog">
+                        <span class="pv-dots"><i class="on"></i></span>
+                        <span class="pv-count">1 de 1</span>
+                      </div>
+                    </header>
+                    <main class="pv-body">
+                      <div class="pv-content">
+                        <div class="pv-badge" id="previewBadge"></div>
+                        <img id="previewFoto" class="pv-foto hidden" src="" alt="">
+                        <h3 class="pv-titulo" id="previewTitulo">Título de la novedad</h3>
+                        <div class="pv-cuerpo" id="previewCuerpo">El cuerpo del mensaje aparecerá aquí a medida que escribas.</div>
+                        <div class="pv-pie hidden" id="previewPie"></div>
+                      </div>
+                    </main>
+                    <footer class="pv-bot">
+                      <div class="pv-bar"><i></i></div>
+                      <button type="button" class="pv-btn" id="pvBtn" disabled>Ya lo leí, entendido</button>
+                    </footer>
+                  </div>
                 </div>
               </div>
             </div>
+            <div class="pv-caption">Así se verá en pantalla completa, una novedad por pantalla.</div>
+            <div class="pv-caption hidden" id="pvCaptionFoto">Si no cargas foto, el nombre crece y ocupa el centro.</div>
           </div>
         </div>
       </div>
@@ -1134,34 +1256,59 @@ function initFormListeners(){
   actualizarPreview();
 }
 
+/* Vista previa = maqueta a escala de la pantalla completa (SPEC-pantallas.md).
+   Traje por categoría vía clase pv-t-<tipo>; texto SIEMPRE por textContent
+   (nunca innerHTML con datos que escribió el usuario). */
 function actualizarPreview(){
   var t=TIPOS[state.tipo];
   var titulo=$('fldTitulo').value.trim();
   var cuerpo=$('fldCuerpo').value.trim();
   var pie=$('fldPie').value.trim();
 
-  $('previewFranja').style.background=t.color;
-  $('previewBadge').style.color=t.color;
-  $('previewBadge').innerHTML=t.emoji+' '+t.label;
+  var ov=$('pvOv');
+  ov.className='pv-ov pv-t-'+state.tipo;
+
+  $('previewBadge').textContent=t.emoji+' '+t.label.toUpperCase();
   $('previewTitulo').textContent=titulo||'Título de la novedad';
   $('previewCuerpo').textContent=cuerpo||'El cuerpo del mensaje aparecerá aquí a medida que escribas.';
 
   var fotoImg=$('previewFoto');
   var piePrev=$('previewPie');
-  if(state.tipo==='felicitacion'&&state.imagen_url){
+  var esFelicitacion=(state.tipo==='felicitacion');
+  var conFoto=(esFelicitacion&&!!state.imagen_url);
+  if(conFoto){
     fotoImg.src=state.imagen_url;
     fotoImg.classList.remove('hidden');
   }else{
     fotoImg.classList.add('hidden');
     fotoImg.src='';
   }
-  if(state.tipo==='felicitacion'&&pie){
+  ov.classList.toggle('pv-sin-foto',esFelicitacion&&!conFoto);
+  if(esFelicitacion&&pie){
     piePrev.textContent=pie;
     piePrev.classList.remove('hidden');
   }else{
     piePrev.classList.add('hidden');
   }
+
+  $('pvCaptionFoto').classList.toggle('hidden',!esFelicitacion);
+
+  ajustarEscalaPreview();
 }
+
+/* Escala la maqueta de 1400x875 al ancho real disponible en la columna,
+   igual en carga inicial que en resize, para que la tipografía nunca se
+   duplique en dos hojas de estilo distintas. */
+function ajustarEscalaPreview(){
+  var frame=$('pvFrame');
+  var scale=$('pvScale');
+  if(!frame||!scale)return;
+  var anchoDisponible=frame.clientWidth;
+  if(!anchoDisponible)return;
+  var escala=anchoDisponible/1400;
+  scale.style.transform='scale('+escala+')';
+}
+window.addEventListener('resize',ajustarEscalaPreview);
 
 /* =========================================================
    PUBLICAR — subida de foto
@@ -1837,7 +1984,7 @@ function cargarHistorialAccesos(){
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="novedades-admin.html";
-var PGV_VERSION=5;
+var PGV_VERSION=6;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');

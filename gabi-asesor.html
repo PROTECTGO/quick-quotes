@@ -399,7 +399,11 @@ async function seccion(nombre, mountId, fn) {
 async function cargarMiMes(el) {
   el.innerHTML = skeletonBlock(4);
   try { await resolverEstandarVigente(); } catch (e) { console.error("[GABI asesor] no se pudo leer el estándar vigente, usando fallback:", e); }
-  const { data: metaRows, error: e1 } = await SB.from('v_meta_por_asesor').select('*').eq('agente', MI_NOMBRE).limit(1);
+  // Mi mes (meta) vía RPC SECURITY DEFINER: devuelve SOLO la meta del propio asesor, sin exponer
+  // el roster del equipo. v_meta_por_asesor arma su lista de activos desde bases_turbo (que trae los
+  // baselines de TODOS los asesores) — no se le abre a un asesor por el principio "solo lo tuyo".
+  // La RPC resuelve al llamante por dentro (current_agente_id) y trae los mismos campos que usa mm.
+  const { data: metaRows, error: e1 } = await SB.rpc('mi_meta_del_mes');
   if (e1) throw e1;
   const { data: liqRows, error: e2 } = await SB.from('v_liquidacion_incentivos').select('*').eq('agente', MI_NOMBRE).order('mes', { ascending:false }).limit(1);
   if (e2) throw e2;

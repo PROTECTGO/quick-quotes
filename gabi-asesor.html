@@ -707,65 +707,62 @@ function fmtMesCorto(mesStr) { const { y, m } = partesMes(mesStr); return `${MES
 
 async function cargarLeaderboard(el) {
   el.innerHTML = skeletonBlock(4);
-  const { data, error } = await SB.from('v_candidatos_bonos').select('*').order('mes', { ascending:false }).limit(5000);
-  if (error) throw error;
-  if (!data || !data.length) { el.innerHTML = `<div class="pg-warn-box">Sin datos de leaderboard todavía.</div>`; return; }
 
-  // Mes en curso (según el reloj real), en formato "YYYY-MM-01" para comparar contra la columna `mes`.
+  // FIX (Fase 2): el top del equipo se calcula SERVER-SIDE con la RPC
+  // reconocimientos_del_mes(year, month) — SECURITY DEFINER, ve a TODOS los
+  // vendedores. Antes se calculaba en el navegador sobre v_candidatos_bonos /
+  // v_ventas_por_cliente, que son security_invoker (RLS al propio usuario): cada
+  // asesor terminaba viéndose a sí mismo como el top. Esa RPC cierra ese bug.
+  // La RPC devuelve hasta 3 filas: categoria in ('fee','premium','clientes'),
+  // con nombre (agente/seller), cifra (fee cobrado / premium neto / nº clientes)
+  // y detalle. Fee y premium son COBRADO y NETO — misma regla de toda la página.
   const hoy = new Date();
-  const mesActualStr = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,"0")}-01`;
 
-  // "Top del equipo" es del último mes CERRADO -- nunca el mes en curso, y nunca una fila
-  // "fantasma" (mes futuro o mes con todo en cero porque aún no hay liquidación real). Se
-  // recorren los meses únicos, de más reciente a más antiguo, y se toma el primero que:
-  //  a) sea estrictamente anterior al mes en curso, y
-  //  b) tenga al menos una fila con datos reales (ventas, fees o premium > 0).
-  const mesesUnicos = [...new Set(data.map(r => r.mes))].sort().reverse();
-  let mesReciente = null;
-  for (const m of mesesUnicos) {
-    if (m >= mesActualStr) continue; // excluye mes en curso y cualquier fila futura/fantasma
-    const filasMes = data.filter(r => r.mes === m);
-    const tieneDatos = filasMes.some(r => Number(r.ventas||0) > 0 || Number(r.fees_cobrados||0) > 0 || Number(r.premium_neto||0) > 0);
-    if (tieneDatos) { mesReciente = m; break; }
+  // Mes de reconocimientos = ÚLTIMO MES CERRADO con datos. Se busca hacia atrás
+  // desde el mes calendario anterior (nunca el mes en curso) y se toma el primero
+  // que la RPC devuelva con datos. Hasta 6 meses atrás por si el arranque es nuevo.
+  let reconRows = null, usY = null, usM = null;
+  for (let back = 1; back <= 6; back++) {
+    const d = new Date(hoy.getFullYear(), hoy.getMonth() - back, 1);
+    const py = d.getFullYear(), pm = d.getMonth() + 1;
+    const { data, error } = await SB.rpc('reconocimientos_del_mes', { p_year: py, p_month: pm });
+    if (error) throw error;
+    if (data && data.length) { reconRows = data; usY = py; usM = pm; break; }
   }
 
-  if (!mesReciente) {
-    el.innerHTML = `<div class="pg-warn-box">Todavía no hay un mes cerrado con datos en el leaderboard. El mes en curso (${MESES_ES[hoy.getMonth()]}) entra cuando cierre.</div>`;
+  if (!reconRows) {
+    el.innerHTML = `<div class="pg-warn-box">Todavía no hay un mes cerrado con datos para reconocimientos. El mes en curso (${MESES_ES[hoy.getMonth()]}) entra cuando cierre.</div>`;
     return;
   }
 
-  const filas = data.filter(r => r.mes === mesReciente);
-  // AJUSTE 1 — el leaderboard también cuenta por CLIENTES cerrados, no por pólizas.
-  let topCli = null, topCliPend = false;
-  try {
-    const _p = partesMes(mesReciente);
-    const rowsMesVPC = await vpcRows(q => q.eq('sales_year', _p.y).eq('sales_month', _p.m));
-    if (rowsMesVPC) topCli = vpcPorVendedor(rowsMesVPC).sort((a,b)=>b.clientes-a.clientes)[0] || null;
-    else topCliPend = true;
-  } catch(e){ console.error("[GABI asesor] leaderboard por cliente", e); }
-  const topFee = [...filas].sort((a,b)=>Number(b.fees_cobrados||0)-Number(a.fees_cobrados||0))[0];
-  const topPremium = [...filas].sort((a,b)=>Number(b.premium_neto||0)-Number(a.premium_neto||0))[0];
-  // FIX RONDA 3 — FALLA 3: antes esto armaba una lista con los NOMBRES de los compañeros que
-  // cumplían superación y la publicaba en la pantalla PERSONAL del asesor. Eso es un
-  // comparativo entre pares (prohibido aquí): quien no aparecía leía su ausencia como un
-  // señalamiento. Ahora solo se mira si EL PROPIO asesor es candidato — ningún nombre ajeno.
-  const soyCandidatoSuperacion = filas.some(r => r.cumple_superacion && r.agente === MI_NOMBRE);
+  const mesReciente = `${usY}-${String(usM).padStart(2,"0")}-01`;
+  const rowByCat = (c) => reconRows.find(r => r.categoria === c) || null;
+  const rFee = rowByCat('fee'), rPrem = rowByCat('premium'), rCli = rowByCat('clientes');
+
   const esMesInmediatoAnterior = (() => {
-    const { y, m } = partesMes(mesReciente);
-    const anteriorY = hoy.getMonth() === 0 ? hoy.getFullYear()-1 : hoy.getFullYear();
-    const anteriorM = hoy.getMonth() === 0 ? 12 : hoy.getMonth();
-    return y === anteriorY && m === anteriorM;
+    const antD = new Date(hoy.getFullYear(), hoy.getMonth()-1, 1);
+    return usY === antD.getFullYear() && usM === (antD.getMonth()+1);
   })();
+
+  // "Candidato a superación" SÍ es dato propio (es sobre TI, RLS-apropiado): se
+  // sigue leyendo de v_candidatos_bonos filtrado a tu nombre y al mes mostrado.
+  // Ningún nombre ajeno se publica en esta pantalla personal.
+  let soyCandidatoSuperacion = false;
+  try {
+    const { data: cand } = await SB.from('v_candidatos_bonos')
+      .select('cumple_superacion,agente,mes').eq('agente', MI_NOMBRE).eq('mes', mesReciente).limit(1);
+    soyCandidatoSuperacion = !!(cand && cand[0] && cand[0].cumple_superacion);
+  } catch (e) { console.error("[GABI asesor] candidato superación", e); }
 
   el.innerHTML = `
     <h2>Reconocimientos del mes — ${fmtMesLargo(mesReciente)}</h2>
     <p class="pg-purpose">Aquí se celebra a quien la rompió el mes pasado. No es un ranking ni una lista de quién va bien y quién va mal: son tres reconocimientos, por fee de agencia cobrado, por premium neto y por clientes cerrados. Tu propio mes está más arriba en esta pantalla, y no se compara con el de nadie.
       ${!esMesInmediatoAnterior ? ` Último mes calculado: ${fmtMesCorto(mesReciente)} — ${MESES_ES[hoy.getMonth()]} entra cuando cierre.` : ` Este es el último mes cerrado — ${MESES_ES[hoy.getMonth()]} entra cuando cierre.`}
     </p>
-    ${topFee ? `<div class="pg-rank"><span class="rk-name">🏆 Top fee — ${topFee.agente}</span><span class="rk-badge">${fmtUSD0(topFee.fees_cobrados)} cobrado</span></div>` : ""}
-    ${topPremium ? `<div class="pg-rank"><span class="rk-name">🏆 Top premium — ${topPremium.agente}</span><span class="rk-badge">${fmtUSD0(topPremium.premium_neto)} premium neto</span></div>` : ""}
-    ${topCli ? `<div class="pg-rank"><span class="rk-name">🏆 Top ventas (clientes cerrados) — ${vpcEsc(topCli.agente)}</span><span class="rk-badge">${topCli.clientes} cliente(s) · ${topCli.polizas} póliza(s)</span></div>` : (topCliPend ? VPC_PENDIENTE("El top de ventas") : "")}
-    ${scope("fee de agencia cobrado, premium neto y clientes cerrados · el mejor de cada uno · " + fmtMesCorto(mesReciente) + " (último mes cerrado)")}
+    ${rFee ? `<div class="pg-rank"><span class="rk-name">🏆 Top fee — ${vpcEsc(rFee.nombre)}</span><span class="rk-badge">${fmtUSD0(rFee.cifra)} cobrado</span></div>` : ""}
+    ${rPrem ? `<div class="pg-rank"><span class="rk-name">🏆 Top premium — ${vpcEsc(rPrem.nombre)}</span><span class="rk-badge">${fmtUSD0(rPrem.cifra)} premium neto</span></div>` : ""}
+    ${rCli ? `<div class="pg-rank"><span class="rk-name">🏆 Top ventas (clientes cerrados) — ${vpcEsc(rCli.nombre)}</span><span class="rk-badge">${Number(rCli.cifra)} cliente(s)${rCli.detalle ? ` · ${vpcEsc(rCli.detalle)} póliza(s)` : ""}</span></div>` : ""}
+    ${scope("fee de agencia cobrado, premium neto y clientes cerrados · el mejor de cada uno · " + fmtMesCorto(mesReciente) + " (último mes cerrado) · fuente reconocimientos_del_mes (server-side, todos los vendedores)")}
     ${soyCandidatoSuperacion ? `<div class="pg-rank" style="margin-top:14px;"><span class="rk-name"><b>Tú eres candidato a superación</b> — superaste tu propio trimestre anterior</span><span class="rk-badge">✓ candidato</span></div>` : ""}`;
 }
 

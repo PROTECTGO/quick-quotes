@@ -252,7 +252,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script>
 (function(){
 "use strict";
@@ -481,44 +481,181 @@ function personalActivos(){
   return colaboradores.filter(function(c){return c.activo&&!esEjemplo(c.nombre,c.cedula);})
     .sort(function(a,b){return (a.nombre||'').localeCompare(b.nombre||'');});
 }
-function construirLibro(mes,q,rows){
-  var g=partir(rows), key=periodoKey(mes,q);
-  var aoa=[];
-  aoa.push(['NOVEDADES DE NÓMINA — ProtectGo']);
-  aoa.push(['Período:', labelPeriodo(mes,q), '', 'Generado:', fdate(new Date().toISOString())]);
-  aoa.push([]);
-  function pushBlock(titulo,arr){
-    aoa.push([titulo]);
-    aoa.push(['#','Colaborador','Cédula','Tipo','Desde','Hasta','Días/Horas','Observación']);
-    if(!arr.length){aoa.push(['— Sin novedades —']);return;}
-    arr.forEach(function(r,i){aoa.push([i+1,r.nombre||'',r.cedula||'',r.tipoDisp||'',fdate(r.desde),fdate(r.hasta),r.cant||'',r.obs||'']);});
-  }
-  pushBlock('NÓMINA',g.nom);
-  aoa.push([]);
-  pushBlock('PRESTACIÓN DE SERVICIOS',g.pre);
-  aoa.push([]);
-  aoa.push(['Los demás colaboradores no presentan novedades en el período.']);
-  var ws=XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols']=[{wch:4},{wch:30},{wch:13},{wch:20},{wch:12},{wch:12},{wch:14},{wch:40}];
-
-  var aoa2=[['PERSONAL — ProtectGo'],['Nombre','Cédula','Tipo de contrato']];
-  personalActivos().forEach(function(c){aoa2.push([c.nombre||'',c.cedula||'',c.tipo_contrato||'Nómina']);});
-  var ws2=XLSX.utils.aoa_to_sheet(aoa2);
-  ws2['!cols']=[{wch:30},{wch:14},{wch:24}];
-
-  var wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Novedades');
-  XLSX.utils.book_append_sheet(wb,ws2,'Personal');
-  return wb;
-}
+// Paleta ProtectGo (estilo dossier / Insurance Proposal) — ARGB para ExcelJS
+var XL_PETROLEO='FF0D3040', XL_TEAL='FF2A9794', XL_TEALD='FF2E736D',
+    XL_INFO='FFE8F4EF', XL_HEAD='FFDFF0EA', XL_ZEBRA='FFF6FAF8',
+    XL_AMBAR='FFFFB400', XL_GRIS='FF6B7D89', XL_LINEA='FFCFE3DC',
+    XL_BLANCO='FFFFFFFF', XL_TINTA='FF20343E';
+function fillOf(argb){return {type:'pattern',pattern:'solid',fgColor:{argb:argb}};}
+function colLetra(n){return String.fromCharCode(64+n);}  // 1->A .. 26->Z (basta para 8 col)
 function nombreArchivo(mes,q){return 'Novedades_Nomina_ProtectGo_'+mes+'_Q'+q+'.xlsx';}
+
+// Logo escudo (same-origin en producción); defensivo: si falla, el Excel sale sin logo
+var logoBuf=null, logoTried=false;
+function getLogoBuffer(){
+  if(logoTried)return Promise.resolve(logoBuf);
+  return fetch('fotos/logo-protectgo.png')
+    .then(function(r){return r.ok?r.arrayBuffer():null;})
+    .then(function(b){logoBuf=b;logoTried=true;return b;})
+    .catch(function(){logoTried=true;logoBuf=null;return null;});
+}
+
+// Banda superior sobre BLANCO: logo + "ProtectGo Services" (petróleo) + subtítulo (teal)
+// + franja info menta con labels/valores. Devuelve la primera fila libre (6).
+function bandaEncabezado(ws,imgId,subtitulo,cols,infoCeldas){
+  if(imgId!=null){ ws.addImage(imgId,{tl:{col:0.15,row:0.15},ext:{width:58,height:58}}); }
+  var colL=colLetra(cols);
+  ws.mergeCells('B1:'+colL+'1');
+  var t=ws.getCell('B1'); t.value='ProtectGo Services';
+  t.font={name:'Calibri',bold:true,size:18,color:{argb:XL_PETROLEO}};
+  t.alignment={vertical:'middle',horizontal:'left'};
+  ws.mergeCells('B2:'+colL+'2');
+  var s=ws.getCell('B2'); s.value=subtitulo;
+  s.font={name:'Calibri',bold:true,size:12,color:{argb:XL_TEAL}};
+  s.alignment={vertical:'middle',horizontal:'left'};
+  ws.getRow(1).height=26; ws.getRow(2).height=20; ws.getRow(3).height=6;
+  // franja info (fila 4), fondo menta, repartida en grupos
+  var r=4, span=Math.floor(cols/infoCeldas.length), cIdx=1;
+  infoCeldas.forEach(function(pair,k){
+    var startC=cIdx, endC=(k===infoCeldas.length-1)?cols:(cIdx+span-1);
+    ws.mergeCells(colLetra(startC)+r+':'+colLetra(endC)+r);
+    var cell=ws.getCell(colLetra(startC)+r);
+    cell.value={richText:[
+      {text:pair[0]+'   ',font:{name:'Calibri',bold:true,size:8,color:{argb:XL_TEALD}}},
+      {text:pair[1],font:{name:'Calibri',bold:true,size:10,color:{argb:XL_PETROLEO}}}
+    ]};
+    cell.fill=fillOf(XL_INFO);
+    cell.alignment={vertical:'middle',horizontal:'left'};
+    cIdx=endC+1;
+  });
+  for(var ci=1;ci<=cols;ci++){var cc=ws.getCell(colLetra(ci)+r);if(!cc.fill||!cc.fill.fgColor)cc.fill=fillOf(XL_INFO);}
+  ws.getRow(4).height=20;
+  return 6;
+}
+// Título de bloque: acento teal corto en A + texto petróleo MAYÚSCULAS sobre blanco
+function tituloBloque(ws,r,cols,titulo){
+  ws.getCell('A'+r).fill=fillOf(XL_TEAL);
+  ws.mergeCells('B'+r+':'+colLetra(cols)+r);
+  var t=ws.getCell('B'+r); t.value=titulo.toUpperCase();
+  t.font={name:'Calibri',bold:true,size:11,color:{argb:XL_PETROLEO}};
+  t.alignment={vertical:'middle',horizontal:'left'};
+  ws.getRow(r).height=18;
+}
+// Encabezado de tabla: fondo menta claro, texto teal oscuro MAYÚSCULAS, línea inferior fina
+function encabezadoTabla(ws,r,headers){
+  headers.forEach(function(h,i){
+    var cell=ws.getCell(colLetra(i+1)+r);
+    cell.value=String(h).toUpperCase();
+    cell.fill=fillOf(XL_HEAD);
+    cell.font={name:'Calibri',bold:true,size:9,color:{argb:XL_TEALD}};
+    cell.alignment={vertical:'middle',horizontal:(i===0?'center':'left')};
+    cell.border={bottom:{style:'thin',color:{argb:XL_TEALD}}};
+  });
+  ws.getRow(r).height=16;
+}
+// Fila de datos: zebra, columna boldIdx en bold petróleo, línea inferior fina
+function filaDato(ws,r,vals,zebra,boldIdx){
+  vals.forEach(function(v,i){
+    var cell=ws.getCell(colLetra(i+1)+r);
+    cell.value=(v==null?'':v);
+    cell.alignment={vertical:'middle',horizontal:(i===0?'center':'left'),wrapText:(i===vals.length-1)};
+    var petro=(i===boldIdx);
+    cell.font={name:'Calibri',size:10,bold:petro,color:{argb:petro?XL_PETROLEO:XL_TINTA}};
+    if(zebra)cell.fill=fillOf(XL_ZEBRA);
+    cell.border={bottom:{style:'thin',color:{argb:XL_LINEA}}};
+  });
+}
+
+async function construirBlob(mes,q,rows){
+  var wb=new ExcelJS.Workbook();
+  wb.creator='ProtectGo Services'; wb.created=new Date();
+  var logo=await getLogoBuffer();
+  var imgId=null; if(logo){try{imgId=wb.addImage({buffer:logo,extension:'png'});}catch(e){imgId=null;}}
+  var pieTxt='Generado el '+fdate(new Date().toISOString())+' por '+(userEmail||'—')+' · ProtectGo Services · uso interno';
+
+  // ===== Hoja "Novedades" =====
+  var g=partir(rows);
+  var ws=wb.addWorksheet('Novedades',{views:[{showGridLines:false}]});
+  [6,30,14,20,12,12,14,42].forEach(function(w,i){ws.getColumn(i+1).width=w;});
+  var HEAD=['#','Colaborador','Cédula','Tipo','Desde','Hasta','Días/Horas','Observación'];
+  bandaEncabezado(ws,imgId,'Novedades de Nómina · '+labelPeriodo(mes,q),8,[
+    ['EMPRESA','ProtectGo Services S.A.S'],
+    ['REPORTE','Novedades de Nómina'],
+    ['QUINCENA',labelPeriodo(mes,q)]
+  ]);
+  var r=6;
+  function bloque(titulo,arr){
+    tituloBloque(ws,r,8,titulo); r++;
+    encabezadoTabla(ws,r,HEAD); r++;
+    if(!arr.length){
+      ws.mergeCells('A'+r+':H'+r);
+      var e=ws.getCell('A'+r); e.value='— Sin novedades —';
+      e.font={name:'Calibri',italic:true,size:10,color:{argb:XL_GRIS}};
+      e.alignment={vertical:'middle',horizontal:'left'}; r++;
+      return;
+    }
+    arr.forEach(function(x,i){
+      filaDato(ws,r,[i+1,x.nombre||'',x.cedula||'',x.tipoDisp||'',fdate(x.desde),fdate(x.hasta),x.cant||'',x.obs||''],(i%2===1),1);
+      r++;
+    });
+  }
+  bloque('Nómina',g.nom); r++;
+  bloque('Prestación de servicios',g.pre); r++;
+
+  // Franja resumen (panel oscuro), dato clave en ámbar
+  ws.mergeCells('A'+r+':H'+r);
+  var res=ws.getCell('A'+r);
+  res.value={richText:[
+    {text:'RESUMEN DEL PERÍODO    ',font:{name:'Calibri',bold:true,size:10,color:{argb:XL_BLANCO}}},
+    {text:'Total de novedades: ',font:{name:'Calibri',size:10,color:{argb:XL_BLANCO}}},
+    {text:String(rows.length),font:{name:'Calibri',bold:true,size:14,color:{argb:XL_AMBAR}}},
+    {text:'      Nómina '+g.nom.length+'  ·  Prestación '+g.pre.length,font:{name:'Calibri',size:9,color:{argb:'FFBFDAD4'}}}
+  ]};
+  res.fill=fillOf(XL_PETROLEO);
+  res.alignment={vertical:'middle',horizontal:'left'};
+  ws.getRow(r).height=26; r+=2;
+
+  // Nota de cierre + pie
+  ws.mergeCells('A'+r+':H'+r);
+  var cl=ws.getCell('A'+r); cl.value='Los demás colaboradores no presentan novedades en el período.';
+  cl.font={name:'Calibri',italic:true,size:9,color:{argb:XL_GRIS}}; r++;
+  ws.mergeCells('A'+r+':H'+r);
+  var pie=ws.getCell('A'+r); pie.value=pieTxt;
+  pie.font={name:'Calibri',size:8,color:{argb:XL_GRIS}};
+
+  // ===== Hoja "Personal" =====
+  var wp=wb.addWorksheet('Personal',{views:[{showGridLines:false}]});
+  [34,16,24].forEach(function(w,i){wp.getColumn(i+1).width=w;});
+  var lista=personalActivos();
+  bandaEncabezado(wp,imgId,'Personal · '+lista.length+' colaboradores',3,[
+    ['EMPRESA','ProtectGo Services S.A.S'],
+    ['REPORTE','Personal'],
+    ['ACTIVOS',String(lista.length)]
+  ]);
+  var pr=6;
+  encabezadoTabla(wp,pr,['Nombre','Cédula','Tipo de contrato']); pr++;
+  lista.forEach(function(c,i){
+    filaDato(wp,pr,[c.nombre||'',c.cedula||'',c.tipo_contrato||'Nómina'],(i%2===1),0);
+    pr++;
+  });
+  wp.mergeCells('A'+pr+':C'+pr);
+  var pie2=wp.getCell('A'+pr); pie2.value=pieTxt;
+  pie2.font={name:'Calibri',size:8,color:{argb:XL_GRIS}};
+
+  var buf=await wb.xlsx.writeBuffer();
+  return new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
 function descargarExcel(mes,q,rows){
-  try{
-    if(typeof XLSX==='undefined'){toast('No se pudo cargar SheetJS (revisa tu conexión).');return;}
-    var wb=construirLibro(mes,q,rows);
-    XLSX.writeFile(wb,nombreArchivo(mes,q));
+  if(typeof ExcelJS==='undefined'){toast('No se pudo cargar ExcelJS (revisa tu conexión).');return;}
+  toast('Generando Excel…');
+  construirBlob(mes,q,rows).then(function(blob){
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url; a.download=nombreArchivo(mes,q);
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1500);
     toast('Excel descargado.');
-  }catch(e){toast('Error generando Excel: '+(e&&e.message||e));}
+  }).catch(function(e){toast('Error generando Excel: '+(e&&e.message||e));});
 }
 
 // ---------- MARCAR ENVIADA ----------
@@ -641,7 +778,7 @@ else setTimeout(init,60);
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="rrhh-nomina.html";
-var PGV_VERSION=1;
+var PGV_VERSION=2;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');

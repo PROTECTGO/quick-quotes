@@ -786,6 +786,51 @@ function footnote() {
   </div>`;
 }
 
+/* ---- Seccion: Tu cola de retencion (Ronda E) — tono proceso propio, sin comparaciones ---- */
+function retEsc(x){ return (x==null?'':String(x)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+const RET_SEM = { verde:'green', ambar:'amber', rojo:'red', vencida:'red', lejano:'', 'sin_fecha':'' };
+const RET_ESTADOS = ['contactado','cotizando','renovado','perdido'];
+function retChipEstado(e){ const m={pendiente:'Pendiente',contactado:'Contactado',cotizando:'Cotizando',renovado:'Renovado',perdido:'Perdido'}; return '<span class="pg-badge">'+(m[e]||e)+'</span>'; }
+async function cargarMiRetencion(el){
+  const wrap = document.getElementById('wrap-retencion');
+  el.innerHTML = skeletonBlock(3);
+  const { data, error } = await SB.rpc('mi_cola_retencion');
+  if (error || !data || !data.length){ if(wrap) wrap.style.display='none'; return; }
+  if (wrap) wrap.style.display='';
+  const activas  = data.filter(r => r.estado!=='renovado' && r.estado!=='perdido');
+  const cerradas = data.filter(r => r.estado==='renovado' || r.estado==='perdido');
+  const fila = (r) => {
+    const dot = semaforoDot(RET_SEM[r.semaforo]||'');
+    const dias = (r.dias_para_vencer==null) ? 'sin fecha de vencimiento'
+      : (r.dias_para_vencer < 0 ? ('vencio hace '+Math.abs(r.dias_para_vencer)+' d')
+      : (r.dias_para_vencer+' d para renovar'));
+    const cli = retEsc(r.dba || r.insured || r.policy_num || 'Cuenta');
+    const botones = RET_ESTADOS.map(e => '<button class="pg-btn '+(r.estado===e?'primary':'')+'" onclick="marcarRetencion(\''+r.id+'\',\''+e+'\')">'+e+'</button>').join(' ');
+    return '<div style="padding:12px 0;border-top:1px solid rgba(0,0,0,.06);display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">'+dot+
+      '<div style="flex:1;min-width:180px;"><div style="font-weight:800;">'+cli+'</div>'+
+      '<div class="pg-sub" style="font-size:12px;">'+dias+(r.mga?(' · '+retEsc(r.mga)):'')+' '+retChipEstado(r.estado)+
+      ((r.estado==='perdido'&&r.motivo_perdido)?(' · '+retEsc(r.motivo_perdido)):'')+'</div></div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;">'+botones+'</div></div>';
+  };
+  el.innerHTML =
+    '<h2>Tu cola de retencion</h2>'+
+    '<p class="pg-purpose">Estas cuentas estan a tu cargo para renovar. El color te dice cuanto tiempo queda: verde tienes margen, ambar acercate, rojo urge. Marcalas a medida que avanzas — es tu propio tablero, no se compara con nadie.</p>'+
+    (activas.length ? activas.map(fila).join('') : '<div class="pg-ok-box">No tienes cuentas activas en cola ahora mismo.</div>')+
+    (cerradas.length ? (sectionDivider('Ya cerradas')+cerradas.map(fila).join('')) : '')+
+    scope('cuentas asignadas a ti · semaforo 60/30/15 dias al vencimiento · fuente mi_cola_retencion (solo lo tuyo)');
+}
+window.marcarRetencion = async function(id, estado){
+  let motivo = null;
+  if (estado==='perdido'){
+    motivo = window.prompt('Motivo de la perdida (obligatorio):');
+    if (motivo===null) return;
+    if (!motivo.trim()){ alert('El motivo es obligatorio para marcar perdido.'); return; }
+  }
+  const { data, error } = await SB.rpc('retencion_marcar_estado', { p_id:id, p_estado:estado, p_motivo:motivo });
+  if (error || (data && data.ok===false)){ alert('No se pudo actualizar: '+(error?error.message:(data&&data.error))); return; }
+  const el = document.getElementById('s-retencion'); if (el) cargarMiRetencion(el);
+};
+
 function pintarEsqueleto() {
   document.getElementById("pg-root").innerHTML = `
     <div class="pg-top">
@@ -794,6 +839,7 @@ function pintarEsqueleto() {
       <div class="pg-sub">Tu estándar, tu ficha y tu tasa de cobro — se actualiza con cada venta.</div>
     </div>
     <div class="pg-card" id="s-mimes"></div>
+    <div id="wrap-retencion" style="display:none">${sectionDivider("Tu cola de retención")}<div class="pg-card" id="s-retencion"></div></div>
     ${sectionDivider("Tu ficha")}
     <div class="pg-card" id="s-ficha"></div>
     <div class="pg-card" id="s-tasacobro"></div>
@@ -811,6 +857,7 @@ async function cargarTodo() {
   document.getElementById("pg-stamp").textContent = "cargando…";
   await Promise.all([
     seccion("Mi mes", "s-mimes", cargarMiMes),
+    seccion("Retención", "s-retencion", cargarMiRetencion),
     seccion("Mi ficha", "s-ficha", cargarMiFicha),
     seccion("Mi tasa de cobro", "s-tasacobro", cargarMiTasaCobro),
     seccion("Tu proceso", "s-proceso", cargarMiProceso),

@@ -159,6 +159,9 @@
       <div class="selstatus" id="selStatus"></div>
     </div>
 
+    <!-- ===== FESTIVOS DEL PERÍODO (se llena solo si la quincena tiene festivo) ===== -->
+    <div id="festivosWrap"></div>
+
     <!-- ===== NOVEDADES DEL PERÍODO ===== -->
     <div class="card">
       <h2>Novedades del período <small id="novCount"></small></h2>
@@ -225,6 +228,24 @@
   </div>
 </div>
 
+<!-- ===== MODAL AJUSTAR VALORES DEL CÁLCULO (3 casillas) ===== -->
+<div class="modal-bg" id="paramBg">
+  <div class="modal">
+    <h3>Ajustar valores del cálculo</h3>
+    <div class="frm">
+      <div class="f c2"><label>SMLMV (mínimo mensual)</label><input type="number" id="pSmlmv"></div>
+      <div class="f c2"><label>Recargo festivo (ej. 0.90)</label><input type="number" step="0.01" id="pRecargo"></div>
+      <div class="f c4"><label>Ajuste transacción</label><input type="number" id="pAjuste"></div>
+    </div>
+    <div class="hint" id="pPreview" style="margin-top:8px"></div>
+    <div class="msg" id="pMsg"></div>
+    <div class="actline" style="margin-top:14px">
+      <button class="btn" id="pGuardar">Guardar</button>
+      <button class="btn sec" id="pCancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== LOGIN ===== -->
 <div class="ov" id="ov">
   <div class="card-l">
@@ -270,10 +291,28 @@ var ESTADOS_VACAC_INCLUIR=['Solicitado','Aprobado'];
 var TIPOS_MANUAL=['Festivo trabajado','Incapacidad','Vacaciones','Descuento','Ingreso','Retiro','Otro'];
 var MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
+// Festivos de Colombia 2026–2027 (lista fija, sin APIs). fecha ISO -> nombre.
+var FESTIVOS={
+  '2026-01-01':'Año Nuevo','2026-01-12':'Reyes Magos','2026-03-23':'Día de San José',
+  '2026-04-02':'Jueves Santo','2026-04-03':'Viernes Santo','2026-05-01':'Día del Trabajo',
+  '2026-05-18':'Ascensión del Señor','2026-06-08':'Corpus Christi','2026-06-15':'Sagrado Corazón',
+  '2026-06-29':'San Pedro y San Pablo','2026-07-20':'Día de la Independencia','2026-08-07':'Batalla de Boyacá',
+  '2026-08-17':'Asunción de la Virgen','2026-10-12':'Día de la Raza','2026-11-02':'Día de Todos los Santos',
+  '2026-11-16':'Independencia de Cartagena','2026-12-08':'Inmaculada Concepción','2026-12-25':'Navidad',
+  '2027-01-01':'Año Nuevo','2027-01-11':'Reyes Magos','2027-03-22':'Día de San José',
+  '2027-03-25':'Jueves Santo','2027-03-26':'Viernes Santo','2027-05-01':'Día del Trabajo',
+  '2027-05-10':'Ascensión del Señor','2027-05-31':'Corpus Christi','2027-06-07':'Sagrado Corazón',
+  '2027-07-05':'San Pedro y San Pablo','2027-07-20':'Día de la Independencia','2027-08-07':'Batalla de Boyacá',
+  '2027-08-16':'Asunción de la Virgen','2027-10-18':'Día de la Raza','2027-11-01':'Día de Todos los Santos',
+  '2027-11-15':'Independencia de Cartagena','2027-12-08':'Inmaculada Concepción','2027-12-25':'Navidad'
+};
+
 var colaboradores=[], colMap={}, userEmail='';
 var curMes='', curQ=1;             // período seleccionado
 var curRows=[];                    // novedades del período (para el Excel actual)
+var curFestivoNov=[];              // novedades de festivo (origen='festivo') del período
 var periodosEnviados={};           // key -> {enviada_at, enviada_por}
+var params={smlmv:1750905,recargo:0.90,ajuste:35000};  // parámetros de cálculo (prestación)
 var editId=null;
 
 var $=function(id){return document.getElementById(id);};
@@ -334,13 +373,15 @@ function onSignedOut(){$('app').style.display='none';$('ovBlock').style.display=
 function arrancar(){
   Promise.all([
     sb.from('rrhh_colaboradores').select('id,nombre,cedula,tipo_contrato,activo').order('nombre'),
-    sb.from('rrhh_nomina_periodos').select('*').order('periodo',{ascending:false})
+    sb.from('rrhh_nomina_periodos').select('*').order('periodo',{ascending:false}),
+    sb.from('rrhh_nomina_parametros').select('*')
   ]).then(function(rs){
     if(rs[0].error){toast('Error cargando colaboradores: '+rs[0].error.message);return;}
     colaboradores=(rs[0].data||[]);
     colMap={}; colaboradores.forEach(function(c){colMap[c.id]=c;});
     periodosEnviados={};
     ((rs[1]&&rs[1].data)||[]).forEach(function(p){periodosEnviados[p.periodo]={enviada_at:p.enviada_at,enviada_por:p.enviada_por};});
+    cargarParams((rs[2]&&rs[2].data)||[]);
     pintarSelectManual();
     pintarHist();
     // período por defecto = quincena en curso
@@ -359,8 +400,8 @@ function pintarSelectManual(){
 }
 
 // ---------- CONSTRUIR NOVEDADES DE UN PERÍODO ----------
-// Devuelve Promise<array de filas normalizadas> para (mes,q)
-function fetchNovedades(mes,q){
+// Devuelve Promise<{rows:[filas normalizadas], festivoNov:[novedades origen='festivo' crudas]}>
+function fetchPeriodo(mes,q){
   var r=rango(mes,q), key=periodoKey(mes,q);
   var sel='*, colaborador:rrhh_colaboradores(nombre,cedula,tipo_contrato,activo)';
   return Promise.all([
@@ -391,19 +432,22 @@ function fetchNovedades(mes,q){
       rows.push({nombre:c.nombre,cedula:c.cedula||'',tipoDisp:'Vacaciones',desde:v.fecha_inicio,hasta:v.fecha_fin,
                  cant:(dh!=null?dh+' días háb.':''),obs:v.notas||'',origen:'Vacaciones',tipo_contrato:c.tipo_contrato,manual:false});
     });
-    // Manuales
+    // Manuales + Festivos (ambos viven en rrhh_nomina_novedades)
     ((res[2].data)||[]).forEach(function(m){
       var c=m.colaborador||{};
       if(esEjemplo(c.nombre,c.cedula))return;
-      var cant = (m.horas!=null&&m.horas!=='') ? (m.horas+' h')
+      var esFest=(m.origen==='festivo');
+      var cant = esFest ? '1 día'
+               : (m.horas!=null&&m.horas!=='') ? (m.horas+' h')
                : (m.dias!=null&&m.dias!=='') ? (m.dias+' día'+(Number(m.dias)!==1?'s':''))
                : (function(){var n=diasEntre(m.fecha_inicio,m.fecha_fin);return n?(n+' día'+(n!==1?'s':'')):'';})();
       rows.push({id:m.id,nombre:c.nombre,cedula:c.cedula||'',tipoDisp:m.tipo,desde:m.fecha_inicio,hasta:m.fecha_fin||m.fecha_inicio,
-                 cant:cant,obs:m.observacion||'',origen:'Manual',tipo_contrato:c.tipo_contrato,manual:true,
-                 raw:m});
+                 cant:cant,obs:m.observacion||'',origen:esFest?'Festivo':'Manual',tipo_contrato:c.tipo_contrato,manual:!esFest,
+                 monto:m.monto,raw:m});
     });
     rows.sort(function(a,b){return (a.nombre||'').localeCompare(b.nombre||'');});
-    return rows;
+    var festivoNov=((res[2].data)||[]).filter(function(m){return m.origen==='festivo';});
+    return {rows:rows, festivoNov:festivoNov};
   });
 }
 
@@ -413,10 +457,11 @@ function recargar(){
   $('selRango').innerHTML='Del <b style="color:var(--navy)">'+fdate(r.ini)+'</b> al <b style="color:var(--navy)">'+fdate(r.fin)+'</b>';
   pintarStatus();
   $('novBody').innerHTML='<tr><td colspan="8" class="empty">Cargando…</td></tr>';
-  fetchNovedades(curMes,curQ).then(function(rows){
-    curRows=rows;
-    pintarTabla(rows);
-    pintarReporte(rows);
+  fetchPeriodo(curMes,curQ).then(function(d){
+    curRows=d.rows; curFestivoNov=d.festivoNov;
+    pintarTabla(d.rows);
+    pintarReporte(d.rows);
+    pintarFestivos();
   }).catch(function(e){toast('Error cargando novedades: '+(e&&e.message||e));});
 }
 function pintarStatus(){
@@ -435,10 +480,11 @@ function pintarTabla(rows){
   b.innerHTML=rows.map(function(r,i){
     var chip = r.origen==='Manual' ? '<span class="pill warn">Manual</span>'
              : r.origen==='Vacaciones' ? '<span class="pill ok">Vacaciones</span>'
+             : r.origen==='Festivo' ? '<span class="pill" style="background:var(--amber-soft);color:var(--amber)">⚑ Festivo</span>'
              : '<span class="pill navy">Permisos</span>';
     var acc = r.manual
       ? '<button class="btn sec mini" data-edit="'+i+'">Editar</button>'
-      : '<span class="hint" title="Se corrige en su herramienta de origen">🔒</span>';
+      : '<span class="hint" title="'+(r.origen==='Festivo'?'Se gestiona en la tarjeta de festivo':'Se corrige en su herramienta de origen')+'">🔒</span>';
     var fechas = fdate(r.desde)+(r.hasta&&r.hasta!==r.desde?' → '+fdate(r.hasta):'');
     return '<tr>'+
       '<td>'+esc(r.nombre||'—')+'</td>'+
@@ -474,6 +520,106 @@ function pintarReporte(rows){
   $('repPreview').innerHTML=html;
   var key=periodoKey(curMes,curQ), env=periodosEnviados[key];
   $('repHint').textContent = env&&env.enviada_at ? 'Ya enviada — puedes re-descargar.' : '';
+}
+
+// ---------- FESTIVOS ----------
+function cargarParams(arr){
+  var p={smlmv:1750905,recargo:0.90,ajuste:35000};
+  (arr||[]).forEach(function(row){ if(row.clave in p) p[row.clave]=Number(row.valor); });
+  params=p;
+}
+function calcMonto(){
+  // Solo prestación de servicios: round(SMLMV/30) + round((SMLMV/240)*8*recargo) + ajuste
+  return Math.round(params.smlmv/30) + Math.round((params.smlmv/240)*8*params.recargo) + Number(params.ajuste);
+}
+function fmtMoney(n){ return '$'+Number(n||0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+function festivosEnPeriodo(mes,q){
+  var r=rango(mes,q), out=[];
+  Object.keys(FESTIVOS).forEach(function(f){ if(f>=r.ini && f<=r.fin) out.push({fecha:f,nombre:FESTIVOS[f]}); });
+  out.sort(function(a,b){return a.fecha<b.fecha?-1:1;});
+  return out;
+}
+function partirColab(){
+  var act=colaboradores.filter(function(c){return c.activo&&!esEjemplo(c.nombre,c.cedula);})
+    .sort(function(a,b){return (a.nombre||'').localeCompare(b.nombre||'');});
+  var nom=[],pre=[];
+  act.forEach(function(c){ (c.tipo_contrato==='Prestación de servicios'?pre:nom).push(c); });
+  return {nom:nom,pre:pre};
+}
+function pintarFestivos(){
+  var fests=festivosEnPeriodo(curMes,curQ), wrap=$('festivosWrap');
+  if(!fests.length){wrap.innerHTML='';return;}
+  var g=partirColab(), monto=calcMonto(), worked={};
+  curFestivoNov.forEach(function(m){ worked[m.fecha_inicio+'|'+m.colaborador_id]=true; });
+  wrap.innerHTML=fests.map(function(f){
+    function lista(arr,pre){
+      if(!arr.length)return '<div class="hint" style="padding:6px 0">— Sin personal —</div>';
+      return arr.map(function(c){
+        var on=worked[f.fecha+'|'+c.id]?'checked':'';
+        var money=pre?' <span class="mono" style="color:var(--teal-2);font-size:12px">'+fmtMoney(monto)+'</span>':'';
+        return '<label style="display:flex;align-items:center;gap:8px;padding:6px 2px;font-size:13.5px;border-bottom:1px solid var(--line);cursor:pointer">'+
+          '<input type="checkbox" data-fest data-fecha="'+f.fecha+'" data-col="'+c.id+'" data-pre="'+(pre?1:0)+'" '+on+' style="width:auto">'+
+          '<span style="flex:1">'+esc(c.nombre)+'</span>'+money+'</label>';
+      }).join('');
+    }
+    function subh(t,n){return '<div style="font-family:var(--font-title);font-weight:800;font-size:12px;letter-spacing:.05em;color:var(--navy);text-transform:uppercase;border-left:3px solid var(--teal);padding-left:8px;margin:2px 0 6px">'+t+' <span class="mono" style="color:var(--faint);font-size:10px">'+n+'</span></div>';}
+    return '<div class="card" style="border-left:4px solid var(--amber)">'+
+      '<h2>⚑ Festivo <small>'+fdate(f.fecha)+' — '+esc(f.nombre)+'</small></h2>'+
+      '<div class="note amber" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">'+
+        '<span>Marca quién lo <b>trabajó</b>. Se crea o elimina la novedad “Festivo trabajado” de esa fecha.</span>'+
+        '<a href="#" data-params style="color:var(--teal-2);font-weight:700;white-space:nowrap">ajustar valores</a></div>'+
+      '<div class="guia-grid">'+
+        '<div>'+subh('Nómina',g.nom.length)+lista(g.nom,false)+'</div>'+
+        '<div>'+subh('Prestación de servicios',g.pre.length)+lista(g.pre,true)+
+          '<div class="hint" style="margin-top:8px">Monto por prestador: <b>'+fmtMoney(monto)+'</b> · SMLMV '+fmtMoney(params.smlmv)+' · recargo '+(Number(params.recargo)*100)+'% · ajuste '+fmtMoney(params.ajuste)+'</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+function toggleFestivo(colId,fecha,esPre,checked,cb){
+  var key=periodoKey(curMes,curQ);
+  if(cb)cb.disabled=true;
+  var op;
+  if(checked){
+    op=sb.from('rrhh_nomina_novedades').insert({
+      periodo:key,colaborador_id:colId,tipo:'Festivo trabajado',fecha_inicio:fecha,fecha_fin:fecha,
+      origen:'festivo',monto:esPre?calcMonto():null,registrado_por:userEmail,updated_at:new Date().toISOString()
+    });
+  }else{
+    op=sb.from('rrhh_nomina_novedades').delete()
+      .eq('periodo',key).eq('colaborador_id',colId).eq('fecha_inicio',fecha).eq('origen','festivo');
+  }
+  op.then(function(r){
+    if(r.error){toast('Error: '+r.error.message); if(cb){cb.disabled=false;cb.checked=!checked;} return;}
+    var yaEnv=periodosEnviados[key]&&periodosEnviados[key].enviada_at;
+    recargar();
+    if(checked&&yaEnv) toast('Esta quincena ya se envió — recuerda reenviar el Excel.');
+  });
+}
+function abrirParams(){
+  $('pSmlmv').value=params.smlmv; $('pRecargo').value=params.recargo; $('pAjuste').value=params.ajuste;
+  preverParams(); $('pMsg').textContent=''; $('paramBg').style.display='flex';
+}
+function cerrarParams(){$('paramBg').style.display='none';}
+function preverParams(){
+  var s=Number($('pSmlmv').value||0),rc=Number($('pRecargo').value||0),aj=Number($('pAjuste').value||0);
+  var m=Math.round(s/30)+Math.round((s/240)*8*rc)+aj;
+  $('pPreview').innerHTML='Monto por prestador con estos valores: <b>'+fmtMoney(m)+'</b> ('+fmtMoney(Math.round(s/30))+' + '+fmtMoney(Math.round((s/240)*8*rc))+' + '+fmtMoney(aj)+')';
+}
+function guardarParams(){
+  var s=Number($('pSmlmv').value),rc=Number($('pRecargo').value),aj=Number($('pAjuste').value);
+  if(!(s>0)||!(rc>=0)||isNaN(aj)){$('pMsg').textContent='Revisa los valores.';$('pMsg').className='msg err';return;}
+  $('pMsg').textContent='Guardando…';$('pMsg').className='msg';
+  sb.from('rrhh_nomina_parametros').upsert([
+    {clave:'smlmv',valor:s,updated_at:new Date().toISOString()},
+    {clave:'recargo',valor:rc,updated_at:new Date().toISOString()},
+    {clave:'ajuste',valor:aj,updated_at:new Date().toISOString()}
+  ]).then(function(r){
+    if(r.error){$('pMsg').textContent='Error: '+r.error.message;$('pMsg').className='msg err';return;}
+    params={smlmv:s,recargo:rc,ajuste:aj};
+    cerrarParams(); pintarFestivos(); toast('Valores actualizados.');
+  });
 }
 
 // ---------- EXCEL ----------
@@ -542,9 +688,11 @@ function tituloBloque(ws,r,cols,titulo){
   ws.getRow(r).height=18;
 }
 // Encabezado de tabla: fondo menta claro, texto teal oscuro MAYÚSCULAS, línea inferior fina
-function encabezadoTabla(ws,r,headers){
+// off = desplazamiento de columna (0 = arranca en A; 1 = arranca en B, para sub-tablas)
+function encabezadoTabla(ws,r,headers,off){
+  off=off||0;
   headers.forEach(function(h,i){
-    var cell=ws.getCell(colLetra(i+1)+r);
+    var cell=ws.getCell(colLetra(i+1+off)+r);
     cell.value=String(h).toUpperCase();
     cell.fill=fillOf(XL_HEAD);
     cell.font={name:'Calibri',bold:true,size:9,color:{argb:XL_TEALD}};
@@ -554,9 +702,10 @@ function encabezadoTabla(ws,r,headers){
   ws.getRow(r).height=16;
 }
 // Fila de datos: zebra, columna boldIdx en bold petróleo, línea inferior fina
-function filaDato(ws,r,vals,zebra,boldIdx){
+function filaDato(ws,r,vals,zebra,boldIdx,off){
+  off=off||0;
   vals.forEach(function(v,i){
-    var cell=ws.getCell(colLetra(i+1)+r);
+    var cell=ws.getCell(colLetra(i+1+off)+r);
     cell.value=(v==null?'':v);
     cell.alignment={vertical:'middle',horizontal:(i===0?'center':'left'),wrapText:(i===vals.length-1)};
     var petro=(i===boldIdx);
@@ -565,8 +714,23 @@ function filaDato(ws,r,vals,zebra,boldIdx){
     cell.border={bottom:{style:'thin',color:{argb:XL_LINEA}}};
   });
 }
+// Datos de la sección FESTIVO del Excel (por festivo del período)
+function armarFestivosExcel(mes,q,festivoNov){
+  var fests=festivosEnPeriodo(mes,q); if(!fests.length)return [];
+  var g=partirColab();
+  return fests.map(function(f){
+    var worked={};
+    (festivoNov||[]).forEach(function(m){ if(m.fecha_inicio===f.fecha) worked[m.colaborador_id]={monto:m.monto}; });
+    var nomina=g.nom.map(function(c){return {nombre:c.nombre,cedula:c.cedula||'',trabajo:!!worked[c.id]};});
+    var prestacion=g.pre.filter(function(c){return !!worked[c.id];})
+      .map(function(c){return {nombre:c.nombre,cedula:c.cedula||'',monto:Number((worked[c.id]||{}).monto||0)};});
+    var total=prestacion.reduce(function(s,x){return s+(x.monto||0);},0);
+    return {fecha:f.fecha,nombre:f.nombre,nomina:nomina,prestacion:prestacion,total:total};
+  });
+}
 
-async function construirBlob(mes,q,rows){
+async function construirBlob(mes,q,rows,festivos){
+  festivos=festivos||[];
   var wb=new ExcelJS.Workbook();
   wb.creator='ProtectGo Services'; wb.created=new Date();
   var logo=await getLogoBuffer();
@@ -615,6 +779,47 @@ async function construirBlob(mes,q,rows){
   res.alignment={vertical:'middle',horizontal:'left'};
   ws.getRow(r).height=26; r+=2;
 
+  // ===== Secciones FESTIVO (una por festivo del período) =====
+  function subtitulo(txt){
+    ws.mergeCells('B'+r+':H'+r);
+    var c=ws.getCell('B'+r); c.value=txt;
+    c.font={name:'Calibri',bold:true,size:9.5,color:{argb:XL_TEALD}};
+    c.alignment={vertical:'middle',horizontal:'left'}; r++;
+  }
+  festivos.forEach(function(f){
+    tituloBloque(ws,r,8,'FESTIVO '+fdate(f.fecha)+' — '+f.nombre); r++;
+    // --- NÓMINA: lista completa, ¿Se paga festivo? SÍ trabajó / NO, sin montos ---
+    subtitulo('NÓMINA — el pago del festivo lo liquida el contable en la colilla');
+    encabezadoTabla(ws,r,['Colaborador','Cédula','¿Se paga festivo?'],1); r++;
+    if(!f.nomina.length){ ws.mergeCells('B'+r+':H'+r); ws.getCell('B'+r).value='— Sin personal de nómina —';
+      ws.getCell('B'+r).font={name:'Calibri',italic:true,size:10,color:{argb:XL_GRIS}}; r++; }
+    f.nomina.forEach(function(p,i){
+      filaDato(ws,r,[p.nombre,p.cedula,p.trabajo?'SÍ trabajó':'NO'],(i%2===1),0,1); r++;
+    });
+    r++;
+    // --- PRESTACIÓN: monto a girar + TOTAL + nota ---
+    subtitulo('PRESTACIÓN DE SERVICIOS — pago directo ProtectGo');
+    encabezadoTabla(ws,r,['Colaborador','Cédula','Monto a girar'],1); r++;
+    if(!f.prestacion.length){ ws.mergeCells('B'+r+':H'+r); ws.getCell('B'+r).value='— Sin prestadores que trabajaron —';
+      ws.getCell('B'+r).font={name:'Calibri',italic:true,size:10,color:{argb:XL_GRIS}}; r++; }
+    f.prestacion.forEach(function(p,i){
+      filaDato(ws,r,[p.nombre,p.cedula,fmtMoney(p.monto)],(i%2===1),0,1); r++;
+    });
+    if(f.prestacion.length){
+      // fila TOTAL
+      ws.getCell('C'+r).value='TOTAL a girar'; ws.getCell('C'+r).font={name:'Calibri',bold:true,size:10,color:{argb:XL_PETROLEO}};
+      ws.getCell('C'+r).alignment={horizontal:'right'};
+      ws.getCell('D'+r).value=fmtMoney(f.total); ws.getCell('D'+r).font={name:'Calibri',bold:true,size:11,color:{argb:XL_PETROLEO}};
+      ws.getRow(r).height=16; r++;
+    }
+    // nota
+    ws.mergeCells('B'+r+':H'+r);
+    var nota=ws.getCell('B'+r);
+    nota.value='Pago directo ProtectGo — NO va en colillas. Base: SMLMV '+fmtMoney(params.smlmv)+' · recargo '+(Number(params.recargo)*100)+'% · ajuste '+fmtMoney(params.ajuste)+'.';
+    nota.font={name:'Calibri',italic:true,size:9,color:{argb:XL_GRIS}};
+    nota.alignment={wrapText:true}; r+=2;
+  });
+
   // Nota de cierre + pie
   ws.mergeCells('A'+r+':H'+r);
   var cl=ws.getCell('A'+r); cl.value='Los demás colaboradores no presentan novedades en el período.';
@@ -625,30 +830,32 @@ async function construirBlob(mes,q,rows){
 
   // ===== Hoja "Personal" =====
   var wp=wb.addWorksheet('Personal',{views:[{showGridLines:false}]});
-  [34,16,24].forEach(function(w,i){wp.getColumn(i+1).width=w;});
+  [34,16,24,12].forEach(function(w,i){wp.getColumn(i+1).width=w;});
   var lista=personalActivos();
-  bandaEncabezado(wp,imgId,'Personal · '+lista.length+' colaboradores',3,[
+  bandaEncabezado(wp,imgId,'Personal · '+lista.length+' colaboradores',4,[
     ['EMPRESA','ProtectGo Services S.A.S'],
     ['REPORTE','Personal'],
     ['ACTIVOS',String(lista.length)]
   ]);
   var pr=6;
-  encabezadoTabla(wp,pr,['Nombre','Cédula','Tipo de contrato']); pr++;
+  encabezadoTabla(wp,pr,['Nombre','Cédula','Tipo de contrato','Colilla']); pr++;
   lista.forEach(function(c,i){
-    filaDato(wp,pr,[c.nombre||'',c.cedula||'',c.tipo_contrato||'Nómina'],(i%2===1),0);
+    var pre=(c.tipo_contrato==='Prestación de servicios');
+    filaDato(wp,pr,[c.nombre||'',c.cedula||'',c.tipo_contrato||'Nómina',pre?'NO':'SÍ'],(i%2===1),0);
     pr++;
   });
-  wp.mergeCells('A'+pr+':C'+pr);
+  wp.mergeCells('A'+pr+':D'+pr);
   var pie2=wp.getCell('A'+pr); pie2.value=pieTxt;
   pie2.font={name:'Calibri',size:8,color:{argb:XL_GRIS}};
 
   var buf=await wb.xlsx.writeBuffer();
   return new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
 }
-function descargarExcel(mes,q,rows){
+function descargarExcel(mes,q,rows,festivoNov){
   if(typeof ExcelJS==='undefined'){toast('No se pudo cargar ExcelJS (revisa tu conexión).');return;}
   toast('Generando Excel…');
-  construirBlob(mes,q,rows).then(function(blob){
+  var festivos=armarFestivosExcel(mes,q,festivoNov||[]);
+  construirBlob(mes,q,rows,festivos).then(function(blob){
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a');
     a.href=url; a.download=nombreArchivo(mes,q);
@@ -692,7 +899,7 @@ function pintarHist(){
 function reDescargar(key){
   var mes=key.slice(0,7), q=key.slice(9)==='2'?2:1;
   toast('Preparando Excel…');
-  fetchNovedades(mes,q).then(function(rows){descargarExcel(mes,q,rows);});
+  fetchPeriodo(mes,q).then(function(d){descargarExcel(mes,q,d.rows,d.festivoNov);});
 }
 
 // ---------- MODAL AGREGAR / EDITAR ----------
@@ -748,15 +955,20 @@ function wire(){
     var b=t.closest?t.closest('[data-act]'):null;
     if(b){var a=b.getAttribute('data-act');if(a==='login')doLogin();else if(a==='logout')sb.auth.signOut();return;}
     if(t.closest&&t.closest('#segQ button')){var qb=t.closest('#segQ button');setSeg(Number(qb.getAttribute('data-q')));recargar();return;}
+    if(t.getAttribute&&t.getAttribute('data-fest')!=null){toggleFestivo(t.getAttribute('data-col'),t.getAttribute('data-fecha'),t.getAttribute('data-pre')==='1',t.checked,t);return;}
+    if(t.getAttribute&&t.getAttribute('data-params')!=null){e.preventDefault();abrirParams();return;}
     if(t.getAttribute&&t.getAttribute('data-edit')!=null){var idx=Number(t.getAttribute('data-edit'));var row=curRows[idx];if(row&&row.manual)abrirModal(row);return;}
     if(t.getAttribute&&t.getAttribute('data-redl')){reDescargar(t.getAttribute('data-redl'));return;}
     if(t.id==='btnAgregar')abrirModal(null);
-    if(t.id==='btnExcel')descargarExcel(curMes,curQ,curRows);
+    if(t.id==='btnExcel')descargarExcel(curMes,curQ,curRows,curFestivoNov);
     if(t.id==='btnEnviada')marcarEnviada();
     if(t.id==='mGuardar')guardarManual();
     if(t.id==='mCancelar')cerrarModal();
     if(t.id==='mEliminar')eliminarManual();
+    if(t.id==='pGuardar')guardarParams();
+    if(t.id==='pCancelar')cerrarParams();
   });
+  document.addEventListener('input',function(e){var id=e.target&&e.target.id;if(id==='pSmlmv'||id==='pRecargo'||id==='pAjuste')preverParams();});
   $('selMes').addEventListener('change',function(){curMes=$('selMes').value||curMes;recargar();});
   document.addEventListener('keydown',function(e){if(e.key==='Enter'&&$('ov').style.display!=='none')doLogin();});
 }
@@ -778,7 +990,7 @@ else setTimeout(init,60);
 var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
 var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
 var PGV_ARCHIVO="rrhh-nomina.html";
-var PGV_VERSION=2;
+var PGV_VERSION=3;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');

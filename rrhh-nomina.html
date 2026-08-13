@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Novedades de Nómina · RRHH — ProtectGo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --navy:#002F3D; --navy-2:#0a5b54; --teal:#229A82; --teal-2:#1a7a68;
+    --mint:#BADFCE; --mint-soft:#E4F2EB; --mint-ghost:#F2F8F5;
+    --amber:#B8841F; --amber-soft:#fff7e0; --rojo:#c0392b; --rojo-soft:#fdeceb;
+    --papel:#FAF9F5; --surface:#fff;
+    --ink:#0D141A; --muted:#5a6a6e; --faint:#8a989a; --hairline:#d8e0de; --line:#e6ebe9;
+    --grad:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%);
+    --r-sm:10px; --r-md:14px; --r-lg:20px; --r-pill:999px;
+    --shadow-2:0 8px 24px -10px rgba(0,47,61,.16),0 2px 4px rgba(0,47,61,.05);
+    --font-title:"Montserrat",system-ui,sans-serif; --font-text:"Inter",system-ui,sans-serif; --font-mono:"IBM Plex Mono",monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-height:100vh;}
+
+  .pg-bar{position:sticky;top:0;z-index:40;height:58px;display:flex;align-items:center;gap:12px;padding:0 22px;background:var(--navy);color:#fff;box-shadow:0 2px 14px -6px rgba(0,0,0,.45);}
+  .pg-bar .logo{font-family:var(--font-title);font-weight:800;font-size:16px;letter-spacing:.2px;white-space:nowrap;}
+  .pg-bar .logo i{color:var(--teal);font-style:normal;}
+  .pg-bar .area-tag{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;background:rgba(255,255,255,.12);color:var(--mint);padding:5px 10px;border-radius:var(--r-pill);white-space:nowrap;}
+  .pg-bar .sp{flex:1;}
+  .pg-bar .user{font-family:var(--font-mono);font-size:12px;color:#9fc6bd;}
+  .pg-b{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;padding:8px 14px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;}
+  .pg-b:hover{background:rgba(255,255,255,.08);}
+  .pg-bar a.back{color:#9fc6bd;text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap;}
+  .pg-bar a.back:hover{color:#fff;}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:26px 22px 80px;}
+  .hero{padding:14px 0 6px;}
+  .hero .kicker{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-2);font-weight:600;}
+  .hero h1{font-family:var(--font-title);font-weight:800;font-size:28px;line-height:1.12;margin:6px 0 4px;color:var(--navy);}
+  .hero p{margin:0;color:var(--muted);font-size:14px;max-width:680px;}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow-2);margin-bottom:20px;}
+  .card h2{font-family:var(--font-title);font-weight:700;font-size:17px;color:var(--navy);margin:0 0 14px;}
+  .card h2 small{font-family:var(--font-text);font-weight:500;font-size:12.5px;color:var(--faint);margin-left:8px;}
+
+  .frm{display:grid;grid-template-columns:repeat(4,1fr);gap:13px 14px;}
+  .f{display:flex;flex-direction:column;gap:5px;}
+  .f.c2{grid-column:span 2;} .f.c4{grid-column:span 4;}
+  .f label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .f input,.f select,.f textarea{width:100%;padding:10px 11px;border:1px solid var(--hairline);border-radius:var(--r-sm);font-size:13.5px;font-family:inherit;background:#fff;color:var(--ink);}
+  .f textarea{resize:vertical;min-height:52px;}
+  .f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(34,154,130,.14);}
+  .hint{font-size:11.5px;color:var(--faint);line-height:1.4;}
+  .hint b{color:var(--teal-2);}
+
+  .btn{font:inherit;font-size:14px;font-weight:700;background:var(--navy);color:#fff;border:none;border-radius:var(--r-sm);padding:12px 22px;cursor:pointer;}
+  .btn:hover{background:var(--navy-2);}
+  .btn.sec{background:var(--mint-soft);color:var(--teal-2);}
+  .btn.sec:hover{background:var(--mint);}
+  .btn.mini{font-size:12px;padding:7px 12px;font-weight:600;}
+  .btn.warn{background:var(--rojo);}
+  .btn[disabled]{opacity:.55;cursor:not-allowed;}
+
+  .note{border-radius:var(--r-md);padding:12px 15px;font-size:13px;line-height:1.5;margin:0 0 16px;}
+  .note.mint{background:var(--mint-ghost);border:1px solid var(--mint);color:var(--ink);}
+  .note.amber{background:var(--amber-soft);border:1px solid #edd9a3;color:#6b5312;}
+  .note.red{background:var(--rojo-soft);border:1px solid #f0b9b3;color:#7c241b;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:left;padding:9px 10px;border-bottom:2px solid var(--line);white-space:nowrap;}
+  td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:hover td{background:var(--mint-ghost);}
+  td.mono{font-family:var(--font-mono);font-size:12px;white-space:nowrap;}
+  td .sub{display:block;font-size:11.5px;color:var(--faint);margin-top:2px;}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:4px 10px;border-radius:var(--r-pill);white-space:nowrap;}
+  .pill.ok{background:var(--mint-soft);color:var(--teal-2);}
+  .pill.warn{background:var(--amber-soft);color:var(--amber);}
+  .pill.red{background:var(--rojo-soft);color:var(--rojo);}
+  .pill.grey{background:#eef1f1;color:var(--faint);}
+  .pill.navy{background:var(--navy);color:#fff;}
+  .empty{padding:26px;text-align:center;color:var(--faint);font-size:13.5px;}
+
+  /* selector de quincena */
+  .selrow{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;}
+  .seg{display:inline-flex;border:1px solid var(--hairline);border-radius:var(--r-pill);overflow:hidden;}
+  .seg button{font:inherit;font-size:13px;font-weight:700;color:var(--muted);background:#fff;border:none;padding:10px 18px;cursor:pointer;}
+  .seg button.act{background:var(--navy);color:#fff;}
+  .selstatus{margin-top:14px;}
+
+  /* bloques del reporte */
+  .rep-block{margin:6px 0 18px;}
+  .rep-block .rep-h{font-family:var(--font-title);font-weight:800;font-size:13px;letter-spacing:.06em;color:var(--navy);text-transform:uppercase;border-left:3px solid var(--teal);padding-left:9px;margin:0 0 8px;}
+  .rep-block .rep-n{font-family:var(--font-mono);font-size:11px;color:var(--faint);margin-left:8px;}
+
+  .actline{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:6px;}
+
+  .ov{position:fixed;inset:0;z-index:90;background:rgba(0,30,38,.6);display:flex;align-items:center;justify-content:center;padding:18px;}
+  .ov .card-l{background:#fff;border-radius:18px;padding:34px 30px;width:380px;max-width:94vw;box-shadow:0 30px 80px -25px rgba(0,0,0,.55);}
+  .ov .brand{font-family:var(--font-title);font-weight:800;font-size:15px;color:var(--navy);margin-bottom:18px;}
+  .ov .brand i{color:var(--teal);font-style:normal;}
+  .ov h2{font-family:var(--font-title);margin:0 0 4px;color:var(--navy);font-size:22px;}
+  .ov p{margin:0 0 16px;color:var(--muted);font-size:13px;}
+  .ov label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin:13px 0 5px;text-transform:uppercase;letter-spacing:.04em;}
+  .ov input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--hairline);border-radius:10px;font-size:14px;font-family:inherit;}
+  .ov input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.15);}
+  .ov .btn-l{background:var(--navy);color:#fff;width:100%;justify-content:center;margin-top:20px;padding:13px;border:none;border-radius:10px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;}
+  .ov .btn-l:hover{background:var(--navy-2);}
+  .msg{font-size:12.5px;margin-top:12px;min-height:16px;}
+  .msg.err{color:#c0392b;}.msg.ok{color:var(--teal-2);}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:95;background:var(--navy);color:#fff;font-size:13.5px;font-weight:600;padding:12px 22px;border-radius:var(--r-pill);box-shadow:var(--shadow-2);display:none;}
+
+  .modal-bg{position:fixed;inset:0;z-index:80;background:rgba(0,30,38,.55);display:none;align-items:center;justify-content:center;padding:18px;}
+  .modal{background:#fff;border-radius:18px;padding:26px;width:520px;max-width:96vw;max-height:92vh;overflow:auto;box-shadow:0 30px 80px -25px rgba(0,0,0,.5);}
+  .modal h3{font-family:var(--font-title);color:var(--navy);margin:0 0 14px;font-size:18px;}
+
+  #app{display:none;}
+  @media(max-width:760px){.frm{grid-template-columns:1fr 1fr;}.f.c2,.f.c4{grid-column:span 2;}}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="pg-bar">
+    <span class="logo">Protect<i>Go</i> · RRHH</span>
+    <span class="area-tag">◆ NÓMINA</span>
+    <span class="sp"></span>
+    <a class="back" href="rrhh.html">&#8592; Dashboard</a>
+    <span class="user" id="pgUser"></span>
+    <button class="pg-b" data-act="logout">Salir</button>
+  </header>
+
+  <div class="wrap">
+    <section class="hero">
+      <div class="kicker">Recursos Humanos · Nómina</div>
+      <h1>Novedades de Nómina</h1>
+      <p>Elige la quincena: la lista de novedades se arma sola leyendo Permisos y Vacaciones en vivo. Agrega a mano solo lo excepcional y descarga el Excel para el contable.</p>
+    </section>
+
+    <!-- ===== SELECTOR DE QUINCENA ===== -->
+    <div class="card">
+      <h2>Período <small>quincena a reportar</small></h2>
+      <div class="selrow">
+        <div class="f" style="min-width:180px">
+          <label>Mes</label>
+          <input type="month" id="selMes">
+        </div>
+        <div class="f">
+          <label>Quincena</label>
+          <div class="seg" id="segQ">
+            <button type="button" data-q="1">1 – 15</button>
+            <button type="button" data-q="2">16 – fin</button>
+          </div>
+        </div>
+        <div class="f" style="flex:1;min-width:200px">
+          <label>&nbsp;</label>
+          <div id="selRango" class="hint" style="font-size:13px;color:var(--muted);padding-top:8px"></div>
+        </div>
+      </div>
+      <div class="selstatus" id="selStatus"></div>
+    </div>
+
+    <!-- ===== NOVEDADES DEL PERÍODO ===== -->
+    <div class="card">
+      <h2>Novedades del período <small id="novCount"></small></h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>Colaborador</th><th>Cédula</th><th>Tipo</th><th>Fechas</th><th>Días u horas</th><th>Observación</th><th>Origen</th><th></th>
+          </tr></thead>
+          <tbody id="novBody"></tbody>
+        </table>
+      </div>
+      <div id="novEmpty" class="empty" style="display:none">Sin novedades en esta quincena.</div>
+      <div class="actline" style="margin-top:16px">
+        <button class="btn sec" id="btnAgregar">+ Agregar novedad</button>
+        <span class="hint">Solo lo excepcional. Incapacidades, licencias y vacaciones aparecen solas desde sus herramientas.</span>
+      </div>
+    </div>
+
+    <!-- ===== REPORTE PARA EL CONTABLE ===== -->
+    <div class="card">
+      <h2>Reporte para el contable</h2>
+      <div id="repPreview"></div>
+      <div class="actline">
+        <button class="btn" id="btnExcel">⬇️ Descargar Excel (.xlsx)</button>
+        <button class="btn sec" id="btnEnviada">✅ Marcar como enviada</button>
+        <span class="hint" id="repHint"></span>
+      </div>
+    </div>
+
+    <!-- ===== QUINCENAS ANTERIORES ===== -->
+    <div class="card">
+      <h2>Quincenas anteriores <small>histórico de envíos</small></h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Quincena</th><th>Estado</th><th>Enviada</th><th></th></tr></thead>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
+      <div id="histEmpty" class="empty" style="display:none">Aún no se ha marcado ninguna quincena como enviada.</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== MODAL AGREGAR NOVEDAD (4 casillas) ===== -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">Agregar novedad</h3>
+    <div class="frm">
+      <div class="f c2"><label>Colaborador *</label><select id="mCola"></select></div>
+      <div class="f c2"><label>Tipo *</label><select id="mTipo"></select></div>
+      <div class="f c2"><label>Fecha desde *</label><input type="date" id="mDesde"></div>
+      <div class="f c2"><label>Fecha hasta</label><input type="date" id="mHasta"><span class="hint">en blanco = un solo día</span></div>
+      <div class="f c4"><label>Observación (opcional)</label><textarea id="mObs" placeholder="Solo si hace falta una aclaración"></textarea></div>
+    </div>
+    <div class="msg" id="mMsg"></div>
+    <div class="actline" style="margin-top:16px">
+      <button class="btn" id="mGuardar">Guardar</button>
+      <button class="btn sec" id="mCancelar">Cancelar</button>
+      <span class="sp" style="flex:1"></span>
+      <button class="btn warn mini" id="mEliminar" style="display:none">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div class="ov" id="ov">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">RRHH</span></div>
+    <h2>Novedades de Nómina</h2>
+    <p>Ingresa con la cuenta de RRHH para acceder al módulo.</p>
+    <label>Email</label>
+    <input id="email" type="email" autocomplete="username" value="rrhh@protectgoservices.com">
+    <label>Contraseña</label>
+    <input id="pass" type="password" autocomplete="current-password">
+    <button class="btn-l" data-act="login">Entrar</button>
+    <div class="msg" id="msg"></div>
+  </div>
+</div>
+
+<!-- ===== BLOQUEO ===== -->
+<div class="ov" id="ovBlock" style="display:none">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> · <span style="color:var(--teal-2)">RRHH</span></div>
+    <h2>Acceso restringido</h2>
+    <p>Este módulo es exclusivo de <b>Recursos Humanos</b>. Tu cuenta <b id="ovBlockMail"></b> no tiene acceso.</p>
+    <button class="btn-l" data-act="logout">Salir e ingresar con otra cuenta</button>
+    <a href="rrhh.html" style="display:block;text-align:center;margin-top:13px;color:var(--teal-2);font-weight:600;font-size:13px;text-decoration:none">&#8592; Volver al dashboard</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+"use strict";
+var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var sb=null;
+var PERMITIDOS=['rrhh@protectgoservices.com','sales@protectgoservices.com'];
+
+// Tipos de permiso que van a nómina y su etiqueta en el reporte
+var PERMISO_INCAP=['Incapacidad médica','Licencia maternidad / paternidad'];
+var PERMISO_DESCUENTO='Permiso no remunerado';
+var ESTADOS_PERMISO_EXCLUIR=['Rechazado','Anulado'];
+var ESTADOS_VACAC_INCLUIR=['Solicitado','Aprobado'];
+// 7 tipos de novedad manual (D2)
+var TIPOS_MANUAL=['Festivo trabajado','Incapacidad','Vacaciones','Descuento','Ingreso','Retiro','Otro'];
+var MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+var colaboradores=[], colMap={}, userEmail='';
+var curMes='', curQ=1;             // período seleccionado
+var curRows=[];                    // novedades del período (para el Excel actual)
+var periodosEnviados={};           // key -> {enviada_at, enviada_por}
+var editId=null;
+
+var $=function(id){return document.getElementById(id);};
+function msg(t,cls){var m=$('msg');if(m){m.textContent=t||'';m.className='msg '+(cls||'');}}
+function mmsg(t,cls){var m=$('mMsg');if(m){m.textContent=t||'';m.className='msg '+(cls||'');}}
+function toast(t){var el=$('toast');el.textContent=t;el.style.display='block';setTimeout(function(){el.style.display='none';},2800);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function esEjemplo(nombre,ced){return /EJEMPLO/i.test(nombre||'')||/^EJEMPLO/i.test(ced||'');}
+
+// ---------- FECHAS ----------
+function pad2(n){return (n<10?'0':'')+n;}
+function ultimoDia(mes){var p=mes.split('-');return new Date(Number(p[0]),Number(p[1]),0).getDate();}
+function rango(mes,q){
+  return q===1 ? {ini:mes+'-01', fin:mes+'-15'} : {ini:mes+'-16', fin:mes+'-'+pad2(ultimoDia(mes))};
+}
+function periodoKey(mes,q){return mes+'-Q'+q;}
+function fdate(d){if(!d)return '';var p=String(d).slice(0,10).split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+function labelPeriodo(mes,q){
+  var p=mes.split('-'), r=rango(mes,q);
+  var d1=Number(r.ini.slice(8)), d2=Number(r.fin.slice(8));
+  return d1+'–'+d2+' '+MESES[Number(p[1])-1]+' '+p[0];
+}
+function labelKey(key){ // '2026-08-Q1' -> '1–15 ago 2026'
+  var m=key.slice(0,7), q=key.slice(9)==='2'?2:1; return labelPeriodo(m,q);
+}
+function diasEntre(a,b){
+  if(!a)return null; if(!b)b=a;
+  var d1=new Date(a+'T00:00:00'), d2=new Date(b+'T00:00:00');
+  return Math.round((d2-d1)/86400000)+1;
+}
+function solapa(ini,fin,qIni,qFin){
+  var f=fin||ini; return ini<=qFin && f>=qIni;
+}
+
+// ---------- AUTH ----------
+function doLogin(){
+  var em=$('email').value.trim(),pw=$('pass').value;
+  if(!em||!pw){msg('Escribe email y contraseña.','err');return;}
+  msg('Entrando…');
+  sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){if(r.error)msg(r.error.message,'err');else msg('');});
+}
+function onAuthed(session){
+  var email=(session&&session.user?session.user.email:'')||'';
+  if(PERMITIDOS.indexOf(email.toLowerCase())<0){
+    $('app').style.display='none';$('ov').style.display='none';
+    $('ovBlockMail').textContent=email;$('ovBlock').style.display='flex';
+    return;
+  }
+  userEmail=email;
+  $('ovBlock').style.display='none';
+  $('pgUser').textContent=email;
+  $('ov').style.display='none';$('app').style.display='block';
+  arrancar();
+}
+function onSignedOut(){$('app').style.display='none';$('ovBlock').style.display='none';$('ov').style.display='flex';}
+
+// ---------- CARGA INICIAL ----------
+function arrancar(){
+  Promise.all([
+    sb.from('rrhh_colaboradores').select('id,nombre,cedula,tipo_contrato,activo').order('nombre'),
+    sb.from('rrhh_nomina_periodos').select('*').order('periodo',{ascending:false})
+  ]).then(function(rs){
+    if(rs[0].error){toast('Error cargando colaboradores: '+rs[0].error.message);return;}
+    colaboradores=(rs[0].data||[]);
+    colMap={}; colaboradores.forEach(function(c){colMap[c.id]=c;});
+    periodosEnviados={};
+    ((rs[1]&&rs[1].data)||[]).forEach(function(p){periodosEnviados[p.periodo]={enviada_at:p.enviada_at,enviada_por:p.enviada_por};});
+    pintarSelectManual();
+    pintarHist();
+    // período por defecto = quincena en curso
+    var hoy=new Date();
+    curMes=hoy.getFullYear()+'-'+pad2(hoy.getMonth()+1);
+    curQ=hoy.getDate()<=15?1:2;
+    $('selMes').value=curMes;
+    setSeg(curQ);
+    recargar();
+  });
+}
+function pintarSelectManual(){
+  var act=colaboradores.filter(function(c){return c.activo&&!esEjemplo(c.nombre,c.cedula);});
+  $('mCola').innerHTML='<option value="">— Selecciona —</option>'+act.map(function(c){return '<option value="'+c.id+'">'+esc(c.nombre)+'</option>';}).join('');
+  $('mTipo').innerHTML='<option value="">— Selecciona —</option>'+TIPOS_MANUAL.map(function(t){return '<option>'+esc(t)+'</option>';}).join('');
+}
+
+// ---------- CONSTRUIR NOVEDADES DE UN PERÍODO ----------
+// Devuelve Promise<array de filas normalizadas> para (mes,q)
+function fetchNovedades(mes,q){
+  var r=rango(mes,q), key=periodoKey(mes,q);
+  var sel='*, colaborador:rrhh_colaboradores(nombre,cedula,tipo_contrato,activo)';
+  return Promise.all([
+    sb.from('rrhh_permisos').select(sel).in('tipo',PERMISO_INCAP.concat([PERMISO_DESCUENTO])),
+    sb.from('rrhh_vacaciones').select(sel).in('estado',ESTADOS_VACAC_INCLUIR),
+    sb.from('rrhh_nomina_novedades').select(sel).eq('periodo',key)
+  ]).then(function(res){
+    var rows=[];
+    // Permisos → Incapacidad / Licencia / Descuento
+    ((res[0].data)||[]).forEach(function(p){
+      if(ESTADOS_PERMISO_EXCLUIR.indexOf(p.estado)>=0)return;
+      if(!solapa(p.fecha_inicio,p.fecha_fin,r.ini,r.fin))return;
+      var c=p.colaborador||{};
+      if(esEjemplo(c.nombre,c.cedula))return;
+      var disp = p.tipo===PERMISO_DESCUENTO ? 'Descuento'
+               : (p.tipo==='Incapacidad médica' ? 'Incapacidad' : 'Licencia mat./pat.');
+      var cant = (p.horas_permiso!=null&&p.horas_permiso!=='') ? (p.horas_permiso+' h')
+               : (function(){var n=diasEntre(p.fecha_inicio,p.fecha_fin);return n?(n+' día'+(n!==1?'s':'')):'';})();
+      rows.push({nombre:c.nombre,cedula:c.cedula||'',tipoDisp:disp,desde:p.fecha_inicio,hasta:p.fecha_fin||p.fecha_inicio,
+                 cant:cant,obs:p.notas||'',origen:'Permisos',tipo_contrato:c.tipo_contrato,manual:false});
+    });
+    // Vacaciones
+    ((res[1].data)||[]).forEach(function(v){
+      if(!solapa(v.fecha_inicio,v.fecha_fin,r.ini,r.fin))return;
+      var c=v.colaborador||{};
+      if(esEjemplo(c.nombre,c.cedula))return;
+      var dh=(v.dias_habiles!=null&&v.dias_habiles!=='')?v.dias_habiles:diasEntre(v.fecha_inicio,v.fecha_fin);
+      rows.push({nombre:c.nombre,cedula:c.cedula||'',tipoDisp:'Vacaciones',desde:v.fecha_inicio,hasta:v.fecha_fin,
+                 cant:(dh!=null?dh+' días háb.':''),obs:v.notas||'',origen:'Vacaciones',tipo_contrato:c.tipo_contrato,manual:false});
+    });
+    // Manuales
+    ((res[2].data)||[]).forEach(function(m){
+      var c=m.colaborador||{};
+      if(esEjemplo(c.nombre,c.cedula))return;
+      var cant = (m.horas!=null&&m.horas!=='') ? (m.horas+' h')
+               : (m.dias!=null&&m.dias!=='') ? (m.dias+' día'+(Number(m.dias)!==1?'s':''))
+               : (function(){var n=diasEntre(m.fecha_inicio,m.fecha_fin);return n?(n+' día'+(n!==1?'s':'')):'';})();
+      rows.push({id:m.id,nombre:c.nombre,cedula:c.cedula||'',tipoDisp:m.tipo,desde:m.fecha_inicio,hasta:m.fecha_fin||m.fecha_inicio,
+                 cant:cant,obs:m.observacion||'',origen:'Manual',tipo_contrato:c.tipo_contrato,manual:true,
+                 raw:m});
+    });
+    rows.sort(function(a,b){return (a.nombre||'').localeCompare(b.nombre||'');});
+    return rows;
+  });
+}
+
+// ---------- RECARGAR PANTALLA CON EL PERÍODO ACTUAL ----------
+function recargar(){
+  var r=rango(curMes,curQ);
+  $('selRango').innerHTML='Del <b style="color:var(--navy)">'+fdate(r.ini)+'</b> al <b style="color:var(--navy)">'+fdate(r.fin)+'</b>';
+  pintarStatus();
+  $('novBody').innerHTML='<tr><td colspan="8" class="empty">Cargando…</td></tr>';
+  fetchNovedades(curMes,curQ).then(function(rows){
+    curRows=rows;
+    pintarTabla(rows);
+    pintarReporte(rows);
+  }).catch(function(e){toast('Error cargando novedades: '+(e&&e.message||e));});
+}
+function pintarStatus(){
+  var key=periodoKey(curMes,curQ), env=periodosEnviados[key], el=$('selStatus');
+  if(env&&env.enviada_at){
+    el.innerHTML='<div class="note mint">✅ Esta quincena ya se marcó como <b>enviada</b> el '+fdate(env.enviada_at)+' por '+esc(env.enviada_por||'—')+'. Puedes re-descargar el Excel.</div>';
+  }else{
+    el.innerHTML='<div class="note amber">Pendiente de envío. Revisa las novedades y descarga el Excel para el contable.</div>';
+  }
+}
+function pintarTabla(rows){
+  var b=$('novBody');
+  if(!rows.length){b.innerHTML='';$('novEmpty').style.display='block';$('novCount').textContent='';return;}
+  $('novEmpty').style.display='none';
+  $('novCount').textContent=rows.length+' novedad'+(rows.length!==1?'es':'');
+  b.innerHTML=rows.map(function(r,i){
+    var chip = r.origen==='Manual' ? '<span class="pill warn">Manual</span>'
+             : r.origen==='Vacaciones' ? '<span class="pill ok">Vacaciones</span>'
+             : '<span class="pill navy">Permisos</span>';
+    var acc = r.manual
+      ? '<button class="btn sec mini" data-edit="'+i+'">Editar</button>'
+      : '<span class="hint" title="Se corrige en su herramienta de origen">🔒</span>';
+    var fechas = fdate(r.desde)+(r.hasta&&r.hasta!==r.desde?' → '+fdate(r.hasta):'');
+    return '<tr>'+
+      '<td>'+esc(r.nombre||'—')+'</td>'+
+      '<td class="mono">'+esc(r.cedula)+'</td>'+
+      '<td>'+esc(r.tipoDisp)+'</td>'+
+      '<td class="mono">'+fechas+'</td>'+
+      '<td>'+esc(r.cant||'')+'</td>'+
+      '<td>'+esc(r.obs||'')+'</td>'+
+      '<td>'+chip+'</td>'+
+      '<td>'+acc+'</td>'+
+    '</tr>';
+  }).join('');
+}
+function partir(rows){
+  var nom=[],pre=[];
+  rows.forEach(function(r){ (r.tipo_contrato==='Prestación de servicios'?pre:nom).push(r); });
+  return {nom:nom,pre:pre};
+}
+function pintarReporte(rows){
+  var g=partir(rows);
+  function bloque(titulo,arr){
+    var h='<div class="rep-block"><div class="rep-h">'+titulo+'<span class="rep-n">'+arr.length+' novedad'+(arr.length!==1?'es':'')+'</span></div>';
+    if(!arr.length){h+='<div class="hint" style="padding:2px 0 0 12px">— Sin novedades —</div></div>';return h;}
+    h+='<div style="overflow-x:auto"><table><thead><tr><th>#</th><th>Colaborador</th><th>Cédula</th><th>Tipo</th><th>Desde</th><th>Hasta</th><th>Días/Horas</th><th>Observación</th></tr></thead><tbody>';
+    arr.forEach(function(r,i){
+      h+='<tr><td class="mono">'+(i+1)+'</td><td>'+esc(r.nombre||'—')+'</td><td class="mono">'+esc(r.cedula)+'</td><td>'+esc(r.tipoDisp)+'</td><td class="mono">'+fdate(r.desde)+'</td><td class="mono">'+fdate(r.hasta)+'</td><td>'+esc(r.cant||'')+'</td><td>'+esc(r.obs||'')+'</td></tr>';
+    });
+    h+='</tbody></table></div></div>';
+    return h;
+  }
+  var html=bloque('NÓMINA',g.nom)+bloque('PRESTACIÓN DE SERVICIOS',g.pre);
+  html+='<div class="hint" style="margin-top:4px">Los demás colaboradores no presentan novedades en el período.</div>';
+  $('repPreview').innerHTML=html;
+  var key=periodoKey(curMes,curQ), env=periodosEnviados[key];
+  $('repHint').textContent = env&&env.enviada_at ? 'Ya enviada — puedes re-descargar.' : '';
+}
+
+// ---------- EXCEL ----------
+function personalActivos(){
+  return colaboradores.filter(function(c){return c.activo&&!esEjemplo(c.nombre,c.cedula);})
+    .sort(function(a,b){return (a.nombre||'').localeCompare(b.nombre||'');});
+}
+function construirLibro(mes,q,rows){
+  var g=partir(rows), key=periodoKey(mes,q);
+  var aoa=[];
+  aoa.push(['NOVEDADES DE NÓMINA — ProtectGo']);
+  aoa.push(['Período:', labelPeriodo(mes,q), '', 'Generado:', fdate(new Date().toISOString())]);
+  aoa.push([]);
+  function pushBlock(titulo,arr){
+    aoa.push([titulo]);
+    aoa.push(['#','Colaborador','Cédula','Tipo','Desde','Hasta','Días/Horas','Observación']);
+    if(!arr.length){aoa.push(['— Sin novedades —']);return;}
+    arr.forEach(function(r,i){aoa.push([i+1,r.nombre||'',r.cedula||'',r.tipoDisp||'',fdate(r.desde),fdate(r.hasta),r.cant||'',r.obs||'']);});
+  }
+  pushBlock('NÓMINA',g.nom);
+  aoa.push([]);
+  pushBlock('PRESTACIÓN DE SERVICIOS',g.pre);
+  aoa.push([]);
+  aoa.push(['Los demás colaboradores no presentan novedades en el período.']);
+  var ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:4},{wch:30},{wch:13},{wch:20},{wch:12},{wch:12},{wch:14},{wch:40}];
+
+  var aoa2=[['PERSONAL — ProtectGo'],['Nombre','Cédula','Tipo de contrato']];
+  personalActivos().forEach(function(c){aoa2.push([c.nombre||'',c.cedula||'',c.tipo_contrato||'Nómina']);});
+  var ws2=XLSX.utils.aoa_to_sheet(aoa2);
+  ws2['!cols']=[{wch:30},{wch:14},{wch:24}];
+
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Novedades');
+  XLSX.utils.book_append_sheet(wb,ws2,'Personal');
+  return wb;
+}
+function nombreArchivo(mes,q){return 'Novedades_Nomina_ProtectGo_'+mes+'_Q'+q+'.xlsx';}
+function descargarExcel(mes,q,rows){
+  try{
+    if(typeof XLSX==='undefined'){toast('No se pudo cargar SheetJS (revisa tu conexión).');return;}
+    var wb=construirLibro(mes,q,rows);
+    XLSX.writeFile(wb,nombreArchivo(mes,q));
+    toast('Excel descargado.');
+  }catch(e){toast('Error generando Excel: '+(e&&e.message||e));}
+}
+
+// ---------- MARCAR ENVIADA ----------
+function marcarEnviada(){
+  var key=periodoKey(curMes,curQ);
+  if(!confirm('¿Marcar la quincena '+labelPeriodo(curMes,curQ)+' como enviada al contable?'))return;
+  sb.from('rrhh_nomina_periodos').upsert({periodo:key,enviada_at:new Date().toISOString(),enviada_por:userEmail}).then(function(r){
+    if(r.error){toast('Error: '+r.error.message);return;}
+    periodosEnviados[key]={enviada_at:new Date().toISOString(),enviada_por:userEmail};
+    pintarStatus();pintarReporte(curRows);
+    // refrescar histórico
+    sb.from('rrhh_nomina_periodos').select('*').order('periodo',{ascending:false}).then(function(rr){
+      periodosEnviados={};((rr.data)||[]).forEach(function(p){periodosEnviados[p.periodo]={enviada_at:p.enviada_at,enviada_por:p.enviada_por};});
+      pintarHist();pintarStatus();
+    });
+    toast('Quincena marcada como enviada.');
+  });
+}
+
+// ---------- HISTÓRICO ----------
+function pintarHist(){
+  var keys=Object.keys(periodosEnviados).sort().reverse();
+  var b=$('histBody');
+  if(!keys.length){b.innerHTML='';$('histEmpty').style.display='block';return;}
+  $('histEmpty').style.display='none';
+  b.innerHTML=keys.map(function(k){
+    var e=periodosEnviados[k];
+    return '<tr><td><b>'+esc(labelKey(k))+'</b></td>'+
+      '<td><span class="pill ok">Enviada</span></td>'+
+      '<td class="mono">'+(e.enviada_at?fdate(e.enviada_at):'—')+(e.enviada_por?'<span class="sub">'+esc(e.enviada_por)+'</span>':'')+'</td>'+
+      '<td><button class="btn sec mini" data-redl="'+esc(k)+'">Re-descargar</button></td></tr>';
+  }).join('');
+}
+function reDescargar(key){
+  var mes=key.slice(0,7), q=key.slice(9)==='2'?2:1;
+  toast('Preparando Excel…');
+  fetchNovedades(mes,q).then(function(rows){descargarExcel(mes,q,rows);});
+}
+
+// ---------- MODAL AGREGAR / EDITAR ----------
+function abrirModal(row){
+  editId = row?row.raw.id:null;
+  $('modalTitle').textContent = row?'Editar novedad':'Agregar novedad';
+  $('mEliminar').style.display = row?'inline-block':'none';
+  mmsg('');
+  if(row){
+    var m=row.raw;
+    $('mCola').value=m.colaborador_id; $('mTipo').value=m.tipo;
+    $('mDesde').value=m.fecha_inicio||''; $('mHasta').value=m.fecha_fin||''; $('mObs').value=m.observacion||'';
+  }else{
+    $('mCola').value=''; $('mTipo').value=''; var r=rango(curMes,curQ);
+    $('mDesde').value=r.ini; $('mHasta').value=''; $('mObs').value='';
+  }
+  $('modalBg').style.display='flex';
+}
+function cerrarModal(){$('modalBg').style.display='none';editId=null;}
+function guardarManual(){
+  var colId=$('mCola').value, tipo=$('mTipo').value, desde=$('mDesde').value, hasta=$('mHasta').value||null, obs=$('mObs').value.trim()||null;
+  if(!colId||!tipo||!desde){mmsg('Colaborador, tipo y fecha desde son obligatorios.','err');return;}
+  var key=periodoKey(curMes,curQ);
+  var rec={periodo:key,colaborador_id:colId,tipo:tipo,fecha_inicio:desde,fecha_fin:hasta,observacion:obs,registrado_por:userEmail,updated_at:new Date().toISOString()};
+  var q = editId ? sb.from('rrhh_nomina_novedades').update(rec).eq('id',editId)
+                 : sb.from('rrhh_nomina_novedades').insert(rec);
+  mmsg('Guardando…');
+  q.then(function(r){
+    if(r.error){mmsg('Error: '+r.error.message,'err');return;}
+    cerrarModal();
+    var yaEnv = periodosEnviados[key] && periodosEnviados[key].enviada_at;
+    recargar();
+    if(yaEnv && !editId) toast('Esta quincena ya se envió — esta novedad va en la siguiente o reenvía el Excel.');
+    else toast(editId?'Novedad actualizada.':'Novedad agregada.');
+  });
+}
+function eliminarManual(){
+  if(!editId)return;
+  if(!confirm('¿Eliminar esta novedad manual?'))return;
+  sb.from('rrhh_nomina_novedades').delete().eq('id',editId).then(function(r){
+    if(r.error){mmsg('Error: '+r.error.message,'err');return;}
+    cerrarModal();recargar();toast('Novedad eliminada.');
+  });
+}
+
+// ---------- SELECTOR ----------
+function setSeg(q){curQ=q;var bs=$('segQ').querySelectorAll('button');bs.forEach(function(b){b.classList.toggle('act',Number(b.getAttribute('data-q'))===q);});}
+
+// ---------- WIRING ----------
+function wire(){
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    var b=t.closest?t.closest('[data-act]'):null;
+    if(b){var a=b.getAttribute('data-act');if(a==='login')doLogin();else if(a==='logout')sb.auth.signOut();return;}
+    if(t.closest&&t.closest('#segQ button')){var qb=t.closest('#segQ button');setSeg(Number(qb.getAttribute('data-q')));recargar();return;}
+    if(t.getAttribute&&t.getAttribute('data-edit')!=null){var idx=Number(t.getAttribute('data-edit'));var row=curRows[idx];if(row&&row.manual)abrirModal(row);return;}
+    if(t.getAttribute&&t.getAttribute('data-redl')){reDescargar(t.getAttribute('data-redl'));return;}
+    if(t.id==='btnAgregar')abrirModal(null);
+    if(t.id==='btnExcel')descargarExcel(curMes,curQ,curRows);
+    if(t.id==='btnEnviada')marcarEnviada();
+    if(t.id==='mGuardar')guardarManual();
+    if(t.id==='mCancelar')cerrarModal();
+    if(t.id==='mEliminar')eliminarManual();
+  });
+  $('selMes').addEventListener('change',function(){curMes=$('selMes').value||curMes;recargar();});
+  document.addEventListener('keydown',function(e){if(e.key==='Enter'&&$('ov').style.display!=='none')doLogin();});
+}
+
+function init(){
+  if(!(window.supabase&&window.supabase.createClient)){msg('No se pudo cargar Supabase (revisa tu conexión).','err');$('ov').style.display='flex';return;}
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  wire();
+  sb.auth.getSession().then(function(r){if(r.data&&r.data.session)onAuthed(r.data.session);else onSignedOut();});
+  sb.auth.onAuthStateChange(function(evt,session){if(session)onAuthed(session);else onSignedOut();});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,60);});
+else setTimeout(init,60);
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PGV_ARCHIVO="rrhh-nomina.html";
+var PGV_VERSION=1;
+function pgvBanner(){
+  if(document.getElementById('pgvBar'))return;
+  var b=document.createElement('div');
+  b.id='pgvBar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
+  b.innerHTML='🔄 Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
+  document.body.appendChild(b);
+  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+}
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY);
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION)pgvBanner();
+    });
+  }catch(e){}
+}
+function pgvCheck(){
+  if(window.supabase&&window.supabase.createClient){pgvRun();return;}
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload=pgvRun;
+  document.head.appendChild(s);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);});
+else setTimeout(pgvCheck,400);
+})();
+</script>
+</body>
+</html>

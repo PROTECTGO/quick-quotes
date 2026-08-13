@@ -243,6 +243,17 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 <div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div>
 </a>
 
+<!-- Pendientes KAM (visible para todos los logueados) -->
+<a class="card on" id="card-pendientes-kam" data-widget="pendientes_kam" href="https://protectgo.github.io/pendientes/">
+<div class="top">
+<div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M8 12l2.5 2.5L16 9"/></svg></div>
+<span class="tag">KAM</span>
+</div>
+<h3>Pendientes KAM</h3>
+<p>Reporta pendientes de activaciones, consolidación y seguimiento con el equipo KAM, y mira el estado en tiempo real.</p>
+<div class="foot"><span class="chip ready" id="pkChip">Listo</span><span class="go">Abrir &#8594;</span></div>
+</a>
+
 <!-- Mapa de Puestos (solo brahian.toro@) -->
 <a class="card on" id="card-mapa" data-widget="mapa_puestos" href="mapa-puestos.html" style="display:none">
 <div class="top">
@@ -448,7 +459,7 @@ if(elNov) elNov.style.display=(NOVADMIN.indexOf(email)>=0)?"flex":"none";
 var elG360=document.getElementById("card-gabi360");
 if(elG360) elG360.style.display=(email==="sales@protectgoservices.com")?"flex":"none";
 var elGPanel=document.getElementById("card-gabi-panel");
-if(elGPanel) elGPanel.style.display=(["brahian.toro@protectgoservices.com","angelica.paez@protectgoservices.com"].indexOf(email)>=0)?"flex":"none";
+if(elGPanel) elGPanel.style.display=(["brahian@protectgoservices.com","angelica.paez@protectgoservices.com"].indexOf(email)>=0)?"flex":"none";
 Object.keys(AMAZON).forEach(function(k){
 var el=document.getElementById(AMAZON[k]);
 if(el) el.style.display=(email===k)?"flex":"none";
@@ -778,6 +789,60 @@ function pgvCheck(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);});
 else setTimeout(pgvCheck,400);
 setInterval(pgvCheck,600000);
+})();
+</script>
+<script>
+(function(){
+"use strict";
+// Contador dinamico de la card "Pendientes KAM": RLS en tareas_kam ya filtra
+// lo que cada usuario puede ver (miembro/lider/admin ven lo suyo o todo).
+// Cualquier fallo deja el chip en "Listo" sin romper el resto del hub.
+var PK_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var PK_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+
+function pkSetChip(text,cls){
+  var chip=document.getElementById("pkChip");
+  if(!chip) return;
+  chip.textContent=text;
+  chip.className="chip "+(cls||"ready");
+}
+
+function pkLoad(cli){
+  try{
+    cli.from("tareas_kam").select("estado,created_at").neq("estado","hecho").then(function(r){
+      if(r.error||!r.data){ pkSetChip("Listo","ready"); return; }
+      var rows=r.data;
+      var n=rows.length;
+      if(n===0){ pkSetChip("Al día","ready"); return; }
+      var cutoff=Date.now()-(2*24*60*60*1000);
+      var rojas=0;
+      rows.forEach(function(row){
+        var t=Date.parse(row.created_at);
+        if(!isNaN(t) && t<=cutoff) rojas++;
+      });
+      var txt=n+" abierta"+(n===1?"":"s");
+      if(rojas>0) txt+=" · "+rojas+" 🔴";
+      pkSetChip(txt, rojas>0?"wip":"ready");
+    }, function(){ pkSetChip("Listo","ready"); });
+  }catch(e){ pkSetChip("Listo","ready"); }
+}
+
+function pkInit(){
+  try{
+    if(!(window.supabase&&window.supabase.createClient)) return;
+    var cli=window.supabase.createClient(PK_URL,PK_KEY);
+    cli.auth.getSession().then(function(r){
+      var s=r.data&&r.data.session;
+      if(s&&s.user) pkLoad(cli); else pkSetChip("Listo","ready");
+    }, function(){ pkSetChip("Listo","ready"); });
+    cli.auth.onAuthStateChange(function(evt,session){
+      if(session&&session.user) pkLoad(cli); else pkSetChip("Listo","ready");
+    });
+  }catch(e){ pkSetChip("Listo","ready"); }
+}
+
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(pkInit,220); });
+else setTimeout(pkInit,220);
 })();
 </script>
 </body>

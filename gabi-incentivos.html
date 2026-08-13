@@ -101,7 +101,7 @@ function loadingHTML(){ return '<div class="pg-loading">Cargando datos en vivo d
 function errHTML(view, e){ return '<div class="pg-warn-box"><b>' + esc(view) + ' no cargó.</b> ' + esc((e && e.message) || 'Sin detalle.') + '</div>'; }
 
 // Correos con vista de liderazgo (ven el desglose por equipo, sin nombres cruzados de otros equipos salvo su propio alcance de RLS)
-const CORREOS_LIDERAZGO = ['sales@protectgoservices.com','andres.lopez@protectgoservices.com','fam@protectgoservices.com','brahian@protectgoservices.com'];
+const CORREOS_LIDERAZGO = ['sales@protectgoservices.com','andres.lopez@protectgoservices.com','fam@protectgoservices.com','brahian.toro@protectgoservices.com'];
 
 async function renderShell(session){
   const email = (session.user.email || '').toLowerCase();

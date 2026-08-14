@@ -186,6 +186,27 @@ body { margin: 0; background: var(--pg-bg); }
     <input type="password" id="pg-login-pass" autocomplete="current-password">
     <button id="pg-login-btn">Entrar</button>
     <div class="pg-login-msg" id="pg-login-msg"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #E7EDF2;">
+      <a href="#" id="pg-reset-link" style="font-size:12.5px;color:#1B8E78;font-weight:600;text-decoration:none;">¿Primera vez o olvidaste tu clave de GABI? Créala aquí</a>
+      <div id="pg-reset-box" style="display:none;margin-top:10px;">
+        <div style="font-size:12px;color:#6B7D89;line-height:1.5;margin-bottom:8px;">Tu clave de GABI es <b>independiente</b> de la del Portal. Escribe tu correo <b>arriba</b> y te enviamos un enlace para crearla.</div>
+        <button id="pg-reset-btn" style="width:100%;">Enviar correo para crear mi clave</button>
+        <div class="pg-login-msg" id="pg-reset-msg" style="color:#6B7D89;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="pg-setpass-screen" class="pg-login-wrap" style="display:none;">
+  <div class="pg-login-card">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+    <div style="font-size:13px;color:#6B7D89;">Crea tu contraseña de GABI (independiente de la del Portal).</div>
+    <label>Nueva contraseña</label>
+    <input type="password" id="pg-newpass" autocomplete="new-password" placeholder="mínimo 8 caracteres">
+    <label>Repite la contraseña</label>
+    <input type="password" id="pg-newpass2" autocomplete="new-password">
+    <button id="pg-setpass-btn">Guardar y entrar</button>
+    <div class="pg-login-msg" id="pg-setpass-msg" style="color:#6B7D89;"></div>
   </div>
 </div>
 
@@ -910,9 +931,70 @@ document.getElementById("pg-btn-logout").addEventListener("click", async () => {
   location.reload();
 });
 
+/* =====================================================================
+   AUTO-SERVICIO DE CLAVE — la cuenta de GABI existe (creada en lote),
+   pero es OTRO proyecto que el Portal, con OTRA clave. Aquí el asesor
+   crea/reinicia SU PROPIA clave de GABI. Ni el equipo ni el código
+   escriben la clave: la pone el usuario tras el correo de recuperación.
+   Requiere: SMTP propio activo + este URL en Redirect URLs (GABI Auth).
+   ===================================================================== */
+let RECOVERY_MODE = false;
+// El enlace del correo vuelve con #...type=recovery en el hash (se evalúa
+// sincrónicamente, antes de que supabase-js limpie el hash).
+const _IS_RECOVERY = /(?:^|[#&])type=recovery(?:&|$)/.test(window.location.hash || "");
+
+function mostrarSetPassword() {
+  RECOVERY_MODE = true;
+  const l = document.getElementById("pg-login-screen"); if (l) l.style.display = "none";
+  const a = document.getElementById("pg-app"); if (a) a.style.display = "none";
+  const s = document.getElementById("pg-setpass-screen"); if (s) s.style.display = "flex";
+}
+
+async function enviarRecuperacion() {
+  const email = (document.getElementById("pg-login-email").value || "").trim();
+  const m = document.getElementById("pg-reset-msg");
+  if (!email || !/@/.test(email)) { m.style.color = "#D5594F"; m.textContent = "Escribe tu correo arriba primero."; return; }
+  const btn = document.getElementById("pg-reset-btn"); btn.disabled = true;
+  m.style.color = "#6B7D89"; m.textContent = "Enviando…";
+  const redirectTo = window.location.origin + window.location.pathname; // vuelve a esta misma pantalla
+  const { error } = await SB.auth.resetPasswordForEmail(email, { redirectTo });
+  btn.disabled = false;
+  if (error) { m.style.color = "#D5594F"; m.textContent = "No se pudo enviar: " + error.message; return; }
+  m.style.color = "#1F9D6B";
+  m.textContent = "Listo ✓ Revisa el correo de " + email + ". El enlace te deja crear tu clave (puede tardar unos minutos).";
+}
+
+async function guardarNuevaClave() {
+  const p1 = document.getElementById("pg-newpass").value || "";
+  const p2 = document.getElementById("pg-newpass2").value || "";
+  const m = document.getElementById("pg-setpass-msg");
+  if (p1.length < 8) { m.style.color = "#D5594F"; m.textContent = "La clave debe tener al menos 8 caracteres."; return; }
+  if (p1 !== p2) { m.style.color = "#D5594F"; m.textContent = "Las dos claves no coinciden."; return; }
+  const btn = document.getElementById("pg-setpass-btn"); btn.disabled = true;
+  m.style.color = "#6B7D89"; m.textContent = "Guardando…";
+  const { error } = await SB.auth.updateUser({ password: p1 });
+  btn.disabled = false;
+  if (error) { m.style.color = "#D5594F"; m.textContent = "No se pudo guardar: " + error.message; return; }
+  m.style.color = "#1F9D6B"; m.textContent = "¡Clave creada! Entrando…";
+  history.replaceState(null, "", window.location.pathname); // limpia el token del hash
+  setTimeout(() => { location.reload(); }, 900);
+}
+
+document.getElementById("pg-reset-link").addEventListener("click", (e) => {
+  e.preventDefault();
+  const b = document.getElementById("pg-reset-box");
+  b.style.display = (b.style.display === "none" || !b.style.display) ? "block" : "none";
+});
+document.getElementById("pg-reset-btn").addEventListener("click", enviarRecuperacion);
+document.getElementById("pg-setpass-btn").addEventListener("click", guardarNuevaClave);
+// Respaldo: supabase-js emite PASSWORD_RECOVERY al procesar el hash del correo.
+SB.auth.onAuthStateChange((event) => { if (event === "PASSWORD_RECOVERY") mostrarSetPassword(); });
+
 (async function init() {
+  // Si venimos del enlace del correo, mostrar "crea tu clave", NO entrar directo.
+  if (_IS_RECOVERY) { mostrarSetPassword(); return; }
   const { data: { session } } = await SB.auth.getSession();
-  if (session) { await mostrarApp(); }
+  if (session && !RECOVERY_MODE) { await mostrarApp(); }
 })();
 </script>
 </body>

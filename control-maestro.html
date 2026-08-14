@@ -77,6 +77,34 @@ body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--f-bo
 .denied{background:#FCEEEC;border:1px solid #F1BEB6;border-radius:12px;padding:16px 18px;color:#8a352c;font-size:14px}
 .skel{height:60px;background:linear-gradient(90deg,#eef2f5,#f7f9fb,#eef2f5);background-size:200% 100%;animation:sh 1.2s infinite;border-radius:12px;margin:10px 0}
 @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+/* caja (GABI · proyecto liquidez) */
+.cajapanel{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:14px;padding:18px 20px;margin-top:26px}
+.cajapanel h2{font-family:var(--f-title);font-size:16px;font-weight:800;margin:0 0 4px}
+.caja-sub{color:var(--pg-muted);font-size:12.5px;margin:0 0 14px;line-height:1.55}
+.gabi-login{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;background:#F1F5F8;border:1px solid var(--pg-line);border-radius:12px;padding:14px 16px}
+.gabi-login .fld input{padding:8px 10px}
+.gabi-login button{font-family:var(--f-body);font-weight:800;font-size:12.5px;border:none;border-radius:999px;padding:9px 18px;background:var(--pg-mint);color:var(--pg-ink-2);cursor:pointer}
+.gabi-login button:hover{background:var(--pg-mint-dark)}
+.gabi-login button:disabled{opacity:.5;cursor:default}
+.cacct{border:1px solid var(--pg-line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.cacct-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cacct-name{font-weight:700;font-size:14.5px;color:var(--pg-ink)}
+.cacct-saldo{font-family:var(--f-num);font-size:15px;color:var(--pg-ink);margin-left:auto}
+.cacct-ctrls{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:10px}
+.cbtn{font-family:var(--f-body);font-weight:800;font-size:12px;border:none;border-radius:999px;padding:9px 16px;background:var(--pg-mint);color:var(--pg-ink-2);cursor:pointer}
+.cbtn:disabled{opacity:.5;cursor:default}
+.cbtn:hover:not(:disabled){background:var(--pg-mint-dark)}
+.cmsg{font-size:12px;margin-top:6px;min-height:14px}
+.cmsg.ok{color:var(--pg-pos)} .cmsg.err{color:var(--pg-neg)}
+.compromisos{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+@media(max-width:640px){.compromisos{grid-template-columns:1fr}}
+.combox{border:1px solid var(--pg-line);border-radius:12px;padding:12px 14px}
+.combox h3{font-family:var(--f-title);font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px;color:var(--pg-ink)}
+.comrow{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:5px 0;border-bottom:1px dashed var(--pg-line)}
+.comrow:last-child{border-bottom:none}
+.comrow .m{font-family:var(--f-num)}
+.comtot{display:flex;justify-content:space-between;font-weight:800;font-size:13px;margin-top:8px;padding-top:8px;border-top:2px solid var(--pg-line)}
+.comtot.cobrar{color:var(--pg-pos)} .comtot.pagar{color:var(--pg-neg)}
 </style>
 </head>
 <body>
@@ -110,6 +138,34 @@ body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--f-bo
       <div class="pg-sub">Cada tarjeta del portal consulta este registro al cargar. <b>Apagado + oculto</b>: la tarjeta no se pinta. <b>Apagado + mantenimiento</b>: la tarjeta sale gris con tu mensaje. Todo cambio queda registrado con quién y cuándo. Si este panel se cae, el portal muestra todo (fail-open).</div>
     </div>
     <div id="lista"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+
+    <div class="cajapanel" id="cajaPanel" style="display:none">
+      <h2>Caja · Actualizar saldos</h2>
+      <p class="caja-sub">Cuentas de la agencia en GABI (proyecto liquidez). Cada cambio queda en <b>auditoría</b> con saldo anterior y nuevo. Solo <b>sales@</b>: la escritura pasa por funciones blindadas del servidor (doble candado email + dueño) — este panel no puede saltarse esa regla, solo la usa. Es un login aparte porque GABI es otro proyecto.</p>
+
+      <div id="gabiLogin" class="gabi-login">
+        <div class="fld"><label>Correo GABI</label><input id="gabiEmail" type="email" autocomplete="username" value="sales@protectgoservices.com"></div>
+        <div class="fld"><label>Contraseña GABI</label><input id="gabiPass" type="password" autocomplete="current-password" placeholder="tu clave de GABI"></div>
+        <button id="gabiConnBtn">Conéctate a GABI</button>
+        <div class="cmsg err" id="gabiLoginMsg" style="width:100%"></div>
+      </div>
+
+      <div id="cajaBody" style="display:none">
+        <div id="cajaAccts"></div>
+        <div class="cacct" style="border-style:dashed">
+          <div class="cacct-top"><span class="cacct-name">Agregar cuenta nueva</span></div>
+          <div class="cacct-ctrls">
+            <div class="fld"><label>Nombre</label><input id="newAcctName" type="text" placeholder="Ej: Bank of America"></div>
+            <div class="fld"><label>Saldo inicial (USD)</label><input id="newAcctSaldo" type="number" step="0.01" value="0" style="width:150px"></div>
+            <button class="cbtn" id="addAcctBtn">+ Agregar cuenta</button>
+          </div>
+          <div class="cmsg" id="addAcctMsg"></div>
+        </div>
+        <div class="compromisos" id="compromisos"></div>
+        <div style="font-size:11px;color:var(--pg-muted);margin-top:10px">Compromisos = lectura de <code>por_cobrar</code> / <code>por_pagar</code> (próximos 7 días). Se alimentan solos desde las pólizas; aquí son <b>solo lectura</b>.</div>
+      </div>
+    </div>
+
     <div class="pg-logpanel" id="logPanel" style="display:none">
       <h2>Últimos cambios</h2>
       <div id="logList"></div>
@@ -164,6 +220,7 @@ async function cargar(){
   SNAP = {}; (data||[]).forEach(w=>{ SNAP[w.clave]=Object.assign({},w); });
   renderLista(data||[]);
   cargarLog();
+  initCaja();
 }
 
 function renderLista(rows){
@@ -257,10 +314,131 @@ async function cargarLog(){
     : '<div style="color:var(--pg-muted);font-size:12.5px">Sin cambios registrados todavía.</div>';
 }
 
+// ====== Caja · GABI (proyecto liquidez, auth aparte) ======
+const GABI_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
+const GABI_KEY = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt"; // llave publishable (pública), no secreta
+const GABI = supabase.createClient(GABI_URL, GABI_KEY, { auth:{ storageKey:"gabi-caja-auth", persistSession:true } });
+let CAJA_ROWS = [];
+
+function money(n){ const x=Number(n||0); return (x<0?"-$":"$")+Math.abs(x).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+async function initCaja(){
+  document.getElementById("cajaPanel").style.display="block";
+  const { data:{ session } } = await GABI.auth.getSession();
+  if(session && String(session.user.email||"").toLowerCase()===SALES){
+    await mostrarCaja();
+  } else {
+    document.getElementById("gabiLogin").style.display="flex";
+    document.getElementById("cajaBody").style.display="none";
+  }
+}
+
+async function conectarGabi(){
+  const email=document.getElementById("gabiEmail").value.trim();
+  const pass=document.getElementById("gabiPass").value;
+  const m=document.getElementById("gabiLoginMsg"); m.textContent="";
+  if(email.toLowerCase()!==SALES){ m.textContent="La caja es solo para sales@protectgoservices.com."; return; }
+  const btn=document.getElementById("gabiConnBtn"); btn.disabled=true;
+  const { error } = await GABI.auth.signInWithPassword({ email, password: pass });
+  btn.disabled=false;
+  if(error){ m.textContent="No pudimos conectar a GABI: "+error.message; return; }
+  document.getElementById("gabiPass").value="";
+  await mostrarCaja();
+}
+
+async function mostrarCaja(){
+  document.getElementById("gabiLogin").style.display="none";
+  document.getElementById("cajaBody").style.display="block";
+  await Promise.all([cargarCuentas(), cargarCompromisos()]);
+}
+
+async function cargarCuentas(){
+  const cont=document.getElementById("cajaAccts");
+  cont.innerHTML='<div class="skel"></div>';
+  const { data, error } = await GABI.from("caja").select("id,nombre,saldo,created_at").order("created_at",{ascending:true});
+  if(error){ cont.innerHTML='<div class="denied">No se pudieron cargar las cuentas: '+esc(error.message)+'</div>'; return; }
+  CAJA_ROWS=data||[];
+  if(!CAJA_ROWS.length){ cont.innerHTML='<div style="color:var(--pg-muted);font-size:12.5px;margin-bottom:10px">Sin cuentas todavía. Agrega la primera abajo.</div>'; return; }
+  cont.innerHTML=CAJA_ROWS.map(cuentaHTML).join("");
+}
+
+function cuentaHTML(c){
+  const id=esc(c.id);
+  return ''+
+  '<div class="cacct" id="cacct-'+id+'">'+
+    '<div class="cacct-top">'+
+      '<span class="cacct-name">'+esc(c.nombre)+'</span>'+
+      '<span class="cacct-saldo">'+money(c.saldo)+'</span>'+
+    '</div>'+
+    '<div class="cacct-ctrls">'+
+      '<div class="fld"><label>Nuevo saldo (USD)</label><input type="number" step="0.01" id="ns-'+id+'" value="'+Number(c.saldo||0)+'" style="width:150px"></div>'+
+      '<div class="fld msgfld"><label>Nota (opcional)</label><input type="text" id="nt-'+id+'" placeholder="Ej: conciliación semanal"></div>'+
+      '<button class="cbtn" id="up-'+id+'" onclick="actualizarCuenta(\''+id+'\')">Actualizar</button>'+
+    '</div>'+
+    '<div class="cmsg" id="cm-'+id+'"></div>'+
+  '</div>';
+}
+
+async function actualizarCuenta(id){
+  const btn=document.getElementById("up-"+id); const m=document.getElementById("cm-"+id);
+  const val=parseFloat(document.getElementById("ns-"+id).value);
+  const notas=(document.getElementById("nt-"+id).value||"").trim()||null;
+  if(isNaN(val)){ m.className="cmsg err"; m.textContent="Saldo inválido."; return; }
+  btn.disabled=true; m.className="cmsg"; m.textContent="Guardando…";
+  const { error } = await GABI.rpc("caja_actualizar_saldo", { p_caja_id:id, p_saldo_nuevo:val, p_notas:notas });
+  btn.disabled=false;
+  if(error){ m.className="cmsg err"; m.textContent="No se pudo actualizar: "+error.message; return; }
+  m.className="cmsg ok"; m.textContent="Actualizado ✓ (queda en auditoría)";
+  await cargarCuentas();
+}
+
+async function agregarCuenta(){
+  const btn=document.getElementById("addAcctBtn"); const m=document.getElementById("addAcctMsg");
+  const nombre=(document.getElementById("newAcctName").value||"").trim();
+  const saldo=parseFloat(document.getElementById("newAcctSaldo").value);
+  if(!nombre){ m.className="cmsg err"; m.textContent="Escribe un nombre."; return; }
+  btn.disabled=true; m.className="cmsg"; m.textContent="Creando…";
+  const { error } = await GABI.rpc("caja_agregar_cuenta", { p_nombre:nombre, p_saldo:(isNaN(saldo)?0:saldo) });
+  btn.disabled=false;
+  if(error){ m.className="cmsg err"; m.textContent="No se pudo crear: "+error.message; return; }
+  m.className="cmsg ok"; m.textContent="Cuenta creada ✓";
+  document.getElementById("newAcctName").value=""; document.getElementById("newAcctSaldo").value="0";
+  await cargarCuentas();
+  setTimeout(()=>{ if(m) m.textContent=""; }, 3000);
+}
+
+function fdate(dt){ return dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0"); }
+async function cargarCompromisos(){
+  const cont=document.getElementById("compromisos");
+  const hoy=new Date();
+  const desde=fdate(hoy);
+  const hasta=fdate(new Date(hoy.getTime()+7*86400000));
+  const [cob,pag]=await Promise.all([
+    GABI.from("por_cobrar").select("descripcion,monto,fecha").gte("fecha",desde).lte("fecha",hasta).order("fecha",{ascending:true}),
+    GABI.from("por_pagar").select("descripcion,monto,fecha").gte("fecha",desde).lte("fecha",hasta).order("fecha",{ascending:true})
+  ]);
+  const cobRows=(cob.data||[]), pagRows=(pag.data||[]);
+  const sum=a=>a.reduce((s,r)=>s+Number(r.monto||0),0);
+  cont.innerHTML=
+    boxHTML("Por cobrar · 7 días", cobRows, "cobrar", sum(cobRows)) +
+    boxHTML("Por pagar · 7 días", pagRows, "pagar", sum(pagRows));
+}
+
+function boxHTML(titulo, rows, cls, total){
+  const inner = rows.length
+    ? rows.map(r=>'<div class="comrow"><span>'+esc(r.descripcion||"—")+' <span style="color:var(--pg-muted)">'+esc((r.fecha||"").slice(5))+'</span></span><span class="m">'+money(r.monto)+'</span></div>').join("")
+    : '<div style="color:var(--pg-muted);font-size:12px">Nada en los próximos 7 días.</div>';
+  return '<div class="combox"><h3>'+esc(titulo)+'</h3>'+inner+'<div class="comtot '+cls+'"><span>Total</span><span class="m">'+money(total)+'</span></div></div>';
+}
+
+document.getElementById("gabiConnBtn").addEventListener("click", conectarGabi);
+document.getElementById("gabiPass").addEventListener("keydown", e=>{ if(e.key==="Enter") conectarGabi(); });
+document.getElementById("addAcctBtn").addEventListener("click", agregarCuenta);
+
 document.getElementById("loginBtn").addEventListener("click", entrar);
 document.getElementById("pass").addEventListener("keydown", e=>{ if(e.key==="Enter") entrar(); });
 document.getElementById("refreshBtn").addEventListener("click", ()=>{ if(MI_EMAIL===SALES) cargar(); });
-document.getElementById("logoutBtn").addEventListener("click", async ()=>{ await SB.auth.signOut(); location.reload(); });
+document.getElementById("logoutBtn").addEventListener("click", async ()=>{ try{ await GABI.auth.signOut(); }catch(e){} await SB.auth.signOut(); location.reload(); });
 
 (async function init(){ await verificarAcceso(); })();
 </script>

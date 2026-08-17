@@ -141,7 +141,7 @@ body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--f-bo
 
     <div class="cajapanel" id="cajaPanel" style="display:none">
       <h2>Caja · Actualizar saldos</h2>
-      <p class="caja-sub">Cuentas de la agencia en GABI (proyecto liquidez). Cada cambio queda en <b>auditoría</b> con saldo anterior y nuevo. Solo <b>sales@</b>: la escritura pasa por funciones blindadas del servidor (doble candado email + dueño) — este panel no puede saltarse esa regla, solo la usa. Es un login aparte porque GABI es otro proyecto.</p>
+      <p class="caja-sub">Cuentas de la agencia en GABI (proyecto liquidez). Cada cambio queda en <b>auditoría</b> con saldo anterior y nuevo. Solo <b>sales@</b>: la escritura pasa por funciones blindadas del servidor (doble candado email + dueño) — este panel no puede saltarse esa regla, solo la usa.</p>
 
       <div id="gabiLogin" class="gabi-login">
         <div class="fld"><label>Correo GABI</label><input id="gabiEmail" type="email" autocomplete="username" value="sales@protectgoservices.com"></div>
@@ -170,14 +170,17 @@ body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--f-bo
       <h2>Últimos cambios</h2>
       <div id="logList"></div>
     </div>
-    <div class="pg-note">Datos en vivo de Supabase Portal (proyecto bwqzypuiqgxzsrtsueab): tablas <code>widgets_registro</code> y <code>widgets_log</code>. La escritura está restringida a <code>sales@protectgoservices.com</code> por RLS (<code>widgets_registro_escribe_sales</code>) — este panel no puede saltarse esa regla; solo la usa.</div>
+    <div class="pg-note">Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy), schema <code>portal</code>: tablas <code>widgets_registro</code> y <code>widgets_log</code> (migradas desde el Portal en la consolidación). La escritura está restringida a <code>sales@protectgoservices.com</code> por RLS (<code>widgets_registro_escribe_sales</code>) — este panel no puede saltarse esa regla; solo la usa.</div>
   </main>
 </div>
 
 <script>
-const SUPABASE_URL = "https://bwqzypuiqgxzsrtsueab.supabase.co";
-const SUPABASE_KEY = "sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+// Consolidación (Fase 3): Control Maestro corre 100% contra GABI (hivpq).
+// Los widgets se migraron al schema `portal` (desde el Portal bwqzy); la caja vive en public.
+const SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt"; // publishable (pública) de GABI
 const SB = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const PORTAL = SB.schema("portal"); // widgets_registro / widgets_log ya viven en portal
 const SALES = "sales@protectgoservices.com";
 
 const AREAS_LBL = {ventas:"Ventas",comercial:"Comercial",direccion:"Dirección",fam:"FAM",kam:"KAM",coi:"COI",rrhh:"RRHH",endorsement:"Endorsement",amazon:"Amazon",equipo:"Equipo",admin:"Administración",general:"General"};
@@ -214,7 +217,7 @@ async function verificarAcceso(){
 
 async function cargar(){
   document.getElementById("lista").innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
-  const { data, error } = await SB.from("widgets_registro").select("*")
+  const { data, error } = await PORTAL.from("widgets_registro").select("*")
     .order("area",{ascending:true}).order("orden",{ascending:true}).order("clave",{ascending:true});
   if(error){ document.getElementById("lista").innerHTML='<div class="denied">No se pudo cargar el registro: '+esc(error.message)+'</div>'; return; }
   SNAP = {}; (data||[]).forEach(w=>{ SNAP[w.clave]=Object.assign({},w); });
@@ -290,10 +293,10 @@ async function guardar(clave){
 
   btn.disabled=true; rm.className="rowmsg"; rm.textContent="Guardando…";
   const upd = Object.assign({}, nuevo, { actualizado_por: MI_EMAIL, actualizado_en: new Date().toISOString() });
-  const { error:e1 } = await SB.from("widgets_registro").update(upd).eq("clave", clave);
+  const { error:e1 } = await PORTAL.from("widgets_registro").update(upd).eq("clave", clave);
   if(e1){ rm.className="rowmsg err"; rm.textContent="No se pudo guardar: "+e1.message; btn.disabled=false; return; }
   // log manual (no hay trigger): quien/cuando salen por default del jwt/now()
-  const { error:e2 } = await SB.from("widgets_log").insert({
+  const { error:e2 } = await PORTAL.from("widgets_log").insert({
     clave, accion:"cambio", valor_anterior:anterior, valor_nuevo:nuevo, nota:null
   });
   if(e2){ rm.className="rowmsg err"; rm.textContent="Guardado, pero el log falló: "+e2.message; }
@@ -305,7 +308,7 @@ async function guardar(clave){
 }
 
 async function cargarLog(){
-  const { data, error } = await SB.from("widgets_log").select("clave,accion,quien,cuando,nota")
+  const { data, error } = await PORTAL.from("widgets_log").select("clave,accion,quien,cuando,nota")
     .order("cuando",{ascending:false}).limit(25);
   if(error){ return; }
   document.getElementById("logPanel").style.display="block";
@@ -315,9 +318,8 @@ async function cargarLog(){
 }
 
 // ====== Caja · GABI (proyecto liquidez, auth aparte) ======
-const GABI_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
-const GABI_KEY = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt"; // llave publishable (pública), no secreta
-const GABI = supabase.createClient(GABI_URL, GABI_KEY, { auth:{ storageKey:"gabi-caja-auth", persistSession:true } });
+// Consolidado: la caja usa el MISMO cliente/sesión de GABI del panel — ya no hay login aparte.
+const GABI = SB;
 let CAJA_ROWS = [];
 
 function money(n){ const x=Number(n||0); return (x<0?"-$":"$")+Math.abs(x).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }

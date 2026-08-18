@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ingresos y retiros · RRHH — ProtectGo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --navy:#002F3D; --navy-2:#0a5b54; --teal:#229A82; --teal-2:#1a7a68;
+    --mint:#BADFCE; --mint-soft:#E4F2EB; --mint-ghost:#F2F8F5;
+    --amber:#B8841F; --amber-soft:#fff7e0; --rojo:#c0392b; --rojo-soft:#fdeceb;
+    --papel:#FAF9F5; --surface:#fff;
+    --ink:#0D141A; --muted:#5a6a6e; --faint:#8a989a; --hairline:#d8e0de; --line:#e6ebe9;
+    --grad:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%);
+    --r-sm:10px; --r-md:14px; --r-lg:20px; --r-pill:999px;
+    --shadow-2:0 8px 24px -10px rgba(0,47,61,.16),0 2px 4px rgba(0,47,61,.05);
+    --font-title:"Montserrat",system-ui,sans-serif; --font-text:"Inter",system-ui,sans-serif; --font-mono:"IBM Plex Mono",monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-height:100vh;}
+
+  .pg-bar{position:sticky;top:0;z-index:40;height:58px;display:flex;align-items:center;gap:12px;padding:0 22px;background:var(--navy);color:#fff;box-shadow:0 2px 14px -6px rgba(0,0,0,.45);}
+  .pg-bar .logo{font-family:var(--font-title);font-weight:800;font-size:16px;letter-spacing:.2px;white-space:nowrap;}
+  .pg-bar .logo i{color:var(--teal);font-style:normal;}
+  .pg-bar .area-tag{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;background:rgba(255,255,255,.12);color:var(--mint);padding:5px 10px;border-radius:var(--r-pill);white-space:nowrap;}
+  .pg-bar .sp{flex:1;}
+  .pg-bar .user{font-family:var(--font-mono);font-size:12px;color:#9fc6bd;}
+  .pg-b{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;padding:8px 14px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;}
+  .pg-b:hover{background:rgba(255,255,255,.08);}
+  .pg-bar a.back{color:#9fc6bd;text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap;}
+  .pg-bar a.back:hover{color:#fff;}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:26px 22px 80px;}
+  .hero{padding:14px 0 6px;}
+  .hero .kicker{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-2);font-weight:600;}
+  .hero h1{font-family:var(--font-title);font-weight:800;font-size:28px;line-height:1.12;margin:6px 0 4px;color:var(--navy);}
+  .hero p{margin:0;color:var(--muted);font-size:14px;max-width:720px;}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow-2);margin-bottom:20px;}
+  .card h2{font-family:var(--font-title);font-weight:700;font-size:17px;color:var(--navy);margin:0 0 14px;}
+  .card h2 small{font-family:var(--font-text);font-weight:500;font-size:12.5px;color:var(--faint);margin-left:8px;}
+
+  /* grupos guiados del formulario */
+  .grp{border-top:1px dashed var(--line);margin-top:20px;padding-top:16px;}
+  .grp:first-of-type{border-top:none;margin-top:4px;padding-top:0;}
+  .grp > h4{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--teal-2);margin:0 0 12px;display:flex;align-items:center;gap:9px;}
+  .grp > h4 span.n{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;background:var(--mint-soft);color:var(--teal-2);font-size:10.5px;font-weight:700;}
+  .grp > h4 em{font-style:normal;font-family:var(--font-text);text-transform:none;letter-spacing:0;font-size:11.5px;font-weight:500;color:var(--faint);}
+
+  .frm{display:grid;grid-template-columns:repeat(4,1fr);gap:13px 14px;}
+  .f{display:flex;flex-direction:column;gap:5px;}
+  .f.c2{grid-column:span 2;} .f.c3{grid-column:span 3;} .f.c4{grid-column:span 4;}
+  .f label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .f label b{color:var(--rojo);font-weight:700;}
+  .f input,.f select,.f textarea{width:100%;padding:10px 11px;border:1px solid var(--hairline);border-radius:var(--r-sm);font-size:13.5px;font-family:inherit;background:#fff;color:var(--ink);}
+  .f textarea{resize:vertical;min-height:52px;}
+  .f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(34,154,130,.14);}
+  .f input.bad,.f select.bad{border-color:var(--rojo);background:var(--rojo-soft);}
+  .f input[readonly]{background:#f6f8f8;color:var(--muted);}
+  .hint{font-size:11.5px;color:var(--faint);line-height:1.4;}
+  .hint b{color:var(--teal-2);}
+
+  .btn{font:inherit;font-size:14px;font-weight:700;background:var(--navy);color:#fff;border:none;border-radius:var(--r-sm);padding:12px 22px;cursor:pointer;}
+  .btn:hover{background:var(--navy-2);}
+  .btn.sec{background:var(--mint-soft);color:var(--teal-2);}
+  .btn.sec:hover{background:var(--mint);}
+  .btn.mini{font-size:12px;padding:7px 12px;font-weight:600;}
+  .btn.warn{background:var(--rojo);}
+  .btn.ghost{background:#fff;color:var(--muted);border:1px solid var(--hairline);}
+  .btn.ghost:hover{background:#f3f6f5;}
+  .btn[disabled]{opacity:.55;cursor:not-allowed;}
+
+  .note{border-radius:var(--r-md);padding:12px 15px;font-size:13px;line-height:1.5;margin:0 0 16px;}
+  .note.mint{background:var(--mint-ghost);border:1px solid var(--mint);color:var(--ink);}
+  .note.amber{background:var(--amber-soft);border:1px solid #edd9a3;color:#6b5312;}
+  .note.red{background:var(--rojo-soft);border:1px solid #f0b9b3;color:#7c241b;}
+  .note .actline{margin-top:10px;}
+
+  #exito{display:none;}
+  #exito .tit{font-family:var(--font-title);font-weight:800;font-size:16px;color:var(--teal-2);margin-bottom:4px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:left;padding:9px 10px;border-bottom:2px solid var(--line);white-space:nowrap;}
+  td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:hover td{background:var(--mint-ghost);}
+  td.mono{font-family:var(--font-mono);font-size:12px;white-space:nowrap;}
+  td .sub{display:block;font-size:11.5px;color:var(--faint);margin-top:2px;}
+  td .falta{display:block;font-size:11.5px;color:var(--amber);margin-top:3px;font-weight:600;}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:4px 10px;border-radius:var(--r-pill);white-space:nowrap;}
+  .pill.ok{background:var(--mint-soft);color:var(--teal-2);}
+  .pill.warn{background:var(--amber-soft);color:var(--amber);}
+  .pill.red{background:var(--rojo-soft);color:var(--rojo);}
+  .pill.grey{background:#eef1f1;color:var(--faint);}
+  .empty{padding:26px;text-align:center;color:var(--faint);font-size:13.5px;}
+
+  .actline{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:6px;}
+  .rowacts{display:flex;gap:7px;justify-content:flex-end;}
+
+  .ov{position:fixed;inset:0;z-index:90;background:rgba(0,30,38,.6);display:flex;align-items:center;justify-content:center;padding:18px;}
+  .ov .card-l{background:#fff;border-radius:18px;padding:34px 30px;width:380px;max-width:94vw;box-shadow:0 30px 80px -25px rgba(0,0,0,.55);}
+  .ov .brand{font-family:var(--font-title);font-weight:800;font-size:15px;color:var(--navy);margin-bottom:18px;}
+  .ov .brand i{color:var(--teal);font-style:normal;}
+  .ov h2{font-family:var(--font-title);margin:0 0 4px;color:var(--navy);font-size:22px;}
+  .ov p{margin:0 0 16px;color:var(--muted);font-size:13px;}
+  .ov label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin:13px 0 5px;text-transform:uppercase;letter-spacing:.04em;}
+  .ov input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--hairline);border-radius:10px;font-size:14px;font-family:inherit;}
+  .ov input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(34,154,130,.15);}
+  .ov .btn-l{background:var(--navy);color:#fff;width:100%;justify-content:center;margin-top:20px;padding:13px;border:none;border-radius:10px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;}
+  .ov .btn-l:hover{background:var(--navy-2);}
+  .msg{font-size:12.5px;margin-top:12px;min-height:16px;}
+  .msg.err{color:#c0392b;} .msg.ok{color:var(--teal-2);} .msg.warn{color:var(--amber);}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:95;background:var(--navy);color:#fff;font-size:13.5px;font-weight:600;padding:12px 22px;border-radius:var(--r-pill);box-shadow:var(--shadow-2);display:none;}
+
+  .modal-bg{position:fixed;inset:0;z-index:80;background:rgba(0,30,38,.55);display:none;align-items:center;justify-content:center;padding:18px;}
+  .modal{background:#fff;border-radius:18px;padding:26px;width:520px;max-width:96vw;max-height:92vh;overflow:auto;box-shadow:0 30px 80px -25px rgba(0,0,0,.5);}
+  .modal h3{font-family:var(--font-title);color:var(--navy);margin:0 0 6px;font-size:18px;}
+  .modal .who{font-size:13px;color:var(--muted);margin:0 0 16px;}
+
+  #app{display:none;}
+  @media(max-width:760px){.frm{grid-template-columns:1fr 1fr;}.f.c2,.f.c3,.f.c4{grid-column:span 2;}}
+</style>
+
+<!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
+<script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
+<script>window.addEventListener('DOMContentLoaded',function(){ if(window.pgNovedadesAuto) pgNovedadesAuto('rrhh'); });</script>
+<script defer src="https://protectgo.github.io/quick-quotes/pg-auth.js"></script>
+</head>
+<body>
+
+<div id="app">
+  <header class="pg-bar">
+    <span class="logo">Protect<i>Go</i> · RRHH</span>
+    <span class="area-tag">&#9670; INGRESOS</span>
+    <span class="sp"></span>
+    <a class="back" href="rrhh.html">&#8592; Dashboard</a>
+    <span class="user" id="pgUser"></span>
+    <button class="pg-b" data-act="logout">Salir</button>
+  </header>
+
+  <div class="wrap">
+    <section class="hero">
+      <div class="kicker">Recursos Humanos &middot; Ingresos y retiros</div>
+      <h1>Ingreso de personal</h1>
+      <p>Registra aqu&iacute; al que entra, con la ficha completa. Al guardar queda activo en Permisos, Vacaciones, Actas y N&oacute;mina, y la novedad de <b>Ingreso</b> le llega sola al reporte del contable de esa quincena. El retiro tambi&eacute;n se hace desde aqu&iacute;.</p>
+    </section>
+
+    <!-- ===== FORMULARIO ===== -->
+    <div class="card" id="cardForm">
+      <h2 id="frmTitulo">Nuevo ingreso <small id="frmSub">llena la ficha completa: as&iacute; no toca volver despu&eacute;s</small></h2>
+
+      <div class="grp">
+        <h4><span class="n">1</span> Identidad <em>qui&eacute;n es</em></h4>
+        <div class="frm">
+          <div class="f c2"><label>Nombre completo <b>*</b></label><input type="text" id="fNombre" placeholder="Como aparece en la c&eacute;dula" autocomplete="off"></div>
+          <div class="f c2"><label>C&eacute;dula <b>*</b></label><input type="text" id="fCedula" placeholder="Sin puntos ni comas" autocomplete="off"></div>
+          <div class="f c4" id="cedWrap" style="display:none"></div>
+          <div class="f c2"><label>Correo personal <b>*</b></label><input type="email" id="fCorreo" placeholder="nombre@gmail.com" autocomplete="off"><span class="hint">El personal, no el corporativo: por ah&iacute; le llegan las respuestas de permisos y vacaciones.</span></div>
+          <div class="f"><label>Tel&eacute;fono</label><input type="text" id="fTelefono" placeholder="300 000 0000" autocomplete="off"></div>
+          <div class="f"><label>Fecha de nacimiento</label><input type="date" id="fNacimiento"></div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <h4><span class="n">2</span> Cargo <em>d&oacute;nde entra y de qui&eacute;n depende</em></h4>
+        <div class="frm">
+          <div class="f c2"><label>&Aacute;rea <b>*</b></label><select id="fArea"></select></div>
+          <div class="f c2" id="areaOtraWrap" style="display:none"><label>Nombre del &aacute;rea nueva <b>*</b></label><input type="text" id="fAreaOtra" placeholder="Escribe el &aacute;rea"></div>
+          <div class="f c2"><label>Cargo <b>*</b></label><input type="text" id="fCargo" placeholder="Ej. Commercial" autocomplete="off"></div>
+          <div class="f c2"><label>Jefe inmediato <b>*</b></label><select id="fJefe"></select></div>
+          <div class="f c2" id="jefeOtroWrap" style="display:none"><label>Nombre del jefe <b>*</b></label><input type="text" id="fJefeOtro" placeholder="Nombre completo del jefe"></div>
+          <div class="f c2"><label>Correo corporativo del jefe</label><input type="email" id="fCorreoJefe" placeholder="jefe@protectgoservices.com"><span class="hint">Se llena solo al elegir el jefe. Si queda vac&iacute;o, <b>el escalamiento de permisos no funciona</b>.</span></div>
+          <div class="f c2"><label>Tipo de contrato <b>*</b></label><select id="fTipoContrato"><option value="">&mdash; Selecciona &mdash;</option><option>N&oacute;mina</option><option>Prestaci&oacute;n de servicios</option></select><span class="hint"><b>N&oacute;mina</b> = el contable le hace colilla &middot; <b>Prestaci&oacute;n</b> = pago directo.</span></div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <h4><span class="n">3</span> Condiciones <em>desde cu&aacute;ndo y por cu&aacute;nto</em></h4>
+        <div class="frm">
+          <div class="f c2"><label>Fecha de ingreso <b>*</b></label><input type="date" id="fIngreso"><span class="hint" id="hIngreso"></span></div>
+          <div class="f c2"><label>Salario base</label><input type="text" id="fSalario" inputmode="numeric" placeholder="0" autocomplete="off"><span class="hint">Sin centavos. Se usa para actas, certificados y liquidaciones.</span></div>
+        </div>
+      </div>
+
+      <div class="msg" id="fMsg"></div>
+      <div class="actline" style="margin-top:14px">
+        <button class="btn" id="btnGuardar">Registrar ingreso</button>
+        <button class="btn ghost" id="btnCancelar" style="display:none">Cancelar</button>
+        <span class="hint" id="hGuardar">Los campos con <b style="color:#c0392b">*</b> son obligatorios.</span>
+      </div>
+    </div>
+
+    <!-- ===== PANEL DE &Eacute;XITO CON ATAJOS ===== -->
+    <div class="card note mint" id="exito">
+      <div class="tit" id="exitoTit">&#10003; Registrado</div>
+      <div id="exitoTxt"></div>
+      <div id="exitoFalta"></div>
+      <div class="actline">
+        <button class="btn sec mini" id="btnActa">&#128196; Generar acta de ingreso</button>
+        <button class="btn sec mini" id="btnOtro">&#10133; Registrar otro</button>
+      </div>
+    </div>
+
+    <!-- ===== LISTA ===== -->
+    <div class="card">
+      <h2>Ingresos recientes <small id="listCount"></small></h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>Colaborador</th><th>C&eacute;dula</th><th>&Aacute;rea / cargo</th><th>Jefe</th><th>Contrato</th><th>Ingreso</th><th>Estado</th><th></th>
+          </tr></thead>
+          <tbody id="listBody"><tr><td colspan="8" class="empty">Cargando&hellip;</td></tr></tbody>
+        </table>
+      </div>
+      <div id="listEmpty" class="empty" style="display:none">A&uacute;n no hay ingresos registrados.</div>
+      <div class="hint" style="margin-top:12px">Aqu&iacute; salen los &uacute;ltimos 10 por fecha de ingreso. Nada se borra nunca: al retirar a alguien la ficha queda inactiva y con su novedad de <b>Retiro</b>.</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== MODAL RETIRO ===== -->
+<div class="modal-bg" id="retBg">
+  <div class="modal">
+    <h3>Registrar retiro</h3>
+    <p class="who" id="retWho"></p>
+    <div class="frm">
+      <div class="f c2"><label>Fecha de retiro <b style="color:#c0392b">*</b></label><input type="date" id="retFecha"></div>
+      <div class="f c2"><label>Motivo (opcional)</label><input type="text" id="retMotivo" placeholder="Renuncia, fin de contrato&hellip;"></div>
+    </div>
+    <div class="note amber" style="margin-top:14px;margin-bottom:0">La ficha <b>no se borra</b>: queda inactiva y deja de aparecer en Permisos, Vacaciones y N&oacute;mina. Se crea la novedad de <b>Retiro</b> en la quincena de esa fecha.</div>
+    <div class="msg" id="retMsg"></div>
+    <div class="actline" style="margin-top:16px">
+      <button class="btn warn" id="retGuardar">Confirmar retiro</button>
+      <button class="btn ghost" id="retCancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div class="ov" id="ov">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> &middot; <span style="color:var(--teal-2)">RRHH</span></div>
+    <h2>Ingresos y retiros</h2>
+    <p>Ingresa con la cuenta de RRHH para acceder al m&oacute;dulo.</p>
+    <label>Email</label>
+    <input id="email" type="email" autocomplete="username" value="rrhh@protectgoservices.com">
+    <label>Contrase&ntilde;a</label>
+    <input id="pass" type="password" autocomplete="current-password">
+    <button class="btn-l" data-act="login">Entrar</button>
+    <div class="msg" id="msg"></div>
+  </div>
+</div>
+
+<!-- ===== BLOQUEO ===== -->
+<div class="ov" id="ovBlock" style="display:none">
+  <div class="card-l">
+    <div class="brand">Protect<i>Go</i> &middot; <span style="color:var(--teal-2)">RRHH</span></div>
+    <h2>Acceso restringido</h2>
+    <p>Este m&oacute;dulo es exclusivo de <b>Recursos Humanos</b>. Tu cuenta <b id="ovBlockMail"></b> no tiene acceso.</p>
+    <button class="btn-l" data-act="logout">Salir e ingresar con otra cuenta</button>
+    <a href="rrhh.html" style="display:block;text-align:center;margin-top:13px;color:var(--teal-2);font-weight:600;font-size:13px;text-decoration:none">&#8592; Volver al dashboard</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var sb=null;
+var PERMITIDOS=['rrhh@protectgoservices.com','sales@protectgoservices.com'];
+var DOMINIO='@protectgoservices.com';
+var MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+var MAX_LISTA=10;
+
+var colaboradores=[];      // todas las fichas (para selects y lista)
+var jefeCorreo={};         // nombre del jefe -> correo corporativo (aprendido de la base)
+var userEmail='';
+var modo='nuevo';          // nuevo | editar | reactivar
+var editId=null;           // id de la ficha en edicion/reactivacion
+var cedBloqueo=null;       // ficha encontrada con la misma cedula
+var cedToken=0;            // evita que una revision vieja pise a una nueva
+var retiroCola=null;       // ficha a la que se le va a registrar el retiro
+
+var $=function(id){return document.getElementById(id);};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function msg(t,cls){var m=$('msg');if(m){m.textContent=t||'';m.className='msg '+(cls||'');}}
+function fmsg(t,cls){var m=$('fMsg');if(m){m.innerHTML=t||'';m.className='msg '+(cls||'');}}
+function rmsg(t,cls){var m=$('retMsg');if(m){m.textContent=t||'';m.className='msg '+(cls||'');}}
+function toast(t){var el=$('toast');el.textContent=t;el.style.display='block';setTimeout(function(){el.style.display='none';},3200);}
+function esEjemplo(nombre,ced){return /EJEMPLO/i.test(nombre||'')||/^EJEMPLO/i.test(ced||'');}
+
+// ---------- FECHAS Y NUMEROS ----------
+function pad2(n){return (n<10?'0':'')+n;}
+function hoyISO(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
+function fdate(iso){if(!iso)return '—';var p=String(iso).slice(0,10).split('-');if(p.length!==3)return String(iso);return Number(p[2])+' '+MESES[Number(p[1])-1]+' '+p[0];}
+function periodoKey(iso){var mes=String(iso).slice(0,7),dia=Number(String(iso).slice(8,10));return mes+'-Q'+(dia<=15?1:2);}
+function rotuloQuincena(iso){if(!iso)return '';var dia=Number(String(iso).slice(8,10)),mm=Number(String(iso).slice(5,7));return (dia<=15?'1 – 15':'16 – fin')+' de '+MESES[mm-1]+' '+String(iso).slice(0,4);}
+function soloDigitos(s){return String(s==null?'':s).replace(/\D/g,'');}
+function fmtMiles(v){var s=soloDigitos(v);return s?s.replace(/\B(?=(\d{3})+(?!\d))/g,'.'):'';}
+function correoOk(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(e||'').trim());}
+
+// ---------- AUTH ----------
+function doLogin(){
+  var em=$('email').value.trim(),pw=$('pass').value;
+  if(!em||!pw){msg('Escribe email y contraseña.','err');return;}
+  msg('Entrando…');
+  sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){if(r.error)msg(r.error.message,'err');else msg('');});
+}
+function onAuthed(session){
+  var email=(session&&session.user?session.user.email:'')||'';
+  if(PERMITIDOS.indexOf(email.toLowerCase())<0){
+    $('app').style.display='none';$('ov').style.display='none';
+    $('ovBlockMail').textContent=email;$('ovBlock').style.display='flex';
+    return;
+  }
+  userEmail=email;
+  $('ovBlock').style.display='none';
+  $('pgUser').textContent=email;
+  $('ov').style.display='none';$('app').style.display='block';
+  arrancar();
+}
+function onSignedOut(){$('app').style.display='none';$('ovBlock').style.display='none';$('ov').style.display='flex';}
+
+// ---------- CARGA ----------
+function arrancar(){
+  $('fIngreso').value=hoyISO();
+  pintarHintIngreso();
+  cargarTodo();
+}
+function cargarTodo(){
+  return sb.from('rrhh_colaboradores').select('*').order('nombre').then(function(r){
+    if(r.error){toast('Error cargando colaboradores: '+r.error.message);return;}
+    colaboradores=r.data||[];
+    construirMapaJefes();
+    pintarSelectArea();
+    pintarSelectJefe();
+    pintarLista();
+  });
+}
+// El correo corporativo del jefe NO esta en su propia ficha (ahi va el personal):
+// se aprende del correo_jefe que ya usan sus subalternos.
+function construirMapaJefes(){
+  var cnt={};
+  colaboradores.forEach(function(c){
+    var j=(c.jefe_inmediato||'').trim(), e=(c.correo_jefe||'').trim();
+    if(!j||!e||esEjemplo(j,''))return;
+    cnt[j]=cnt[j]||{}; cnt[j][e]=(cnt[j][e]||0)+1;
+  });
+  jefeCorreo={};
+  Object.keys(cnt).forEach(function(j){
+    var best='',bn=-1;
+    Object.keys(cnt[j]).forEach(function(e){if(cnt[j][e]>bn){bn=cnt[j][e];best=e;}});
+    jefeCorreo[j]=best;
+  });
+  // respaldo: si el jefe tiene correo corporativo en su propia ficha, sirve
+  colaboradores.forEach(function(c){
+    var n=(c.nombre||'').trim(), e=(c.correo||'').trim();
+    if(!n||jefeCorreo[n])return;
+    if(e&&e.toLowerCase().indexOf(DOMINIO)>0)jefeCorreo[n]=e;
+  });
+}
+function areasExistentes(){
+  var set={};
+  colaboradores.forEach(function(c){
+    var a=(c.area||'').trim();
+    if(a&&!esEjemplo(a,''))set[a]=1;
+  });
+  return Object.keys(set).sort(function(a,b){return a.localeCompare(b);});
+}
+function jefesExistentes(){
+  var set={};
+  colaboradores.forEach(function(c){
+    if(c.activo&&!esEjemplo(c.nombre,c.cedula)&&(c.nombre||'').trim())set[c.nombre.trim()]=1;
+    var j=(c.jefe_inmediato||'').trim();
+    if(j&&!esEjemplo(j,''))set[j]=1;
+  });
+  return Object.keys(set).sort(function(a,b){return a.localeCompare(b);});
+}
+function pintarSelectArea(){
+  var cur=$('fArea').value;
+  $('fArea').innerHTML='<option value="">— Selecciona —</option>'
+    +areasExistentes().map(function(a){return '<option value="'+esc(a)+'">'+esc(a)+'</option>';}).join('')
+    +'<option value="__otra">otra…</option>';
+  if(cur)$('fArea').value=cur;
+}
+function pintarSelectJefe(){
+  var cur=$('fJefe').value;
+  $('fJefe').innerHTML='<option value="">— Selecciona —</option>'
+    +jefesExistentes().map(function(j){return '<option value="'+esc(j)+'">'+esc(j)+'</option>';}).join('')
+    +'<option value="__otro">otro…</option>';
+  if(cur)$('fJefe').value=cur;
+}
+
+// ---------- FORMULARIO ----------
+function pintarHintIngreso(){
+  var v=$('fIngreso').value;
+  $('hIngreso').innerHTML=v?('La novedad de <b>Ingreso</b> caerá en la quincena <b>'+esc(rotuloQuincena(v))+'</b>.'):'';
+}
+function limpiar(){
+  ['fNombre','fCedula','fCorreo','fTelefono','fNacimiento','fCargo','fAreaOtra','fJefeOtro','fCorreoJefe','fSalario'].forEach(function(id){$(id).value='';});
+  $('fArea').value='';$('fJefe').value='';$('fTipoContrato').value='';
+  $('areaOtraWrap').style.display='none';$('jefeOtroWrap').style.display='none';
+  $('fIngreso').value=hoyISO();
+  pintarHintIngreso();
+  modo='nuevo';editId=null;cedToken++;
+  limpiarAvisoCedula();
+  $('frmTitulo').innerHTML='Nuevo ingreso <small id="frmSub">llena la ficha completa: así no toca volver después</small>';
+  $('btnGuardar').textContent='Registrar ingreso';
+  $('btnCancelar').style.display='none';
+  document.querySelectorAll('.bad').forEach(function(el){el.classList.remove('bad');});
+  fmsg('');
+}
+function cargarEnFormulario(c,nuevoModo){
+  modo=nuevoModo;editId=c.id;cedToken++;
+  limpiarAvisoCedula();
+  $('fNombre').value=c.nombre||'';
+  $('fCedula').value=c.cedula||'';
+  $('fCorreo').value=c.correo||'';
+  $('fTelefono').value=c.telefono||'';
+  $('fNacimiento').value=c.fecha_nacimiento||'';
+  $('fCargo').value=c.cargo||'';
+  $('fCorreoJefe').value=c.correo_jefe||'';
+  $('fTipoContrato').value=c.tipo_contrato||'';
+  $('fSalario').value=fmtMiles(c.salario_base);
+  $('fIngreso').value=(nuevoModo==='reactivar')?hoyISO():(c.fecha_ingreso||hoyISO());
+  pintarSelectArea();pintarSelectJefe();
+  if(c.area&&$('fArea').querySelector('option[value="'+CSS.escape(c.area)+'"]')){$('fArea').value=c.area;$('areaOtraWrap').style.display='none';}
+  else if(c.area){$('fArea').value='__otra';$('areaOtraWrap').style.display='flex';$('fAreaOtra').value=c.area;}
+  if(c.jefe_inmediato&&$('fJefe').querySelector('option[value="'+CSS.escape(c.jefe_inmediato)+'"]')){$('fJefe').value=c.jefe_inmediato;$('jefeOtroWrap').style.display='none';}
+  else if(c.jefe_inmediato){$('fJefe').value='__otro';$('jefeOtroWrap').style.display='flex';$('fJefeOtro').value=c.jefe_inmediato;}
+  if(nuevoModo==='editar'){
+    $('frmTitulo').innerHTML='Editar ficha <small>'+esc(c.nombre||'')+'</small>';
+    $('btnGuardar').textContent='Guardar cambios';
+  }else{
+    $('frmTitulo').innerHTML='Reingreso <small>'+esc(c.nombre||'')+' — ya había estado en la empresa</small>';
+    $('btnGuardar').textContent='Registrar reingreso';
+  }
+  $('btnCancelar').style.display='inline-block';
+  $('exito').style.display='none';
+  pintarHintIngreso();
+  fmsg('');
+  $('cardForm').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function onArea(){
+  var v=$('fArea').value;
+  $('areaOtraWrap').style.display=(v==='__otra')?'flex':'none';
+  if(v!=='__otra')$('fAreaOtra').value='';
+}
+function onJefe(){
+  var v=$('fJefe').value;
+  $('jefeOtroWrap').style.display=(v==='__otro')?'flex':'none';
+  if(v==='__otro'){$('fJefeOtro').value='';$('fCorreoJefe').value='';return;}
+  $('fCorreoJefe').value=v?(jefeCorreo[v]||''):'';
+  if(v&&!jefeCorreo[v])fmsg('Ese jefe no tiene correo corporativo guardado. Escríbelo a mano: sin él no funciona el escalamiento de permisos.','warn');
+  else fmsg('');
+}
+// D2 · cedula duplicada: nunca dos fichas para la misma persona
+function limpiarAvisoCedula(){var w=$('cedWrap');w.style.display='none';w.innerHTML='';cedBloqueo=null;}
+function chequearCedula(){
+  var ced=($('fCedula').value||'').trim();
+  var w=$('cedWrap');
+  var mi=++cedToken;
+  if(!ced){limpiarAvisoCedula();return Promise.resolve(null);}
+  return sb.from('rrhh_colaboradores').select('*').eq('cedula',ced).limit(1).then(function(r){
+    if(mi!==cedToken)return null;                 // llego tarde: manda la revision nueva
+    if(r.error||!r.data||!r.data.length){limpiarAvisoCedula();return null;}
+    var c=r.data[0];
+    if(editId&&editId===c.id){limpiarAvisoCedula();return null;}
+    limpiarAvisoCedula();
+    cedBloqueo=c;
+    if(c.activo){
+      w.innerHTML='<div class="note red" style="margin:0">Ya hay una ficha <b>activa</b> con esa cédula: <b>'+esc(c.nombre||'')+'</b> · '+esc(c.area||'—')+' / '+esc(c.cargo||'—')+'. No se puede crear otra.<div class="actline"><button type="button" class="btn sec mini" id="cedEditar">Editar esa ficha</button></div></div>';
+      w.style.display='block';
+      // mousedown y no click: el clic saca el foco de la casilla y el blur alcanzaria a borrar el boton
+      $('cedEditar').addEventListener('mousedown',function(e){e.preventDefault();cargarEnFormulario(c,'editar');});
+    }else{
+      w.innerHTML='<div class="note amber" style="margin:0">Esta persona ya estuvo en la empresa: <b>'+esc(c.nombre||'')+'</b> (ficha inactiva). No se crea una nueva: se <b>reactiva</b> la que ya existe.<div class="actline"><button type="button" class="btn sec mini" id="cedReact">Reactivar ficha</button></div></div>';
+      w.style.display='block';
+      $('cedReact').addEventListener('mousedown',function(e){e.preventDefault();cargarEnFormulario(c,'reactivar');});
+    }
+    return c;
+  });
+}
+// D4 · obligatorios
+function recolectar(){
+  document.querySelectorAll('.bad').forEach(function(el){el.classList.remove('bad');});
+  var area=$('fArea').value==='__otra'?($('fAreaOtra').value||'').trim():$('fArea').value;
+  var jefe=$('fJefe').value==='__otro'?($('fJefeOtro').value||'').trim():$('fJefe').value;
+  var row={
+    nombre:($('fNombre').value||'').trim(),
+    cedula:($('fCedula').value||'').trim(),
+    correo:($('fCorreo').value||'').trim(),
+    telefono:($('fTelefono').value||'').trim()||null,
+    fecha_nacimiento:$('fNacimiento').value||null,
+    area:area,
+    cargo:($('fCargo').value||'').trim(),
+    jefe_inmediato:jefe,
+    correo_jefe:($('fCorreoJefe').value||'').trim()||null,
+    tipo_contrato:$('fTipoContrato').value||null,
+    fecha_ingreso:$('fIngreso').value||null,
+    salario_base:soloDigitos($('fSalario').value)?Number(soloDigitos($('fSalario').value)):null
+  };
+  var faltan=[];
+  function req(campo,el,rotulo){if(!campo){faltan.push(rotulo);$(el).classList.add('bad');}}
+  req(row.nombre,'fNombre','nombre');
+  req(row.cedula,'fCedula','cédula');
+  req(row.correo,'fCorreo','correo personal');
+  req(row.area,$('fArea').value==='__otra'?'fAreaOtra':'fArea','área');
+  req(row.cargo,'fCargo','cargo');
+  req(row.jefe_inmediato,$('fJefe').value==='__otro'?'fJefeOtro':'fJefe','jefe inmediato');
+  req(row.tipo_contrato,'fTipoContrato','tipo de contrato');
+  req(row.fecha_ingreso,'fIngreso','fecha de ingreso');
+  if(faltan.length){fmsg('Falta: '+faltan.join(', ')+'.','err');return null;}
+  if(!correoOk(row.correo)){$('fCorreo').classList.add('bad');fmsg('El correo personal no tiene formato válido.','err');return null;}
+  if(row.correo_jefe&&!correoOk(row.correo_jefe)){$('fCorreoJefe').classList.add('bad');fmsg('El correo del jefe no tiene formato válido.','err');return null;}
+  if(esEjemplo(row.nombre,row.cedula)){fmsg('Ese nombre/cédula está reservado para el registro EJEMPLO.','err');return null;}
+  return row;
+}
+function faltantes(row){
+  var f=[];
+  if(!row.correo_jefe)f.push('correo del jefe');
+  if(row.salario_base==null)f.push('salario base');
+  if(!row.telefono)f.push('teléfono');
+  return f;
+}
+function crearNovedad(colId,tipo,fechaISO,obs){
+  return sb.from('rrhh_nomina_novedades').insert({
+    periodo:periodoKey(fechaISO),
+    colaborador_id:colId,
+    tipo:tipo,
+    fecha_inicio:fechaISO,
+    observacion:obs,
+    registrado_por:userEmail,
+    origen:'manual'
+  });
+}
+function pintarExito(row,tipoAccion,conNovedad){
+  var f=faltantes(row);
+  $('exitoTit').innerHTML='&#10003; '+(tipoAccion==='editar'?'Ficha actualizada':(tipoAccion==='reactivar'?'Reingreso registrado':'Ingreso registrado'));
+  var txt='<b>'+esc(row.nombre)+'</b> ya aparece en <b>Permisos, Vacaciones, Actas y Nómina</b>.';
+  if(conNovedad)txt+=' La novedad de <b>'+(tipoAccion==='editar'?'Ingreso':'Ingreso')+'</b> quedó en la quincena <b>'+esc(rotuloQuincena(row.fecha_ingreso))+'</b>, así el contable se entera solo.';
+  $('exitoTxt').innerHTML=txt;
+  $('exitoFalta').innerHTML=f.length?('<div class="note amber" style="margin:10px 0 0">⚠ Ficha incompleta: falta <b>'+esc(f.join(', '))+'</b>. Se puede completar después con el botón <b>Editar</b> de la lista, pero sin correo del jefe el escalamiento de permisos no corre.</div>'):'';
+  $('exito').style.display='block';
+  $('exito').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function guardar(){
+  var row=recolectar();
+  if(!row)return;
+  if(modo==='nuevo'&&cedBloqueo){fmsg('Esa cédula ya tiene ficha. Usa el botón de arriba para editarla o reactivarla.','err');return;}
+  $('btnGuardar').disabled=true;fmsg('Guardando…');
+  // revalidacion en vivo de la cedula justo antes de escribir (otra persona pudo crearla)
+  chequearCedula().then(function(dup){
+    if(dup&&modo==='nuevo'){$('btnGuardar').disabled=false;fmsg('Esa cédula ya tiene ficha. Revisa el aviso de arriba.','err');return;}
+    var accion=modo;
+    if(accion==='editar'){
+      row.updated_at=new Date().toISOString();
+      return sb.from('rrhh_colaboradores').update(row).eq('id',editId).then(function(r){
+        if(r.error)throw r.error;
+        return cargarTodo().then(function(){limpiar();pintarExito(row,'editar',false);toast('Ficha actualizada.');});
+      });
+    }
+    if(accion==='reactivar'){
+      row.activo=true;row.updated_at=new Date().toISOString();
+      return sb.from('rrhh_colaboradores').update(row).eq('id',editId).then(function(r){
+        if(r.error)throw r.error;
+        return crearNovedad(editId,'Ingreso','' +row.fecha_ingreso,'Ingreso '+row.cargo+' — '+row.tipo_contrato).then(function(n){
+          if(n.error)toast('Ficha reactivada, pero la novedad falló: '+n.error.message);
+          return cargarTodo().then(function(){limpiar();pintarExito(row,'reactivar',!n.error);toast('Reingreso registrado.');});
+        });
+      });
+    }
+    row.activo=true;
+    return sb.from('rrhh_colaboradores').insert(row).select('id').single().then(function(r){
+      if(r.error)throw r.error;
+      var nuevoId=r.data.id;
+      return crearNovedad(nuevoId,'Ingreso',row.fecha_ingreso,'Ingreso '+row.cargo+' — '+row.tipo_contrato).then(function(n){
+        if(n.error)toast('Colaborador creado, pero la novedad falló: '+n.error.message);
+        return cargarTodo().then(function(){limpiar();pintarExito(row,'nuevo',!n.error);toast('Ingreso registrado.');});
+      });
+    });
+  }).catch(function(e){
+    fmsg('No se pudo guardar: '+esc((e&&e.message)||e),'err');
+  }).then(function(){$('btnGuardar').disabled=false;});
+}
+
+// ---------- LISTA ----------
+function ordenFicha(c){return (c.fecha_ingreso||String(c.created_at||'').slice(0,10)||'0000-00-00');}
+function pintarLista(){
+  var vis=colaboradores.filter(function(c){return !esEjemplo(c.nombre,c.cedula);});
+  vis.sort(function(a,b){var x=ordenFicha(a),y=ordenFicha(b);return x<y?1:(x>y?-1:String(b.created_at||'').localeCompare(String(a.created_at||'')));});
+  var top=vis.slice(0,MAX_LISTA);
+  $('listCount').textContent=top.length?('últimos '+top.length+' de '+vis.length+' fichas'):'';
+  if(!top.length){$('listBody').innerHTML='';$('listEmpty').style.display='block';return;}
+  $('listEmpty').style.display='none';
+  $('listBody').innerHTML=top.map(function(c){
+    var f=faltantes({correo_jefe:c.correo_jefe,salario_base:(c.salario_base==null?null:Number(c.salario_base)),telefono:c.telefono});
+    var chip=c.tipo_contrato==='Nómina'?'<span class="pill ok">Nómina</span>'
+            :(c.tipo_contrato==='Prestación de servicios'?'<span class="pill warn">Prestación</span>'
+            :'<span class="pill grey">sin contrato</span>');
+    return '<tr>'
+      +'<td><b>'+esc(c.nombre||'')+'</b><span class="sub">'+esc(c.correo||'sin correo')+'</span>'+(f.length?'<span class="falta">⚠ ficha incompleta: '+esc(f.join(', '))+'</span>':'')+'</td>'
+      +'<td class="mono">'+esc(c.cedula||'—')+'</td>'
+      +'<td>'+esc(c.area||'—')+'<span class="sub">'+esc(c.cargo||'—')+'</span></td>'
+      +'<td>'+esc(c.jefe_inmediato||'—')+'<span class="sub">'+esc(c.correo_jefe||'sin correo del jefe')+'</span></td>'
+      +'<td>'+chip+'</td>'
+      +'<td class="mono">'+esc(fdate(c.fecha_ingreso))+'</td>'
+      +'<td>'+(c.activo?'<span class="pill ok">Activo</span>':'<span class="pill grey">Retirado</span>')+'</td>'
+      +'<td><div class="rowacts"><button type="button" class="btn sec mini" data-edit="'+esc(c.id)+'">Editar</button>'
+      +(c.activo?'<button type="button" class="btn ghost mini" data-ret="'+esc(c.id)+'">Retirar</button>':'')
+      +'</div></td>'
+      +'</tr>';
+  }).join('');
+}
+function fichaPorId(id){for(var i=0;i<colaboradores.length;i++){if(String(colaboradores[i].id)===String(id))return colaboradores[i];}return null;}
+
+// ---------- RETIRO (D3: nunca se borra) ----------
+function abrirRetiro(c){
+  retiroCola=c;
+  $('retWho').innerHTML='<b>'+esc(c.nombre||'')+'</b> · '+esc(c.area||'—')+' / '+esc(c.cargo||'—');
+  $('retFecha').value=hoyISO();
+  $('retMotivo').value='';
+  rmsg('');
+  $('retBg').style.display='flex';
+}
+function cerrarRetiro(){$('retBg').style.display='none';retiroCola=null;}
+function confirmarRetiro(){
+  if(!retiroCola)return;
+  var fecha=$('retFecha').value;
+  if(!fecha){rmsg('Escoge la fecha de retiro.','err');return;}
+  var motivo=($('retMotivo').value||'').trim();
+  var c=retiroCola;
+  $('retGuardar').disabled=true;rmsg('Guardando…');
+  sb.from('rrhh_colaboradores').update({activo:false,updated_at:new Date().toISOString()}).eq('id',c.id).then(function(r){
+    if(r.error)throw r.error;
+    return crearNovedad(c.id,'Retiro',fecha,'Retiro '+(c.cargo||'')+(motivo?' — '+motivo:''));
+  }).then(function(n){
+    if(n&&n.error)toast('Retiro guardado, pero la novedad falló: '+n.error.message);
+    else toast('Retiro registrado. La novedad quedó en la quincena '+rotuloQuincena(fecha)+'.');
+    cerrarRetiro();
+    return cargarTodo();
+  }).catch(function(e){
+    rmsg('No se pudo registrar el retiro: '+((e&&e.message)||e),'err');
+  }).then(function(){$('retGuardar').disabled=false;});
+}
+
+// ---------- WIRE ----------
+function wire(){
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    var act=t.closest?t.closest('[data-act]'):null;
+    if(act){var a=act.getAttribute('data-act');if(a==='login')doLogin();if(a==='logout')sb.auth.signOut();return;}
+    var ed=t.closest?t.closest('[data-edit]'):null;
+    if(ed){var c=fichaPorId(ed.getAttribute('data-edit'));if(c)cargarEnFormulario(c,c.activo?'editar':'reactivar');return;}
+    var rt=t.closest?t.closest('[data-ret]'):null;
+    if(rt){var c2=fichaPorId(rt.getAttribute('data-ret'));if(c2)abrirRetiro(c2);return;}
+  });
+  $('pass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+  $('fArea').addEventListener('change',onArea);
+  $('fJefe').addEventListener('change',onJefe);
+  $('fCedula').addEventListener('blur',function(){chequearCedula();});
+  $('fIngreso').addEventListener('change',pintarHintIngreso);
+  $('fSalario').addEventListener('input',function(){this.value=fmtMiles(this.value);});
+  $('btnGuardar').addEventListener('click',guardar);
+  $('btnCancelar').addEventListener('click',function(){limpiar();$('exito').style.display='none';});
+  $('btnOtro').addEventListener('click',function(){limpiar();$('exito').style.display='none';$('cardForm').scrollIntoView({behavior:'smooth',block:'start'});$('fNombre').focus();});
+  $('btnActa').addEventListener('click',function(){window.open('rrhh-actas.html','_blank','noopener');});
+  $('retGuardar').addEventListener('click',confirmarRetiro);
+  $('retCancelar').addEventListener('click',cerrarRetiro);
+  $('retBg').addEventListener('click',function(e){if(e.target===$('retBg'))cerrarRetiro();});
+}
+function init(){
+  if(!(window.supabase&&window.supabase.createClient)){msg('No se pudo cargar Supabase (revisa tu conexión).','err');$('ov').style.display='flex';return;}
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  wire();
+  sb.auth.getSession().then(function(r){if(r.data&&r.data.session)onAuthed(r.data.session);else onSignedOut();});
+  sb.auth.onAuthStateChange(function(evt,session){if(session)onAuthed(session);else onSignedOut();});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,60);});
+else setTimeout(init,60);
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
+var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PGV_ARCHIVO="rrhh-ingresos.html";
+var PGV_VERSION=1;
+function pgvBanner(){
+  if(document.getElementById('pgvBar'))return;
+  var b=document.createElement('div');
+  b.id='pgvBar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
+  b.innerHTML='🔄 Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
+  document.body.appendChild(b);
+  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+}
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY);
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION)pgvBanner();
+    });
+  }catch(e){}
+}
+function pgvCheck(){
+  if(window.supabase&&window.supabase.createClient){pgvRun();return;}
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload=pgvRun;
+  document.head.appendChild(s);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);});
+else setTimeout(pgvCheck,400);
+})();
+</script>
+</body>
+</html>

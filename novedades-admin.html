@@ -999,8 +999,8 @@
 /* =========================================================
    CONFIG / CLIENTE SUPABASE
 ========================================================= */
-var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var SUPABASE_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var SUPABASE_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var sb=null;
 
 var PERMITIDOS=['sales@protectgoservices.com','andres.lopez@protectgoservices.com'];
@@ -1023,7 +1023,7 @@ var state={
 
 /* ---- Accesos (reset de clave por admin) ---- */
 var ACCESOS_ADMIN_EMAIL='sales@protectgoservices.com';
-var ACCESOS_FN_URL='https://bwqzypuiqgxzsrtsueab.supabase.co/functions/v1/admin-reset-password';
+var ACCESOS_FN_URL='https://hivpqsepwsfmafamxkzy.supabase.co/functions/v1/admin-reset-password';
 var CUENTAS_AREA=['fam@','kam@','coi@','rrhh@','sales@','endorsement@','renewal@','retention@','amazonaud@'];
 var accesosCache=[];
 var accesosFiltro='';
@@ -1154,7 +1154,7 @@ function bootSupabase(){
     $('loginBtn').disabled=true;
     return;
   }
-  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{db:{schema:'portal'}});
   sb.auth.getSession().then(function(res){
     handleSession(res && res.data ? res.data.session : null);
   });
@@ -2050,8 +2050,8 @@ function cargarHistorialAccesos(){
 <script>
 (function(){
 "use strict";
-var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="novedades-admin.html";
 var PGV_VERSION=7;
 function pgvBanner(){
@@ -2065,7 +2065,7 @@ function pgvBanner(){
 }
 function pgvRun(){
   try{
-    var c=window.supabase.createClient(PGV_URL,PGV_KEY);
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
     c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
       if(!r||r.error||!r.data)return;
       if(Number(r.data.version)>PGV_VERSION)pgvBanner();

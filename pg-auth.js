@@ -16,8 +16,8 @@
   "use strict";
 
   /* ---------------------------------------------------------------- config */
-  var SUPABASE_URL = "https://bwqzypuiqgxzsrtsueab.supabase.co";
-  var SUPABASE_KEY = "sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+  var SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
   var REDIRECT_URL = "https://protectgo.github.io/quick-quotes/recuperar.html";
   var DOMINIO      = "@protectgoservices.com";
   var SOPORTE      = "sales@protectgoservices.com";

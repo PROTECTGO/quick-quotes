@@ -159,9 +159,9 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SUPABASE_URL = "https://bwqzypuiqgxzsrtsueab.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3cXp5cHVpcWd4enNydHN1ZWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDc1NzAsImV4cCI6MjA5NjU4MzU3MH0.Cp313Eaqpl7A1zWJqTES646Jj57Wfg40SVeG_VvrXag";
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {db:{schema:'portal'}});
 
 let colaboradores = {};   // id -> {nombre, foto}
 let admins = [];          // lista de correos con permiso de editar
@@ -346,8 +346,8 @@ async function loadHistorial(){
 <script>
 (function(){
 "use strict";
-var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="mapa-puestos.html";
 var PGV_VERSION=2;
 function pgvBanner(){
@@ -361,7 +361,7 @@ function pgvBanner(){
 }
 function pgvRun(){
   try{
-    var c=window.supabase.createClient(PGV_URL,PGV_KEY);
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
     c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
       if(!r||r.error||!r.data)return;
       if(Number(r.data.version)>PGV_VERSION)pgvBanner();

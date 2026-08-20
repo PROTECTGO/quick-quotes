@@ -148,7 +148,7 @@
       + '.pgnov-pie{font-size:13px;font-weight:600;color:#9DBAC4;letter-spacing:.02em;}'
       + '.pgnov-foto{border-radius:18px;overflow:hidden;background:rgba(255,255,255,.05);'
       + 'border:1px solid rgba(255,255,255,.12);max-width:100%;}'
-      + '.pgnov-foto img{display:block;width:100%;max-height:34vh;object-fit:cover;}'
+      + '.pgnov-foto img{display:block;max-width:100%;max-height:80vh;width:auto;height:auto;object-fit:contain;margin:0 auto;}'
 
       /* ---------- 📚 Enseñanza del mes — bloque opcional, cualquier tipo ---------- */
       + '.pgnov-ens{width:100%;box-sizing:border-box;text-align:left;border-radius:16px;'
@@ -261,7 +261,7 @@
       + '.t-recordatorio .pgnov-tit{font-size:clamp(22px,6.4vw,32px);}'
       + '.t-aviso .pgnov-cue,.t-novedad .pgnov-cue,.t-recordatorio .pgnov-cue{font-size:16px;}'
       + '.t-aviso .pgnov-marco{padding:18px 16px;}'
-      + '.pgnov-foto img{max-height:26vh;}'
+      + '.pgnov-foto img{max-height:70vh;}'
       + '.pgnov-ens{padding:14px 16px;}'
       + '.pgnov-ens-texto{font-size:14.5px;}'
       + '.pgnov-bot button,.pgnov-bar{width:100%;}'
@@ -711,7 +711,7 @@
         caja.appendChild(nodo('div', 'pgnov-badge', meta.e + ' ' + meta.n));
         if (foto) { caja.appendChild(foto); }
         caja.appendChild(nodo('h2', 'pgnov-tit', n.titulo || ''));
-        if (n.cuerpo) { caja.appendChild(nodo('p', 'pgnov-cue', n.cuerpo)); }
+        if (n.cuerpo && /[a-z0-9]/i.test(n.cuerpo)) { caja.appendChild(nodo('p', 'pgnov-cue', n.cuerpo)); }
         if (n.pie_foto) { caja.appendChild(nodo('div', 'pgnov-pie', n.pie_foto)); }
         if (n.ensenanza) { caja.appendChild(bloqueEnsenanza(n.ensenanza)); }
         cuerpo.appendChild(caja);
@@ -722,7 +722,7 @@
         marco.appendChild(nodo('h2', 'pgnov-tit', n.titulo || ''));
         var fa = bloqueFoto(n, 'pgnov-foto');
         if (fa) { marco.appendChild(fa); }
-        if (n.cuerpo) { marco.appendChild(nodo('p', 'pgnov-cue', n.cuerpo)); }
+        if (n.cuerpo && /[a-z0-9]/i.test(n.cuerpo)) { marco.appendChild(nodo('p', 'pgnov-cue', n.cuerpo)); }
         if (n.pie_foto) { marco.appendChild(nodo('div', 'pgnov-pie', n.pie_foto)); }
         if (n.ensenanza) { marco.appendChild(bloqueEnsenanza(n.ensenanza)); }
         caja.appendChild(marco);
@@ -733,7 +733,7 @@
         caja.appendChild(nodo('h2', 'pgnov-tit', n.titulo || ''));
         var fo = bloqueFoto(n, 'pgnov-foto');
         if (fo) { caja.appendChild(fo); }
-        if (n.cuerpo) { caja.appendChild(nodo('p', 'pgnov-cue', n.cuerpo)); }
+        if (n.cuerpo && /[a-z0-9]/i.test(n.cuerpo)) { caja.appendChild(nodo('p', 'pgnov-cue', n.cuerpo)); }
         if (n.pie_foto) { caja.appendChild(nodo('div', 'pgnov-pie', n.pie_foto)); }
         if (n.ensenanza) { caja.appendChild(bloqueEnsenanza(n.ensenanza)); }
         cuerpo.appendChild(caja);

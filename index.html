@@ -353,8 +353,8 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 (function(){
 "use strict";
 // Mismo proyecto Supabase que el Quick Quote: la sesion se comparte por dominio.
-var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var SUPABASE_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var SUPABASE_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var sb=null;
 
 var ov=document.getElementById("ov");
@@ -394,7 +394,7 @@ document.addEventListener("keydown",function(e){ if(e.key==="Enter" && ov.style.
 
 function init(){
 if(!(window.supabase&&window.supabase.createClient)){ msg("No se pudo cargar Supabase (revisa tu conexión).","err"); ov.style.display="flex"; return; }
-sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{db:{schema:'portal'}});
 sb.auth.getSession().then(function(r){ if(r.data&&r.data.session) onAuthed(r.data.session); else onSignedOut(); });
 sb.auth.onAuthStateChange(function(evt,session){ if(session) onAuthed(session); else onSignedOut(); });
 }
@@ -515,7 +515,7 @@ function gateWidgets(cli){
 }
 function arrancar(){
 if(!(window.supabase&&window.supabase.createClient)) return;
-var c=window.supabase.createClient("https://bwqzypuiqgxzsrtsueab.supabase.co","sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49");
+var c=window.supabase.createClient("https://hivpqsepwsfmafamxkzy.supabase.co","sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt",{db:{schema:'portal'}});
 c.auth.getSession().then(function(r){aplicar(r.data&&r.data.session&&r.data.session.user?String(r.data.session.user.email).toLowerCase():"");gateWidgets(c);});
 c.auth.onAuthStateChange(function(evt,s){aplicar(s&&s.user?String(s.user.email).toLowerCase():"");gateWidgets(c);});
 }
@@ -528,8 +528,8 @@ else setTimeout(arrancar,150);
 "use strict";
 // Panel "Mi Jornada": marcacion de breaks y almuerzo. Cliente propio de Supabase,
 // mismo patron que los otros scripts de este archivo (misma sesion por dominio).
-var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var SUPABASE_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var SUPABASE_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var sb=null;
 
 var OFFSET=0;       // ms: hora_servidor - reloj del PC. TODA hora mostrada usa Date.now()+OFFSET.
@@ -746,7 +746,7 @@ function onSignedOut(){ setPanelVisible(false); if(TICK){ clearInterval(TICK); T
 
 function init(){
 if(!(window.supabase&&window.supabase.createClient)) return;
-sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{db:{schema:'portal'}});
 sb.auth.getSession().then(function(r){ var s=r.data&&r.data.session; if(s) onAuthed(s.user&&s.user.email); else onSignedOut(); });
 sb.auth.onAuthStateChange(function(evt,session){ if(session) onAuthed(session.user&&session.user.email); else onSignedOut(); });
 }
@@ -757,8 +757,8 @@ else setTimeout(init,60);
 <script>
 (function(){
 "use strict";
-var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
 var PGV_VERSION=5;
 function pgvBanner(){
@@ -772,7 +772,7 @@ function pgvBanner(){
 }
 function pgvRun(){
   try{
-    var c=window.supabase.createClient(PGV_URL,PGV_KEY);
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
     c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
       if(!r||r.error||!r.data)return;
       if(Number(r.data.version)>PGV_VERSION)pgvBanner();
@@ -797,8 +797,8 @@ setInterval(pgvCheck,600000);
 // Contador dinamico de la card "Pendientes KAM": RLS en tareas_kam ya filtra
 // lo que cada usuario puede ver (miembro/lider/admin ven lo suyo o todo).
 // Cualquier fallo deja el chip en "Listo" sin romper el resto del hub.
-var PK_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-var PK_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PK_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PK_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 
 function pkSetChip(text,cls){
   var chip=document.getElementById("pkChip");
@@ -830,7 +830,7 @@ function pkLoad(cli){
 function pkInit(){
   try{
     if(!(window.supabase&&window.supabase.createClient)) return;
-    var cli=window.supabase.createClient(PK_URL,PK_KEY);
+    var cli=window.supabase.createClient(PK_URL,PK_KEY,{db:{schema:'portal'}});
     cli.auth.getSession().then(function(r){
       var s=r.data&&r.data.session;
       if(s&&s.user) pkLoad(cli); else pkSetChip("Listo","ready");

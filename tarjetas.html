@@ -291,8 +291,8 @@ render();
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
-  var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-  var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+  var SUPABASE_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+  var SUPABASE_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
   var PROFILES={
 "german.ochoa@protectgoservices.com": {
 "n": "German Ochoa",
@@ -444,7 +444,7 @@ render();
   try{ var q=new URLSearchParams(location.search).get("u"); if(q && apply(q.trim())) return; }catch(e){}
   function init(){
     if(!(window.supabase&&window.supabase.createClient)) return;
-    var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{db:{schema:'portal'}});
     sb.auth.getSession().then(function(r){
       var em=r&&r.data&&r.data.session&&r.data.session.user?r.data.session.user.email:"";
       if(em) apply(em);
@@ -457,8 +457,8 @@ render();
 <script>
 (function(){
 "use strict";
-var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="tarjetas.html";
 var PGV_VERSION=8;
 function pgvBanner(){
@@ -472,7 +472,7 @@ function pgvBanner(){
 }
 function pgvRun(){
   try{
-    var c=window.supabase.createClient(PGV_URL,PGV_KEY);
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
     c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
       if(!r||r.error||!r.data)return;
       if(Number(r.data.version)>PGV_VERSION)pgvBanner();
@@ -685,8 +685,8 @@ window.pgRevisarNovedades=function(sbClient,area){
 };
 })();
 (function(){
-  var PGN_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-  var PGN_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+  var PGN_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+  var PGN_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
   var cli=null;
   function correr(){
     if(!cli||!window.pgRevisarNovedades) return;
@@ -697,7 +697,7 @@ window.pgRevisarNovedades=function(sbClient,area){
   function arranca(){
     if(!(window.supabase&&window.supabase.createClient)) return;
     if(!cli){
-      cli=window.supabase.createClient(PGN_URL,PGN_KEY);
+      cli=window.supabase.createClient(PGN_URL,PGN_KEY,{db:{schema:'portal'}});
       cli.auth.onAuthStateChange(function(_e,ses){ if(ses) correr(); });
     }
     correr();

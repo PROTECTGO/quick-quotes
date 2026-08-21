@@ -247,7 +247,7 @@
    guardar / validar).  ES5 puro, sin librerías nuevas, sin storage.
    Se registra en el global KAM que crea el ensamblador.
 
-   Claves VERIFICADAS contra Supabase (proyecto bwqzypuiqgxzsrtsueab,
+   Claves VERIFICADAS contra Supabase (proyecto GABI hivpq · schema portal,
    tabla quick_quotes, 370 registros — barrida de jsonb_object_keys):
      sec-agency::Account Name::1 | Owner Name::1 | Owner Date of Birth::1
      sec-agency::Mailing Address::1 | Parking Address::1 | Phone::1 | Email::1
@@ -1649,9 +1649,9 @@
     if (global.sb && global.sb.from) return global.sb;
     if (global.supabase && global.supabase.createClient) {
       KAM.sb = global.supabase.createClient(
-        KAM.SUPABASE_URL || 'https://bwqzypuiqgxzsrtsueab.supabase.co',
-        KAM.SUPABASE_KEY || 'sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49'
-      );
+        KAM.SUPABASE_URL || 'https://hivpqsepwsfmafamxkzy.supabase.co',
+        KAM.SUPABASE_KEY || 'sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt'
+      , {db:{schema:'portal'}});
       return KAM.sb;
     }
     return null;
@@ -8745,8 +8745,8 @@
 (function () {
 "use strict";
 
-var SUPABASE_URL = "https://bwqzypuiqgxzsrtsueab.supabase.co";
-var SUPABASE_KEY = "sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
+var SUPABASE_KEY = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 
 /* base de los PDF originales de los MGAs — la usa el motor de BROOKLYN */
 window.PDF_BASE = "kam-docs/";
@@ -9041,7 +9041,7 @@ function init() {
     }
   } catch (e) { }
 
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {db:{schema:'portal'}});
   KAM.sb = sb; window.sb = sb;
 
   $('q').oninput = function () { filtro = this.value; pintarLista(); };
@@ -9075,8 +9075,8 @@ else init();
 <script>
 (function(){
 "use strict";
-var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="kam.html";
 var PGV_VERSION=2;
 function pgvBanner(){
@@ -9090,7 +9090,7 @@ function pgvBanner(){
 }
 function pgvRun(){
   try{
-    var c=window.supabase.createClient(PGV_URL,PGV_KEY);
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
     c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
       if(!r||r.error||!r.data)return;
       if(Number(r.data.version)>PGV_VERSION)pgvBanner();

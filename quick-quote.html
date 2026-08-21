@@ -4338,8 +4338,8 @@
   <script>
   (function(){
     "use strict";
-    var SUPABASE_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-    var SUPABASE_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+    var SUPABASE_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+    var SUPABASE_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
     var EDITORES=["kam@protectgoservices.com","andres.lopez@protectgoservices.com"];
     var sb=null, currentId=null, currentUserId=null, userEmail="";
 
@@ -4716,7 +4716,7 @@ pgRevisarNovedades(sb,'general');
     function init(){
       buildUI();
       if(!(window.supabase&&window.supabase.createClient)){ console.warn("[QQ] Supabase no cargó; el documento sigue usable sin guardar."); onSignedOut(); return; }
-      sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+      sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{db:{schema:'portal'}});
       sb.auth.getSession().then(function(r){ if(r.data&&r.data.session) onAuthed(r.data.session); else onSignedOut(); });
       sb.auth.onAuthStateChange(function(evt,session){ if(session) onAuthed(session); else onSignedOut(); });
     }
@@ -4773,8 +4773,8 @@ pgRevisarNovedades(sb,'general');
 <script>
 (function(){
 "use strict";
-var PGV_URL="https://bwqzypuiqgxzsrtsueab.supabase.co";
-var PGV_KEY="sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="quick-quote.html";
 var PGV_VERSION=9;
 function pgvBanner(){
@@ -4788,7 +4788,7 @@ function pgvBanner(){
 }
 function pgvRun(){
   try{
-    var c=window.supabase.createClient(PGV_URL,PGV_KEY);
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
     c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
       if(!r||r.error||!r.data)return;
       if(Number(r.data.version)>PGV_VERSION)pgvBanner();
@@ -5139,7 +5139,7 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
       var src=await fetch("quick-quote.html").then(function(r){return r.text();});
       var k=src.match(/sb_publishable_[A-Za-z0-9_\-]+/);
       if(k&&window.supabase&&window.supabase.createClient)
-        sb=window.supabase.createClient("https://bwqzypuiqgxzsrtsueab.supabase.co",k[0]);
+        sb=window.supabase.createClient("https://hivpqsepwsfmafamxkzy.supabase.co",k[0],{db:{schema:'portal'}});
     }catch(_){}
     return sb;
   }
@@ -5207,7 +5207,7 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
       var src=await fetch("quick-quote.html").then(function(r){return r.text();});
       var k=src.match(/sb_publishable_[A-Za-z0-9_\-]+/);
       if(k&&window.supabase&&window.supabase.createClient)
-        sb=window.supabase.createClient("https://bwqzypuiqgxzsrtsueab.supabase.co",k[0]);
+        sb=window.supabase.createClient("https://hivpqsepwsfmafamxkzy.supabase.co",k[0],{db:{schema:'portal'}});
     }catch(_){}
     return sb;
   }

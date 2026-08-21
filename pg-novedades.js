@@ -982,8 +982,8 @@
     var canal;
     try {
       canal = cliente.channel('pgnov-' + areaActual + '-' + Math.random().toString(36).slice(2, 8))
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'novedades' }, alRecibirEvento)
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'novedades' }, alRecibirEvento)
+        .on('postgres_changes', { event: 'INSERT', schema: 'portal', table: 'novedades' }, alRecibirEvento)
+        .on('postgres_changes', { event: 'UPDATE', schema: 'portal', table: 'novedades' }, alRecibirEvento)
         .subscribe(function (estado) {
           console.log('[pg-novedades] canal realtime: ' + estado);
           if (estado === 'SUBSCRIBED') {
@@ -1146,8 +1146,8 @@
        - nunca se llama signOut() ni setSession() desde aquí.
      Quien manda sobre la sesión sigue siendo el login de la página. */
 
-  var PGA_URL = 'https://bwqzypuiqgxzsrtsueab.supabase.co';
-  var PGA_KEY = 'sb_publishable_VbA94M3mF-Z6kgtPnda-cQ_diKF8L49';
+  var PGA_URL = 'https://hivpqsepwsfmafamxkzy.supabase.co';
+  var PGA_KEY = 'sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
   var PGA_MS_SDK       = 250;    // cada cuánto revisamos si ya cargó supabase-js
   var PGA_MAX_SDK      = 40;     // 40 x 250 ms = 10 s de espera máxima
   var PGA_MS_SESION    = 5000;   // reintento mientras la persona no ha entrado
@@ -1190,7 +1190,7 @@
   function pgaCliente() {
     if (window.__pgnovAutoCliente) { return window.__pgnovAutoCliente; }
     if (!pgaHaySDK()) { return null; }
-    var opciones = { auth: {
+    var opciones = { db: { schema: 'portal' }, auth: {
       persistSession: true,       // hace falta para LEER la gaveta compartida
       autoRefreshToken: false,    // no refresca -> no escribe
       detectSessionInUrl: false   // no toca la URL

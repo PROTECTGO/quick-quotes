@@ -439,7 +439,7 @@ if(document.readyState === "loading"){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="recuperar.html";
-var PGV_VERSION="1.0.0";
+var PGV_VERSION="2.0.0";
 /* Las demás páginas guardan la versión como número entero; aquí la pidieron
    como texto "1.0.0", así que comparamos por partes (1.0.1 > 1.0.0) y también
    funciona si en app_versiones queda un entero simple.
@@ -453,7 +453,8 @@ function pgvMayor(remota, local){
   }
   return false;
 }
-function pgvBanner(){
+try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
+function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
   b.id='pgvBar';
@@ -461,6 +462,7 @@ function pgvBanner(){
   b.innerHTML='🔄 Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
   document.body.appendChild(b);
   document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+if(!window.__pgIdle){window.__pgIdle=setInterval(function(){if(window.__pgLastInput&&Date.now()-window.__pgLastInput>30000){try{location.reload(!0)}catch(e){location.reload()}}},5000);}try{var _b=document.getElementById('pgvBar');if(_b&&!_b.__aug){_b.__aug=1;var _s=document.createElement('span');_s.style.cssText='font-weight:800';_s.textContent='Guarda tu trabajo y la página se actualizará sola.';_b.insertBefore(_s,_b.firstChild);}}catch(e){}
 }
 function pgvRun(){
   try{

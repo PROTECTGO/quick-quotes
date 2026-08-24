@@ -106,6 +106,24 @@ body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--f-bo
 .comtot{display:flex;justify-content:space-between;font-weight:800;font-size:13px;margin-top:8px;padding-top:8px;border-top:2px solid var(--pg-line)}
 .comtot.cobrar{color:var(--pg-pos)} .comtot.pagar{color:var(--pg-neg)}
 </style>
+<style>
+/* Caja y Liquidez (Ronda 1) — scoped a #pg-caja-liquidez; sin tocar tokens globales */
+#pg-caja-liquidez{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:14px;padding:22px 24px;margin-top:26px;box-shadow:0 1px 3px rgba(27,45,58,.04)}
+#pg-caja-liquidez h2{font-family:var(--f-title);color:var(--pg-ink);font-size:18px;font-weight:800;margin:0 0 4px}
+#pg-caja-liquidez .cl-sub{font-family:var(--f-title);color:var(--pg-ink);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin:22px 0 8px}
+#pg-caja-liquidez .pg-table{width:100%;border-collapse:collapse;font-size:13.5px}
+#pg-caja-liquidez .pg-table th{color:var(--pg-muted);text-align:left;border-bottom:1px solid var(--pg-line);padding:6px 8px;font-weight:600}
+#pg-caja-liquidez .pg-table td{border-bottom:1px solid var(--pg-line);padding:8px}
+#pg-caja-liquidez .num{font-family:var(--f-num)}
+#pg-caja-liquidez .pg-kpis{display:flex;gap:14px;margin:10px 0;flex-wrap:wrap}
+#pg-caja-liquidez .pg-kpi{flex:1;min-width:160px;background:var(--pg-bg);border-left:3px solid var(--pg-mint);border-radius:8px;padding:12px 14px}
+#pg-caja-liquidez .pg-kpi .lbl{font-size:11px;color:var(--pg-muted);letter-spacing:.06em}
+#pg-caja-liquidez .pg-kpi .val{font-family:var(--f-num);font-size:22px;color:var(--pg-ink);font-weight:600}
+#pg-caja-liquidez .pg-kpi .sub{font-size:11px;color:var(--pg-muted)}
+#pg-caja-liquidez .pg-btn{background:var(--pg-ink);color:#fff;border:0;border-radius:8px;padding:9px 16px;cursor:pointer;font-family:var(--f-body);font-weight:700;font-size:12.5px;margin:8px 6px 0 0}
+#pg-caja-liquidez .pg-btn.secondary{background:transparent;color:var(--pg-ink);border:1px solid var(--pg-line)}
+#pg-caja-liquidez .pg-warn-box{background:#FBF3E2;border:1px solid var(--pg-warn);color:#7a5a14;border-radius:8px;padding:10px 12px;margin-bottom:12px}
+</style>
 </head>
 <body>
 
@@ -140,32 +158,39 @@ body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--f-bo
     </div>
     <div id="lista"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
 
-    <div class="cajapanel" id="cajaPanel" style="display:none">
-      <h2>Caja · Actualizar saldos</h2>
-      <p class="caja-sub">Cuentas de la agencia en GABI (proyecto liquidez). Cada cambio queda en <b>auditoría</b> con saldo anterior y nuevo. Solo <b>sales@</b>: la escritura pasa por funciones blindadas del servidor (doble candado email + dueño) — este panel no puede saltarse esa regla, solo la usa.</p>
+    <!-- ===== SECCIÓN CAJA Y LIQUIDEZ (solo sales@) — Ronda 1 Módulo Caja (reemplaza el panel F2) ===== -->
+    <section id="pg-caja-liquidez" class="pg-card" style="display:none">
+      <h2>💰 Caja y Liquidez</h2>
+      <div id="cl-alerta"></div>
 
-      <div id="gabiLogin" class="gabi-login">
-        <div class="fld"><label>Correo GABI</label><input id="gabiEmail" type="email" autocomplete="username" value="sales@protectgoservices.com"></div>
-        <div class="fld"><label>Contraseña GABI</label><input id="gabiPass" type="password" autocomplete="current-password" placeholder="tu clave de GABI"></div>
-        <button id="gabiConnBtn">Conéctate a GABI</button>
-        <div class="cmsg err" id="gabiLoginMsg" style="width:100%"></div>
-      </div>
+      <h3 class="cl-sub">Caja por cuenta</h3>
+      <table class="pg-table" id="cl-tabla-caja">
+        <thead><tr><th>Cuenta</th><th>Saldo</th><th>Última actualización</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button class="pg-btn secondary" id="cl-btn-agregar-cuenta">+ Agregar cuenta</button>
 
-      <div id="cajaBody" style="display:none">
-        <div id="cajaAccts"></div>
-        <div class="cacct" style="border-style:dashed">
-          <div class="cacct-top"><span class="cacct-name">Agregar cuenta nueva</span></div>
-          <div class="cacct-ctrls">
-            <div class="fld"><label>Nombre</label><input id="newAcctName" type="text" placeholder="Ej: Bank of America"></div>
-            <div class="fld"><label>Saldo inicial (USD)</label><input id="newAcctSaldo" type="number" step="0.01" value="0" style="width:150px"></div>
-            <button class="cbtn" id="addAcctBtn">+ Agregar cuenta</button>
-          </div>
-          <div class="cmsg" id="addAcctMsg"></div>
-        </div>
-        <div class="compromisos" id="compromisos"></div>
-        <div style="font-size:11px;color:var(--pg-muted);margin-top:10px">Compromisos = lectura de <code>por_cobrar</code> / <code>por_pagar</code> (próximos 7 días). Se alimentan solos desde las pólizas; aquí son <b>solo lectura</b>.</div>
+      <h3 class="cl-sub">Por cobrar / Por pagar (se alimentan solos)</h3>
+      <div class="pg-kpis">
+        <div class="pg-kpi"><div class="lbl">POR COBRAR</div><div class="val" id="cl-total-cobrar">—</div><div class="sub" id="cl-det-cobrar"></div></div>
+        <div class="pg-kpi"><div class="lbl">POR PAGAR</div><div class="val" id="cl-total-pagar">—</div><div class="sub" id="cl-det-pagar"></div></div>
+        <div class="pg-kpi"><div class="lbl">CAJA TOTAL</div><div class="val" id="cl-total-caja">—</div><div class="sub">Suma de cuentas</div></div>
       </div>
-    </div>
+      <button class="pg-btn secondary" id="cl-btn-mov-manual">+ Agregar movimiento manual</button>
+
+      <h3 class="cl-sub">Retiros de socios</h3>
+      <table class="pg-table" id="cl-tabla-retiros">
+        <thead><tr><th>Semana (lunes)</th><th>Por socio</th><th>Total 3 socios</th><th>Nota</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button class="pg-btn" id="cl-btn-registrar-retiro">Registrar retiro</button>
+
+      <h3 class="cl-sub">Auditoría de caja (últimos 10)</h3>
+      <table class="pg-table" id="cl-tabla-auditoria">
+        <thead><tr><th>Fecha</th><th>Cuenta</th><th>Anterior</th><th>Nuevo</th><th>Quién</th><th>Nota</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
 
     <div class="pg-logpanel" id="logPanel" style="display:none">
       <h2>Últimos cambios</h2>
@@ -224,7 +249,7 @@ async function cargar(){
   SNAP = {}; (data||[]).forEach(w=>{ SNAP[w.clave]=Object.assign({},w); });
   renderLista(data||[]);
   cargarLog();
-  initCaja();
+  initCajaLiquidez();
 }
 
 function renderLista(rows){
@@ -318,132 +343,163 @@ async function cargarLog(){
     : '<div style="color:var(--pg-muted);font-size:12.5px">Sin cambios registrados todavía.</div>';
 }
 
-// ====== Caja · GABI (proyecto liquidez, auth aparte) ======
-// Consolidado: la caja usa el MISMO cliente/sesión de GABI del panel — ya no hay login aparte.
-const GABI = SB;
-let CAJA_ROWS = [];
+// ====== Caja y Liquidez (Ronda 1) — reemplaza el panel F2; usa el cliente SB principal (GABI, schema public) ======
+const SALES_EMAIL = SALES; // sales@protectgoservices.com
+const clById = (id)=>document.getElementById(id);
+const clUsd = (n)=>'$'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const clLunes = (d)=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()-((x.getDay()+6)%7));return x.toISOString().slice(0,10);};
 
-function money(n){ const x=Number(n||0); return (x<0?"-$":"$")+Math.abs(x).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+async function initCajaLiquidez(){
+  const {data:{user}} = await SB.auth.getUser();
+  if(!user || String(user.email||'').toLowerCase()!==SALES_EMAIL) return; // solo sales@
+  clById('pg-caja-liquidez').style.display='block';
+  await cargarCajaTodo();
+}
+async function cargarCajaTodo(){ await Promise.all([cargarCajaCuentas(),cargarCajaCxCxP(),cargarCajaRetiros(),cargarCajaAuditoria()]); }
 
-async function initCaja(){
-  document.getElementById("cajaPanel").style.display="block";
-  const { data:{ session } } = await GABI.auth.getSession();
-  if(session && String(session.user.email||"").toLowerCase()===SALES){
-    await mostrarCaja();
-  } else {
-    document.getElementById("gabiLogin").style.display="flex";
-    document.getElementById("cajaBody").style.display="none";
-  }
+async function cargarCajaCuentas(){
+  const {data:cajas,error} = await SB.from('caja').select('id,nombre,saldo').order('nombre');
+  if(error){console.error(error);return;}
+  const {data:aud} = await SB.from('caja_auditoria').select('caja_id,created_at').order('created_at',{ascending:false});
+  const ultima={}; (aud||[]).forEach(a=>{ if(a.caja_id && !ultima[a.caja_id]) ultima[a.caja_id]=a.created_at; });
+  let total=0, masVieja=null;
+  const tb=clById('cl-tabla-caja').querySelector('tbody'); tb.innerHTML='';
+  (cajas||[]).forEach(c=>{
+    total+=Number(c.saldo||0);
+    const f=ultima[c.id]?new Date(ultima[c.id]):null;
+    if(!masVieja||(f&&f<masVieja)||!f) masVieja=f||new Date('2026-05-27');
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td>'+esc(c.nombre)+'</td><td class="num">'+clUsd(c.saldo)+'</td><td>'+(f?f.toLocaleDateString('es-CO'):'27/5/2026 (inicial)')+'</td>'+
+      '<td><button class="pg-btn secondary" data-caja="'+esc(c.id)+'" data-nombre="'+esc(c.nombre)+'" data-saldo="'+esc(c.saldo)+'">Actualizar</button></td>';
+    tb.appendChild(tr);
+  });
+  clById('cl-total-caja').textContent=clUsd(total);
+  tb.querySelectorAll('button').forEach(b=>b.onclick=()=>actualizarSaldoCaja(b.dataset.caja,b.dataset.nombre,b.dataset.saldo));
+  const dias=masVieja?Math.floor((Date.now()-masVieja.getTime())/86400000):999;
+  clById('cl-alerta').innerHTML = dias>7 ? '<div class="pg-warn-box">⚠️ <b>Caja desactualizada:</b> la última actualización tiene '+dias+' días. Actualízala antes de calcular el retiro.</div>' : '';
 }
 
-async function conectarGabi(){
-  const email=document.getElementById("gabiEmail").value.trim();
-  const pass=document.getElementById("gabiPass").value;
-  const m=document.getElementById("gabiLoginMsg"); m.textContent="";
-  if(email.toLowerCase()!==SALES){ m.textContent="La caja es solo para sales@protectgoservices.com."; return; }
-  const btn=document.getElementById("gabiConnBtn"); btn.disabled=true;
-  const { error } = await GABI.auth.signInWithPassword({ email, password: pass });
-  btn.disabled=false;
-  if(error){ m.textContent="No pudimos conectar a GABI: "+error.message; return; }
-  document.getElementById("gabiPass").value="";
-  await mostrarCaja();
+async function actualizarSaldoCaja(id,nombre,actual){
+  const v=prompt('Nuevo saldo de '+nombre+' (actual '+clUsd(actual)+'):'); if(v===null)return;
+  const n=Number(String(v).replace(/[$,]/g,'')); if(isNaN(n)||n<0){alert('Saldo inválido');return;}
+  const nota=prompt('Nota (opcional, ej. "según Jeff"):')||null;
+  const {data,error}=await SB.rpc('caja_actualizar_saldo_v2',{p_caja_id:id,p_saldo_nuevo:n,p_notas:nota});
+  if(error){alert('Error: '+error.message);return;}
+  alert('✅ '+data.nombre+': '+clUsd(data.saldo_anterior)+' → '+clUsd(data.saldo_nuevo)); cargarCajaTodo();
 }
 
-async function mostrarCaja(){
-  document.getElementById("gabiLogin").style.display="none";
-  document.getElementById("cajaBody").style.display="block";
-  await Promise.all([cargarCuentas(), cargarCompromisos()]);
+async function cargarCajaCxCxP(){
+  const [{data:pc},{data:pp}]=await Promise.all([
+    SB.from('por_cobrar').select('monto,tipo'), SB.from('por_pagar').select('monto,tipo')]);
+  const sum=(r)=>(r||[]).reduce((a,x)=>a+Number(x.monto||0),0);
+  const top=(r)=>{const m={};(r||[]).forEach(x=>m[x.tipo]=(m[x.tipo]||0)+Number(x.monto||0));
+    return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([t,v])=>t+': '+clUsd(v)).join(' · ');};
+  clById('cl-total-cobrar').textContent=clUsd(sum(pc)); clById('cl-det-cobrar').textContent=top(pc);
+  clById('cl-total-pagar').textContent=clUsd(sum(pp)); clById('cl-det-pagar').textContent=top(pp);
 }
 
-async function cargarCuentas(){
-  const cont=document.getElementById("cajaAccts");
-  cont.innerHTML='<div class="skel"></div>';
-  const { data, error } = await GABI.from("caja").select("id,nombre,saldo,created_at").order("created_at",{ascending:true});
-  if(error){ cont.innerHTML='<div class="denied">No se pudieron cargar las cuentas: '+esc(error.message)+'</div>'; return; }
-  CAJA_ROWS=data||[];
-  if(!CAJA_ROWS.length){ cont.innerHTML='<div style="color:var(--pg-muted);font-size:12.5px;margin-bottom:10px">Sin cuentas todavía. Agrega la primera abajo.</div>'; return; }
-  cont.innerHTML=CAJA_ROWS.map(cuentaHTML).join("");
+async function cargarCajaRetiros(){
+  const {data}=await SB.from('retiros').select('id,fecha,monto_por_socio,notas').order('fecha',{ascending:false}).limit(12);
+  const tb=clById('cl-tabla-retiros').querySelector('tbody'); tb.innerHTML='';
+  (data||[]).forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td>'+esc(r.fecha)+'</td><td class="num">'+clUsd(r.monto_por_socio)+'</td><td class="num">'+clUsd(r.monto_por_socio*3)+'</td>'+
+      '<td style="font-size:12px;color:var(--pg-muted)">'+esc((r.notas||'').slice(0,80))+'</td>'+
+      '<td><button class="pg-btn secondary" data-id="'+esc(r.id)+'" data-m="'+esc(r.monto_por_socio)+'">Corregir</button></td>';
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('button').forEach(b=>b.onclick=async()=>{
+    const v=Number(String(prompt('Monto por socio corregido (actual '+clUsd(b.dataset.m)+'):')||'').replace(/[$,]/g,''));
+    if(isNaN(v)||v<0){alert('Monto inválido');return;}
+    const nota=prompt('Motivo de la corrección:')||null;
+    const {error}=await SB.rpc('retiro_corregir',{p_retiro_id:b.dataset.id,p_monto_por_socio:v,p_notas:nota});
+    if(error){alert('Error: '+error.message);return;} cargarCajaTodo();
+  });
 }
 
-function cuentaHTML(c){
-  const id=esc(c.id);
-  return ''+
-  '<div class="cacct" id="cacct-'+id+'">'+
-    '<div class="cacct-top">'+
-      '<span class="cacct-name">'+esc(c.nombre)+'</span>'+
-      '<span class="cacct-saldo">'+money(c.saldo)+'</span>'+
-    '</div>'+
-    '<div class="cacct-ctrls">'+
-      '<div class="fld"><label>Nuevo saldo (USD)</label><input type="number" step="0.01" id="ns-'+id+'" value="'+Number(c.saldo||0)+'" style="width:150px"></div>'+
-      '<div class="fld msgfld"><label>Nota (opcional)</label><input type="text" id="nt-'+id+'" placeholder="Ej: conciliación semanal"></div>'+
-      '<button class="cbtn" id="up-'+id+'" onclick="actualizarCuenta(\''+id+'\')">Actualizar</button>'+
-    '</div>'+
-    '<div class="cmsg" id="cm-'+id+'"></div>'+
-  '</div>';
+async function cargarCajaAuditoria(){
+  const {data}=await SB.from('caja_auditoria').select('created_at,nombre_cuenta,saldo_anterior,saldo_nuevo,user_id,notas').order('created_at',{ascending:false}).limit(10);
+  const tb=clById('cl-tabla-auditoria').querySelector('tbody'); tb.innerHTML='';
+  (data||[]).forEach(a=>{
+    const quien = a.user_id==='f1e2d3c4-b5a6-7890-abcd-123456789abc' ? 'A. López' : 'A. Salcedo';
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td>'+new Date(a.created_at).toLocaleString('es-CO')+'</td><td>'+esc(a.nombre_cuenta)+'</td>'+
+      '<td class="num">'+(a.saldo_anterior==null?'—':clUsd(a.saldo_anterior))+'</td><td class="num">'+clUsd(a.saldo_nuevo)+'</td>'+
+      '<td>'+quien+'</td><td style="font-size:12px;color:var(--pg-muted)">'+esc(a.notas||'')+'</td>';
+    tb.appendChild(tr);
+  });
 }
 
-async function actualizarCuenta(id){
-  const btn=document.getElementById("up-"+id); const m=document.getElementById("cm-"+id);
-  const val=parseFloat(document.getElementById("ns-"+id).value);
-  const notas=(document.getElementById("nt-"+id).value||"").trim()||null;
-  if(isNaN(val)){ m.className="cmsg err"; m.textContent="Saldo inválido."; return; }
-  btn.disabled=true; m.className="cmsg"; m.textContent="Guardando…";
-  const { error } = await GABI.rpc("caja_actualizar_saldo", { p_caja_id:id, p_saldo_nuevo:val, p_notas:notas });
-  btn.disabled=false;
-  if(error){ m.className="cmsg err"; m.textContent="No se pudo actualizar: "+error.message; return; }
-  m.className="cmsg ok"; m.textContent="Actualizado ✓ (queda en auditoría)";
-  await cargarCuentas();
-}
+clById('cl-btn-agregar-cuenta').onclick=async()=>{
+  const nombre=prompt('Nombre de la cuenta nueva:'); if(!nombre)return;
+  const s=Number(String(prompt('Saldo inicial:','0')||'0').replace(/[$,]/g,''));
+  const {error}=await SB.rpc('caja_agregar_cuenta',{p_nombre:nombre,p_saldo:isNaN(s)?0:s});
+  if(error){alert('Error: '+error.message);return;} cargarCajaTodo();
+};
 
-async function agregarCuenta(){
-  const btn=document.getElementById("addAcctBtn"); const m=document.getElementById("addAcctMsg");
-  const nombre=(document.getElementById("newAcctName").value||"").trim();
-  const saldo=parseFloat(document.getElementById("newAcctSaldo").value);
-  if(!nombre){ m.className="cmsg err"; m.textContent="Escribe un nombre."; return; }
-  btn.disabled=true; m.className="cmsg"; m.textContent="Creando…";
-  const { error } = await GABI.rpc("caja_agregar_cuenta", { p_nombre:nombre, p_saldo:(isNaN(saldo)?0:saldo) });
-  btn.disabled=false;
-  if(error){ m.className="cmsg err"; m.textContent="No se pudo crear: "+error.message; return; }
-  m.className="cmsg ok"; m.textContent="Cuenta creada ✓";
-  document.getElementById("newAcctName").value=""; document.getElementById("newAcctSaldo").value="0";
-  await cargarCuentas();
-  setTimeout(()=>{ if(m) m.textContent=""; }, 3000);
-}
+clById('cl-btn-mov-manual').onclick=async()=>{
+  const tabla=prompt('¿Dónde va? escribe: por_cobrar o por_pagar'); if(!tabla)return;
+  const desc=prompt('Descripción (ej. "Nómina extra"):'); if(!desc)return;
+  const m=Number(String(prompt('Monto:')||'').replace(/[$,]/g,'')); if(isNaN(m)||m<=0){alert('Monto inválido');return;}
+  const tipo=prompt('Tipo (opcional, ej. nomina, gasto):')||null;
+  const {error}=await SB.rpc('movimiento_manual_agregar',{p_tabla:tabla.trim(),p_descripcion:desc,p_monto:m,p_fecha:new Date().toISOString().slice(0,10),p_tipo:tipo});
+  if(error){alert('Error: '+error.message);return;} alert('✅ Movimiento agregado'); cargarCajaTodo();
+};
 
-function fdate(dt){ return dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0"); }
-async function cargarCompromisos(){
-  const cont=document.getElementById("compromisos");
-  const hoy=new Date();
-  const desde=fdate(hoy);
-  const hasta=fdate(new Date(hoy.getTime()+7*86400000));
-  const [cob,pag]=await Promise.all([
-    GABI.from("por_cobrar").select("descripcion,monto,fecha").gte("fecha",desde).lte("fecha",hasta).order("fecha",{ascending:true}),
-    GABI.from("por_pagar").select("descripcion,monto,fecha").gte("fecha",desde).lte("fecha",hasta).order("fecha",{ascending:true})
-  ]);
-  const cobRows=(cob.data||[]), pagRows=(pag.data||[]);
-  const sum=a=>a.reduce((s,r)=>s+Number(r.monto||0),0);
-  cont.innerHTML=
-    boxHTML("Por cobrar · 7 días", cobRows, "cobrar", sum(cobRows)) +
-    boxHTML("Por pagar · 7 días", pagRows, "pagar", sum(pagRows));
-}
-
-function boxHTML(titulo, rows, cls, total){
-  const inner = rows.length
-    ? rows.map(r=>'<div class="comrow"><span>'+esc(r.descripcion||"—")+' <span style="color:var(--pg-muted)">'+esc((r.fecha||"").slice(5))+'</span></span><span class="m">'+money(r.monto)+'</span></div>').join("")
-    : '<div style="color:var(--pg-muted);font-size:12px">Nada en los próximos 7 días.</div>';
-  return '<div class="combox"><h3>'+esc(titulo)+'</h3>'+inner+'<div class="comtot '+cls+'"><span>Total</span><span class="m">'+money(total)+'</span></div></div>';
-}
-
-document.getElementById("gabiConnBtn").addEventListener("click", conectarGabi);
-document.getElementById("gabiPass").addEventListener("keydown", e=>{ if(e.key==="Enter") conectarGabi(); });
-document.getElementById("addAcctBtn").addEventListener("click", agregarCuenta);
+clById('cl-btn-registrar-retiro').onclick=async()=>{
+  const f=prompt('Semana (lunes, formato AAAA-MM-DD):',clLunes(new Date().toISOString().slice(0,10))); if(!f)return;
+  const m=Number(String(prompt('Monto por socio:')||'').replace(/[$,]/g,'')); if(isNaN(m)||m<0){alert('Monto inválido');return;}
+  const nota=prompt('Nota (opcional):')||null;
+  const {data,error}=await SB.rpc('retiro_registrar',{p_fecha:f,p_monto_por_socio:m,p_notas:nota});
+  if(error){alert('Error: '+error.message);return;}
+  alert('✅ Retiro semana '+data.fecha+': '+clUsd(data.por_socio)+'/socio ('+clUsd(data.total_3)+' total)'); cargarCajaTodo();
+};
 
 document.getElementById("loginBtn").addEventListener("click", entrar);
 document.getElementById("pass").addEventListener("keydown", e=>{ if(e.key==="Enter") entrar(); });
 document.getElementById("refreshBtn").addEventListener("click", ()=>{ if(MI_EMAIL===SALES) cargar(); });
-document.getElementById("logoutBtn").addEventListener("click", async ()=>{ try{ await GABI.auth.signOut(); }catch(e){} await SB.auth.signOut(); location.reload(); });
+document.getElementById("logoutBtn").addEventListener("click", async ()=>{ try{ await SB.auth.signOut(); }catch(e){} location.reload(); });
 
 (async function init(){ await verificarAcceso(); })();
+</script>
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var PGV_ARCHIVO="control-maestro.html";
+var PGV_VERSION=1;
+try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
+function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
+  if(document.getElementById('pgvBar'))return;
+  var b=document.createElement('div');
+  b.id='pgvBar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
+  b.innerHTML='🔄 Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
+  document.body.appendChild(b);
+  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+if(!window.__pgIdle){window.__pgIdle=setInterval(function(){if(window.__pgLastInput&&Date.now()-window.__pgLastInput>30000){try{location.reload(!0)}catch(e){location.reload()}}},5000);}try{var _b=document.getElementById('pgvBar');if(_b&&!_b.__aug){_b.__aug=1;var _s=document.createElement('span');_s.style.cssText='font-weight:800';_s.textContent='Guarda tu trabajo y la página se actualizará sola.';_b.insertBefore(_s,_b.firstChild);}}catch(e){}
+}
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION)pgvBanner();
+    });
+  }catch(e){}
+}
+function pgvCheck(){
+  if(window.supabase&&window.supabase.createClient){pgvRun();return;}
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload=pgvRun;
+  document.head.appendChild(s);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);});
+else setTimeout(pgvCheck,400);
+setInterval(pgvCheck,600000);
+})();
 </script>
 </body>
 </html>

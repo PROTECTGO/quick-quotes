@@ -453,17 +453,21 @@ c.style.display=(h.indexOf("quick-quote.html")>=0)?"flex":"none";
 // Las agencias externas (EXTERNOS) no pasan por aquí — su candado de arriba manda solo.
 function aplicarPuertas(cli,email){
   if(EXTERNOS.indexOf(email)>=0) return;
+  function mostrarTodo(msg){
+    console.warn('mis_pantallas no respondió; se muestran todas las tarjetas:', msg);
+    document.querySelectorAll('[data-widget]').forEach(function(el){ el.style.display=''; });
+  }
   try{
     cli.rpc('mis_pantallas').then(function(res){
-      if(res.error){ console.warn('mis_pantallas no respondió; se deja el hub como está:', res.error.message); return; }
+      if(res.error){ mostrarTodo(res.error.message); return; }
       var permitido=new Map((res.data||[]).map(function(r){ return [r.clave, r.puede]; }));
       document.querySelectorAll('[data-widget]').forEach(function(el){
         var clave=el.getAttribute('data-widget');
         if(!permitido.has(clave)) return;              // sin regla conocida: se deja como está
         el.style.display = permitido.get(clave) ? '' : 'none';
       });
-    }, function(e){ console.warn('mis_pantallas no respondió; se deja el hub como está:', e&&e.message); });
-  }catch(e){ console.warn('mis_pantallas no respondió; se deja el hub como está:', e&&e.message); }
+    }, function(e){ mostrarTodo(e&&e.message); });
+  }catch(e){ mostrarTodo(e&&e.message); }
 }
 function gateWidgets(cli){
   try{
@@ -738,7 +742,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
-var PGV_VERSION=9;
+var PGV_VERSION=10;
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

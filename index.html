@@ -314,6 +314,7 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 <!-- GABI 360 · Direccion (solo sales@) -->
 <a class="card on" id="card-gabi360" data-widget="gabi_360" href="https://gabi-liquidez.vercel.app/gabi360.html" target="_blank" rel="noopener" style="display:none"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 13l4-3"/><path d="M12 5V3M4.5 6.5 6 8M19.5 6.5 18 8"/></svg></div><span class="tag">DIR</span></div><h3>GABI 360 &middot; Direcci&oacute;n</h3><p>El tablero de direcci&oacute;n: liquidez, retiros, utilidad por persona, patrones de alerta y retenci&oacute;n de la agencia.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a>
 <!-- GABI · Mi panel (lider/directora: Brahian, Angelica) -->
+<a class="card on" id="card-liquidez" data-widget="liquidez_semanal" href="https://gabi-liquidez.vercel.app/caja-jorge.html" target="_blank" rel="noopener" style="display:none"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg></div><span class="tag">LIQ</span></div><h3>Liquidez semanal</h3><p>Actualiza la caja, revisa el panorama y registra el retiro de la semana &mdash; para socios.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a>
 <a class="card on" id="card-gabi-panel" data-widget="gabi_panel" href="https://gabi-liquidez.vercel.app/" target="_blank" rel="noopener" style="display:none"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><span class="tag">PANEL</span></div><h3>GABI &middot; Mi panel</h3><p>Tu panel de l&iacute;der / direcci&oacute;n de renovaciones: tu equipo, tus n&uacute;meros y tu bloque.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a>
 <a class="card on" id="card-amazon" data-widget="amazon_relay" href="https://protectgo.github.io/amazon-relay/" style="display:none"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="5" width="14" height="11" rx="2"/><path d="M15 9h4l3 4v3h-3"/><circle cx="6" cy="18.5" r="2"/><circle cx="18" cy="18.5" r="2"/><path d="M8 18.5h8"/></svg></div><span class="tag">AMZ</span></div><h3>Amazon Relay</h3><p>Dashboard del equipo Amazon Audit: clientes, loads, cobros, invoices y reportes de utilidades.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a>
 <a class="card on" id="card-novedades-admin" data-widget="novedades_admin" href="novedades-admin.html" style="display:none"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><span class="tag">ADMIN</span></div><h3>Novedades</h3><p>Publica avisos por área — cada herramienta se lo muestra a su gente hasta que confirman que lo leyeron.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a>
@@ -457,7 +458,9 @@ if(el) el.style.display=(email===k)?"flex":"none";
 var elNov=document.getElementById("card-novedades-admin");
 if(elNov) elNov.style.display=(NOVADMIN.indexOf(email)>=0)?"flex":"none";
 var elG360=document.getElementById("card-gabi360");
-if(elG360) elG360.style.display=(email==="sales@protectgoservices.com")?"flex":"none";
+if(elG360) elG360.style.display=(["sales@protectgoservices.com","andres.lopez@protectgoservices.com"].indexOf(email)>=0)?"flex":"none";
+var elLiq=document.getElementById("card-liquidez");
+if(elLiq) elLiq.style.display=(["sales@protectgoservices.com","andres.lopez@protectgoservices.com"].indexOf(email)>=0)?"flex":"none";
 var elGPanel=document.getElementById("card-gabi-panel");
 if(elGPanel) elGPanel.style.display=(["brahian.toro@protectgoservices.com","angelica.paez@protectgoservices.com"].indexOf(email)>=0)?"flex":"none";
 Object.keys(AMAZON).forEach(function(k){
@@ -479,7 +482,7 @@ c.style.display=(h.indexOf("quick-quote.html")>=0)?"flex":"none";
 return;
 }
 document.querySelectorAll(".grid .card").forEach(function(c){
-if(c.id==="card-rrhh"||c.id==="card-coi"||c.id==="card-kam"||c.id==="card-fam"||c.id==="card-amazon"||c.id==="card-end"||c.id==="card-novedades-admin"||c.id==="card-mapa"||c.id==="card-breaks"||c.id==="card-gabi360"||c.id==="card-gabi-panel") return;
+if(c.id==="card-rrhh"||c.id==="card-coi"||c.id==="card-kam"||c.id==="card-fam"||c.id==="card-amazon"||c.id==="card-end"||c.id==="card-novedades-admin"||c.id==="card-mapa"||c.id==="card-breaks"||c.id==="card-gabi360"||c.id==="card-gabi-panel"||c.id==="card-liquidez") return;
 var href=(c.getAttribute("href")||"");
 if(esAmazon) c.style.display=(href.indexOf("quick-quote.html?v=812")>=0)?"flex":"none";
 else if(MAPA[email]) c.style.display="none";
@@ -760,7 +763,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
-var PGV_VERSION=7;
+var PGV_VERSION=8;
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

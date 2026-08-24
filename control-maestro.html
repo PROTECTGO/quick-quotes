@@ -124,6 +124,48 @@ body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--f-bo
 #pg-caja-liquidez .pg-btn.secondary{background:transparent;color:var(--pg-ink);border:1px solid var(--pg-line)}
 #pg-caja-liquidez .pg-warn-box{background:#FBF3E2;border:1px solid var(--pg-warn);color:#7a5a14;border-radius:8px;padding:10px 12px;margin-bottom:12px}
 </style>
+<style>
+/* Cierre semanal de liquidez (Ronda 2) — scoped a #pg-cierre-semanal; reusa tokens de la página, sin :root global */
+#pg-cierre-semanal{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:14px;padding:22px 24px;margin-top:20px;box-shadow:0 1px 3px rgba(27,45,58,.04)}
+#pg-cierre-semanal h2{font-family:var(--f-title);color:var(--pg-ink);font-size:18px;font-weight:800;margin:0 0 4px}
+#pg-cierre-semanal .cs-sub{font-family:var(--f-title);color:var(--pg-ink);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin:22px 0 8px}
+#pg-cierre-semanal .num{font-family:var(--f-num)}
+#pg-cierre-semanal .cs-btn{background:var(--pg-ink);color:#fff;border:0;border-radius:8px;padding:9px 16px;cursor:pointer;font-family:var(--f-body);font-weight:700;font-size:12.5px;margin:8px 6px 0 0}
+#pg-cierre-semanal .cs-btn.secondary{background:transparent;color:var(--pg-ink);border:1px solid var(--pg-line)}
+#pg-cierre-semanal .cs-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px}
+#pg-cierre-semanal .cs-table th{color:var(--pg-muted);text-align:left;border-bottom:1px solid var(--pg-line);padding:6px 8px;font-weight:600}
+#pg-cierre-semanal .cs-table td{border-bottom:1px solid var(--pg-line);padding:8px}
+#pg-cierre-semanal .cs-fijos{display:flex;gap:14px;flex-wrap:wrap}
+#pg-cierre-semanal .cs-fijo{flex:1;min-width:180px;background:var(--pg-bg);border-left:3px solid var(--pg-mint);border-radius:8px;padding:12px 14px}
+#pg-cierre-semanal .cs-fijo-h{font-size:11px;color:var(--pg-muted);letter-spacing:.06em;text-transform:uppercase}
+#pg-cierre-semanal .cs-fijo-m{font-family:var(--f-num);font-size:20px;color:var(--pg-ink);font-weight:600;margin:4px 0}
+#pg-cierre-semanal .cs-fijo-n{font-size:11.5px;color:var(--pg-muted);min-height:14px;margin-bottom:6px}
+#pg-cierre-semanal .cs-paste{width:100%;min-height:90px;border:1.5px dashed var(--pg-line);border-radius:8px;padding:10px 12px;font-family:var(--f-body);font-size:13px;resize:vertical;color:var(--pg-txt)}
+#pg-cierre-semanal .cs-paste:focus{outline:none;border-color:var(--pg-mint)}
+#pg-cierre-semanal .cs-bolsas{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+#pg-cierre-semanal .cs-bolsa{flex:1;min-width:150px;border-radius:8px;padding:12px 14px;background:var(--pg-bg);border-left:4px solid var(--pg-muted)}
+#pg-cierre-semanal .cs-bolsa.b-ya{border-left-color:#9aa7b0}
+#pg-cierre-semanal .cs-bolsa.b-entra{border-left-color:var(--pg-pos)}
+#pg-cierre-semanal .cs-bolsa.b-sale{border-left-color:var(--pg-neg)}
+#pg-cierre-semanal .cs-bolsa.b-sin{border-left-color:var(--pg-warn)}
+#pg-cierre-semanal .cs-bolsa-t{font-size:11px;color:var(--pg-muted);letter-spacing:.04em}
+#pg-cierre-semanal .cs-bolsa-m{font-family:var(--f-num);font-size:18px;color:var(--pg-ink);font-weight:600;margin-top:4px}
+#pg-cierre-semanal .cs-preguntar{background:#FBF3E2;border:1px solid var(--pg-warn);color:#7a5a14;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:12.5px}
+#pg-cierre-semanal .cs-preguntar ul{margin:6px 0 0 18px}
+#pg-cierre-semanal .cs-kpis{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0 14px}
+#pg-cierre-semanal .cs-kpi{flex:1;min-width:150px;background:var(--pg-bg);border-left:3px solid var(--pg-mint);border-radius:8px;padding:12px 14px}
+#pg-cierre-semanal .cs-kpi.amber{border-left-color:var(--pg-warn)}
+#pg-cierre-semanal .cs-kpi.gris{border-left-color:#9aa7b0;opacity:.85}
+#pg-cierre-semanal .cs-kpi .lbl{font-size:11px;color:var(--pg-muted);letter-spacing:.06em}
+#pg-cierre-semanal .cs-kpi .val{font-family:var(--f-num);font-size:20px;color:var(--pg-ink);font-weight:600}
+#pg-cierre-semanal .cs-kpi .sub{font-size:11px;color:var(--pg-muted);margin-top:3px}
+#pg-cierre-semanal .cs-acc{display:flex;gap:6px;flex-wrap:wrap}
+#pg-cierre-semanal .cs-mini{background:transparent;border:1px solid var(--pg-line);border-radius:6px;padding:5px 9px;font-size:11.5px;cursor:pointer;color:var(--pg-ink);font-family:var(--f-body)}
+#pg-cierre-semanal .cs-mini.danger{color:var(--pg-neg);border-color:#F1BEB6}
+#pg-cierre-semanal .cs-piso td{background:#FFF7E6}
+#pg-cierre-semanal .cs-neg{color:var(--pg-neg);font-weight:700}
+#pg-cierre-semanal .cs-count{font-size:11px;color:var(--pg-muted);text-transform:none;letter-spacing:0}
+</style>
 </head>
 <body>
 
@@ -188,6 +230,36 @@ body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--f-bo
       <h3 class="cl-sub">Auditoría de caja (últimos 10)</h3>
       <table class="pg-table" id="cl-tabla-auditoria">
         <thead><tr><th>Fecha</th><th>Cuenta</th><th>Anterior</th><th>Nuevo</th><th>Quién</th><th>Nota</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+
+    <!-- ===== CIERRE SEMANAL DE LIQUIDEZ (solo sales@) — Ronda 2 ===== -->
+    <section id="pg-cierre-semanal" style="display:none">
+      <h2>📆 Cierre semanal de liquidez</h2>
+
+      <h3 class="cs-sub">Costos fijos mensuales</h3>
+      <div class="cs-fijos" id="cs-fijos"></div>
+      <button class="cs-btn secondary" id="cs-btn-tarjeta">+ Tarjeta de crédito</button>
+
+      <h3 class="cs-sub">Reporte de Jeff (MGA)</h3>
+      <textarea id="cs-jeff-paste" class="cs-paste" placeholder="Pega aquí la tabla de Jeff (Ctrl+V desde Excel) — 3 columnas: ingreso aproximado · MGA · comisión"></textarea>
+      <div id="cs-jeff-preview"></div>
+      <div id="cs-jeff-preguntar"></div>
+      <button class="cs-btn" id="cs-jeff-confirmar" style="display:none">Confirmar y cargar la semana</button>
+
+      <h3 class="cs-sub">Vencidos sin cerrar <span id="cs-venc-count" class="cs-count"></span></h3>
+      <table class="cs-table" id="cs-tabla-vencidos">
+        <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Monto</th><th>Acción</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button class="cs-btn secondary" id="cs-venc-mas" style="display:none">Ver más</button>
+
+      <h3 class="cs-sub">Proyección de caja</h3>
+      <div class="cs-kpis" id="cs-cierre-kpis"></div>
+      <table class="cs-table" id="cs-tabla-proyeccion">
+        <thead><tr><th>Día</th><th>Entra</th><th>Sale</th><th>Saldo al cierre</th></tr></thead>
         <tbody></tbody>
       </table>
     </section>
@@ -468,7 +540,7 @@ document.getElementById("logoutBtn").addEventListener("click", async ()=>{ try{ 
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="control-maestro.html";
-var PGV_VERSION=1;
+var PGV_VERSION=2;
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -499,6 +571,198 @@ function pgvCheck(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);});
 else setTimeout(pgvCheck,400);
 setInterval(pgvCheck,600000);
+})();
+</script>
+<script>
+/* Cierre semanal de liquidez (Ronda 2) — usa el cliente SB principal (GABI, schema public). Solo sales@. Autocontenido. */
+(function(){
+  if(typeof SB==='undefined') return;
+  var SALES="sales@protectgoservices.com";
+  var $=function(id){return document.getElementById(id);};
+  var usd=function(n){return '$'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});};
+  var escH=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+  function lunes(d){var x=new Date(d+'T12:00:00');x.setDate(x.getDate()-((x.getDay()+6)%7));return x.toISOString().slice(0,10);}
+  function pad2(n){return String(n).padStart(2,'0');}
+
+  async function initCierre(){
+    try{
+      var u=await SB.auth.getUser();
+      var user=u&&u.data&&u.data.user;
+      if(!user||String(user.email||'').toLowerCase()!==SALES) return;
+    }catch(e){ return; }
+    $('pg-cierre-semanal').style.display='block';
+    cargarFijos(); cargarVencidos(); cargarProyeccion();
+  }
+
+  /* ---- Bloque 1: costos fijos + tarjetas ---- */
+  async function cargarFijos(){
+    var r=await SB.from('costos_fijos').select('concepto,monto_usd,nota,vigencia_desde').eq('activo',true).order('vigencia_desde',{ascending:false});
+    var rows=(r.data||[]); var pick={};
+    rows.forEach(function(x){ if(!pick[x.concepto]) pick[x.concepto]=x; });
+    var conceptos=[['nomina','Nómina'],['operativos','Operativos']];
+    $('cs-fijos').innerHTML=conceptos.map(function(c){
+      var it=pick[c[0]];
+      return '<div class="cs-fijo"><div class="cs-fijo-h">'+c[1]+'</div>'+
+        '<div class="cs-fijo-m">'+(it?usd(it.monto_usd):'—')+'</div>'+
+        '<div class="cs-fijo-n">'+(it&&it.nota?escH(it.nota):'')+'</div>'+
+        '<button class="cs-btn secondary" data-c="'+c[0]+'" data-m="'+(it?it.monto_usd:0)+'">Editar</button></div>';
+    }).join('');
+    $('cs-fijos').querySelectorAll('button').forEach(function(b){
+      b.onclick=async function(){
+        var v=Number(String(prompt('Monto mensual de '+b.dataset.c+' (USD):', b.dataset.m)||'').replace(/[$,]/g,''));
+        if(isNaN(v)||v<0){alert('Monto inválido');return;}
+        var nota=prompt('Nota (opcional):')||null;
+        var res=await SB.rpc('costo_fijo_guardar',{p_concepto:b.dataset.c,p_monto_usd:v,p_nota:nota});
+        if(res.error){alert('Error: '+res.error.message);return;}
+        cargarFijos(); cargarProyeccion();
+      };
+    });
+  }
+  $('cs-btn-tarjeta').onclick=async function(){
+    var nombre=prompt('Nombre de la tarjeta:'); if(!nombre) return;
+    var saldo=Number(String(prompt('Saldo usado hoy (USD):','0')||'0').replace(/[$,]/g,''));
+    var cupo=Number(String(prompt('Cupo total (USD):','0')||'0').replace(/[$,]/g,''));
+    if(isNaN(saldo)||isNaN(cupo)){alert('Valores inválidos');return;}
+    var res=await SB.rpc('caja_agregar_tarjeta',{p_nombre:nombre,p_saldo:saldo,p_cupo:cupo});
+    if(res.error){alert('Error: '+res.error.message);return;}
+    alert('✅ Tarjeta agregada: '+nombre);
+    var rb=document.getElementById('refreshBtn'); if(rb) rb.click(); // recarga la caja por cuenta de arriba
+    cargarProyeccion();
+  };
+
+  /* ---- Bloque 2: reporte de Jeff ---- */
+  var MESES={enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,setiembre:9,octubre:10,noviembre:11,diciembre:12};
+  function norm(s){return String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
+  function parseMonto(s){
+    var t=String(s==null?'':s).replace(/[$,\s]/g,'').replace(/[^0-9.\-]/g,'');
+    if(t===''||t==='-'||t==='.'||isNaN(Number(t))) return null;
+    return Number(t);
+  }
+  function clasificar(col1){
+    var n=norm(col1);
+    if(n.indexOf('ya ingres')>=0) return {estado:'ya_ingreso',fecha:null};
+    for(var mes in MESES){
+      if(n.indexOf(mes)>=0){
+        var dm=n.match(new RegExp(mes+'\\s*(\\d{1,2})'));
+        var dia=dm?parseInt(dm[1],10):1;
+        if(isNaN(dia)||dia<1||dia>31) dia=1;
+        var yr=(new Date()).getFullYear();
+        return {estado:'con_fecha',fecha:yr+'-'+pad2(MESES[mes])+'-'+pad2(dia)};
+      }
+    }
+    return {estado:'sin_fecha',fecha:null};
+  }
+  var parsedFilas=[];
+  function parseJeff(txt){
+    parsedFilas=[]; var preguntar=[];
+    String(txt||'').split(/\r?\n/).forEach(function(ln){
+      if(!ln.trim()) return;
+      var cols=ln.indexOf('\t')>=0 ? ln.split('\t') : ln.split(/\s{2,}/);
+      if(cols.length<2) return;
+      var col1=cols[0], mga=cols[1], com=cols.length>=3?cols[2]:'';
+      if(norm(col1).indexOf('ingreso')>=0 && norm(mga).indexOf('mga')>=0) return; // header
+      var monto=parseMonto(com);
+      if(monto===null){ preguntar.push({mga:mga,col1:col1}); return; }
+      var cl=clasificar(col1);
+      parsedFilas.push({mga:String(mga||'').trim(),monto:monto,estado:cl.estado,fecha_estimada:cl.fecha,fecha_maxima:null,nota:String(col1||'').trim()});
+    });
+    renderPreview(preguntar);
+  }
+  function renderPreview(preguntar){
+    var bags={ya:[],entra:[],sale:[],sin:[]};
+    parsedFilas.forEach(function(f){
+      if(f.estado==='ya_ingreso') bags.ya.push(f);
+      else if(f.estado==='sin_fecha') bags.sin.push(f);
+      else if(f.monto>=0) bags.entra.push(f);
+      else bags.sale.push(f);
+    });
+    var sum=function(a){return a.reduce(function(s,x){return s+Number(x.monto||0);},0);};
+    var bag=function(cls,titulo,arr){return '<div class="cs-bolsa '+cls+'"><div class="cs-bolsa-t">'+titulo+' ('+arr.length+')</div><div class="cs-bolsa-m">'+usd(sum(arr))+'</div></div>';};
+    $('cs-jeff-preview').innerHTML='<div class="cs-bolsas">'+
+      bag('b-ya','Ya en banco',bags.ya)+bag('b-entra','Entra con fecha',bags.entra)+
+      bag('b-sale','Sale con fecha',bags.sale)+bag('b-sin','Sin fecha',bags.sin)+'</div>';
+    $('cs-jeff-preguntar').innerHTML = preguntar.length
+      ? '<div class="cs-preguntar"><b>Para preguntar a Jeff (sin monto — NO se cargan):</b><ul>'+preguntar.map(function(p){return '<li>'+escH(p.mga||p.col1)+'</li>';}).join('')+'</ul></div>'
+      : '';
+    $('cs-jeff-confirmar').style.display=parsedFilas.length?'inline-block':'none';
+  }
+  $('cs-jeff-paste').addEventListener('input',function(){ parseJeff(this.value); });
+  $('cs-jeff-confirmar').onclick=async function(){
+    if(!parsedFilas.length) return;
+    var semana=lunes(new Date().toISOString().slice(0,10));
+    if(!confirm('Esto REEMPLAZA lo cargado del reporte de Jeff para la semana del '+semana+' ('+parsedFilas.length+' filas). ¿Continuar?')) return;
+    var res=await SB.rpc('reporte_mga_cargar',{p_semana:semana,p_filas:parsedFilas});
+    if(res.error){alert('Error: '+res.error.message);return;}
+    alert('✅ Reporte cargado para la semana del '+semana);
+    $('cs-jeff-paste').value=''; parsedFilas=[]; $('cs-jeff-preview').innerHTML=''; $('cs-jeff-preguntar').innerHTML=''; $('cs-jeff-confirmar').style.display='none';
+    cargarProyeccion(); cargarVencidos();
+  };
+
+  /* ---- Bloque 3: vencidos sin cerrar ---- */
+  var vencidos=[], vencShown=0;
+  async function cargarVencidos(){
+    var hoy=new Date().toISOString().slice(0,10);
+    var rc=await SB.from('por_cobrar').select('id,descripcion,monto,fecha').eq('estado','pendiente').lt('fecha',hoy);
+    var rp=await SB.from('por_pagar').select('id,descripcion,monto,fecha').eq('estado','pendiente').lt('fecha',hoy);
+    vencidos=[];
+    (rc.data||[]).forEach(function(x){ vencidos.push({tabla:'por_cobrar',id:x.id,desc:x.descripcion,monto:x.monto,fecha:x.fecha}); });
+    (rp.data||[]).forEach(function(x){ vencidos.push({tabla:'por_pagar',id:x.id,desc:x.descripcion,monto:x.monto,fecha:x.fecha}); });
+    vencidos.sort(function(a,b){ return String(a.fecha||'').localeCompare(String(b.fecha||'')); });
+    vencShown=10; renderVencidos();
+  }
+  function renderVencidos(){
+    var slice=vencidos.slice(0, Math.min(vencShown, vencidos.length));
+    var tb=$('cs-tabla-vencidos').querySelector('tbody');
+    tb.innerHTML=slice.map(function(v,i){
+      return '<tr><td>'+escH(v.fecha)+'</td><td>'+(v.tabla==='por_cobrar'?'Cobrar':'Pagar')+'</td>'+
+        '<td>'+escH(v.desc||'—')+'</td><td class="num">'+usd(v.monto)+'</td>'+
+        '<td class="cs-acc">'+
+        '<button class="cs-mini" data-i="'+i+'" data-a="cerrado">Ya se pagó / entró</button>'+
+        '<button class="cs-mini" data-i="'+i+'" data-a="mover">Corrió de fecha</button>'+
+        '<button class="cs-mini danger" data-i="'+i+'" data-a="descartado">No va</button>'+
+        '</td></tr>';
+    }).join('') || '<tr><td colspan="5" style="color:var(--pg-muted)">Sin vencidos pendientes. 🎉</td></tr>';
+    var rest=vencidos.length-slice.length;
+    $('cs-venc-count').textContent=vencidos.length?('· '+vencidos.length+' pendientes'):'';
+    var mas=$('cs-venc-mas'); mas.style.display=rest>0?'inline-block':'none'; mas.textContent='Ver más ('+rest+' restantes)';
+    tb.querySelectorAll('button').forEach(function(b){
+      b.onclick=async function(){
+        var v=slice[Number(b.dataset.i)]; var accion=b.dataset.a; var nueva=null;
+        if(accion==='mover'){ nueva=prompt('Nueva fecha (AAAA-MM-DD):'); if(!nueva) return; }
+        var res=await SB.rpc('compromiso_cerrar',{p_tabla:v.tabla,p_id:v.id,p_accion:accion,p_nueva_fecha:nueva});
+        if(res.error){alert('Error: '+res.error.message);return;}
+        cargarVencidos(); cargarProyeccion();
+      };
+    });
+  }
+  $('cs-venc-mas').onclick=function(){ vencShown+=10; renderVencidos(); };
+
+  /* ---- Bloque 4: proyección ---- */
+  function kpi(lbl,val,sub,cls){return '<div class="cs-kpi '+(cls||'')+'"><div class="lbl">'+lbl+'</div><div class="val">'+val+'</div><div class="sub">'+(sub||'')+'</div></div>';}
+  async function cargarProyeccion(){
+    var rc=await SB.from('v_cierre_semanal').select('*').maybeSingle();
+    var c=rc.data;
+    if(c){
+      $('cs-cierre-kpis').innerHTML=
+        kpi('Caja hoy',usd(c.caja_hoy),'bancos '+usd(c.bancos)+' · tarjetas '+usd(c.tarjetas_usado),'')+
+        kpi('Entra con fecha',usd(c.entra_con_fecha),'','')+
+        kpi('Sale con fecha',usd(c.sale_con_fecha),'','')+
+        kpi('Sin fecha',usd(c.sin_fecha),'aún sin confirmar','amber')+
+        kpi('Ya en banco',usd(c.ya_en_banco),'ya está dentro del saldo — no se vuelve a contar','gris');
+    } else { $('cs-cierre-kpis').innerHTML=''; }
+    var pisoFecha=c?c.piso_fecha:null;
+    var rp=await SB.from('v_proyeccion_caja').select('fecha,entra,sale,saldo_al_cierre').order('fecha',{ascending:true});
+    var tb=$('cs-tabla-proyeccion').querySelector('tbody');
+    tb.innerHTML=(rp.data||[]).map(function(d){
+      var neg=Number(d.saldo_al_cierre)<0;
+      var piso=pisoFecha&&d.fecha===pisoFecha;
+      return '<tr class="'+(piso?'cs-piso':'')+'"><td>'+escH(d.fecha)+'</td><td class="num">'+usd(d.entra)+'</td>'+
+        '<td class="num">'+usd(d.sale)+'</td><td class="num'+(neg?' cs-neg':'')+'">'+usd(d.saldo_al_cierre)+'</td></tr>';
+    }).join('') || '<tr><td colspan="4" style="color:var(--pg-muted)">Sin proyección disponible.</td></tr>';
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initCierre); else initCierre();
+  try{ SB.auth.onAuthStateChange(function(){ initCierre(); }); }catch(e){}
 })();
 </script>
 </body>

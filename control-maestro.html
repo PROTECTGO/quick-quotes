@@ -166,6 +166,69 @@ body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--f-bo
 #pg-cierre-semanal .cs-neg{color:var(--pg-neg);font-weight:700}
 #pg-cierre-semanal .cs-count{font-size:11px;color:var(--pg-muted);text-transform:none;letter-spacing:0}
 </style>
+<style>
+/* Control Maestro v2 — matriz herramientas x areas (reemplaza tarjetas una por una) */
+.mtoolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 12px;padding:12px 14px;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:12px}
+.mode-switch{display:flex;background:var(--pg-bg);border:1px solid var(--pg-line);border-radius:999px;padding:3px}
+.mode-btn{font-family:var(--f-body);font-weight:700;font-size:12px;border:none;background:transparent;color:var(--pg-muted);padding:7px 14px;border-radius:999px;cursor:pointer}
+.mode-btn.active{background:var(--pg-ink);color:#fff}
+.mtoolbar .spacer{flex:1}
+.mtb-btn{font-family:var(--f-body);font-weight:700;font-size:12.5px;border:1px solid var(--pg-line);background:#fff;color:var(--pg-ink);border-radius:999px;padding:9px 16px;cursor:pointer}
+.mtb-btn:hover{background:var(--pg-bg)}
+.mtb-guardar{font-family:var(--f-body);font-weight:800;font-size:12.5px;border:none;border-radius:999px;padding:9px 18px;background:var(--pg-mint);color:var(--pg-ink-2);cursor:pointer}
+.mtb-guardar:disabled{opacity:.45;cursor:default}
+.mtb-guardar:hover:not(:disabled){background:var(--pg-mint-dark)}
+.pend-badge{font-family:var(--f-num);font-size:11px;font-weight:700;background:var(--pg-warn);color:#fff;border-radius:999px;padding:2px 9px;margin-left:2px}
+.mleyenda{font-size:11.5px;color:var(--pg-muted);margin:0 0 14px;line-height:1.55;background:#F1F5F8;border:1px solid var(--pg-line);border-radius:10px;padding:10px 14px}
+.matrix-wrap{overflow-x:auto;border:1px solid var(--pg-line);border-radius:14px;background:var(--pg-card);box-shadow:0 1px 3px rgba(27,45,58,.04)}
+table.matrix{border-collapse:collapse;width:100%;min-width:900px;font-size:12.5px}
+table.matrix th,table.matrix td{border-bottom:1px solid var(--pg-line);border-right:1px solid var(--pg-line);padding:8px 6px;text-align:center;vertical-align:middle}
+table.matrix th:last-child,table.matrix td:last-child{border-right:none}
+table.matrix thead th{background:var(--pg-bg);font-family:var(--f-title);font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--pg-muted);white-space:nowrap;position:sticky;top:0;z-index:2;cursor:pointer}
+table.matrix thead th:hover{color:var(--pg-ink)}
+table.matrix thead th.th-tool{text-align:left;position:sticky;left:0;top:0;z-index:3;background:var(--pg-bg)}
+table.matrix td.tool{text-align:left;position:sticky;left:0;background:var(--pg-card);z-index:1;min-width:220px}
+table.matrix tr:hover td{background:#FAFCFD}
+table.matrix tr:hover td.tool{background:#F4F8FA}
+.tool-name{font-weight:700;color:var(--pg-ink);font-size:13px}
+.tool-clave{font-family:var(--f-num);font-size:10.5px;color:var(--pg-muted);margin-left:6px}
+.tool-meta{font-size:10.5px;color:var(--pg-muted);margin-top:2px}
+.tool-expand{background:transparent;border:none;color:var(--pg-mint-deep);cursor:pointer;font-size:11px;font-weight:700;padding:0;margin-top:3px}
+.mcell{width:30px;height:30px;border-radius:8px;border:1.5px solid var(--pg-line);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:14px;background:#fff;color:transparent;transition:.12s}
+.mcell.home.on{background:#E3F4EF;border-color:var(--pg-pos);color:var(--pg-pos)}
+.mcell.home.off{background:#FCEEEC;border-color:var(--pg-neg);color:var(--pg-neg)}
+.mcell.other{opacity:.3}
+.mcell.other:hover{opacity:.7}
+.mcell.dirty{box-shadow:0 0 0 2px var(--pg-warn)}
+.detailrow td{background:#F8FAFB;text-align:left;padding:12px 16px}
+.detail-fld{display:inline-flex;flex-direction:column;gap:4px;margin-right:18px;vertical-align:top}
+.detail-fld label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--pg-muted);font-weight:700}
+.detail-fld select,.detail-fld input{font-family:var(--f-body);font-size:12.5px;border:1px solid var(--pg-line);border-radius:7px;padding:6px 8px}
+.uspanel{margin-top:14px;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:14px;padding:16px 18px}
+.uspanel h3{font-family:var(--f-title);font-size:13px;margin:0 0 4px;color:var(--pg-ink)}
+.uspanel .usub{font-size:11.5px;color:var(--pg-muted);margin:0 0 12px}
+.uchips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.uchip{font-family:var(--f-body);font-size:12px;font-weight:700;border:1px solid var(--pg-line);background:#fff;color:var(--pg-ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+.uchip.active{background:var(--pg-ink);color:#fff;border-color:var(--pg-ink)}
+.ulist{display:flex;flex-direction:column;gap:8px}
+.urow{display:flex;align-items:center;gap:12px;border:1px solid var(--pg-line);border-radius:10px;padding:9px 12px;flex-wrap:wrap}
+.urow .un{font-weight:700;font-size:13px;color:var(--pg-ink)}
+.urow .ur{font-family:var(--f-num);font-size:10.5px;color:var(--pg-muted);background:#F1F5F8;border:1px solid var(--pg-line);border-radius:6px;padding:1px 7px}
+.urow .uv{margin-left:auto;font-size:11.5px;color:var(--pg-muted)}
+.vc-modal{position:fixed;inset:0;background:rgba(27,45,58,.55);display:flex;align-items:center;justify-content:center;z-index:60;padding:24px}
+.vc-card{background:#fff;border-radius:18px;max-width:640px;width:100%;max-height:86vh;overflow:auto;padding:26px 28px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.vc-card h2{font-family:var(--f-title);font-size:17px;margin:0 0 4px;color:var(--pg-ink)}
+.vc-sub{font-size:12.5px;color:var(--pg-muted);margin:0 0 16px}
+.vc-close{float:right;background:transparent;border:none;font-size:20px;color:var(--pg-muted);cursor:pointer;line-height:1}
+.vc-search{width:100%;padding:10px 12px;border:1px solid var(--pg-line);border-radius:10px;font-family:var(--f-body);font-size:13px;margin-bottom:12px}
+.vc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:520px){.vc-grid{grid-template-columns:1fr}}
+.vc-simcard{border:1px solid var(--pg-line);border-radius:10px;padding:10px 12px;font-size:12.5px}
+.vc-simcard.on{border-left:4px solid var(--pg-pos)}
+.vc-simcard.off{border-left:4px solid var(--pg-neg);opacity:.6}
+.vc-simcard .vn{font-weight:700;color:var(--pg-ink)}
+.vc-note{font-size:11px;color:var(--pg-muted);margin-top:14px;line-height:1.6;border-top:1px solid var(--pg-line);padding-top:10px}
+</style>
 </head>
 <body>
 
@@ -194,11 +257,31 @@ body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--f-bo
   </div>
   <main class="pg-main">
     <div class="pg-top">
-      <div class="pg-eyebrow">Fase 3 · Control Maestro de widgets</div>
-      <h1>Prender y apagar herramientas del ecosistema</h1>
-      <div class="pg-sub">Cada tarjeta del portal consulta este registro al cargar. <b>Apagado + oculto</b>: la tarjeta no se pinta. <b>Apagado + mantenimiento</b>: la tarjeta sale gris con tu mensaje. Todo cambio queda registrado con quién y cuándo. Si este panel se cae, el portal muestra todo (fail-open).</div>
+      <div class="pg-eyebrow">Control Maestro v2 · Matriz de herramientas</div>
+      <h1>Qué ve cada área, en un solo tablero</h1>
+      <div class="pg-sub">Filas = herramientas del ecosistema. Columnas = áreas. Marca la casilla de una fila para <b>prender/apagar</b> esa herramienta, o haz clic en otra columna para <b>reasignarla</b> de área. Cambia a "Por usuario" para revisar cuenta por cuenta. Nada se guarda hasta que presionas <b>Guardar</b>: un solo clic aplica todos los cambios pendientes y queda registrado con quién y cuándo. Si este panel se cae, el portal muestra todo (fail-open).</div>
+    </div>
+
+    <div class="mtoolbar">
+      <div class="mode-switch">
+        <button class="mode-btn active" id="modoAreaBtn" onclick="cambiarModo('area')">Por área</button>
+        <button class="mode-btn" id="modoUsuarioBtn" onclick="cambiarModo('usuario')">Por usuario</button>
+      </div>
+      <button class="mtb-btn" id="verComoBtn" onclick="abrirVerComo()">👁 Ver como…</button>
+      <div class="spacer"></div>
+      <span id="pendCount" style="display:none" class="pend-badge">0 cambios sin guardar</span>
+      <button class="mtb-guardar" id="guardarBtn" onclick="guardarTodo()" disabled>Guardar</button>
+    </div>
+    <div class="mleyenda" id="mleyenda">
+      <b>Cómo leer la matriz:</b> la casilla verde marca el área asignada de hoy y la herramienta está <b>encendida</b> (todos la ven); roja = asignada pero <b>apagada</b> (nadie la ve, según el modo elegido: oculta o en mantenimiento). Las casillas tenues en otras columnas indican que la herramienta no vive ahí — haz clic para moverla. El encendido/apagado de hoy es <b>global</b>: aún no existe un candado independiente por área en la base de datos, así que mover una herramienta reorganiza el tablero pero no restringe por sí sola quién la ve más allá de prender/apagar.
     </div>
     <div id="lista"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+    <div class="uspanel" id="uspanel" style="display:none">
+      <h3>Usuarios del área seleccionada</h3>
+      <p class="usub" id="uspanelSub">Elige un área en la matriz para ver quién pertenece a ella (fuente: <code>agentes</code> activos). Desde aquí puedes previsualizar el portal de cada persona con "Ver como".</p>
+      <div class="uchips" id="uchips"></div>
+      <div class="ulist" id="ulist"></div>
+    </div>
 
     <!-- ===== SECCIÓN CAJA Y LIQUIDEZ (solo sales@) — Ronda 1 Módulo Caja (reemplaza el panel F2) ===== -->
     <section id="pg-caja-liquidez" class="pg-card" style="display:none">
@@ -268,8 +351,27 @@ body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--f-bo
       <h2>Últimos cambios</h2>
       <div id="logList"></div>
     </div>
-    <div class="pg-note">Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy), schema <code>portal</code>: tablas <code>widgets_registro</code> y <code>widgets_log</code> (migradas desde el Portal en la consolidación). La escritura está restringida a <code>sales@protectgoservices.com</code> por RLS (<code>widgets_registro_escribe_sales</code>) — este panel no puede saltarse esa regla; solo la usa.</div>
+    <div class="pg-note">Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy), schema <code>portal</code>: tablas <code>widgets_registro</code> y <code>widgets_log</code> (migradas desde el Portal en la consolidación). La escritura está restringida a <code>sales@protectgoservices.com</code> por RLS (<code>widgets_registro_escribe_sales</code>) — este panel no puede saltarse esa regla; solo la usa. "Ver como" reutiliza las funciones <code>ver_como()</code> / <code>ver_como_lista()</code> ya usadas en el ecosistema GABI (mismo candado a sales@, misma auditoría en <code>ver_como_auditoria</code>); la simulación que muestra usa los cambios pendientes de esta pantalla, sin llamar a <code>mis_pantallas()</code>.</div>
   </main>
+</div>
+
+<div class="vc-modal" id="vcModal" style="display:none">
+  <div class="vc-card">
+    <button class="vc-close" onclick="cerrarVerComo()">×</button>
+    <div id="vcPickStep">
+      <h2>Ver como…</h2>
+      <div class="vc-sub">Elige una persona para previsualizar el portal con los cambios pendientes (aún sin guardar).</div>
+      <input type="text" class="vc-search" id="vcSearch" placeholder="Buscar por nombre o rol…" oninput="renderVcLista()">
+      <div class="ulist" id="vcLista"></div>
+    </div>
+    <div id="vcSimStep" style="display:none">
+      <h2 id="vcSimNombre">Vista de…</h2>
+      <div class="vc-sub" id="vcSimSub"></div>
+      <div class="vc-grid" id="vcSimGrid"></div>
+      <div class="vc-note">Simulación calculada en el navegador a partir del estado pendiente de esta pantalla. No refleja reglas finas de paneles GABI de dirección ni llama a <code>mis_pantallas()</code>. Se registró en <code>ver_como_auditoria</code>.</div>
+      <button class="mtb-btn" style="margin-top:14px" onclick="volverPickerVerComo()">← Elegir otra persona</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -282,10 +384,20 @@ const PORTAL = SB.schema("portal"); // widgets_registro / widgets_log ya viven e
 const SALES = "sales@protectgoservices.com";
 
 const AREAS_LBL = {ventas:"Ventas",comercial:"Comercial",direccion:"Dirección",fam:"FAM",kam:"KAM",coi:"COI",rrhh:"RRHH",endorsement:"Endorsement",amazon:"Amazon",equipo:"Equipo",admin:"Administración",general:"General"};
+// Heurística de coincidencia área <-> rol de agentes.rol (no hay una tabla que una ambos vocabularios hoy).
+const AREA_ROL_KEYWORDS = {ventas:["comercial","vendedor","ventas"],comercial:["comercial"],direccion:["director","socio"],fam:["fam","financ"],kam:["kam"],coi:["coi"],rrhh:["rrhh","talento"],endorsement:["endorsement","endoso"],amazon:["amazon"],equipo:["lider","equipo"],admin:["admin"],general:[]};
 let MI_EMAIL = "";
-let SNAP = {};   // clave -> snapshot original (para valor_anterior del log)
+let SNAP = {};      // clave -> última versión confirmada en la base de datos (para valor_anterior del log)
+let PENDING = {};   // clave -> parche con los campos tocados y aún sin guardar
+let MODO = "area";  // "area" | "usuario"
+let AREA_SEL = null;
+let VC_USERS = null; // cache de ver_como_lista()
+let VC_TARGET = null;
 
 function esc(s){ return String(s===null||s===undefined?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+// Para valores libres (nombre, rol) que se insertan como literal JS dentro de un atributo onclick="...('valor')":
+// primero se escapa para JS (comillas simples/backslash), y ese resultado se vuelve a escapar para el atributo HTML.
+function escJsAttr(s){ return esc(String(s===null||s===undefined?"":s).replace(/\\/g,"\\\\").replace(/'/g,"\\'")); }
 function fstamp(s){ if(!s) return "—"; try{ const d=new Date(s); return d.toLocaleString("es-CO",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }catch(e){ return String(s); } }
 
 async function entrar(){
@@ -319,90 +431,225 @@ async function cargar(){
     .order("area",{ascending:true}).order("orden",{ascending:true}).order("clave",{ascending:true});
   if(error){ document.getElementById("lista").innerHTML='<div class="denied">No se pudo cargar el registro: '+esc(error.message)+'</div>'; return; }
   SNAP = {}; (data||[]).forEach(w=>{ SNAP[w.clave]=Object.assign({},w); });
-  renderLista(data||[]);
+  PENDING = {};
+  renderMatrix();
+  actualizarContadorPendientes();
   cargarLog();
   initCajaLiquidez();
 }
 
-function renderLista(rows){
-  const porArea={};
-  rows.forEach(w=>{ (porArea[w.area]=porArea[w.area]||[]).push(w); });
-  const areas=Object.keys(porArea).sort((a,b)=>(AREAS_LBL[a]||a).localeCompare(AREAS_LBL[b]||b));
-  let html="";
-  areas.forEach(area=>{
-    html+='<div class="pg-area"><div class="pg-area-h">'+esc(AREAS_LBL[area]||area)+'<span class="ln"></span></div>';
-    porArea[area].forEach(w=>{ html+=filaHTML(w); });
-    html+='</div>';
+// Vista efectiva de una herramienta: lo guardado en la base de datos + lo que aún está pendiente de Guardar.
+function efectivo(clave){ return Object.assign({}, SNAP[clave], PENDING[clave]||{}); }
+
+function renderMatrix(){
+  const claves = Object.keys(SNAP).sort((a,b)=>{
+    const wa=efectivo(a), wb=efectivo(b);
+    const la=(AREAS_LBL[wa.area]||wa.area||""), lb=(AREAS_LBL[wb.area]||wb.area||"");
+    if(la!==lb) return la.localeCompare(lb);
+    return (Number(wa.orden||100)-Number(wb.orden||100)) || String(wa.nombre||"").localeCompare(String(wb.nombre||""));
   });
-  document.getElementById("lista").innerHTML=html;
-}
-
-function filaHTML(w){
-  const on=!!w.habilitado;
-  const modo=w.modo_apagado||"oculto";
-  return ''+
-  '<div class="wrow '+(on?"on":"off")+'" id="row-'+esc(w.clave)+'">'+
-    '<div class="wtop">'+
-      '<span class="wname">'+esc(w.nombre)+'</span>'+
-      '<span class="wclave">'+esc(w.clave)+'</span>'+
-      '<span class="pill '+(on?"on":"off")+'" id="pill-'+esc(w.clave)+'">'+(on?"Activo":"Apagado")+'</span>'+
-      '<span class="wstamp">Último cambio:<br>'+esc(w.actualizado_por||"—")+' · '+fstamp(w.actualizado_en)+'</span>'+
-    '</div>'+
-    '<div class="wctrls">'+
-      '<div class="fld"><label>Habilitado</label>'+
-        '<label class="sw"><input type="checkbox" id="hab-'+esc(w.clave)+'" '+(on?"checked":"")+' onchange="onToggle(\''+esc(w.clave)+'\')"><span class="sl"></span></label></div>'+
-      '<div class="fld"><label>Al apagar</label>'+
-        '<select id="modo-'+esc(w.clave)+'" '+(on?"disabled":"")+' onchange="onModo(\''+esc(w.clave)+'\')">'+
-          '<option value="oculto"'+(modo==="oculto"?" selected":"")+'>Ocultar tarjeta</option>'+
-          '<option value="mantenimiento"'+(modo==="mantenimiento"?" selected":"")+'>En mantenimiento (gris)</option>'+
-        '</select></div>'+
-      '<div class="fld"><label>Orden</label><input type="number" id="ord-'+esc(w.clave)+'" value="'+Number(w.orden||100)+'" style="width:80px"></div>'+
-      '<div class="fld msgfld" id="msgfld-'+esc(w.clave)+'" style="'+((!on&&modo==="mantenimiento")?"":"display:none")+'"><label>Mensaje de mantenimiento</label>'+
-        '<input type="text" id="msg-'+esc(w.clave)+'" value="'+esc(w.mensaje_mantenimiento||"")+'" placeholder="Ej: Volvemos a las 3pm"></div>'+
-      '<div class="wsave"><button class="btn-guardar" id="save-'+esc(w.clave)+'" onclick="guardar(\''+esc(w.clave)+'\')">Guardar</button></div>'+
-    '</div>'+
-    '<div class="rowmsg" id="rowmsg-'+esc(w.clave)+'"></div>'+
-  '</div>';
-}
-
-function onToggle(clave){
-  const on=document.getElementById("hab-"+clave).checked;
-  document.getElementById("modo-"+clave).disabled=on;
-  const pill=document.getElementById("pill-"+clave);
-  pill.className="pill "+(on?"on":"off"); pill.textContent=on?"Activo":"Apagado";
-  document.getElementById("row-"+clave).className="wrow "+(on?"on":"off");
-  syncMsgFld(clave);
-}
-function onModo(clave){ syncMsgFld(clave); }
-function syncMsgFld(clave){
-  const on=document.getElementById("hab-"+clave).checked;
-  const modo=document.getElementById("modo-"+clave).value;
-  document.getElementById("msgfld-"+clave).style.display=(!on&&modo==="mantenimiento")?"flex":"none";
-}
-
-async function guardar(clave){
-  const btn=document.getElementById("save-"+clave); const rm=document.getElementById("rowmsg-"+clave);
-  const habilitado=document.getElementById("hab-"+clave).checked;
-  const modo_apagado=document.getElementById("modo-"+clave).value;
-  const orden=parseInt(document.getElementById("ord-"+clave).value,10);
-  const mensaje_mantenimiento=(document.getElementById("msg-"+clave).value||"").trim() || null;
-  const nuevo={ habilitado, modo_apagado, orden:(isNaN(orden)?100:orden), mensaje_mantenimiento };
-  const anterior=SNAP[clave] ? { habilitado:SNAP[clave].habilitado, modo_apagado:SNAP[clave].modo_apagado, orden:SNAP[clave].orden, mensaje_mantenimiento:SNAP[clave].mensaje_mantenimiento } : null;
-
-  btn.disabled=true; rm.className="rowmsg"; rm.textContent="Guardando…";
-  const upd = Object.assign({}, nuevo, { actualizado_por: MI_EMAIL, actualizado_en: new Date().toISOString() });
-  const { error:e1 } = await PORTAL.from("widgets_registro").update(upd).eq("clave", clave);
-  if(e1){ rm.className="rowmsg err"; rm.textContent="No se pudo guardar: "+e1.message; btn.disabled=false; return; }
-  // log manual (no hay trigger): quien/cuando salen por default del jwt/now()
-  const { error:e2 } = await PORTAL.from("widgets_log").insert({
-    clave, accion:"cambio", valor_anterior:anterior, valor_nuevo:nuevo, nota:null
+  const areaKeys = Object.keys(AREAS_LBL);
+  let html = '<div class="matrix-wrap"><table class="matrix"><thead><tr><th class="th-tool">Herramienta</th>';
+  areaKeys.forEach(a=>{ html += '<th onclick="seleccionarArea(\''+a+'\')" title="Ver usuarios de esta área">'+esc(AREAS_LBL[a])+'</th>'; });
+  html += '</tr></thead><tbody>';
+  claves.forEach(clave=>{
+    const w = efectivo(clave);
+    const dirty = !!PENDING[clave];
+    const on = !!w.habilitado;
+    html += '<tr>';
+    html += '<td class="tool">'+
+      '<div class="tool-name">'+esc(w.nombre)+'<span class="tool-clave">'+esc(clave)+'</span></div>'+
+      '<div class="tool-meta">Último cambio: '+esc(w.actualizado_por||"—")+' · '+fstamp(w.actualizado_en)+'</div>'+
+      '<button type="button" class="tool-expand" onclick="toggleDetail(\''+esc(clave)+'\')">Modo al apagar / orden / mensaje &#9662;</button>'+
+    '</td>';
+    areaKeys.forEach(a=>{
+      const isHome = w.area===a;
+      const cls = isHome ? ("mcell home "+(on?"on":"off")) : "mcell other";
+      const mark = isHome ? (on?"&#10003;":"&#10005;") : "";
+      const tip = isHome ? (on?"Encendida para todos — clic para apagar":"Apagada — clic para encender") : ("Mover esta herramienta al área "+esc(AREAS_LBL[a]));
+      html += '<td><button type="button" class="'+cls+(dirty?" dirty":"")+'" onclick="onCellClick(\''+esc(clave)+'\',\''+a+'\')" title="'+tip+'">'+mark+'</button></td>';
+    });
+    html += '</tr>';
+    html += '<tr class="detailrow" id="detail-'+esc(clave)+'" style="display:none"><td colspan="'+(areaKeys.length+1)+'">'+
+      '<div class="detail-fld"><label>Al apagar</label><select onchange="setDetalle(\''+esc(clave)+'\',\'modo_apagado\',this.value)">'+
+        '<option value="oculto"'+(w.modo_apagado!=="mantenimiento"?" selected":"")+'>Ocultar tarjeta</option>'+
+        '<option value="mantenimiento"'+(w.modo_apagado==="mantenimiento"?" selected":"")+'>En mantenimiento (gris)</option>'+
+      '</select></div>'+
+      '<div class="detail-fld"><label>Orden</label><input type="number" value="'+Number(w.orden||100)+'" style="width:80px" onchange="setDetalle(\''+esc(clave)+'\',\'orden\',parseInt(this.value,10)||100)"></div>'+
+      '<div class="detail-fld" style="min-width:260px"><label>Mensaje de mantenimiento</label><input type="text" value="'+esc(w.mensaje_mantenimiento||"")+'" placeholder="Ej: Volvemos a las 3pm" onchange="setDetalle(\''+esc(clave)+'\',\'mensaje_mantenimiento\',this.value.trim()||null)"></div>'+
+    '</td></tr>';
   });
-  if(e2){ rm.className="rowmsg err"; rm.textContent="Guardado, pero el log falló: "+e2.message; }
-  else { rm.className="rowmsg ok"; rm.textContent="Guardado ✓"; }
-  SNAP[clave]=Object.assign({}, SNAP[clave], upd);
-  btn.disabled=false;
+  html += '</tbody></table></div>';
+  document.getElementById("lista").innerHTML = html;
+}
+
+function toggleDetail(clave){
+  const row=document.getElementById("detail-"+clave);
+  if(row) row.style.display = row.style.display==="none" ? "table-row" : "none";
+}
+
+function onCellClick(clave, area){
+  const w = efectivo(clave);
+  if(w.area===area){ setPending(clave, { habilitado: !w.habilitado }); }
+  else { setPending(clave, { area:area, habilitado:true }); }
+}
+
+function setDetalle(clave, campo, valor){ setPending(clave, { [campo]: valor }); }
+
+function setPending(clave, patch){
+  PENDING[clave] = Object.assign({}, PENDING[clave]||{}, patch);
+  renderMatrix();
+  actualizarContadorPendientes();
+  if(MODO==="usuario" && AREA_SEL) renderUsuarios(AREA_SEL);
+}
+
+function actualizarContadorPendientes(){
+  const n = Object.keys(PENDING).length;
+  const badge=document.getElementById("pendCount");
+  const btn=document.getElementById("guardarBtn");
+  if(!badge||!btn) return;
+  if(n>0){ badge.style.display="inline-block"; badge.textContent=n+(n===1?" cambio sin guardar":" cambios sin guardar"); btn.disabled=false; }
+  else { badge.style.display="none"; btn.disabled=true; }
+}
+
+// ONE solo botón Guardar: aplica todos los cambios pendientes (todas las filas tocadas) y registra
+// una entrada de auditoría por cada una, con la misma forma que usaba el guardado tarjeta-por-tarjeta.
+async function guardarTodo(){
+  const claves = Object.keys(PENDING);
+  if(!claves.length) return;
+  const btn=document.getElementById("guardarBtn"); btn.disabled=true; btn.textContent="Guardando…";
+  const anteriores={}, nuevos={};
+  claves.forEach(clave=>{
+    anteriores[clave] = { habilitado:SNAP[clave].habilitado, modo_apagado:SNAP[clave].modo_apagado, orden:SNAP[clave].orden, mensaje_mantenimiento:SNAP[clave].mensaje_mantenimiento, area:SNAP[clave].area };
+    const w = efectivo(clave);
+    nuevos[clave] = { habilitado:w.habilitado, modo_apagado:w.modo_apagado, orden:w.orden, mensaje_mantenimiento:w.mensaje_mantenimiento, area:w.area };
+  });
+  const sello = new Date().toISOString();
+  const resultados = await Promise.all(claves.map(clave=>
+    PORTAL.from("widgets_registro").update(Object.assign({}, nuevos[clave], { actualizado_por: MI_EMAIL, actualizado_en: sello })).eq("clave", clave)
+      .then(r=>({ clave, error:r.error }))
+  ));
+  const ok = resultados.filter(r=>!r.error).map(r=>r.clave);
+  const fallidos = resultados.filter(r=>r.error);
+  if(ok.length){
+    const filasLog = ok.map(clave=>({ clave, accion:"cambio", valor_anterior:anteriores[clave], valor_nuevo:nuevos[clave], nota:null }));
+    const { error:eLog } = await PORTAL.from("widgets_log").insert(filasLog);
+    ok.forEach(clave=>{
+      SNAP[clave] = Object.assign({}, SNAP[clave], nuevos[clave], { actualizado_por: MI_EMAIL, actualizado_en: sello });
+      delete PENDING[clave];
+    });
+    if(eLog){ console.warn("Guardado, pero el log de auditoría falló: "+eLog.message); }
+  }
+  renderMatrix();
+  actualizarContadorPendientes();
   cargarLog();
-  setTimeout(()=>{ if(rm) rm.textContent=""; }, 3500);
+  btn.textContent="Guardar";
+  if(fallidos.length){
+    alert("Se guardaron "+ok.length+" de "+claves.length+" cambios. Fallaron: "+fallidos.map(f=>f.clave).join(", ")+". Quedan marcados como pendientes — vuelve a intentar.");
+  }
+}
+
+// ---- Modo "por usuario": drill-down de un área a las personas asociadas a ella ----
+function cambiarModo(m){
+  MODO=m;
+  document.getElementById("modoAreaBtn").className="mode-btn"+(m==="area"?" active":"");
+  document.getElementById("modoUsuarioBtn").className="mode-btn"+(m==="usuario"?" active":"");
+  document.getElementById("uspanel").style.display = m==="usuario" ? "block" : "none";
+  if(m==="usuario" && AREA_SEL) renderUsuarios(AREA_SEL);
+}
+
+async function seleccionarArea(area){
+  AREA_SEL=area;
+  if(MODO!=="usuario") cambiarModo("usuario");
+  await cargarUsuariosSiHaceFalta();
+  renderUsuarios(area);
+}
+
+async function cargarUsuariosSiHaceFalta(){
+  if(VC_USERS) return VC_USERS;
+  try{
+    const { data, error } = await SB.rpc("ver_como_lista");
+    VC_USERS = error ? [] : (data||[]);
+  }catch(e){ VC_USERS = []; }
+  return VC_USERS;
+}
+
+function usuariosDeArea(area){
+  const kws = AREA_ROL_KEYWORDS[area]||[];
+  const todos = VC_USERS||[];
+  if(!kws.length) return todos;
+  const norm=(s)=>String(s||"").toLowerCase();
+  const matched = todos.filter(u=>kws.some(k=>norm(u.rol).indexOf(k)>=0));
+  return matched.length ? matched : todos;
+}
+
+function renderUsuarios(area){
+  const sub=document.getElementById("uspanelSub");
+  if(sub) sub.textContent = 'Personas relacionadas con "'+(AREAS_LBL[area]||area)+'" según su rol (fuente: ver_como_lista / agentes activos). Clic en "Ver como" para simular su portal con los cambios pendientes.';
+  const chipsWrap=document.getElementById("uchips");
+  if(chipsWrap){
+    chipsWrap.innerHTML = Object.keys(AREAS_LBL).map(a=>'<button type="button" class="uchip'+(a===area?" active":"")+'" onclick="seleccionarArea(\''+a+'\')">'+esc(AREAS_LBL[a])+'</button>').join("");
+  }
+  const usuarios = usuariosDeArea(area);
+  const list=document.getElementById("ulist");
+  if(!list) return;
+  if(!usuarios.length){ list.innerHTML='<div style="color:var(--pg-muted);font-size:12.5px">No hay usuarios activos registrados todavía.</div>'; return; }
+  const kws=AREA_ROL_KEYWORDS[area]||[];
+  const norm=(s)=>String(s||"").toLowerCase();
+  const huboCoincidencia = kws.length && usuarios.some(u=>kws.some(k=>norm(u.rol).indexOf(k)>=0));
+  const aviso = (kws.length && !huboCoincidencia) ? '<div style="color:var(--pg-warn);font-size:11.5px;margin-bottom:8px">No hay un rol registrado para esta área todavía — mostrando todos los usuarios activos.</div>' : '';
+  list.innerHTML = aviso + usuarios.map(u=>{
+    const nombreSeguro = escJsAttr(u.nombre);
+    const rolSeguro = escJsAttr(u.rol||"");
+    return '<div class="urow"><span class="un">'+esc(u.nombre)+'</span><span class="ur">'+esc(u.rol||"—")+'</span>'+
+      '<span class="uv"><button type="button" class="mtb-btn" style="padding:5px 12px;font-size:11.5px" onclick="elegirVerComo(\''+esc(u.agente_id)+'\',\''+nombreSeguro+'\',\''+rolSeguro+'\')">&#128065; Ver como</button></span></div>';
+  }).join("");
+}
+
+// ---- "Ver como": simulación de sesión de un usuario con el estado pendiente (sin tocar mis_pantallas()) ----
+async function abrirVerComo(){
+  document.getElementById("vcModal").style.display="flex";
+  document.getElementById("vcPickStep").style.display="block";
+  document.getElementById("vcSimStep").style.display="none";
+  await cargarUsuariosSiHaceFalta();
+  renderVcLista();
+}
+function cerrarVerComo(){ document.getElementById("vcModal").style.display="none"; }
+function renderVcLista(){
+  const campo=document.getElementById("vcSearch");
+  const q=(campo?campo.value:"").toLowerCase();
+  const usuarios=(VC_USERS||[]).filter(u=>!q || String(u.nombre||"").toLowerCase().indexOf(q)>=0 || String(u.rol||"").toLowerCase().indexOf(q)>=0);
+  const list=document.getElementById("vcLista");
+  if(!list) return;
+  list.innerHTML = usuarios.length ? usuarios.map(u=>{
+    const nombreSeguro = escJsAttr(u.nombre);
+    const rolSeguro = escJsAttr(u.rol||"");
+    return '<div class="urow"><span class="un">'+esc(u.nombre)+'</span><span class="ur">'+esc(u.rol||"—")+'</span>'+
+      '<span class="uv"><button type="button" class="mtb-btn" style="padding:5px 12px;font-size:11.5px" onclick="elegirVerComo(\''+esc(u.agente_id)+'\',\''+nombreSeguro+'\',\''+rolSeguro+'\')">Elegir</button></span></div>';
+  }).join("") : '<div style="color:var(--pg-muted);font-size:12.5px">Sin resultados.</div>';
+}
+
+async function elegirVerComo(agenteId, nombre, rol){
+  VC_TARGET = { id:agenteId, nombre:nombre, rol:rol };
+  try{ await SB.rpc("ver_como", { p_agente_id: agenteId, p_pantalla: "control_maestro" }); }
+  catch(e){ /* si falla la auditoría, igual mostramos la vista previa */ }
+  document.getElementById("vcModal").style.display="flex";
+  document.getElementById("vcPickStep").style.display="none";
+  document.getElementById("vcSimStep").style.display="block";
+  document.getElementById("vcSimNombre").textContent="Vista de "+nombre;
+  document.getElementById("vcSimSub").textContent="Rol: "+(rol||"—")+" · con los cambios pendientes de esta pantalla ya aplicados";
+  const grid=document.getElementById("vcSimGrid");
+  const claves=Object.keys(SNAP).sort((a,b)=>String(SNAP[a].nombre||"").localeCompare(String(SNAP[b].nombre||"")));
+  grid.innerHTML = claves.map(clave=>{
+    const w=efectivo(clave);
+    const on=!!w.habilitado;
+    const estado = on ? "Visible" : (w.modo_apagado==="mantenimiento" ? "En mantenimiento" : "Oculta");
+    return '<div class="vc-simcard '+(on?"on":"off")+'"><div class="vn">'+esc(w.nombre)+'</div><div>'+estado+" · área "+esc(AREAS_LBL[w.area]||w.area)+'</div></div>';
+  }).join("");
+}
+function volverPickerVerComo(){
+  document.getElementById("vcPickStep").style.display="block";
+  document.getElementById("vcSimStep").style.display="none";
 }
 
 async function cargarLog(){
@@ -540,7 +787,7 @@ document.getElementById("logoutBtn").addEventListener("click", async ()=>{ try{ 
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="control-maestro.html";
-var PGV_VERSION=2;
+var PGV_VERSION=3; // Control Maestro v2: matriz herramientas x areas, modo por usuario, Guardar unico, Ver como
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

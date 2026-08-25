@@ -228,6 +228,21 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
 .vc-simcard.off{border-left:4px solid var(--pg-neg);opacity:.6}
 .vc-simcard .vn{font-weight:700;color:var(--pg-ink)}
 .vc-note{font-size:11px;color:var(--pg-muted);margin-top:14px;line-height:1.6;border-top:1px solid var(--pg-line);padding-top:10px}
+/* ---- Candado por área (Fase C) ---- */
+.ca-row{border:1px solid var(--pg-line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--pg-card)}
+.ca-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ca-nombre{font-weight:700;font-size:13.5px;color:var(--pg-ink)}
+.ca-clave{font-family:var(--f-num);font-size:10.5px;color:var(--pg-muted);background:#F1F5F8;border:1px solid var(--pg-line);border-radius:6px;padding:1px 7px}
+.ca-meta{font-size:11px;color:var(--pg-muted);margin-left:auto}
+.ca-areas{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ca-chip{font-family:var(--f-body);font-size:12px;font-weight:700;border:1px solid var(--pg-line);background:#fff;color:var(--pg-ink);border-radius:999px;padding:6px 12px;cursor:pointer;user-select:none}
+.ca-chip.on{background:var(--pg-mint);color:var(--pg-ink-2);border-color:var(--pg-mint)}
+.ca-estado{font-size:11px;margin-top:8px;color:var(--pg-muted)}
+.ca-estado.abierto{color:var(--pg-pos);font-weight:700}
+.ca-estado.candado{color:var(--pg-warn);font-weight:700}
+.ca-save{margin-top:10px;font-family:var(--f-body);font-weight:800;font-size:12px;border:none;border-radius:999px;padding:7px 15px;background:var(--pg-mint);color:var(--pg-ink-2);cursor:pointer}
+.ca-save:disabled{opacity:.45;cursor:default}
+.ca-save:hover:not(:disabled){background:var(--pg-mint-dark)}
 </style>
 </head>
 <body>
@@ -264,18 +279,27 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
 
     <div class="mtoolbar">
       <div class="mode-switch">
-        <button class="mode-btn active" id="modoAreaBtn" onclick="cambiarModo('area')">Por área</button>
-        <button class="mode-btn" id="modoUsuarioBtn" onclick="cambiarModo('usuario')">Por usuario</button>
+        <button class="mode-btn active" id="modoAreaBtn">Por área</button>
+        <button class="mode-btn" id="modoUsuarioBtn">Por usuario</button>
       </div>
-      <button class="mtb-btn" id="verComoBtn" onclick="abrirVerComo()">👁 Ver como…</button>
+      <button class="mtb-btn" id="verComoBtn">👁 Ver como…</button>
       <div class="spacer"></div>
       <span id="pendCount" style="display:none" class="pend-badge">0 cambios sin guardar</span>
       <button class="mtb-guardar" id="guardarBtn" onclick="guardarTodo()" disabled>Guardar</button>
     </div>
     <div class="mleyenda" id="mleyenda">
-      <b>Cómo leer la matriz:</b> la casilla verde marca el área asignada de hoy y la herramienta está <b>encendida</b> (todos la ven); roja = asignada pero <b>apagada</b> (nadie la ve, según el modo elegido: oculta o en mantenimiento). Las casillas tenues en otras columnas indican que la herramienta no vive ahí — haz clic para moverla. El encendido/apagado de hoy es <b>global</b>: aún no existe un candado independiente por área en la base de datos, así que mover una herramienta reorganiza el tablero pero no restringe por sí sola quién la ve más allá de prender/apagar.
+      <b>Cómo leer la matriz:</b> la casilla verde marca el área asignada de hoy y la herramienta está <b>encendida</b> (todos la ven); roja = asignada pero <b>apagada</b> (nadie la ve, según el modo elegido: oculta o en mantenimiento). Las casillas tenues en otras columnas indican que la herramienta no vive ahí — haz clic para moverla. El encendido/apagado de aquí es <b>global</b> (prende o apaga la tarjeta para todos). El candado <b>por área</b> es otra cosa y vive en el panel de abajo, "Candado por área" — ahí sí se restringe quién ve cada pantalla registrada.
     </div>
     <div id="lista"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+
+    <!-- ===== CANDADO POR ÁREA (Fase C) — escribe portal.pantalla_acceso.areas_permitidas ===== -->
+    <section class="pg-card" id="pg-candado-area" style="margin-top:26px">
+      <h2 style="font-family:var(--f-title);font-size:16px;font-weight:800;margin:0 0 4px;color:var(--pg-ink)">🔒 Candado por área</h2>
+      <p style="font-size:12.5px;color:var(--pg-muted);margin:0 0 14px;line-height:1.55">
+        Esto es lo que de verdad restringe: solo aplica a las pantallas <b>registradas</b> abajo (las que tienen fila en <code>portal.pantalla_acceso</code>). Marca una o más áreas por pantalla y guarda — a partir de ahí, solo esas áreas (más director y socio, que siempre ven todo) pueden entrar. Deja una pantalla <b>sin ninguna área marcada</b> y se comporta exactamente igual que hoy: no restringe. El área de cada persona viene de <code>gabi_accesos.area</code> (poblada desde nómina) — si alguien no tiene área asignada todavía, perderá el acceso a cualquier pantalla con candado encendido hasta que se le asigne.
+      </p>
+      <div id="candadoLista"><div class="skel"></div><div class="skel"></div></div>
+    </section>
     <div class="uspanel" id="uspanel" style="display:none">
       <h3>Usuarios del área seleccionada</h3>
       <p class="usub" id="uspanelSub">Elige un área en la matriz para ver quién pertenece a ella (fuente: <code>agentes</code> activos). Desde aquí puedes previsualizar el portal de cada persona con "Ver como".</p>
@@ -351,7 +375,7 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
       <h2>Últimos cambios</h2>
       <div id="logList"></div>
     </div>
-    <div class="pg-note">Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy), schema <code>portal</code>: tablas <code>widgets_registro</code> y <code>widgets_log</code> (migradas desde el Portal en la consolidación). La escritura está restringida a <code>sales@protectgoservices.com</code> por RLS (<code>widgets_registro_escribe_sales</code>) — este panel no puede saltarse esa regla; solo la usa. "Ver como" reutiliza las funciones <code>ver_como()</code> / <code>ver_como_lista()</code> ya usadas en el ecosistema GABI (mismo candado a sales@, misma auditoría en <code>ver_como_auditoria</code>); la simulación que muestra usa los cambios pendientes de esta pantalla, sin llamar a <code>mis_pantallas()</code>.</div>
+    <div class="pg-note">Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy), schema <code>portal</code>: tablas <code>widgets_registro</code> y <code>widgets_log</code> (migradas desde el Portal en la consolidación). La escritura está restringida a <code>sales@protectgoservices.com</code> por RLS (<code>widgets_registro_escribe_sales</code>) — este panel no puede saltarse esa regla; solo la usa. "Ver como" reutiliza las funciones <code>ver_como()</code> / <code>ver_como_lista()</code> ya usadas en el ecosistema GABI (mismo candado a sales@, misma auditoría en <code>ver_como_auditoria</code>); la simulación que muestra usa los cambios pendientes de esta pantalla, sin llamar a <code>mis_pantallas()</code>. El panel "Candado por área" es otra tabla (<code>portal.pantalla_acceso.areas_permitidas</code>, RLS <code>pantalla_acceso_escribe_sales</code>) y sí llega hasta <code>puede_ver()</code> — las áreas que ofrece salen de <code>gabi_accesos.area</code> (poblada desde nómina), que usa un vocabulario distinto al de las columnas de esta matriz (p. ej. "ventas"/"kam"/"retencion" en vez de "comercial"): no copies el nombre de la columna de arriba como área del candado, elige la que de verdad tiene la gente en <code>gabi_accesos.area</code>.</div>
   </main>
 </div>
 
@@ -436,7 +460,71 @@ async function cargar(){
   actualizarContadorPendientes();
   cargarLog();
   initCajaLiquidez();
+  cargarCandadoArea();
 }
+
+// ---- Candado por área (Fase C): lee/escribe portal.pantalla_acceso.areas_permitidas ----
+let CA_PANTALLAS = [];
+let CA_AREAS = [];
+let CA_PENDING = {}; // clave -> Set de áreas marcadas (mientras no se guarda)
+
+async function cargarCandadoArea(){
+  const el = document.getElementById("candadoLista");
+  if(!el) return;
+  el.innerHTML = '<div class="skel"></div><div class="skel"></div>';
+  const [{ data: pantallas, error: e1 }, { data: areasRows, error: e2 }] = await Promise.all([
+    PORTAL.from("pantalla_acceso").select("*").order("clave", { ascending: true }),
+    SB.from("gabi_accesos").select("area").not("area", "is", null),
+  ]);
+  if(e1){ el.innerHTML = '<div class="denied">No se pudo cargar el candado por área: '+esc(e1.message)+'</div>'; return; }
+  CA_PANTALLAS = pantallas || [];
+  CA_AREAS = Array.from(new Set((areasRows||[]).map(r=>r.area).filter(Boolean))).sort();
+  CA_PENDING = {};
+  renderCandadoArea();
+}
+
+function renderCandadoArea(){
+  const el = document.getElementById("candadoLista");
+  if(!el) return;
+  if(!CA_PANTALLAS.length){ el.innerHTML = '<div style="color:var(--pg-muted);font-size:12.5px">No hay pantallas registradas todavía en portal.pantalla_acceso.</div>'; return; }
+  el.innerHTML = CA_PANTALLAS.map(p=>{
+    const marcadas = CA_PENDING[p.clave] || new Set(p.areas_permitidas||[]);
+    const activo = marcadas.size > 0;
+    const chips = CA_AREAS.map(a=>'<span class="ca-chip'+(marcadas.has(a)?" on":"")+'" onclick="toggleCandadoArea(\''+esc(p.clave)+'\',\''+esc(a)+'\')">'+esc(a)+'</span>').join("")
+      || '<span style="font-size:11.5px;color:var(--pg-muted)">Sin áreas registradas todavía en gabi_accesos.area.</span>';
+    return '<div class="ca-row">'+
+      '<div class="ca-top"><span class="ca-nombre">'+esc(p.nota||p.clave)+'</span><span class="ca-clave">'+esc(p.clave)+'</span>'+
+      '<span class="ca-meta">paquete: '+esc(p.paquete||"—")+(p.solo_roles?(" · roles: "+esc(p.solo_roles.join(", "))):"")+'</span></div>'+
+      '<div class="ca-areas">'+chips+'</div>'+
+      '<div class="ca-estado '+(activo?"candado":"abierto")+'">'+(activo?"Candado encendido — solo ven esta pantalla las áreas marcadas (+ director/socio).":"Sin candado — se comporta igual que hoy (todo el que cumpla paquete/rol la ve).")+'</div>'+
+      '<button type="button" class="ca-save" id="caSave-'+esc(p.clave)+'" onclick="guardarCandadoArea(\''+esc(p.clave)+'\')" '+(CA_PENDING[p.clave]?"":"disabled")+'>Guardar</button>'+
+    '</div>';
+  }).join("");
+}
+
+window.toggleCandadoArea = function(clave, area){
+  const base = CA_PANTALLAS.find(p=>p.clave===clave);
+  if(!CA_PENDING[clave]) CA_PENDING[clave] = new Set(base ? (base.areas_permitidas||[]) : []);
+  const set = CA_PENDING[clave];
+  if(set.has(area)) set.delete(area); else set.add(area);
+  renderCandadoArea();
+};
+
+window.guardarCandadoArea = async function(clave){
+  const set = CA_PENDING[clave];
+  if(!set) return;
+  const btn = document.getElementById("caSave-"+clave);
+  if(btn){ btn.disabled = true; btn.textContent = "Guardando…"; }
+  const areas = Array.from(set);
+  const { error } = await PORTAL.from("pantalla_acceso")
+    .update({ areas_permitidas: areas.length ? areas : null })
+    .eq("clave", clave);
+  if(error){ alert("No se pudo guardar: "+error.message); if(btn){ btn.disabled=false; btn.textContent="Guardar"; } return; }
+  const idx = CA_PANTALLAS.findIndex(p=>p.clave===clave);
+  if(idx>=0) CA_PANTALLAS[idx] = Object.assign({}, CA_PANTALLAS[idx], { areas_permitidas: areas.length ? areas : null });
+  delete CA_PENDING[clave];
+  renderCandadoArea();
+};
 
 // Vista efectiva de una herramienta: lo guardado en la base de datos + lo que aún está pendiente de Guardar.
 function efectivo(clave){ return Object.assign({}, SNAP[clave], PENDING[clave]||{}); }
@@ -550,27 +638,42 @@ async function guardarTodo(){
 }
 
 // ---- Modo "por usuario": drill-down de un área a las personas asociadas a ella ----
-function cambiarModo(m){
+// FIX (botón muerto): antes, "Por usuario" solo mostraba el panel vacío hasta
+// hacer clic además en una columna de la matriz — sin ese segundo clic parecía
+// no responder. Ahora, si no hay área elegida todavía, toma la primera y carga
+// de una vez, para que el clic tenga efecto visible siempre.
+async function cambiarModo(m){
   MODO=m;
   document.getElementById("modoAreaBtn").className="mode-btn"+(m==="area"?" active":"");
   document.getElementById("modoUsuarioBtn").className="mode-btn"+(m==="usuario"?" active":"");
   document.getElementById("uspanel").style.display = m==="usuario" ? "block" : "none";
-  if(m==="usuario" && AREA_SEL) renderUsuarios(AREA_SEL);
+  if(m==="usuario"){
+    if(!AREA_SEL) AREA_SEL = Object.keys(AREAS_LBL)[0];
+    await cargarUsuariosSiHaceFalta();
+    renderUsuarios(AREA_SEL);
+  }
 }
 
 async function seleccionarArea(area){
   AREA_SEL=area;
-  if(MODO!=="usuario") cambiarModo("usuario");
+  if(MODO!=="usuario"){ await cambiarModo("usuario"); return; }
   await cargarUsuariosSiHaceFalta();
   renderUsuarios(area);
 }
 
-async function cargarUsuariosSiHaceFalta(){
-  if(VC_USERS) return VC_USERS;
+// FIX (botón muerto): el error de la llamada quedaba tragado en un catch mudo,
+// así que si ver_como_lista() fallaba por cualquier motivo (RLS, red, sesión),
+// el panel se veía "vacío" sin ninguna pista en consola. Ahora el error queda
+// visible en VC_USERS_ERROR y se muestra en el panel en vez de una lista vacía.
+let VC_USERS_ERROR = null;
+async function cargarUsuariosSiHaceFalta(force){
+  if(VC_USERS && !force) return VC_USERS;
+  VC_USERS_ERROR = null;
   try{
     const { data, error } = await SB.rpc("ver_como_lista");
-    VC_USERS = error ? [] : (data||[]);
-  }catch(e){ VC_USERS = []; }
+    if(error){ VC_USERS_ERROR = error.message; VC_USERS = []; console.error("ver_como_lista:", error); }
+    else { VC_USERS = data||[]; }
+  }catch(e){ VC_USERS_ERROR = e.message||String(e); VC_USERS = []; console.error("ver_como_lista:", e); }
   return VC_USERS;
 }
 
@@ -593,6 +696,7 @@ function renderUsuarios(area){
   const usuarios = usuariosDeArea(area);
   const list=document.getElementById("ulist");
   if(!list) return;
+  if(VC_USERS_ERROR){ list.innerHTML='<div class="denied">No se pudo cargar la lista de usuarios: '+esc(VC_USERS_ERROR)+'</div>'; return; }
   if(!usuarios.length){ list.innerHTML='<div style="color:var(--pg-muted);font-size:12.5px">No hay usuarios activos registrados todavía.</div>'; return; }
   const kws=AREA_ROL_KEYWORDS[area]||[];
   const norm=(s)=>String(s||"").toLowerCase();
@@ -621,6 +725,7 @@ function renderVcLista(){
   const usuarios=(VC_USERS||[]).filter(u=>!q || String(u.nombre||"").toLowerCase().indexOf(q)>=0 || String(u.rol||"").toLowerCase().indexOf(q)>=0);
   const list=document.getElementById("vcLista");
   if(!list) return;
+  if(VC_USERS_ERROR){ list.innerHTML='<div class="denied">No se pudo cargar la lista de usuarios: '+esc(VC_USERS_ERROR)+'</div>'; return; }
   list.innerHTML = usuarios.length ? usuarios.map(u=>{
     const nombreSeguro = escJsAttr(u.nombre);
     const rolSeguro = escJsAttr(u.rol||"");
@@ -778,6 +883,12 @@ document.getElementById("loginBtn").addEventListener("click", entrar);
 document.getElementById("pass").addEventListener("keydown", e=>{ if(e.key==="Enter") entrar(); });
 document.getElementById("refreshBtn").addEventListener("click", ()=>{ if(MI_EMAIL===SALES) cargar(); });
 document.getElementById("logoutBtn").addEventListener("click", async ()=>{ try{ await SB.auth.signOut(); }catch(e){} location.reload(); });
+// FIX (botones muertos "Ver como…" / "Por usuario"): se pasa de onclick= en el
+// HTML a addEventListener explícito, para que no dependan de que el atributo
+// se conserve intacto ni de cuándo corre el resto del script.
+document.getElementById("modoAreaBtn").addEventListener("click", ()=>cambiarModo("area"));
+document.getElementById("modoUsuarioBtn").addEventListener("click", ()=>cambiarModo("usuario"));
+document.getElementById("verComoBtn").addEventListener("click", abrirVerComo);
 
 (async function init(){ await verificarAcceso(); })();
 </script>
@@ -787,7 +898,7 @@ document.getElementById("logoutBtn").addEventListener("click", async ()=>{ try{ 
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="control-maestro.html";
-var PGV_VERSION=3; // Control Maestro v2: matriz herramientas x areas, modo por usuario, Guardar unico, Ver como
+var PGV_VERSION=4; // Ronda pantalla de renovaciones + candado por área: panel Candado por área, arregla Ver como.../Por usuario
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

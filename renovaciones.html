@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GABI · Renovaciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+:root {
+  --pg-ink:        #28323B;
+  --pg-ink-2:      #1B2D3A;
+  --pg-mint:       #2DBFA3;
+  --pg-mint-dark:  #229A82;
+  --pg-mint-deep:  #1B8E78;
+  --pg-mint-soft:  #C4E8DF;
+  --pg-bg:         #F4F7FA;
+  --pg-card:       #FFFFFF;
+  --pg-line:       #E7EDF2;
+  --pg-txt:        #28323B;
+  --pg-muted:      #6B7D89;
+  --pg-pos:        #1F9D6B;
+  --pg-neg:        #D5594F;
+  --pg-warn:       #D9A520;
+  --pg-font-gabi:  "Fraunces", Georgia, serif;
+  --pg-font-title: "Montserrat", "Arial Black", sans-serif;
+  --pg-font-body:  "Inter", Arial, Helvetica, sans-serif;
+  --pg-font-num:   "JetBrains Mono", "Courier New", monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--pg-bg); }
+.pg-app { background: var(--pg-bg); color: var(--pg-txt); font-family: var(--pg-font-body); min-height: 100vh; }
+
+.pg-viewbar { background: var(--pg-ink-2); padding: 16px 30px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; position:sticky; top:0; z-index:20; }
+.pg-viewbar .pg-brand { display:flex; align-items:center; gap:10px; margin-right: 6px; }
+.pg-viewbar .pg-logo { width:34px; height:34px; border-radius:9px; background:var(--pg-mint); display:flex; align-items:center; justify-content:center; font-family:var(--pg-font-title); font-weight:800; color:var(--pg-ink-2); font-size:13px; }
+.pg-viewbar .pg-wordmark { font-family: var(--pg-font-gabi); font-style: italic; font-weight: 800; font-size: 21px; color: #fff; letter-spacing: -0.5px; }
+.pg-badge { background: var(--pg-mint); color: var(--pg-ink-2); border:1px solid var(--pg-mint); font-family: var(--pg-font-body); font-weight:700; font-size:12px; padding: 9px 15px; border-radius:999px; letter-spacing:.02em; }
+.pg-viewbar .pg-actions { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.pg-btn { font-family: var(--pg-font-body); font-weight:700; font-size:12.5px; border-radius:999px; padding:9px 16px; border:1px solid rgba(255,255,255,.25); background:transparent; color:#dfe8ec; cursor:pointer; text-decoration:none; display:inline-block; }
+.pg-btn:hover { background: rgba(255,255,255,.08); }
+.pg-btn.primary { background: var(--pg-mint); color:var(--pg-ink-2); border-color:var(--pg-mint); }
+.pg-stamp { color:#8da0ad; font-size:11px; }
+
+.pg-main { padding: 30px 38px 60px; max-width: 1280px; margin: 0 auto; }
+.pg-top { margin-bottom: 22px; }
+.pg-top h1 { font-family: var(--pg-font-title); font-size: 26px; font-weight: 800; color: var(--pg-ink); margin: 0; }
+.pg-top .pg-sub { color: var(--pg-muted); font-size: 14px; margin-top: 5px; max-width:760px; }
+.pg-eyebrow { font-family: var(--pg-font-body); font-size: 11.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--pg-mint-deep); margin-bottom: 6px; }
+.pg-section-divider { display:flex; align-items:center; gap:14px; margin: 34px 0 18px; }
+.pg-section-divider .sd-line { flex:1; height:1px; background: var(--pg-line); }
+.pg-section-divider .sd-lbl { font-family: var(--pg-font-title); font-weight:800; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color: var(--pg-ink); background: var(--pg-bg); padding: 0 4px; }
+
+.pg-card { background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 18px; padding: 22px; margin-bottom:20px; box-shadow: 0 1px 3px rgba(27,45,58,.04); }
+.pg-card h2 { font-family: var(--pg-font-title); font-size: 16.5px; font-weight: 800; color: var(--pg-ink); margin: 0 0 4px; display:flex; align-items:center; gap:8px; }
+.pg-card .pg-purpose { color: var(--pg-muted); font-size: 12.5px; margin: 0 0 14px; }
+
+.pg-grid-3 { display:grid; grid-template-columns: repeat(3,1fr); gap: 18px; align-items:stretch; }
+@media (max-width: 1080px) { .pg-grid-3 { grid-template-columns: 1fr; } }
+
+.pg-pill { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space:nowrap;}
+.pg-pill.ok   { background: #E3F4EF; color: var(--pg-pos); }
+.pg-pill.due  { background: #FCEEEC; color: var(--pg-neg); }
+.pg-pill.warn { background: #FBF0DC; color: #8a6412; }
+.pg-pill.muted{ background:#EEF2F5; color:var(--pg-muted); }
+
+.pg-warn-box   { background: #FBF0DC; border: 1px solid #ECD08C; border-radius: 12px; padding: 13px 17px; color: #6b4e0c; font-size:12.5px; line-height:1.55; }
+.pg-warn-box b { color: var(--pg-warn); }
+
+.pg-skel { height:14px; background:linear-gradient(90deg,#eef2f5,#f7f9fb,#eef2f5); background-size:200% 100%; animation:pgshimmer 1.2s infinite; border-radius:6px; margin:6px 0; }
+@keyframes pgshimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+.pg-footnote { font-size: 11.5px; color: var(--pg-muted); margin-top: 26px; border-top:1px solid var(--pg-line); padding-top:14px; line-height:1.6; }
+
+/* ---- pantalla de login (mismo patrón que gabi-asesor.html) ---- */
+.pg-login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; background: var(--pg-ink-2); }
+.pg-login-card { background:#fff; border-radius:20px; padding:36px 34px; width:100%; max-width:360px; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+.pg-login-card .pg-brand { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+.pg-login-card .pg-logo { width:36px; height:36px; border-radius:9px; background:var(--pg-mint); display:flex; align-items:center; justify-content:center; font-family:var(--pg-font-title); font-weight:800; color:var(--pg-ink-2); font-size:13px; }
+.pg-login-card .pg-wordmark { font-family: var(--pg-font-gabi); font-style: italic; font-weight: 800; font-size: 22px; color: var(--pg-ink-2); }
+.pg-login-card label { font-size:12px; font-weight:700; color:var(--pg-muted); display:block; margin:12px 0 5px; }
+.pg-login-card input { width:100%; padding:11px 13px; border-radius:10px; border:1px solid var(--pg-line); font-size:14px; font-family:var(--pg-font-body); }
+.pg-login-card button { width:100%; margin-top:18px; padding:12px; border-radius:999px; border:none; background:var(--pg-mint); color:var(--pg-ink-2); font-weight:800; font-size:14px; cursor:pointer; }
+.pg-login-card button:hover { background:var(--pg-mint-dark); }
+.pg-login-msg { font-size:12.5px; color:var(--pg-neg); margin-top:10px; min-height:16px; }
+
+/* ---- anillo del mes ---- */
+.ring-wrap { position:relative; height:170px; display:flex; align-items:center; justify-content:center; }
+.ring-wrap canvas { max-height:170px; }
+.ring-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none; }
+.ring-center .rc-val { font-family: var(--pg-font-num); font-size:26px; font-weight:700; color:var(--pg-ink); line-height:1.1; }
+.ring-center .rc-lbl { font-size:10.5px; color:var(--pg-muted); text-transform:uppercase; letter-spacing:.05em; margin-top:3px; max-width:120px; }
+
+.stat-fallback { text-align:center; padding: 22px 6px; }
+.stat-fallback .sf-val { font-family: var(--pg-font-num); font-size:30px; font-weight:700; color:var(--pg-ink); }
+.stat-fallback .sf-lbl { font-size:12px; color:var(--pg-muted); margin-top:6px; }
+
+.gv-kpis { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+.gv-kpi { flex:1; min-width:110px; }
+.gv-kpi .lbl { font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--pg-muted); }
+.gv-kpi .val { font-family: var(--pg-font-num); font-size:19px; font-weight:700; color:var(--pg-ink); margin-top:3px; }
+
+.chart-wrap { position:relative; height:170px; }
+
+/* ---- cola operativa ---- */
+.pg-table { width:100%; border-collapse:collapse; font-size:13px; }
+.pg-table th { text-align:left; color:var(--pg-muted); font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid var(--pg-line); padding:8px 8px; white-space:nowrap; }
+.pg-table td { border-bottom:1px solid var(--pg-line); padding:9px 8px; vertical-align:middle; }
+.pg-table td.num { font-family: var(--pg-font-num); }
+.pg-table tr.rojo td { background:#FCEEEC; }
+.pg-table tr.rojo td.dias { color: var(--pg-neg); font-weight:700; }
+.acciones { display:flex; gap:5px; flex-wrap:wrap; }
+.acciones button { font-family: var(--pg-font-body); font-size:11px; font-weight:700; border:1px solid var(--pg-line); background:#fff; color:var(--pg-ink); border-radius:999px; padding:5px 10px; cursor:pointer; }
+.acciones button:hover { background:var(--pg-bg); }
+.acciones button.activo { background:var(--pg-ink); color:#fff; border-color:var(--pg-ink); }
+.acciones button.perdido-btn { color: var(--pg-neg); border-color:#F1BEB6; }
+.acciones button.perdido-btn.activo { background: var(--pg-neg); color:#fff; border-color:var(--pg-neg); }
+.tablewrap { overflow-x:auto; }
+.cerradas-toggle { font-family: var(--pg-font-body); font-size:12.5px; font-weight:700; color: var(--pg-mint-deep); background:none; border:none; cursor:pointer; padding:0; margin-top:10px; }
+</style>
+</head>
+<body>
+<a href="index.html" id="pgVolver" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
+
+<!-- ============================================================================
+  GABI · Renovaciones (pantalla propia, paquete "renovaciones")
+  No es una vista recortada de gabi360.html: gabi360 exige liquidez_core + rol
+  socio/director (abre caja, retiro de socios y sueldos). Esta pantalla vive
+  aparte a propósito para que Karen Suaza pueda operar la cola de retención
+  sin ese acceso. El acceso lo controla portal.pantalla_acceso (clave
+  'renovaciones', paquete 'renovaciones') vía puede_ver() — el paquete se lo
+  otorga Andrés desde el Control Maestro, no esta pantalla.
+============================================================================ -->
+
+<div id="pg-login-screen" class="pg-login-wrap">
+  <div class="pg-login-card">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+    <div style="font-size:13px;color:#6B7D89;">Renovaciones — entra con tu usuario del equipo.</div>
+    <label>Correo</label>
+    <input type="email" id="pg-login-email" autocomplete="username" placeholder="tunombre@protectgoservices.com">
+    <label>Contraseña</label>
+    <input type="password" id="pg-login-pass" autocomplete="current-password">
+    <button id="pg-login-btn">Entrar</button>
+    <div class="pg-login-msg" id="pg-login-msg"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #E7EDF2;">
+      <a href="#" id="pg-reset-link" style="font-size:12.5px;color:#1B8E78;font-weight:600;text-decoration:none;">¿Primera vez o olvidaste tu clave de GABI? Créala aquí</a>
+      <div id="pg-reset-box" style="display:none;margin-top:10px;">
+        <div style="font-size:12px;color:#6B7D89;line-height:1.5;margin-bottom:8px;">Tu clave de GABI es <b>independiente</b> de la del Portal. Escribe tu correo <b>arriba</b> y te enviamos un enlace para crearla.</div>
+        <button id="pg-reset-btn" style="width:100%;">Enviar correo para crear mi clave</button>
+        <div class="pg-login-msg" id="pg-reset-msg" style="color:#6B7D89;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="pg-setpass-screen" class="pg-login-wrap" style="display:none;">
+  <div class="pg-login-card">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+    <div style="font-size:13px;color:#6B7D89;">Crea tu contraseña de GABI (independiente de la del Portal).</div>
+    <label>Nueva contraseña</label>
+    <input type="password" id="pg-newpass" autocomplete="new-password" placeholder="mínimo 8 caracteres">
+    <label>Repite la contraseña</label>
+    <input type="password" id="pg-newpass2" autocomplete="new-password">
+    <button id="pg-setpass-btn">Guardar y entrar</button>
+    <div class="pg-login-msg" id="pg-setpass-msg" style="color:#6B7D89;"></div>
+  </div>
+</div>
+
+<div class="pg-app" id="pg-app" style="display:none;">
+  <div class="pg-viewbar">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+    <span class="pg-badge">Renovaciones</span>
+    <div class="pg-actions">
+      <span class="pg-stamp" id="pg-stamp">datos al —</span>
+      <button class="pg-btn" id="pg-btn-refresh">Actualizar</button>
+      <button class="pg-btn" id="pg-btn-logout">Cerrar sesión</button>
+    </div>
+  </div>
+  <main class="pg-main" id="pg-root">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Retención · cola de renovaciones</div>
+      <h1>Renovaciones</h1>
+      <div class="pg-sub">Pólizas por vencer, estado de gestión y el resultado del mes. Solo lectura y avance de estado — no se crean ni se borran filas aquí.</div>
+    </div>
+    <div id="pg-acceso"></div>
+    <div id="pg-contenido" style="display:none"></div>
+  </main>
+</div>
+
+<script>
+const SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpdnBxc2Vwd3NmbWFmYW14a3p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTIxNjUsImV4cCI6MjA5MTk2ODE2NX0.pPe1qtWJhnx8Ffo4bvuwVF-tVrkPSmO63Kl7pKWQYqM";
+const SB = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+function esc(s){ return (s===null||s===undefined) ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtUSD(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US',{maximumFractionDigits:0}); }
+function fmtFecha(s){ if(!s) return '—'; try{ const d=new Date(s+'T12:00:00'); return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return String(s); } }
+function fmtMes(s){ if(!s) return '—'; try{ const d=new Date(s+'T12:00:00'); return d.toLocaleDateString('es-CO',{month:'short',year:'numeric'}); }catch(e){ return String(s); } }
+
+/* =====================================================================
+   1) LOGIN / SESIÓN (mismo patrón que gabi-asesor.html)
+   ===================================================================== */
+let RECOVERY_MODE = false;
+const _IS_RECOVERY = /(?:^|[#&])type=recovery(?:&|$)/.test(window.location.hash || "");
+
+function mostrarSetPassword() {
+  RECOVERY_MODE = true;
+  const l = document.getElementById("pg-login-screen"); if (l) l.style.display = "none";
+  const a = document.getElementById("pg-app"); if (a) a.style.display = "none";
+  const s = document.getElementById("pg-setpass-screen"); if (s) s.style.display = "flex";
+}
+async function enviarRecuperacion() {
+  const email = (document.getElementById("pg-login-email").value || "").trim();
+  const m = document.getElementById("pg-reset-msg");
+  if (!email || !/@/.test(email)) { m.style.color = "#D5594F"; m.textContent = "Escribe tu correo arriba primero."; return; }
+  const btn = document.getElementById("pg-reset-btn"); btn.disabled = true;
+  m.style.color = "#6B7D89"; m.textContent = "Enviando…";
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await SB.auth.resetPasswordForEmail(email, { redirectTo });
+  btn.disabled = false;
+  if (error) { m.style.color = "#D5594F"; m.textContent = "No se pudo enviar: " + error.message; return; }
+  m.style.color = "#1F9D6B";
+  m.textContent = "Listo ✓ Revisa el correo de " + email + ". El enlace te deja crear tu clave (puede tardar unos minutos).";
+}
+async function guardarNuevaClave() {
+  const p1 = document.getElementById("pg-newpass").value || "";
+  const p2 = document.getElementById("pg-newpass2").value || "";
+  const m = document.getElementById("pg-setpass-msg");
+  if (p1.length < 8) { m.style.color = "#D5594F"; m.textContent = "La clave debe tener al menos 8 caracteres."; return; }
+  if (p1 !== p2) { m.style.color = "#D5594F"; m.textContent = "Las dos claves no coinciden."; return; }
+  const btn = document.getElementById("pg-setpass-btn"); btn.disabled = true;
+  m.style.color = "#6B7D89"; m.textContent = "Guardando…";
+  const { error } = await SB.auth.updateUser({ password: p1 });
+  btn.disabled = false;
+  if (error) { m.style.color = "#D5594F"; m.textContent = "No se pudo guardar: " + error.message; return; }
+  m.style.color = "#1F9D6B"; m.textContent = "¡Clave creada! Entrando…";
+  history.replaceState(null, "", window.location.pathname);
+  setTimeout(() => { location.reload(); }, 900);
+}
+document.getElementById("pg-reset-link").addEventListener("click", (e) => {
+  e.preventDefault();
+  const b = document.getElementById("pg-reset-box");
+  b.style.display = b.style.display === "none" ? "block" : "none";
+});
+document.getElementById("pg-reset-btn").addEventListener("click", enviarRecuperacion);
+document.getElementById("pg-setpass-btn").addEventListener("click", guardarNuevaClave);
+
+async function mostrarApp() {
+  document.getElementById("pg-login-screen").style.display = "none";
+  document.getElementById("pg-app").style.display = "block";
+  await verificarAccesoYcargar();
+}
+document.getElementById("pg-login-btn").addEventListener("click", async () => {
+  const email = document.getElementById("pg-login-email").value.trim();
+  const pass = document.getElementById("pg-login-pass").value;
+  const msgEl = document.getElementById("pg-login-msg");
+  msgEl.textContent = "";
+  const { error } = await SB.auth.signInWithPassword({ email, password: pass });
+  if (error) { msgEl.textContent = "No pudimos iniciar sesión: " + error.message; return; }
+  await mostrarApp();
+});
+document.getElementById("pg-btn-refresh").addEventListener("click", cargarTodo);
+document.getElementById("pg-btn-logout").addEventListener("click", async () => {
+  await SB.auth.signOut();
+  location.reload();
+});
+
+/* =====================================================================
+   2) CANDADO — puede_ver('renovaciones'). El paquete lo otorga Andrés
+   desde el Control Maestro; esta pantalla solo lo consulta.
+   ===================================================================== */
+async function verificarAccesoYcargar(){
+  const accesoEl = document.getElementById("pg-acceso");
+  const contEl = document.getElementById("pg-contenido");
+  accesoEl.innerHTML = '<div class="pg-skel" style="width:60%"></div><div class="pg-skel" style="width:40%"></div>';
+  let puede = false;
+  try{
+    const { data, error } = await SB.rpc('puede_ver', { p_clave: 'renovaciones' });
+    if(error) throw error;
+    puede = !!data;
+  }catch(e){
+    accesoEl.innerHTML = '<div class="pg-warn-box"><b>No pudimos verificar tu acceso.</b> ' + esc(e.message||'') + '</div>';
+    return;
+  }
+  if(!puede){
+    accesoEl.innerHTML = '<div class="pg-warn-box"><b>Tu usuario todavía no tiene el paquete "renovaciones" habilitado.</b><br>Pídele a Andrés que te lo active desde el Control Maestro — sin ese paquete no se puede ver ni mover la cola de retención.</div>';
+    contEl.style.display = "none";
+    return;
+  }
+  accesoEl.innerHTML = "";
+  contEl.style.display = "block";
+  await cargarTodo();
+}
+
+/* =====================================================================
+   3) LAS 3 GRÁFICAS + LA COLA OPERATIVA
+   ===================================================================== */
+let CH_RING = null, CH_LINEA = null;
+let COLA = [];
+
+function pintarEsqueleto(){
+  document.getElementById("pg-contenido").innerHTML = `
+    <div class="pg-grid-3">
+      <div class="pg-card">
+        <h2>Renovado del mes</h2>
+        <p class="pg-purpose">% de lo que vencía este mes que ya quedó renovado.</p>
+        <div id="c-ring"><div class="pg-skel" style="height:150px"></div></div>
+      </div>
+      <div class="pg-card">
+        <h2>Premium retenido vs perdido</h2>
+        <p class="pg-purpose">Por mes de renovación.</p>
+        <div id="c-linea"><div class="pg-skel" style="height:150px"></div></div>
+      </div>
+      <div class="pg-card">
+        <h2>Genera vs gasta — dirección de renovaciones</h2>
+        <p class="pg-purpose">Lo que produce el equipo comercial en renovaciones vs. lo que cuesta dirigirlo.</p>
+        <div id="c-genera"><div class="pg-skel" style="height:150px"></div></div>
+      </div>
+    </div>
+    ${sectionDivider("Cola de retención")}
+    <div class="pg-card">
+      <p class="pg-purpose">Ordenada por fecha de renovación — las vencidas primero. En rojo cuando faltan 15 días o menos. Marca el avance con un clic; "perdido" pide el motivo.</p>
+      <div id="c-cola"><div class="pg-skel" style="height:220px"></div></div>
+    </div>
+    ${footnote()}
+  `;
+}
+function sectionDivider(t){ return `<div class="pg-section-divider"><span class="sd-line"></span><span class="sd-lbl">${esc(t)}</span><span class="sd-line"></span></div>`; }
+function footnote(){
+  return `<div class="pg-footnote">Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy): retencion_asignaciones, v_retencion_mensual, v_direccion_renovaciones. Esta pantalla no muestra caja, retiro de socios, costo o sueldo individual de nadie, utilidad de otros agentes ni el mapa de cuadrantes — para eso está GABI 360, que exige el paquete liquidez_core y rol socio/director.</div>`;
+}
+
+async function cargarTodo(){
+  pintarEsqueleto();
+  document.getElementById("pg-stamp").textContent = "cargando…";
+  await Promise.all([ cargarRing(), cargarLinea(), cargarGeneraGasta(), cargarCola() ]);
+  document.getElementById("pg-stamp").textContent = "datos al " + new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+}
+
+/* ---- Gráfica 1: anillo del mes ---- */
+async function cargarRing(){
+  const el = document.getElementById("c-ring");
+  const hoy = new Date();
+  const mesActual = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-01';
+  const { data, error } = await SB.from('v_retencion_mensual').select('*').eq('mes', mesActual).maybeSingle();
+  if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
+  const row = data || { renovadas:0, perdidas:0, en_gestion:0, pct_renovado:null, asignadas:0 };
+  const cerradas = Number(row.renovadas||0) + Number(row.perdidas||0);
+  el.innerHTML = '<div class="ring-wrap"><canvas id="chRing"></canvas><div class="ring-center" id="ringCenter"></div></div>';
+  const ctx = document.getElementById("chRing");
+  const center = document.getElementById("ringCenter");
+  if(cerradas === 0){
+    CH_RING = new Chart(ctx, { type:'doughnut', data:{ labels:['En gestión'], datasets:[{ data:[1], backgroundColor:['#D8DFE4'], borderWidth:0 }] },
+      options:{ cutout:'72%', plugins:{legend:{display:false},tooltip:{enabled:false}} } });
+    center.innerHTML = '<div class="rc-val">'+Number(row.en_gestion||0)+'</div><div class="rc-lbl">sin cerrar aún</div>';
+  } else {
+    const pct = Number(row.pct_renovado||0);
+    CH_RING = new Chart(ctx, { type:'doughnut', data:{ labels:['Renovado','Resto'], datasets:[{ data:[pct, Math.max(0,100-pct)], backgroundColor:['#2DBFA3','#E7EDF2'], borderWidth:0 }] },
+      options:{ cutout:'72%', plugins:{legend:{display:false},tooltip:{enabled:false}} } });
+    center.innerHTML = '<div class="rc-val">'+pct.toFixed(1)+'%</div><div class="rc-lbl">renovado · '+cerradas+' cerradas de '+Number(row.asignadas||0)+'</div>';
+  }
+}
+
+/* ---- Gráfica 2: premium retenido vs perdido por mes ---- */
+async function cargarLinea(){
+  const el = document.getElementById("c-linea");
+  const { data, error } = await SB.from('v_retencion_mensual').select('*').order('mes',{ascending:true});
+  if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
+  const filas = data || [];
+  const todoCero = filas.every(r => Number(r.premium_retenido||0)===0 && Number(r.premium_perdido||0)===0);
+  if(!filas.length || todoCero){
+    const enJuego = filas.reduce((a,r)=>a+Number(r.premium_en_juego||0),0);
+    el.innerHTML = '<div class="stat-fallback"><div class="sf-val">'+fmtUSD(enJuego)+'</div><div class="sf-lbl">premium en juego — nada se ha cerrado todavía este período</div></div>';
+    return;
+  }
+  el.innerHTML = '<div class="chart-wrap"><canvas id="chLinea"></canvas></div>';
+  CH_LINEA = new Chart(document.getElementById("chLinea"), {
+    type:'line',
+    data:{ labels: filas.map(r=>fmtMes(r.mes)),
+      datasets:[
+        { label:'Retenido', data: filas.map(r=>Number(r.premium_retenido||0)), borderColor:'#2DBFA3', backgroundColor:'#2DBFA3', tension:.25 },
+        { label:'Perdido',  data: filas.map(r=>Number(r.premium_perdido||0)),  borderColor:'#D5594F', backgroundColor:'#D5594F', tension:.25 },
+      ] },
+    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}}, scales:{ y:{ ticks:{ callback:(v)=>fmtUSD(v) } } } }
+  });
+}
+
+/* ---- Tarjeta 3: genera vs gasta (dirección de renovaciones) ---- */
+async function cargarGeneraGasta(){
+  const el = document.getElementById("c-genera");
+  const { data, error } = await SB.from('v_direccion_renovaciones').select('*').order('mes',{ascending:false}).limit(1).maybeSingle();
+  if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
+  if(!data){ el.innerHTML = '<div class="pg-purpose">Sin datos todavía este período.</div>'; return; }
+  el.innerHTML =
+    '<div class="gv-kpis">'+
+      '<div class="gv-kpi"><div class="lbl">Genera</div><div class="val">'+fmtUSD(data.genera)+'</div></div>'+
+      '<div class="gv-kpi"><div class="lbl">Gasta</div><div class="val">'+fmtUSD(data.gasta)+'</div></div>'+
+      '<div class="gv-kpi"><div class="lbl">Diferencia</div><div class="val">'+fmtUSD(data.utilidad_sin_variable)+'</div></div>'+
+    '</div>'+
+    '<div class="pg-warn-box"><b>No es utilidad firme:</b> '+esc(data.nota_modelo||'El variable de la dirección está en firma; esta diferencia no lo descuenta todavía.')+'</div>';
+}
+
+/* ---- Cola operativa ---- */
+const ESTADOS_BOTON = ['contactado','cotizando','renovado','perdido'];
+const ESTADO_LBL = {pendiente:'Pendiente',contactado:'Contactado',cotizando:'Cotizando',renovado:'Renovado',perdido:'Perdido'};
+
+async function cargarCola(){
+  const el = document.getElementById("c-cola");
+  const { data, error } = await SB.from('retencion_asignaciones')
+    .select('id,dba,insured,policy_num,mga,premium_estimado,fecha_renovacion,estado,motivo_perdido')
+    .order('fecha_renovacion', { ascending:true, nullsFirst:false });
+  if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar la cola: '+esc(error.message)+'</div>'; return; }
+  COLA = data || [];
+  renderCola();
+}
+
+function diasRestantes(fecha){
+  if(!fecha) return null;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const f = new Date(fecha+'T00:00:00');
+  return Math.round((f - hoy) / 86400000);
+}
+function textoDias(d){
+  if(d===null) return 'sin fecha';
+  if(d < 0) return 'vencida hace ' + Math.abs(d) + ' d';
+  if(d === 0) return 'vence hoy';
+  return d + ' d';
+}
+function filaCola(r){
+  const d = diasRestantes(r.fecha_renovacion);
+  const rojo = d!==null && d<=15;
+  const cerrada = r.estado==='renovado' || r.estado==='perdido';
+  const botones = ESTADOS_BOTON.map(e=>{
+    const activo = r.estado===e;
+    return '<button type="button" class="'+(activo?'activo':'')+(e==='perdido'?' perdido-btn':'')+'" onclick="marcarEstado(\''+r.id+'\',\''+e+'\')">'+ESTADO_LBL[e]+'</button>';
+  }).join('');
+  return '<tr class="'+(rojo && !cerrada ? 'rojo' : '')+'">'+
+    '<td>'+esc(r.dba || r.insured || '—')+'</td>'+
+    '<td class="num">'+esc(r.policy_num||'—')+'</td>'+
+    '<td>'+esc(r.mga||'—')+'</td>'+
+    '<td class="num">'+fmtUSD(r.premium_estimado)+'</td>'+
+    '<td>'+fmtFecha(r.fecha_renovacion)+'</td>'+
+    '<td class="num dias">'+textoDias(d)+'</td>'+
+    '<td><span class="pg-pill '+(cerrada ? (r.estado==='renovado'?'ok':'due') : (r.estado==='pendiente'?'muted':'warn'))+'">'+ESTADO_LBL[r.estado]+'</span>'+
+      (r.estado==='perdido' && r.motivo_perdido ? '<div style="font-size:11px;color:var(--pg-muted);margin-top:3px;">'+esc(r.motivo_perdido)+'</div>' : '')+
+    '</td>'+
+    '<td><div class="acciones">'+botones+'</div></td>'+
+  '</tr>';
+}
+
+let MOSTRAR_CERRADAS = false;
+function renderCola(){
+  const el = document.getElementById("c-cola");
+  const activas = COLA.filter(r => r.estado!=='renovado' && r.estado!=='perdido');
+  const cerradas = COLA.filter(r => r.estado==='renovado' || r.estado==='perdido');
+  const cabecera = '<tr><th>DBA / Insured</th><th>Policy #</th><th>MGA</th><th>Premium est.</th><th>Renovación</th><th>Días</th><th>Estado</th><th>Acción</th></tr>';
+  let html = '<div class="tablewrap"><table class="pg-table"><thead>'+cabecera+'</thead><tbody>'+
+    (activas.length ? activas.map(filaCola).join('') : '<tr><td colspan="8" style="color:var(--pg-muted)">No hay pólizas activas en la cola.</td></tr>')+
+    '</tbody></table></div>';
+  if(cerradas.length){
+    html += '<button type="button" class="cerradas-toggle" onclick="toggleCerradas()">'+(MOSTRAR_CERRADAS?'Ocultar':'Ver')+' cerradas ('+cerradas.length+')</button>';
+    if(MOSTRAR_CERRADAS){
+      html += '<div class="tablewrap" style="margin-top:10px"><table class="pg-table"><thead>'+cabecera+'</thead><tbody>'+cerradas.map(filaCola).join('')+'</tbody></table></div>';
+    }
+  }
+  el.innerHTML = html;
+}
+window.toggleCerradas = function(){ MOSTRAR_CERRADAS = !MOSTRAR_CERRADAS; renderCola(); };
+
+window.marcarEstado = async function(id, estado){
+  let motivo = null;
+  if(estado==='perdido'){
+    motivo = window.prompt('Motivo de la pérdida (obligatorio):');
+    if(motivo===null) return;
+    if(!motivo.trim()){ alert('El motivo es obligatorio para marcar perdido.'); return; }
+  }
+  const { error } = await SB.from('retencion_asignaciones')
+    .update({ estado: estado, motivo_perdido: estado==='perdido' ? motivo.trim() : null })
+    .eq('id', id);
+  if(error){ alert('No se pudo actualizar: '+error.message); return; }
+  await cargarCola();
+  await Promise.all([ cargarRing(), cargarLinea() ]);
+};
+
+/* =====================================================================
+   4) ARRANQUE
+   ===================================================================== */
+(async function init() {
+  if (_IS_RECOVERY) { mostrarSetPassword(); return; }
+  const { data: { session } } = await SB.auth.getSession();
+  if (session) await mostrarApp();
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var PGV_ARCHIVO="renovaciones.html";
+var PGV_VERSION=1; // Ronda pantalla de renovaciones + candado por área: primera versión de la pantalla propia de Karen Suaza
+try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
+function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
+  if(document.getElementById('pgvBar'))return;
+  var b=document.createElement('div');
+  b.id='pgvBar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
+  b.innerHTML='🔄 Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
+  document.body.appendChild(b);
+  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+if(!window.__pgIdle){window.__pgIdle=setInterval(function(){if(window.__pgLastInput&&Date.now()-window.__pgLastInput>30000){try{location.reload(!0)}catch(e){location.reload()}}},5000);}try{var _b=document.getElementById('pgvBar');if(_b&&!_b.__aug){_b.__aug=1;var _s=document.createElement('span');_s.style.cssText='font-weight:800';_s.textContent='Guarda tu trabajo y la página se actualizará sola.';_b.insertBefore(_s,_b.firstChild);}}catch(e){}
+}
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION)pgvBanner();
+    });
+  }catch(e){}
+}
+function pgvCheck(){
+  if(window.supabase&&window.supabase.createClient){pgvRun();return;}
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload=pgvRun;
+  document.head.appendChild(s);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);});
+else setTimeout(pgvCheck,400);
+setInterval(pgvCheck,600000);
+})();
+</script>
+</body>
+</html>

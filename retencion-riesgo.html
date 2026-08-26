@@ -385,7 +385,7 @@ function cargarCurvaFuga(){
         { label:'Cancelada', data: filas.map(r=>Number(r.prima_cancelada||0)),
           borderColor:'#D5594F', backgroundColor:'rgba(213,89,79,.14)', fill:'origin', tension:.25, pointRadius:2 },
         { label:'Endosos negativos', data: filas.map(r=>Number(r.prima_endosos_neg||0)),
-          borderColor:'#B8841F', backgroundColor:'#B8841F', fill:false, tension:.25, pointRadius:2 },
+          borderColor: cssVar('--pg-warn'), backgroundColor: cssVar('--pg-warn'), fill:false, tension:.25, pointRadius:2 },
       ] },
     options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}}, scales:{ y:{ ticks:{ callback:(v)=>fmtUSD(v) } } } }
   });

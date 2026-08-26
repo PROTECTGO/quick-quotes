@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GABI · Fuga de cartera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+:root {
+  --pg-ink:        #28323B;
+  --pg-ink-2:      #1B2D3A;
+  --pg-mint:       #2DBFA3;
+  --pg-mint-dark:  #229A82;
+  --pg-mint-deep:  #1B8E78;
+  --pg-mint-soft:  #C4E8DF;
+  --pg-bg:         #F4F7FA;
+  --pg-card:       #FFFFFF;
+  --pg-line:       #E7EDF2;
+  --pg-txt:        #28323B;
+  --pg-muted:      #6B7D89;
+  --pg-pos:        #1F9D6B;
+  --pg-neg:        #D5594F;
+  --pg-warn:       #D9A520;
+  --pg-font-gabi:  "Fraunces", Georgia, serif;
+  --pg-font-title: "Montserrat", "Arial Black", sans-serif;
+  --pg-font-body:  "Inter", Arial, Helvetica, sans-serif;
+  --pg-font-num:   "JetBrains Mono", "Courier New", monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--pg-bg); }
+.pg-app { background: var(--pg-bg); color: var(--pg-txt); font-family: var(--pg-font-body); min-height: 100vh; }
+
+.pg-viewbar { background: var(--pg-ink-2); padding: 16px 30px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; position:sticky; top:0; z-index:20; }
+.pg-viewbar .pg-brand { display:flex; align-items:center; gap:10px; margin-right: 6px; }
+.pg-viewbar .pg-logo { width:34px; height:34px; border-radius:9px; background:var(--pg-mint); display:flex; align-items:center; justify-content:center; font-family:var(--pg-font-title); font-weight:800; color:var(--pg-ink-2); font-size:13px; }
+.pg-viewbar .pg-wordmark { font-family: var(--pg-font-gabi); font-style: italic; font-weight: 800; font-size: 21px; color: #fff; letter-spacing: -0.5px; }
+.pg-badge { background: var(--pg-mint); color: var(--pg-ink-2); border:1px solid var(--pg-mint); font-family: var(--pg-font-body); font-weight:700; font-size:12px; padding: 9px 15px; border-radius:999px; letter-spacing:.02em; }
+.pg-viewbar .pg-actions { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.pg-btn { font-family: var(--pg-font-body); font-weight:700; font-size:12.5px; border-radius:999px; padding:9px 16px; border:1px solid rgba(255,255,255,.25); background:transparent; color:#dfe8ec; cursor:pointer; text-decoration:none; display:inline-block; }
+.pg-btn:hover { background: rgba(255,255,255,.08); }
+.pg-btn.primary { background: var(--pg-mint); color:var(--pg-ink-2); border-color:var(--pg-mint); }
+.pg-stamp { color:#8da0ad; font-size:11px; }
+
+.pg-main { padding: 30px 38px 60px; max-width: 1280px; margin: 0 auto; }
+.pg-top { margin-bottom: 22px; }
+.pg-top h1 { font-family: var(--pg-font-title); font-size: 26px; font-weight: 800; color: var(--pg-ink); margin: 0; }
+.pg-top .pg-sub { color: var(--pg-muted); font-size: 14px; margin-top: 5px; max-width:760px; }
+.pg-eyebrow { font-family: var(--pg-font-body); font-size: 11.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--pg-mint-deep); margin-bottom: 6px; }
+.pg-section-divider { display:flex; align-items:center; gap:14px; margin: 34px 0 18px; }
+.pg-section-divider .sd-line { flex:1; height:1px; background: var(--pg-line); }
+.pg-section-divider .sd-lbl { font-family: var(--pg-font-title); font-weight:800; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color: var(--pg-ink); background: var(--pg-bg); padding: 0 4px; }
+
+.pg-card { background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 18px; padding: 22px; margin-bottom:20px; box-shadow: 0 1px 3px rgba(27,45,58,.04); }
+.pg-card h2 { font-family: var(--pg-font-title); font-size: 16.5px; font-weight: 800; color: var(--pg-ink); margin: 0 0 4px; display:flex; align-items:center; gap:8px; }
+.pg-card .pg-purpose { color: var(--pg-muted); font-size: 12.5px; margin: 0 0 14px; }
+
+.pg-grid-3 { display:grid; grid-template-columns: repeat(3,1fr); gap: 18px; align-items:stretch; }
+@media (max-width: 1080px) { .pg-grid-3 { grid-template-columns: 1fr; } }
+
+.pg-warn-box   { background: #FBF0DC; border: 1px solid #ECD08C; border-radius: 12px; padding: 13px 17px; color: #6b4e0c; font-size:12.5px; line-height:1.55; }
+.pg-warn-box b { color: var(--pg-warn); }
+.pg-warn-box + .pg-warn-box { margin-top: 12px; }
+
+.pg-skel { height:14px; background:linear-gradient(90deg,#eef2f5,#f7f9fb,#eef2f5); background-size:200% 100%; animation:pgshimmer 1.2s infinite; border-radius:6px; margin:6px 0; }
+@keyframes pgshimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+.pg-footnote { font-size: 11.5px; color: var(--pg-muted); margin-top: 26px; border-top:1px solid var(--pg-line); padding-top:14px; line-height:1.6; }
+
+/* ---- pantalla de login (mismo patrón que renovaciones.html) ---- */
+.pg-login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; background: var(--pg-ink-2); }
+.pg-login-card { background:#fff; border-radius:20px; padding:36px 34px; width:100%; max-width:360px; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+.pg-login-card .pg-brand { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+.pg-login-card .pg-logo { width:36px; height:36px; border-radius:9px; background:var(--pg-mint); display:flex; align-items:center; justify-content:center; font-family:var(--pg-font-title); font-weight:800; color:var(--pg-ink-2); font-size:13px; }
+.pg-login-card .pg-wordmark { font-family: var(--pg-font-gabi); font-style: italic; font-weight: 800; font-size: 22px; color: var(--pg-ink-2); }
+.pg-login-card label { font-size:12px; font-weight:700; color:var(--pg-muted); display:block; margin:12px 0 5px; }
+.pg-login-card input { width:100%; padding:11px 13px; border-radius:10px; border:1px solid var(--pg-line); font-size:14px; font-family:var(--pg-font-body); }
+.pg-login-card button { width:100%; margin-top:18px; padding:12px; border-radius:999px; border:none; background:var(--pg-mint); color:var(--pg-ink-2); font-weight:800; font-size:14px; cursor:pointer; }
+.pg-login-card button:hover { background:var(--pg-mint-dark); }
+.pg-login-msg { font-size:12.5px; color:var(--pg-neg); margin-top:10px; min-height:16px; }
+
+/* ---- G1: anillo del mes ---- */
+.ring-wrap { position:relative; height:170px; display:flex; align-items:center; justify-content:center; }
+.ring-wrap canvas { max-height:170px; }
+.ring-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none; }
+.ring-center .rc-val { font-family: var(--pg-font-num); font-size:24px; font-weight:700; color:var(--pg-ink); line-height:1.1; }
+.ring-center .rc-sub { font-size:10.5px; color:var(--pg-muted); margin-top:4px; max-width:140px; }
+.ring-flag { text-align:center; margin-top:8px; }
+
+.chart-wrap { position:relative; height:170px; }
+
+/* ---- G3: tarjeta al lado ---- */
+.gv-kpis { display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; }
+.gv-kpi { flex:1; min-width:90px; }
+.gv-kpi .lbl { font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--pg-muted); }
+.gv-kpi .val { font-family: var(--pg-font-num); font-size:17px; font-weight:700; color:var(--pg-ink); margin-top:3px; }
+.gv-kpi .val.pos { color: var(--pg-pos); }
+.gv-kpi .val.neg { color: var(--pg-neg); }
+
+.pg-pill { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space:nowrap; }
+</style>
+</head>
+<body>
+<a href="index.html" id="pgVolver" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
+
+<!-- ============================================================================
+  GABI · Retención · Risk Department (pantalla propia de Angélica Páez)
+  Mide SOLO la fuga de cartera (cancelaciones, endosos negativos, anulaciones)
+  a partir de v_riesgo_retencion_mensual — no mide lo que el equipo comercial
+  activo renueva, eso vive en renovaciones.html (paquete cartera_renovaciones,
+  de Karen Suaza). Acceso vía portal.pantalla_acceso (clave 'retencion_riesgo',
+  paquete 'renovaciones') → puede_ver(). El paquete lo otorga Andrés desde el
+  Control Maestro, no esta pantalla.
+============================================================================ -->
+
+<div id="pg-login-screen" class="pg-login-wrap">
+  <div class="pg-login-card">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+    <div style="font-size:13px;color:#6B7D89;">Fuga de cartera — entra con tu usuario del equipo.</div>
+    <label>Correo</label>
+    <input type="email" id="pg-login-email" autocomplete="username" placeholder="tunombre@protectgoservices.com">
+    <label>Contraseña</label>
+    <input type="password" id="pg-login-pass" autocomplete="current-password">
+    <button id="pg-login-btn">Entrar</button>
+    <div class="pg-login-msg" id="pg-login-msg"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #E7EDF2;">
+      <a href="#" id="pg-reset-link" style="font-size:12.5px;color:#1B8E78;font-weight:600;text-decoration:none;">¿Primera vez o olvidaste tu clave de GABI? Créala aquí</a>
+      <div id="pg-reset-box" style="display:none;margin-top:10px;">
+        <div style="font-size:12px;color:#6B7D89;line-height:1.5;margin-bottom:8px;">Tu clave de GABI es <b>independiente</b> de la del Portal. Escribe tu correo <b>arriba</b> y te enviamos un enlace para crearla.</div>
+        <button id="pg-reset-btn" style="width:100%;">Enviar correo para crear mi clave</button>
+        <div class="pg-login-msg" id="pg-reset-msg" style="color:#6B7D89;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="pg-setpass-screen" class="pg-login-wrap" style="display:none;">
+  <div class="pg-login-card">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+    <div style="font-size:13px;color:#6B7D89;">Crea tu contraseña de GABI (independiente de la del Portal).</div>
+    <label>Nueva contraseña</label>
+    <input type="password" id="pg-newpass" autocomplete="new-password" placeholder="mínimo 8 caracteres">
+    <label>Repite la contraseña</label>
+    <input type="password" id="pg-newpass2" autocomplete="new-password">
+    <button id="pg-setpass-btn">Guardar y entrar</button>
+    <div class="pg-login-msg" id="pg-setpass-msg" style="color:#6B7D89;"></div>
+  </div>
+</div>
+
+<div class="pg-app" id="pg-app" style="display:none;">
+  <div class="pg-viewbar">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+    <span class="pg-badge">Fuga de cartera</span>
+    <div class="pg-actions">
+      <span class="pg-stamp" id="pg-stamp">datos al —</span>
+      <button class="pg-btn" id="pg-btn-refresh">Actualizar</button>
+      <button class="pg-btn" id="pg-btn-logout">Cerrar sesión</button>
+    </div>
+  </div>
+  <main class="pg-main" id="pg-root">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Retención · Risk Department</div>
+      <h1>Fuga de cartera</h1>
+      <div class="pg-sub">Cancelaciones, endosos negativos y anulaciones — lo que se cae de la cartera ya vendida. No mide renovaciones ni desempeño de vendedores; eso vive en la pantalla de Karen.</div>
+    </div>
+    <div id="pg-acceso"></div>
+    <div id="pg-contenido" style="display:none"></div>
+  </main>
+</div>
+
+<script>
+const SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpdnBxc2Vwd3NmbWFmYW14a3p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTIxNjUsImV4cCI6MjA5MTk2ODE2NX0.pPe1qtWJhnx8Ffo4bvuwVF-tVrkPSmO63Kl7pKWQYqM";
+const SB = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+function esc(s){ return (s===null||s===undefined) ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtUSD(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US',{maximumFractionDigits:0}); }
+function fmtMes(s){ if(!s) return '—'; try{ const d=new Date(s+'T12:00:00'); return d.toLocaleDateString('es-CO',{month:'short',year:'numeric'}); }catch(e){ return String(s); } }
+function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+/* =====================================================================
+   1) LOGIN / SESIÓN (mismo patrón que renovaciones.html)
+   ===================================================================== */
+let RECOVERY_MODE = false;
+const _IS_RECOVERY = /(?:^|[#&])type=recovery(?:&|$)/.test(window.location.hash || "");
+
+function mostrarSetPassword() {
+  RECOVERY_MODE = true;
+  const l = document.getElementById("pg-login-screen"); if (l) l.style.display = "none";
+  const a = document.getElementById("pg-app"); if (a) a.style.display = "none";
+  const s = document.getElementById("pg-setpass-screen"); if (s) s.style.display = "flex";
+}
+async function enviarRecuperacion() {
+  const email = (document.getElementById("pg-login-email").value || "").trim();
+  const m = document.getElementById("pg-reset-msg");
+  if (!email || !/@/.test(email)) { m.style.color = "#D5594F"; m.textContent = "Escribe tu correo arriba primero."; return; }
+  const btn = document.getElementById("pg-reset-btn"); btn.disabled = true;
+  m.style.color = "#6B7D89"; m.textContent = "Enviando…";
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await SB.auth.resetPasswordForEmail(email, { redirectTo });
+  btn.disabled = false;
+  if (error) { m.style.color = "#D5594F"; m.textContent = "No se pudo enviar: " + error.message; return; }
+  m.style.color = "#1F9D6B";
+  m.textContent = "Listo ✓ Revisa el correo de " + email + ". El enlace te deja crear tu clave (puede tardar unos minutos).";
+}
+async function guardarNuevaClave() {
+  const p1 = document.getElementById("pg-newpass").value || "";
+  const p2 = document.getElementById("pg-newpass2").value || "";
+  const m = document.getElementById("pg-setpass-msg");
+  if (p1.length < 8) { m.style.color = "#D5594F"; m.textContent = "La clave debe tener al menos 8 caracteres."; return; }
+  if (p1 !== p2) { m.style.color = "#D5594F"; m.textContent = "Las dos claves no coinciden."; return; }
+  const btn = document.getElementById("pg-setpass-btn"); btn.disabled = true;
+  m.style.color = "#6B7D89"; m.textContent = "Guardando…";
+  const { error } = await SB.auth.updateUser({ password: p1 });
+  btn.disabled = false;
+  if (error) { m.style.color = "#D5594F"; m.textContent = "No se pudo guardar: " + error.message; return; }
+  m.style.color = "#1F9D6B"; m.textContent = "¡Clave creada! Entrando…";
+  history.replaceState(null, "", window.location.pathname);
+  setTimeout(() => { location.reload(); }, 900);
+}
+document.getElementById("pg-reset-link").addEventListener("click", (e) => {
+  e.preventDefault();
+  const b = document.getElementById("pg-reset-box");
+  b.style.display = b.style.display === "none" ? "block" : "none";
+});
+document.getElementById("pg-reset-btn").addEventListener("click", enviarRecuperacion);
+document.getElementById("pg-setpass-btn").addEventListener("click", guardarNuevaClave);
+
+async function mostrarApp() {
+  document.getElementById("pg-login-screen").style.display = "none";
+  document.getElementById("pg-app").style.display = "block";
+  await verificarAccesoYcargar();
+}
+document.getElementById("pg-login-btn").addEventListener("click", async () => {
+  const email = document.getElementById("pg-login-email").value.trim();
+  const pass = document.getElementById("pg-login-pass").value;
+  const msgEl = document.getElementById("pg-login-msg");
+  msgEl.textContent = "";
+  const { error } = await SB.auth.signInWithPassword({ email, password: pass });
+  if (error) { msgEl.textContent = "No pudimos iniciar sesión: " + error.message; return; }
+  await mostrarApp();
+});
+document.getElementById("pg-btn-refresh").addEventListener("click", cargarTodo);
+document.getElementById("pg-btn-logout").addEventListener("click", async () => {
+  await SB.auth.signOut();
+  location.reload();
+});
+
+/* =====================================================================
+   2) CANDADO — puede_ver('retencion_riesgo'). El paquete (renovaciones)
+   lo otorga Andrés desde el Control Maestro; esta pantalla solo lo consulta.
+   ===================================================================== */
+async function verificarAccesoYcargar(){
+  const accesoEl = document.getElementById("pg-acceso");
+  const contEl = document.getElementById("pg-contenido");
+  accesoEl.innerHTML = '<div class="pg-skel" style="width:60%"></div><div class="pg-skel" style="width:40%"></div>';
+  let puede = false;
+  try{
+    const { data, error } = await SB.rpc('puede_ver', { p_clave: 'retencion_riesgo' });
+    if(error) throw error;
+    puede = !!data;
+  }catch(e){
+    accesoEl.innerHTML = '<div class="pg-warn-box"><b>No pudimos verificar tu acceso.</b> ' + esc(e.message||'') + '</div>';
+    return;
+  }
+  if(!puede){
+    accesoEl.innerHTML = '<div class="pg-warn-box"><b>Tu usuario todavía no tiene el paquete "renovaciones" habilitado.</b><br>Pídele a Andrés que te lo active desde el Control Maestro — sin ese paquete no se puede ver la fuga de cartera.</div>';
+    contEl.style.display = "none";
+    return;
+  }
+  accesoEl.innerHTML = "";
+  contEl.style.display = "block";
+  await cargarTodo();
+}
+
+/* =====================================================================
+   3) LAS 3 GRÁFICAS — fuente única: v_riesgo_retencion_mensual
+   ===================================================================== */
+// Sub-registro conocido (mismo patrón ya visto en endosos): jul y ago 2026
+// se ven demasiado buenos (8.5% y 1.6% de fuga contra 52.5% en junio) y no
+// se deben leer como logro hasta que Jeff confirme el dato. Quitar de esta
+// lista solo cuando esos meses queden confirmados.
+const MESES_POR_CONFIRMAR = ['2026-07-01','2026-08-01'];
+
+let CH_RING = null, CH_CURVA = null, CH_ENTRACAE = null;
+let FILAS = [];
+
+function pintarEsqueleto(){
+  document.getElementById("pg-contenido").innerHTML = `
+    <div class="pg-grid-3">
+      <div class="pg-card">
+        <h2>El boquete del mes</h2>
+        <p class="pg-purpose">% de fuga sobre lo que entró este mes.</p>
+        <div id="c-ring"><div class="pg-skel" style="height:150px"></div></div>
+      </div>
+      <div class="pg-card">
+        <h2>La curva de fuga</h2>
+        <p class="pg-purpose">Prima cancelada vs. prima de endosos negativos — 2026, mes a mes.</p>
+        <div id="c-curva"><div class="pg-skel" style="height:150px"></div></div>
+      </div>
+      <div class="pg-card">
+        <h2>Entra vs. se cae</h2>
+        <p class="pg-purpose">Prima que entra vs. prima que se pierde — 2026.</p>
+        <div id="c-entracae"><div class="pg-skel" style="height:150px"></div></div>
+      </div>
+    </div>
+    <div id="c-advertencias"></div>
+    ${footnote()}
+  `;
+}
+function footnote(){
+  return `<div class="pg-footnote">Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy): v_riesgo_retencion_mensual — única fuente de esta pantalla. No muestra caja, retiro de socios, sueldos, utilidad por persona, renovaciones ni desempeño de vendedores; para renovaciones del equipo comercial activo está la pantalla de Karen Suaza (paquete cartera_renovaciones).</div>`;
+}
+
+async function cargarTodo(){
+  pintarEsqueleto();
+  document.getElementById("pg-stamp").textContent = "cargando…";
+  const { data, error } = await SB.from('v_riesgo_retencion_mensual').select('*').order('mes',{ascending:true});
+  if(error){
+    document.getElementById("pg-contenido").innerHTML = '<div class="pg-warn-box">No se pudo cargar v_riesgo_retencion_mensual: '+esc(error.message)+'</div>';
+    return;
+  }
+  FILAS = data || [];
+  cargarRing();
+  cargarCurvaFuga();
+  cargarEntraVsCae();
+  renderAdvertencias();
+  document.getElementById("pg-stamp").textContent = "datos al " + new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+}
+
+function mesActualISO(){
+  const hoy = new Date();
+  return hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-01';
+}
+function colorPorFuga(pct){
+  if(pct===null || pct===undefined) return '#C7D2DA';
+  if(pct < 15) return cssVar('--pg-pos') || '#1F9D6B';
+  if(pct <= 35) return cssVar('--pg-warn') || '#D9A520';
+  return cssVar('--pg-neg') || '#D5594F';
+}
+
+/* ---- G1: anillo del mes — pct_fuga_sobre_entrada, gris si "por confirmar" ---- */
+function cargarRing(){
+  const el = document.getElementById("c-ring");
+  const mesISO = mesActualISO();
+  const row = FILAS.find(r => r.mes === mesISO);
+  el.innerHTML = '<div class="ring-wrap"><canvas id="chRing"></canvas><div class="ring-center" id="ringCenter"></div></div><div class="ring-flag" id="ringFlag"></div>';
+  const ctx = document.getElementById("chRing");
+  const center = document.getElementById("ringCenter");
+  const flag = document.getElementById("ringFlag");
+  if(!row){
+    CH_RING = new Chart(ctx, { type:'doughnut', data:{ labels:['Sin datos'], datasets:[{ data:[1], backgroundColor:['#E7EDF2'], borderWidth:0 }] },
+      options:{ cutout:'72%', plugins:{legend:{display:false},tooltip:{enabled:false}} } });
+    center.innerHTML = '<div class="rc-val">—</div><div class="rc-sub">sin fuga registrada este mes</div>';
+    return;
+  }
+  const porConfirmar = MESES_POR_CONFIRMAR.indexOf(row.mes) >= 0;
+  const pct = Number(row.pct_fuga_sobre_entrada||0);
+  const color = porConfirmar ? '#C7D2DA' : colorPorFuga(pct);
+  CH_RING = new Chart(ctx, { type:'doughnut',
+    data:{ labels:['Fuga','Resto'], datasets:[{ data:[pct, Math.max(0,100-pct)], backgroundColor:[color,'#E7EDF2'], borderWidth:0 }] },
+    options:{ cutout:'72%', plugins:{legend:{display:false},tooltip:{enabled:false}} } });
+  center.innerHTML = '<div class="rc-val">'+fmtUSD(row.prima_perdida)+'</div>'+
+    '<div class="rc-sub">ingreso perdido: '+fmtUSD(row.ingreso_perdido)+' — esto es lo que de verdad le dolió a la agencia</div>';
+  flag.innerHTML = porConfirmar
+    ? '<span class="pg-pill" style="background:#EEF2F5;color:var(--pg-muted)">⚠ '+pct.toFixed(1)+'% de fuga · '+fmtMes(row.mes)+' por confirmar</span>'
+    : '<span style="font-size:11px;color:var(--pg-muted)">'+pct.toFixed(1)+'% de fuga · '+fmtMes(row.mes)+'</span>';
+}
+
+/* ---- filas de 2026, para G2 y G3 ---- */
+function filas2026(){ return FILAS.filter(r => String(r.mes||'').indexOf('2026-') === 0); }
+
+/* ---- G2: la curva de fuga — prima_cancelada vs prima_endosos_neg, 2026 ---- */
+function cargarCurvaFuga(){
+  const el = document.getElementById("c-curva");
+  const filas = filas2026();
+  if(!filas.length){ el.innerHTML = '<div class="pg-purpose">Sin datos de 2026 todavía.</div>'; return; }
+  el.innerHTML = '<div class="chart-wrap"><canvas id="chCurva"></canvas></div>';
+  CH_CURVA = new Chart(document.getElementById("chCurva"), {
+    type:'line',
+    data:{ labels: filas.map(r=>fmtMes(r.mes)),
+      datasets:[
+        { label:'Cancelada', data: filas.map(r=>Number(r.prima_cancelada||0)),
+          borderColor:'#D5594F', backgroundColor:'rgba(213,89,79,.14)', fill:'origin', tension:.25, pointRadius:2 },
+        { label:'Endosos negativos', data: filas.map(r=>Number(r.prima_endosos_neg||0)),
+          borderColor:'#B8841F', backgroundColor:'#B8841F', fill:false, tension:.25, pointRadius:2 },
+      ] },
+    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}}, scales:{ y:{ ticks:{ callback:(v)=>fmtUSD(v) } } } }
+  });
+}
+
+/* ---- G3: entra vs. se cae — prima_entrada vs prima_perdida, 2026 + tarjeta del mes ---- */
+function cargarEntraVsCae(){
+  const el = document.getElementById("c-entracae");
+  const filas = filas2026();
+  const mesISO = mesActualISO();
+  const rowMes = FILAS.find(r => r.mes === mesISO);
+  if(!filas.length){ el.innerHTML = '<div class="pg-purpose">Sin datos de 2026 todavía.</div>'; return; }
+  el.innerHTML = '<div class="chart-wrap"><canvas id="chEntraCae"></canvas></div><div class="gv-kpis" id="entraCaeKpis"></div>';
+  CH_ENTRACAE = new Chart(document.getElementById("chEntraCae"), {
+    type:'line',
+    data:{ labels: filas.map(r=>fmtMes(r.mes)),
+      datasets:[
+        { label:'Entra', data: filas.map(r=>Number(r.prima_entrada||0)),
+          borderColor:'#1F9D6B', backgroundColor:'rgba(31,157,107,.16)', tension:.25, pointRadius:2,
+          fill: { target: 1 },
+          segment:{ backgroundColor: ctx => segmentoNeto(ctx, filas) } },
+        { label:'Se cae', data: filas.map(r=>Number(r.prima_perdida||0)),
+          borderColor:'#D5594F', backgroundColor:'#D5594F', fill:false, tension:.25, pointRadius:2 },
+      ] },
+    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}}, scales:{ y:{ ticks:{ callback:(v)=>fmtUSD(v) } } } }
+  });
+  const kpis = document.getElementById("entraCaeKpis");
+  if(!rowMes){ kpis.innerHTML = '<div class="pg-purpose">Sin datos de este mes todavía.</div>'; return; }
+  const neto = Number(rowMes.prima_neta||0);
+  kpis.innerHTML =
+    '<div class="gv-kpi"><div class="lbl">Entra</div><div class="val">'+fmtUSD(rowMes.prima_entrada)+'</div></div>'+
+    '<div class="gv-kpi"><div class="lbl">Se cae</div><div class="val">'+fmtUSD(rowMes.prima_perdida)+'</div></div>'+
+    '<div class="gv-kpi"><div class="lbl">Neto</div><div class="val '+(neto>=0?'pos':'neg')+'">'+fmtUSD(neto)+'</div></div>';
+}
+// Color del área entre "entra" y "se cae" por segmento: verde si en ese tramo
+// entra más de lo que se cae (prima_neta>=0 en ambos extremos), rojo si se invierte.
+function segmentoNeto(ctx, filas){
+  const i0 = ctx.p0DataIndex, i1 = ctx.p1DataIndex;
+  const f0 = filas[i0], f1 = filas[i1];
+  if(!f0 || !f1) return 'rgba(31,157,107,.16)';
+  const neto = Number(f0.prima_neta||0) + Number(f1.prima_neta||0);
+  return neto >= 0 ? 'rgba(31,157,107,.16)' : 'rgba(213,89,79,.16)';
+}
+
+/* ---- Las dos advertencias obligatorias ---- */
+function renderAdvertencias(){
+  const el = document.getElementById("c-advertencias");
+  if(!el) return;
+  const jun = FILAS.find(r=>r.mes==='2026-06-01');
+  const jul = FILAS.find(r=>r.mes==='2026-07-01');
+  const ago = FILAS.find(r=>r.mes==='2026-08-01');
+  const pj = jul ? Number(jul.pct_fuga_sobre_entrada).toFixed(1) : '8.5';
+  const pa = ago ? Number(ago.pct_fuga_sobre_entrada).toFixed(1) : '1.6';
+  const pjun = jun ? Number(jun.pct_fuga_sobre_entrada).toFixed(1) : '52.5';
+  el.innerHTML =
+    '<div class="pg-warn-box"><b>Julio y agosto 2026 se ven demasiado buenos</b> ('+pj+'% y '+pa+'% de fuga, contra '+pjun+'% en junio). Es el mismo patrón de sub-registro que ya encontramos en endosos — por eso el anillo de esos meses sale gris. No los leas como un logro hasta que Jeff lo confirme.</div>'+
+    '<div class="pg-warn-box"><b>Todavía no hay gráfica de "por qué se van".</b> El BOS no captura el motivo de cancelación — mostrarlo sería inventado. Está pendiente de habilitarse en el BOS.</div>';
+}
+
+/* =====================================================================
+   4) ARRANQUE
+   ===================================================================== */
+(async function init() {
+  if (_IS_RECOVERY) { mostrarSetPassword(); return; }
+  const { data: { session } } = await SB.auth.getSession();
+  if (session) await mostrarApp();
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var PGV_ARCHIVO="retencion-riesgo.html";
+var PGV_VERSION=1; // Primera versión: fuga de cartera (Risk Department, Angélica Páez)
+try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
+function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
+  if(document.getElementById('pgvBar'))return;
+  var b=document.createElement('div');
+  b.id='pgvBar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
+  b.innerHTML='🔄 Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
+  document.body.appendChild(b);
+  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+if(!window.__pgIdle){window.__pgIdle=setInterval(function(){if(window.__pgLastInput&&Date.now()-window.__pgLastInput>30000){try{location.reload(!0)}catch(e){location.reload()}}},5000);}try{var _b=document.getElementById('pgvBar');if(_b&&!_b.__aug){_b.__aug=1;var _s=document.createElement('span');_s.style.cssText='font-weight:800';_s.textContent='Guarda tu trabajo y la página se actualizará sola.';_b.insertBefore(_s,_b.firstChild);}}catch(e){}
+}
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION)pgvBanner();
+    });
+  }catch(e){}
+}
+function pgvCheck(){
+  if(window.supabase&&window.supabase.createClient){pgvRun();return;}
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload=pgvRun;
+  document.head.appendChild(s);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);});
+else setTimeout(pgvCheck,400);
+setInterval(pgvCheck,600000);
+})();
+</script>
+</body>
+</html>

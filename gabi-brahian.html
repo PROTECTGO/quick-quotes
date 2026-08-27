@@ -7,12 +7,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://gabi-liquidez.vercel.app/gabi-personas-shared.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <style>
 :root {
   --pg-ink:#1B2D3A; --pg-ink-2:#162630; --pg-mint:#2DBFA3; --pg-mint-soft:#C4E8DF; --pg-mint-deep:#229A82;
   --pg-bg:#F4F7FA; --pg-card:#FFFFFF; --pg-line:#E7EDF2; --pg-txt:#28323B; --pg-muted:#6B7D89;
-  --pg-pos:#1F9D6B; --pg-neg:#D5594F; --pg-warn:#B8841F;
+  --pg-pos:#1F9D6B; --pg-neg:#D5594F; --pg-warn:#D9A520;
   --pg-font-gabi:"Fraunces",Georgia,serif; --pg-font-title:"Montserrat","Arial Black",sans-serif;
   --pg-font-body:"Inter",Arial,Helvetica,sans-serif; --pg-font-num:"JetBrains Mono","Courier New",monospace;
 }
@@ -90,6 +92,23 @@ body { margin: 0; background: var(--pg-bg); }
 .vpc-cli-mid { color:var(--pg-muted); margin:3px 0; }
 .vpc-cli-bot i { color:var(--pg-muted); }
 .vpc-toggle { cursor:pointer; color:var(--pg-mint-deep); font-weight:700; font-size:11.5px; }
+/* --- ronda Personas: piezas compartidas con gabi-personas-shared.js --- */
+.pg-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.pg-toggle { display:inline-flex; border:1px solid var(--pg-line); border-radius:999px; overflow:hidden; }
+.pg-toggle button { border:none; background:#fff; color:var(--pg-muted); font-family:var(--pg-font-body); font-weight:700; font-size:12.5px; padding:8px 16px; cursor:pointer; }
+.pg-toggle button.on { background:var(--pg-ink); color:#fff; }
+select.pg-sel { font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border:1px solid var(--pg-line); border-radius:999px; background:#fff; color:var(--pg-ink); font-weight:600; }
+.pg-ok-box { background:#E3F4EF; border:1px solid #A8DBC9; border-radius:12px; padding:13px 17px; color:#1c6e50; font-size:13px; }
+.pg-ok-box b { color:var(--pg-pos); }
+.pg-empty { color:var(--pg-muted); font-size:13px; padding:14px 0; font-style:italic; }
+.pg-flagrow { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:14px 16px; border-radius:14px; border:1px solid var(--pg-line); background:#FAFCFD; margin-bottom:12px; }
+.pg-flagrow .fl { font-weight:700; color:var(--pg-ink); font-size:14px; }
+.pg-flagrow .fc { color:var(--pg-muted); font-size:12.5px; margin-top:3px; }
+.pg-flagrow .fv { font-family:var(--pg-font-num); font-size:21px; font-weight:700; color:var(--pg-neg); text-align:right; white-space:nowrap; }
+.pg-flagrow .fn { font-size:11.5px; color:var(--pg-muted); text-align:right; }
+.pg-flagrow.sev-alta { border-left:5px solid var(--pg-neg); }
+.pg-flagrow.sev-media { border-left:5px solid var(--pg-warn); }
+.pg-flagrow.sev-baja { border-left:5px solid var(--pg-muted); }
 </style>
 </head>
 <body>
@@ -138,6 +157,7 @@ function renderShell(session){
         <a data-tab="ventas"><span class="ico">◆</span> Ventas por cliente</a>
         <a data-tab="fees"><span class="ico">≈</span> Fees y captura (guía)</a>
         <a data-tab="constancia"><span class="ico">▮</span> Constancia y patrones</a>
+        <a data-tab="utilidad"><span class="ico">$</span> Rendimiento del equipo</a>
         <a data-tab="alertas"><span class="ico">!</span> Alertas</a>
         <div class="pg-foot">${esc(email)}<br><span class="pg-logout" id="btnLogout">Cerrar sesión</span></div>
       </nav>
@@ -187,6 +207,7 @@ async function showTab(tab){
   if (tab === 'ventas') return renderVentas(root);
   if (tab === 'fees') return renderFees(root);
   if (tab === 'constancia') return renderConstancia(root);
+  if (tab === 'utilidad') return renderUtilidadEquipo(root);
   if (tab === 'alertas') return renderAlertas(root);
 }
 
@@ -327,27 +348,39 @@ async function renderConstancia(root){
     <div class="pg-footnote">TODO: v_patrones_agente ya se usa en Resumen y Alertas; una vista de "racha del estándar por persona" (v_estandar_1500 histórica) queda pendiente de exponer aquí en detalle — hoy Resumen ya trae el mes en curso.</div>`;
 }
 
+/* ===================== 5b. UTILIDAD DEL EQUIPO =====================
+   Fuente compartida con GABI 360 (dirección) vía gabi-personas-shared.js —
+   mismas vistas, mismo código de render, mismos arreglos (cero barras,
+   área en vez de línea punteada redundante, toggle mensual/prom3/acum,
+   dropdown de áreas real, conteo de personas correcto). Alcance: SOLO el
+   equipo de Brahian (EQUIPO, ya resuelto contra agentes.lider_id). */
+async function renderUtilidadEquipo(root){
+  root.innerHTML = `<div class="pg-top"><div class="pg-eyebrow">Tu equipo</div><h1>Rendimiento del equipo</h1>
+    <div class="pg-sub">Qué tan rentable es cada persona a tu cargo para la agencia — multiplicador y rendimiento por función, la misma señal que usa dirección, sin mostrar cifras de nómina.</div></div>
+    <div id="utilEquipoMount"></div>`;
+  const mount = document.getElementById('utilEquipoMount');
+  try {
+    await GabiPersonas.renderUtilidad(mount, SB, { scopeNombres: EQUIPO, tituloSufijo: 'equipo de Brahian Toro', modo: 'rendimiento' });
+  } catch(e) {
+    mount.innerHTML = errHTML('Rendimiento del equipo (gabi-personas-shared.js)', e);
+  }
+}
+
 /* ===================== 5. ALERTAS ===================== */
 async function renderAlertas(root){
   root.innerHTML = `<div class="pg-top"><div class="pg-eyebrow">Alertas</div><h1>Qué necesita seguimiento hoy</h1>
-    <div class="pg-sub">Patrones de tu equipo — caída de ritmo, vende sin cobrar, vende más y cobra menos.</div></div>
-    <div id="alertasBody">${loadingHTML()}</div>`;
-  const patrones = await fetchOnce('v_patrones_agente','agente,mes,ventas,ventas_prev,fees_cobrados,fees_prev,patron');
-  const body = document.getElementById('alertasBody');
-  if (patrones.error) { body.innerHTML = errHTML('v_patrones_agente', patrones.error); return; }
-  const equipo = (patrones.data||[]).filter(x => enEquipo(x.agente));
-  const grupos = { CAIDA_DE_RITMO: [], VENDE_SIN_COBRAR: [], VENDE_MAS_COBRA_MENOS: [] };
-  equipo.forEach(x => { if (grupos[x.patron]) grupos[x.patron].push(x); });
-  const bloque = (titulo, purpose, arr, render) => `<div class="pg-card"><h2>${titulo}</h2><p class="pg-purpose">${purpose}</p>
-    ${arr.length ? arr.map(render).join('') : '<div class="pg-purpose">Sin casos actuales en tu equipo.</div>'}</div>`;
-  body.innerHTML =
-    bloque('Caída de ritmo', 'Cayeron a menos de la mitad de sus ventas del mes anterior.', grupos.CAIDA_DE_RITMO,
-      x => `<div class="pg-rank"><span class="rk-name">${esc(x.agente)}</span><span class="rk-badge">${x.ventas_prev ?? '—'} → ${x.ventas} ventas</span></div>`) +
-    bloque('Vende sin cobrar', 'Vendió y no cobró un solo fee el mes más reciente.', grupos.VENDE_SIN_COBRAR,
-      x => `<div class="pg-rank"><span class="rk-name">${esc(x.agente)}</span><span class="rk-badge">${x.ventas} venta(s), $0 cobrado</span></div>`) +
-    bloque('Vende más, cobra menos', 'Subió las ventas pero cobró menos fees que el mes pasado.', grupos.VENDE_MAS_COBRA_MENOS,
-      x => `<div class="pg-rank"><span class="rk-name">${esc(x.agente)}</span><span class="rk-badge">${fmtUSD(x.fees_prev)} → ${fmtUSD(x.fees_cobrados)}</span></div>`) +
-    `<div class="pg-footnote">Fuente: v_patrones_agente, filtrada a tu equipo. Candado de acceso ya aplicado (paquete_incentivos_bos_registros) — esta pantalla nunca muestra caja, retiros ni nómina.</div>`;
+    <div class="pg-sub">Patrones de tu equipo — caída de ritmo, vende sin cobrar, vende más y cobra menos, más prometido que cobrado. Excluye alias de equipo (Retention Team) y a cualquier líder/socio.</div></div>
+    <div id="alertasMount"></div>`;
+  const mount = document.getElementById('alertasMount');
+  try {
+    await GabiPersonas.renderPatrones(mount, SB, { scopeNombres: EQUIPO, tituloSufijo: 'equipo de Brahian Toro' });
+  } catch(e) {
+    mount.innerHTML = errHTML('Patrones de alerta (gabi-personas-shared.js)', e);
+  }
+  const foot = document.createElement('div');
+  foot.className = 'pg-footnote';
+  foot.textContent = 'Fuente: v_patrones_agente_v2, filtrada a tu equipo. Candado de acceso ya aplicado (paquete_incentivos_bos_registros) — esta pantalla nunca muestra caja, retiros ni nómina del resto de la agencia.';
+  mount.appendChild(foot);
 }
 
 /* ===================== LOGIN GATE ===================== */

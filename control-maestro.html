@@ -227,6 +227,7 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
 .vc-simcard.on{border-left:4px solid var(--pg-pos)}
 .vc-simcard.off{border-left:4px solid var(--pg-neg);opacity:.6}
 .vc-simcard .vn{font-weight:700;color:var(--pg-ink)}
+.vc-simcard .vc-motivo{margin-top:5px;font-size:11px;color:var(--pg-neg)}
 .vc-note{font-size:11px;color:var(--pg-muted);margin-top:14px;line-height:1.6;border-top:1px solid var(--pg-line);padding-top:10px}
 /* ---- Candado por área (Fase C) ---- */
 .ca-row{border:1px solid var(--pg-line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--pg-card)}
@@ -407,9 +408,9 @@ const SB = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const PORTAL = SB.schema("portal"); // widgets_registro / widgets_log ya viven en portal
 const SALES = "sales@protectgoservices.com";
 
-const AREAS_LBL = {ventas:"Ventas",comercial:"Comercial",direccion:"Dirección",fam:"FAM",kam:"KAM",coi:"COI",rrhh:"RRHH",endorsement:"Endorsement",amazon:"Amazon",equipo:"Equipo",admin:"Administración",general:"General"};
+const AREAS_LBL = {ventas:"Ventas",comercial:"Comercial",direccion:"Dirección",fam:"FAM",kam:"KAM",coi:"COI",rrhh:"RRHH",endorsement:"Endorsement",amazon:"Amazon",equipo:"Equipo",admin:"Administración",general:"General",renovaciones:"Renovaciones",retencion:"Retención"};
 // Heurística de coincidencia área <-> rol de agentes.rol (no hay una tabla que una ambos vocabularios hoy).
-const AREA_ROL_KEYWORDS = {ventas:["comercial","vendedor","ventas"],comercial:["comercial"],direccion:["director","socio"],fam:["fam","financ"],kam:["kam"],coi:["coi"],rrhh:["rrhh","talento"],endorsement:["endorsement","endoso"],amazon:["amazon"],equipo:["lider","equipo"],admin:["admin"],general:[]};
+const AREA_ROL_KEYWORDS = {ventas:["comercial","vendedor","ventas"],comercial:["comercial"],direccion:["director","socio"],fam:["fam","financ"],kam:["kam"],coi:["coi"],rrhh:["rrhh","talento"],endorsement:["endorsement","endoso"],amazon:["amazon"],equipo:["lider","equipo"],admin:["admin"],general:[],renovaciones:[],retencion:[]};
 let MI_EMAIL = "";
 let SNAP = {};      // clave -> última versión confirmada en la base de datos (para valor_anterior del log)
 let PENDING = {};   // clave -> parche con los campos tocados y aún sin guardar
@@ -417,6 +418,8 @@ let MODO = "area";  // "area" | "usuario"
 let AREA_SEL = null;
 let VC_USERS = null; // cache de ver_como_lista()
 let VC_TARGET = null;
+let GA_ALL = null;    // cache de gabi_accesos completa (sales@ la lee entera vía admin_accesos)
+let GA_ALL_ERROR = null;
 
 function esc(s){ return String(s===null||s===undefined?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 // Para valores libres (nombre, rol) que se insertan como literal JS dentro de un atributo onclick="...('valor')":
@@ -677,6 +680,62 @@ async function cargarUsuariosSiHaceFalta(force){
   return VC_USERS;
 }
 
+// gabi_accesos completa (todas las personas, todos sus paquetes/roles/áreas) — sales@ la lee entera
+// por la política admin_accesos. Es la MISMA tabla que usa puede_ver() en Postgres; "Ver como" la
+// necesita para simular esa función tal cual, en vez de adivinar por agentes.rol.
+async function cargarGabiAccesosSiHaceFalta(force){
+  if(GA_ALL && !force) return GA_ALL;
+  GA_ALL_ERROR = null;
+  try{
+    const { data, error } = await SB.from("gabi_accesos").select("user_id,rol,paquete,area,activo,vigencia_desde");
+    if(error){ GA_ALL_ERROR = error.message; GA_ALL = []; console.error("gabi_accesos:", error); }
+    else { GA_ALL = data||[]; }
+  }catch(e){ GA_ALL_ERROR = e.message||String(e); GA_ALL = []; console.error("gabi_accesos:", e); }
+  return GA_ALL;
+}
+
+// Reproduce puede_ver(clave) de Postgres (ver definición real vía
+// select pg_get_functiondef(oid) from pg_proc where proname='puede_ver') para un set de filas
+// de gabi_accesos ya filtrado al user_id de la persona simulada. Usa CA_PANTALLAS (portal.pantalla_acceso,
+// ya cargada por el panel "Candado por área") como la regla — con los cambios pendientes de esa pantalla
+// aún sin tocar, porque ese panel guarda directo, no por lotes como la matriz de arriba.
+function simularPuedeVer(clave, filasGa){
+  const pa = (CA_PANTALLAS||[]).find(p=>p.clave===clave);
+  if(!pa) return { ok:true, motivo:null }; // sin regla registrada: fail-open, como en Postgres
+  const hoy = new Date().toISOString().slice(0,10);
+  const activas = (filasGa||[]).filter(r=>r.activo && String(r.vigencia_desde||"")<=hoy);
+  if(!activas.length){
+    return { ok:false, motivo:"Sin fila activa en gabi_accesos (o con vigencia futura): no cumple ningún paquete ni rol." };
+  }
+  // Paso 1+2: misma fila debe cumplir paquete Y solo_roles a la vez (así lo exige el EXISTS de puede_ver).
+  const filaValida = activas.find(r=>
+    (pa.paquete==null || r.paquete===pa.paquete) &&
+    (pa.solo_roles==null || pa.solo_roles.indexOf(r.rol)>=0)
+  );
+  if(!filaValida){
+    const tienePaquete = pa.paquete==null || activas.some(r=>r.paquete===pa.paquete);
+    const tieneRol = pa.solo_roles==null || activas.some(r=>pa.solo_roles.indexOf(r.rol)>=0);
+    const partes=[];
+    if(!tienePaquete) partes.push('le falta el paquete "'+pa.paquete+'"');
+    if(!tieneRol) partes.push('su rol no está en ['+pa.solo_roles.join(", ")+']');
+    if(!partes.length) partes.push("tiene el paquete y el rol requeridos, pero no en la misma fila de gabi_accesos");
+    return { ok:false, motivo:"Bloqueada por paquete/rol: "+partes.join(" y ")+"." };
+  }
+  // Paso 3: candado de área — solo si areas_permitidas está definida y no vacía; director/socio pasan siempre.
+  if(pa.areas_permitidas && pa.areas_permitidas.length){
+    const esDirectorSocio = activas.some(r=>r.rol==="director"||r.rol==="socio");
+    if(!esDirectorSocio){
+      const areaOk = activas.some(r=>pa.areas_permitidas.indexOf(r.area)>=0);
+      if(!areaOk){
+        const areasPersona = Array.from(new Set(activas.map(r=>r.area).filter(Boolean)));
+        return { ok:false, motivo:"Bloqueada por candado de área: la pantalla exige ["+pa.areas_permitidas.join(", ")+"]"+
+          (areasPersona.length ? ", y su área es ["+areasPersona.join(", ")+"]." : ", y no tiene área asignada en gabi_accesos.") };
+      }
+    }
+  }
+  return { ok:true, motivo:null };
+}
+
 function usuariosDeArea(area){
   const kws = AREA_ROL_KEYWORDS[area]||[];
   const todos = VC_USERS||[];
@@ -742,14 +801,42 @@ async function elegirVerComo(agenteId, nombre, rol){
   document.getElementById("vcPickStep").style.display="none";
   document.getElementById("vcSimStep").style.display="block";
   document.getElementById("vcSimNombre").textContent="Vista de "+nombre;
-  document.getElementById("vcSimSub").textContent="Rol: "+(rol||"—")+" · con los cambios pendientes de esta pantalla ya aplicados";
   const grid=document.getElementById("vcSimGrid");
+  grid.innerHTML = '<div style="color:var(--pg-muted);font-size:12.5px">Calculando acceso real (misma lógica de puede_ver)…</div>';
+
+  // FIX (simulación mentirosa): antes esto solo miraba habilitado/área del widget y decía "Visible"
+  // sin fijarse en paquete ni solo_roles ni candado de área — así se le escapó que Brahian no podía
+  // entrar a su propio panel. Ahora reproduce puede_ver() de verdad contra gabi_accesos.
+  const uCache = (VC_USERS||[]).find(x=>String(x.agente_id)===String(agenteId));
+  const authUid = uCache ? uCache.auth_uid : null;
+  await cargarGabiAccesosSiHaceFalta();
+  const filasGa = authUid ? (GA_ALL||[]).filter(r=>String(r.user_id)===String(authUid)) : [];
+  const rolReal = filasGa.length ? (filasGa.find(r=>r.activo)||filasGa[0]).rol : null;
+
+  let subHtml = "Rol (ficha de agente): "+esc(rol||"—");
+  if(rolReal && rolReal!==rol) subHtml += " · rol real en gabi_accesos: <b>"+esc(rolReal)+"</b>";
+  subHtml += " · acceso calculado con la misma lógica de <code>puede_ver()</code> (paquete + solo_roles + candado de área) — con los cambios pendientes de esta pantalla ya aplicados.";
+  if(GA_ALL_ERROR) subHtml += ' <span style="color:var(--pg-warn);font-weight:700">No se pudo leer gabi_accesos ('+esc(GA_ALL_ERROR)+'): el candado no se puede simular.</span>';
+  else if(!authUid) subHtml += ' <span style="color:var(--pg-warn);font-weight:700">No se encontró su auth_uid en ver_como_lista(): no se puede cruzar contra gabi_accesos.</span>';
+  else if(!filasGa.length) subHtml += ' <span style="color:var(--pg-warn);font-weight:700">No tiene ninguna fila en gabi_accesos: cualquier pantalla con regla le saldrá bloqueada.</span>';
+  document.getElementById("vcSimSub").innerHTML = subHtml;
+
   const claves=Object.keys(SNAP).sort((a,b)=>String(SNAP[a].nombre||"").localeCompare(String(SNAP[b].nombre||"")));
   grid.innerHTML = claves.map(clave=>{
     const w=efectivo(clave);
     const on=!!w.habilitado;
-    const estado = on ? "Visible" : (w.modo_apagado==="mantenimiento" ? "En mantenimiento" : "Oculta");
-    return '<div class="vc-simcard '+(on?"on":"off")+'"><div class="vn">'+esc(w.nombre)+'</div><div>'+estado+" · área "+esc(AREAS_LBL[w.area]||w.area)+'</div></div>';
+    let estado, cls, motivo=null;
+    if(!on){
+      estado = w.modo_apagado==="mantenimiento" ? "En mantenimiento" : "Oculta";
+      cls = "off";
+    } else {
+      const sim = simularPuedeVer(clave, filasGa);
+      if(sim.ok){ estado="Visible"; cls="on"; }
+      else { estado="Bloqueada"; cls="off"; motivo=sim.motivo; }
+    }
+    return '<div class="vc-simcard '+cls+'"><div class="vn">'+esc(w.nombre)+'</div><div>'+estado+" · área "+esc(AREAS_LBL[w.area]||w.area)+'</div>'+
+      (motivo ? '<div class="vc-motivo">'+esc(motivo)+'</div>' : '')+
+    '</div>';
   }).join("");
 }
 function volverPickerVerComo(){
@@ -898,7 +985,7 @@ document.getElementById("verComoBtn").addEventListener("click", abrirVerComo);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="control-maestro.html";
-var PGV_VERSION=4; // Ronda pantalla de renovaciones + candado por área: panel Candado por área, arregla Ver como.../Por usuario
+var PGV_VERSION=5; // + columnas Renovaciones/Retención en la matriz; "Ver como" simula puede_ver real (paquete+solo_roles+candado) y dice por qué bloquea
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

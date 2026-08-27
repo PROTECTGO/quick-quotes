@@ -119,8 +119,8 @@ body { margin: 0; background: var(--pg-bg); }
   a partir de v_riesgo_retencion_mensual — no mide lo que el equipo comercial
   activo renueva, eso vive en renovaciones.html (paquete cartera_renovaciones,
   de Karen Suaza). Acceso vía portal.pantalla_acceso (clave 'retencion_riesgo',
-  paquete 'renovaciones') → puede_ver(). El paquete lo otorga Andrés desde el
-  Control Maestro, no esta pantalla.
+  paquete 'retencion_riesgo') → puede_ver(). El paquete lo otorga Andrés desde
+  el Control Maestro, no esta pantalla.
 ============================================================================ -->
 
 <div id="pg-login-screen" class="pg-login-wrap">
@@ -257,7 +257,7 @@ document.getElementById("pg-btn-logout").addEventListener("click", async () => {
 });
 
 /* =====================================================================
-   2) CANDADO — puede_ver('retencion_riesgo'). El paquete (renovaciones)
+   2) CANDADO — puede_ver('retencion_riesgo'). El paquete (retencion_riesgo)
    lo otorga Andrés desde el Control Maestro; esta pantalla solo lo consulta.
    ===================================================================== */
 async function verificarAccesoYcargar(){
@@ -274,7 +274,7 @@ async function verificarAccesoYcargar(){
     return;
   }
   if(!puede){
-    accesoEl.innerHTML = '<div class="pg-warn-box"><b>Tu usuario todavía no tiene el paquete "renovaciones" habilitado.</b><br>Pídele a Andrés que te lo active desde el Control Maestro — sin ese paquete no se puede ver la fuga de cartera.</div>';
+    accesoEl.innerHTML = '<div class="pg-warn-box"><b>Tu usuario todavía no tiene el paquete "retencion_riesgo" habilitado.</b><br>Pídele a Andrés que te lo active desde el Control Maestro — sin ese paquete no se puede ver la fuga de cartera.</div>';
     contEl.style.display = "none";
     return;
   }
@@ -286,11 +286,12 @@ async function verificarAccesoYcargar(){
 /* =====================================================================
    3) LAS 3 GRÁFICAS — fuente única: v_riesgo_retencion_mensual
    ===================================================================== */
-// Sub-registro conocido (mismo patrón ya visto en endosos): el mes en curso y
-// el inmediatamente anterior siempre se ven demasiado buenos — la cola de
-// maduración de cancelaciones dura meses, así que un mes joven todavía no
-// muestra todas las que le van a salir. Se calcula solo, no queda quemado:
-// deja de aplicar automáticamente en cuanto pasa un mes.
+// No es sub-registro (el BOS está al día, 0 días de atraso, verificado): es la
+// cola de maduración. Las cancelaciones de un mes siguen llegando durante
+// meses después, así que el mes en curso y el inmediatamente anterior
+// siempre se ven mejor de lo que son — no porque falte data, sino porque
+// todavía no cumplen la edad para mostrarla toda. Se calcula solo, no queda
+// quemado: deja de aplicar automáticamente en cuanto pasa un mes.
 function mesesPorConfirmar(refDate){
   const hoy = refDate || new Date();
   const actual = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-01';
@@ -530,7 +531,7 @@ function renderAdvertencias(){
   const pAct = filaAct ? Number(filaAct.pct_fuga_sobre_entrada).toFixed(1)+'%' : 'sin datos';
   const pRef = filaRef ? Number(filaRef.pct_fuga_sobre_entrada).toFixed(1)+'%' : 'sin dato de referencia';
   el.innerHTML =
-    '<div class="pg-warn-box"><b>'+esc(fmtMes(mesAnt))+' y '+esc(fmtMes(mesAct))+' se ven demasiado buenos</b> ('+pAnt+' y '+pAct+' de fuga, contra '+pRef+' en '+esc(fmtMes(mesRef))+'). Es el mismo patrón de sub-registro que ya encontramos en endosos — por eso el anillo del mes en curso sale gris. No los leas como un logro hasta que Jeff lo confirme. Debajo, en "La curva de fuga", puedes comparar estos meses a la misma edad en vez de crudos.</div>'+
+    '<div class="pg-warn-box"><b>'+esc(fmtMes(mesAnt))+' y '+esc(fmtMes(mesAct))+' se ven demasiado buenos</b> ('+pAnt+' y '+pAct+' de fuga, contra '+pRef+' en '+esc(fmtMes(mesRef))+'). No es que falte data — el BOS está al día — es la <b>cola de maduración</b>: las cancelaciones de un mes siguen llegando durante meses después, así que un mes joven siempre se ve mejor de lo que realmente es. Por eso el anillo del mes en curso sale gris. Debajo, en "La curva de fuga", está la comparación a misma edad — esa es la lectura justa, no esta.</div>'+
     '<div class="pg-warn-box"><b>Todavía no hay gráfica de "por qué se van".</b> El BOS no captura el motivo de cancelación — mostrarlo sería inventado. Está pendiente de habilitarse en el BOS.</div>';
 }
 
@@ -549,7 +550,7 @@ function renderAdvertencias(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="retencion-riesgo.html";
-var PGV_VERSION=2; // meses "por confirmar" calculados solos (mes en curso + anterior); comparación a misma edad (25 días) en la curva de fuga
+var PGV_VERSION=3; // fix: paquete correcto en el mensaje de bloqueo (retencion_riesgo, no renovaciones); aviso reescrito como cola de maduración, no sub-registro
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

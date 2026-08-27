@@ -324,6 +324,12 @@ function pintarEsqueleto(){
       <p class="pg-purpose">Ordenada por fecha de renovación — las vencidas primero. En rojo cuando faltan 15 días o menos. Marca el avance con un clic; "perdido" pide el motivo.</p>
       <div id="c-cola"><div class="pg-skel" style="height:220px"></div></div>
     </div>
+    ${sectionDivider("Rendimiento por agente")}
+    <div class="pg-card">
+      <h2>Rendimiento por agente — equipo de Brahian Toro</h2>
+      <p class="pg-purpose">Solo renovaciones de agentes activos del equipo de Brahian: cuántas están en gestión, cuántas ya se cerraron, cuántas se perdieron, y el fee de renovación cobrado. No incluye costos de nómina ni utilidad — eso es de socios, no vive aquí.</p>
+      <div id="c-rendimiento"><div class="pg-skel" style="height:180px"></div></div>
+    </div>
     ${footnote()}
   `;
 }
@@ -335,8 +341,64 @@ function footnote(){
 async function cargarTodo(){
   pintarEsqueleto();
   document.getElementById("pg-stamp").textContent = "cargando…";
-  await Promise.all([ cargarRing(), cargarLinea(), cargarGeneraGasta(), cargarCola() ]);
+  await Promise.all([ cargarRing(), cargarLinea(), cargarGeneraGasta(), cargarCola(), cargarRendimientoAgente() ]);
   document.getElementById("pg-stamp").textContent = "datos al " + new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+}
+
+/* ---- Rendimiento por agente (equipo de Brahian Toro) ----
+   Ronda Personas: bloque nuevo para Karen. Alcance = SOLO agentes activos
+   del equipo de Brahian, SOLO renovaciones — sin costos de nómina ni
+   utilidad, eso es de socios. El acceso de fondo lo da una política RLS
+   nueva y propia sobre bos_registros para el paquete cartera_renovaciones
+   (categoria='venta', seller limitado al equipo activo de Brahian) — no
+   se le dio el paquete ancho 'renovaciones', que Andrés vetó explícitamente.
+   Lista de equipo: mismo respaldo estático que usa gabi-brahian.html
+   (agentes.lider_id de Brahian, activo=true) — Karen no tiene acceso a la
+   tabla agentes para resolverlo en vivo, así que se fija aquí como snapshot. */
+const EQUIPO_BRAHIAN_RESPALDO = ["Valentina Londoño","Daniela Arbelaez","Maria Alejandra Garcia","Carolina Sepulveda",
+  "Veronica Montoya","Sandra Bolivar","Samuel Pulgarin","Luis Miguel Ascanio","Juan Baquero","Mau Ramirez",
+  "Dayanna Jaramillo","Victor Amaro","Simon Restrepo","Valeria Valencia"];
+
+async function cargarRendimientoAgente(){
+  const el = document.getElementById("c-rendimiento");
+  const [bosR, retR] = await Promise.all([
+    SB.from('bos_registros').select('seller,policy_num,transaction_type,seller_fees').limit(5000),
+    SB.from('retencion_asignaciones').select('policy_num,estado').limit(5000)
+  ]);
+  if(bosR.error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(bosR.error.message)+'</div>'; return; }
+  if(retR.error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(retR.error.message)+'</div>'; return; }
+  const bos = bosR.data || [];
+  const ret = retR.data || [];
+  const norm = s => String(s||'').trim().toLowerCase();
+  const polToSeller = {};
+  bos.forEach(r => { if(r.policy_num) polToSeller[norm(r.policy_num)] = r.seller; });
+
+  const porAgente = {};
+  EQUIPO_BRAHIAN_RESPALDO.forEach(nom => { porAgente[nom] = { nombre:nom, gestionadas:0, cerradas:0, perdidas:0, fee:0 }; });
+  ret.forEach(r => {
+    const seller = polToSeller[norm(r.policy_num)];
+    if(!seller || !porAgente[seller]) return;
+    if(r.estado === 'renovado') porAgente[seller].cerradas++;
+    else if(r.estado === 'perdido') porAgente[seller].perdidas++;
+    else porAgente[seller].gestionadas++;
+  });
+  bos.forEach(r => {
+    if(r.transaction_type === 'Sale - Renewal' && porAgente[r.seller]) porAgente[r.seller].fee += Number(r.seller_fees||0);
+  });
+
+  const lista = Object.values(porAgente).sort((a,b)=>
+    (b.gestionadas+b.cerradas+b.perdidas) - (a.gestionadas+a.cerradas+a.perdidas) || b.fee-a.fee);
+  const conDatos = lista.filter(a=>a.gestionadas||a.cerradas||a.perdidas||a.fee);
+  const sinDatos = lista.filter(a=>!(a.gestionadas||a.cerradas||a.perdidas||a.fee));
+
+  el.innerHTML = '<div class="tablewrap"><table class="pg-table"><thead><tr><th>Agente</th><th class="num">Gestionadas</th><th class="num">Cerradas</th><th class="num">Perdidas</th><th class="num">Fee de renovación</th></tr></thead><tbody>'+
+    (conDatos.length ? conDatos.map(a=>
+      '<tr><td>'+esc(a.nombre)+'</td><td class="num">'+a.gestionadas+'</td><td class="num">'+a.cerradas+'</td>'+
+      '<td class="num" style="'+(a.perdidas>0?'color:var(--pg-neg);font-weight:700':'')+'">'+a.perdidas+'</td>'+
+      '<td class="num">'+fmtUSD(a.fee)+'</td></tr>').join('')
+      : '<tr><td colspan="5" style="color:var(--pg-muted)">Sin renovaciones registradas todavía este período.</td></tr>')+
+    '</tbody></table></div>'+
+    (sinDatos.length ? '<div style="margin-top:10px;font-size:11.5px;color:var(--pg-muted)">Sin movimiento este período: '+sinDatos.map(a=>esc(a.nombre)).join(', ')+'.</div>' : '');
 }
 
 /* ---- Gráfica 1: anillo del mes ---- */
@@ -499,7 +561,7 @@ window.marcarEstado = async function(id, estado){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=1; // Ronda pantalla de renovaciones + candado por área: primera versión de la pantalla propia de Karen Suaza
+var PGV_VERSION=2; // Ronda Personas: bloque "Rendimiento por agente" del equipo de Brahian Toro, con política RLS propia sobre bos_registros
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

@@ -157,7 +157,7 @@ function renderShell(session){
         <a data-tab="ventas"><span class="ico">◆</span> Ventas por cliente</a>
         <a data-tab="fees"><span class="ico">≈</span> Fees y captura (guía)</a>
         <a data-tab="constancia"><span class="ico">▮</span> Constancia y patrones</a>
-        <a data-tab="utilidad"><span class="ico">$</span> Utilidad del equipo</a>
+        <a data-tab="utilidad"><span class="ico">$</span> Rendimiento del equipo</a>
         <a data-tab="alertas"><span class="ico">!</span> Alertas</a>
         <div class="pg-foot">${esc(email)}<br><span class="pg-logout" id="btnLogout">Cerrar sesión</span></div>
       </nav>
@@ -355,14 +355,14 @@ async function renderConstancia(root){
    dropdown de áreas real, conteo de personas correcto). Alcance: SOLO el
    equipo de Brahian (EQUIPO, ya resuelto contra agentes.lider_id). */
 async function renderUtilidadEquipo(root){
-  root.innerHTML = `<div class="pg-top"><div class="pg-eyebrow">Tu equipo</div><h1>Utilidad del equipo</h1>
-    <div class="pg-sub">Generación 360, costo y utilidad de cada persona de tu equipo. Misma fuente y misma lógica que ve dirección en GABI 360.</div></div>
+  root.innerHTML = `<div class="pg-top"><div class="pg-eyebrow">Tu equipo</div><h1>Rendimiento del equipo</h1>
+    <div class="pg-sub">Qué tan rentable es cada persona a tu cargo para la agencia — multiplicador y rendimiento por función, la misma señal que usa dirección, sin mostrar cifras de nómina.</div></div>
     <div id="utilEquipoMount"></div>`;
   const mount = document.getElementById('utilEquipoMount');
   try {
-    await GabiPersonas.renderUtilidad(mount, SB, { scopeNombres: EQUIPO, tituloSufijo: 'equipo de Brahian Toro' });
+    await GabiPersonas.renderUtilidad(mount, SB, { scopeNombres: EQUIPO, tituloSufijo: 'equipo de Brahian Toro', modo: 'rendimiento' });
   } catch(e) {
-    mount.innerHTML = errHTML('Utilidad del equipo (gabi-personas-shared.js)', e);
+    mount.innerHTML = errHTML('Rendimiento del equipo (gabi-personas-shared.js)', e);
   }
 }
 

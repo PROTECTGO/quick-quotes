@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="ver-como-helper.js"></script>
+<script src="asesor-oportunidad-shared.js"></script>
 <style>
 :root {
   --pg-ink:        #28323B;
@@ -975,6 +976,13 @@ window.marcarRetencion = async function(id, estado){
   const el = document.getElementById('s-retencion'); if (el) cargarMiRetencion(el);
 };
 
+/* ---- Sección: Lo que dejas de ganar (G1/G2/G3, módulo compartido) ---- */
+async function cargarOportunidad(el) {
+  el.innerHTML = skeletonBlock(4);
+  if (!window.GabiOportunidad) { el.innerHTML = errorBanner("Lo que dejas de ganar", "no cargó el módulo compartido"); return; }
+  await window.GabiOportunidad.render(el, SB, { nombres: [MI_NOMBRE], modoEquipo: false });
+}
+
 function pintarEsqueleto() {
   document.getElementById("pg-root").innerHTML = `
     <div class="pg-top">
@@ -985,6 +993,8 @@ function pintarEsqueleto() {
     <div class="pg-card" id="s-mimes"></div>
     ${sectionDivider("Mi comisión del mes")}
     <div class="pg-card" id="s-comision"></div>
+    ${sectionDivider("Lo que dejas de ganar")}
+    <div id="s-oportunidad"></div>
     <div id="wrap-retencion" style="display:none">${sectionDivider("Tu cola de retención")}<div class="pg-card" id="s-retencion"></div></div>
     ${sectionDivider("Tu ficha")}
     <div class="pg-card" id="s-ficha"></div>
@@ -1004,6 +1014,7 @@ async function cargarTodo() {
   await Promise.all([
     seccion("Mi mes", "s-mimes", cargarMiMes),
     seccion("Mi comisión del mes", "s-comision", cargarMiComision),
+    seccion("Lo que dejas de ganar", "s-oportunidad", cargarOportunidad),
     seccion("Retención", "s-retencion", cargarMiRetencion),
     seccion("Mi ficha", "s-ficha", cargarMiFicha),
     seccion("Mi tasa de cobro", "s-tasacobro", cargarMiTasaCobro),

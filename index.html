@@ -480,7 +480,7 @@ function gateWidgets(cli){
   try{
     if(!document.getElementById('wgates-css')){
       var st=document.createElement('style'); st.id='wgates-css';
-      st.textContent='.grid .card.card-mant{filter:grayscale(1);opacity:.6;pointer-events:none}.grid .card.card-mant .chip{background:#EEF2F5;color:#6B7D89}.grid .card .mant-msg{font-size:11.5px;color:#B8841F;margin-top:10px;padding-top:8px;border-top:1px solid #E7EDF2}';
+      st.textContent='.grid .card.card-mant{filter:grayscale(1);opacity:.6;pointer-events:none}.grid .card.card-mant .chip{background:#EEF2F5;color:#6B7D89}.grid .card .mant-msg{font-size:11.5px;color:#D9A520;margin-top:10px;padding-top:8px;border-top:1px solid #E7EDF2}';
       document.head.appendChild(st);
     }
     cli.from('widgets_registro').select('clave,habilitado,modo_apagado,mensaje_mantenimiento').then(function(res){
@@ -749,7 +749,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
-var PGV_VERSION=12; // + tarjeta Fuga de cartera / Risk Department (retencion_riesgo)
+var PGV_VERSION=13; // corrige --pg-warn (era #B8841F, ahora #D9A520)
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

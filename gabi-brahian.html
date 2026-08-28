@@ -214,7 +214,7 @@ async function showTab(tab){
 /* ===================== 1. RESUMEN DEL EQUIPO ===================== */
 async function renderResumen(root){
   root.innerHTML = `<div class="pg-top"><div class="pg-eyebrow">Tu equipo</div><h1>Resumen del equipo</h1>
-    <div class="pg-sub">Solo lo que le pasa a tu equipo. Sin sueldos, costos salariales, utilidad por persona, liquidez ni retiro de socios.</div></div>
+    <div class="pg-sub">Solo lo que le pasa a tu equipo. Ves rendimiento y multiplicador por persona; no ves costos de nómina en dólares, liquidez ni retiro de socios.</div></div>
     <div id="resumenBody">${loadingHTML()}</div>`;
   const [piloto, estandar, patrones] = await Promise.all([
     fetchOnce('v_semaforo_piloto','mes,ventas,ventas_con_fee,fee_x_venta_equipo,meta_fee_x_venta,pct_ventas_con_fee,meta_pct_ventas_con_fee,alarma_activa,estado'),

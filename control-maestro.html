@@ -11,7 +11,7 @@
 :root{
   --pg-ink:#28323B; --pg-ink-2:#1B2D3A; --pg-mint:#2DBFA3; --pg-mint-dark:#229A82; --pg-mint-deep:#1B8E78;
   --pg-bg:#F4F7FA; --pg-card:#FFFFFF; --pg-line:#E7EDF2; --pg-txt:#28323B; --pg-muted:#6B7D89;
-  --pg-pos:#1F9D6B; --pg-neg:#D5594F; --pg-warn:#B8841F;
+  --pg-pos:#1F9D6B; --pg-neg:#D5594F; --pg-warn:#D9A520;
   --f-gabi:"Fraunces",Georgia,serif; --f-title:"Montserrat",Arial,sans-serif; --f-body:"Inter",Arial,sans-serif; --f-num:"JetBrains Mono",monospace;
 }
 *{box-sizing:border-box}
@@ -244,6 +244,37 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
 .ca-save{margin-top:10px;font-family:var(--f-body);font-weight:800;font-size:12px;border:none;border-radius:999px;padding:7px 15px;background:var(--pg-mint);color:var(--pg-ink-2);cursor:pointer}
 .ca-save:disabled{opacity:.45;cursor:default}
 .ca-save:hover:not(:disabled){background:var(--pg-mint-dark)}
+/* ---- Vista Maestra ---- */
+.vm-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.vm-fld{display:flex;flex-direction:column;gap:4px}
+.vm-fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--pg-muted);font-weight:700}
+.vm-fld select,.vm-fld input{font-family:var(--f-body);font-size:13px;border:1px solid var(--pg-line);border-radius:8px;padding:7px 9px;background:#fff;min-width:150px}
+.vm-count{font-size:11.5px;color:var(--pg-muted);margin-left:auto;align-self:center}
+.vm-row{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.vm-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;cursor:pointer}
+.vm-name{font-weight:700;font-size:14.5px;color:var(--pg-ink)}
+.vm-clave{font-family:var(--f-num);font-size:10.5px;color:var(--pg-muted);background:#F1F5F8;border:1px solid var(--pg-line);border-radius:6px;padding:1px 7px}
+.vm-area{font-size:11px;color:var(--pg-muted)}
+.vm-meta{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto;align-items:center}
+.vm-pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.vm-pill.on{background:#E3F4EF;color:var(--pg-pos)} .vm-pill.off{background:#FCEEEC;color:var(--pg-neg)}
+.vm-pill.finca{background:#F1F5F8;color:var(--pg-ink)} .vm-pill.sinfina{background:#FBF3E2;color:var(--pg-warn)}
+.vm-count-badge{font-family:var(--f-num);font-size:12px;font-weight:700;color:var(--pg-ink);background:#F1F5F8;border-radius:999px;padding:3px 10px}
+.vm-expand{background:transparent;border:none;color:var(--pg-mint-deep);cursor:pointer;font-size:16px;padding:0 4px}
+.vm-detail{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--pg-line)}
+.vm-detail.open{display:block}
+.vm-fidelidad{font-size:11.5px;color:#7a5a14;background:#FBF3E2;border:1px solid var(--pg-warn);border-radius:8px;padding:8px 11px;margin-bottom:12px;line-height:1.5}
+.vm-fidelidad.fiel{color:#1c6e50;background:#E3F4EF;border-color:var(--pg-pos)}
+.vm-persona{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--pg-line);border-radius:10px;padding:8px 11px;margin-bottom:6px;font-size:12.5px}
+.vm-persona .vpn{font-weight:700;color:var(--pg-ink);min-width:180px}
+.vm-persona .vpr{font-family:var(--f-num);font-size:10.5px;color:var(--pg-muted)}
+.vm-persona .vpm{color:var(--pg-muted);font-size:11.5px}
+.vm-persona .vpabrir{margin-left:auto}
+.vm-abrir-btn{font-family:var(--f-body);font-weight:700;font-size:11px;border:1px solid var(--pg-line);background:#fff;color:var(--pg-ink);border-radius:999px;padding:5px 11px;cursor:pointer;text-decoration:none;display:inline-block}
+.vm-abrir-btn:hover{background:var(--pg-bg)}
+.vm-abrir-btn.disabled{opacity:.4;pointer-events:none}
+.vm-sinurl{font-size:11px;color:var(--pg-muted)}
+.vm-ver-como-banner{position:fixed;top:0;left:0;right:0;z-index:99998;background:#1B2D3A;color:#fff;font:600 13px/1.4 Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 </style>
 </head>
 <body>
@@ -282,6 +313,7 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
       <div class="mode-switch">
         <button class="mode-btn active" id="modoAreaBtn">Por área</button>
         <button class="mode-btn" id="modoUsuarioBtn">Por usuario</button>
+        <button class="mode-btn" id="modoMaestraBtn">Vista Maestra</button>
       </div>
       <button class="mtb-btn" id="verComoBtn">👁 Ver como…</button>
       <div class="spacer"></div>
@@ -306,6 +338,26 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
       <p class="usub" id="uspanelSub">Elige un área en la matriz para ver quién pertenece a ella (fuente: <code>agentes</code> activos). Desde aquí puedes previsualizar el portal de cada persona con "Ver como".</p>
       <div class="uchips" id="uchips"></div>
       <div class="ulist" id="ulist"></div>
+    </div>
+
+    <!-- ===== VISTA MAESTRA — inventario completo de widgets, quién ve cada uno y por qué ===== -->
+    <div id="maestraPanel" style="display:none">
+      <p class="mleyenda">
+        <b>Qué es esto:</b> los 26 widgets de <code>portal.widgets_registro</code>, cruzados con <code>portal.pantalla_acceso</code>
+        (la capa fina de paquete/rol/candado de área) y con las <span id="maestraNumPersonas">…</span> personas activas de <code>gabi_accesos</code>.
+        Un widget <b>sin fila</b> en <code>pantalla_acceso</code> no tiene capa fina — <code>puede_ver()</code> lo deja pasar a
+        <b>cualquier persona autenticada</b> (fail-open), y solo el encendido/apagado y el área de aquí arriba deciden si aparece.
+        Eso se marca abajo como <span class="vm-pill sinfina">sin capa fina</span>, nunca se esconde.
+      </p>
+      <div class="vm-toolbar">
+        <div class="vm-fld"><label>Área</label><select id="vmFArea"><option value="">Todas</option></select></div>
+        <div class="vm-fld"><label>Persona</label><select id="vmFPersona"><option value="">Todas</option></select></div>
+        <div class="vm-fld"><label>Estado</label><select id="vmFEstado"><option value="">Todos</option><option value="on">Encendido</option><option value="off">Apagado</option></select></div>
+        <div class="vm-fld"><label>Buscar</label><input type="text" id="vmFBusca" placeholder="Nombre del widget…"></div>
+        <span class="vm-count" id="vmCount"></span>
+      </div>
+      <div id="maestraLista"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+      <p class="pg-note" id="maestraNota" style="margin-top:20px"></p>
     </div>
 
     <!-- ===== SECCIÓN CAJA Y LIQUIDEZ (solo sales@) — Ronda 1 Módulo Caja (reemplaza el panel F2) ===== -->
@@ -649,11 +701,19 @@ async function cambiarModo(m){
   MODO=m;
   document.getElementById("modoAreaBtn").className="mode-btn"+(m==="area"?" active":"");
   document.getElementById("modoUsuarioBtn").className="mode-btn"+(m==="usuario"?" active":"");
+  document.getElementById("modoMaestraBtn").className="mode-btn"+(m==="maestra"?" active":"");
   document.getElementById("uspanel").style.display = m==="usuario" ? "block" : "none";
+  document.getElementById("maestraPanel").style.display = m==="maestra" ? "block" : "none";
+  document.getElementById("lista").style.display = m==="maestra" ? "none" : "block";
+  document.getElementById("mleyenda").style.display = m==="maestra" ? "none" : "block";
   if(m==="usuario"){
     if(!AREA_SEL) AREA_SEL = Object.keys(AREAS_LBL)[0];
     await cargarUsuariosSiHaceFalta();
     renderUsuarios(AREA_SEL);
+  }
+  if(m==="maestra"){
+    await cargarMaestraSiHaceFalta();
+    renderMaestra();
   }
 }
 
@@ -687,7 +747,7 @@ async function cargarGabiAccesosSiHaceFalta(force){
   if(GA_ALL && !force) return GA_ALL;
   GA_ALL_ERROR = null;
   try{
-    const { data, error } = await SB.from("gabi_accesos").select("user_id,rol,paquete,area,activo,vigencia_desde");
+    const { data, error } = await SB.from("gabi_accesos").select("user_id,email,rol,paquete,area,activo,vigencia_desde");
     if(error){ GA_ALL_ERROR = error.message; GA_ALL = []; console.error("gabi_accesos:", error); }
     else { GA_ALL = data||[]; }
   }catch(e){ GA_ALL_ERROR = e.message||String(e); GA_ALL = []; console.error("gabi_accesos:", e); }
@@ -735,6 +795,191 @@ function simularPuedeVer(clave, filasGa){
   }
   return { ok:true, motivo:null };
 }
+
+// ---- Vista Maestra: inventario completo, quién ve cada widget y por qué ----
+// Fidelidad de "Abrir como" por pantalla: el banner + candado de rol real
+// (director/socio) SIEMPRE se verifica correctamente contra la sesión real
+// de quien abre el link (ver-como-helper.js). Lo que varía es si los DATOS
+// que carga la pantalla quedan re-filtrados a la persona simulada, o si
+// siguen viniendo con el RLS de la sesión real que abrió el link — ver nota
+// en cada tarjeta y el resumen al pie del panel.
+const FIDELIDAD_SIMULACION = {
+  control_maestro: { nivel:'no_aplica', nota:'Es este mismo panel — solo sales@ lo usa.' },
+  gabi_360:        { nivel:'no_aplica', nota:'Vive en otro repo/dominio (gabi-liquidez.vercel.app) — no se instrumentó en esta ronda.' },
+  gabi_panel:      { nivel:'no_aplica', nota:'Vive en otro repo/dominio (gabi-liquidez.vercel.app) — no se instrumentó en esta ronda.' },
+  liquidez_semanal:{ nivel:'no_aplica', nota:'Vive en otro repo/dominio (gabi-liquidez.vercel.app) — no se instrumentó en esta ronda.' },
+  amazon_relay:    { nivel:'no_aplica', nota:'Vive en otro repo de GitHub (amazon-relay) — no se instrumentó en esta ronda.' },
+  pendientes:      { nivel:'no_aplica', nota:'Vive en otro repo de GitHub (pendientes) — no se instrumentó en esta ronda.' },
+  pendientes_kam:  { nivel:'no_aplica', nota:'Vive en otro repo de GitHub (pendientes) — no se instrumentó en esta ronda.' },
+  business_quote:  { nivel:'no_aplica', nota:'No tiene URL registrada en widgets_registro.' },
+  // Wired esta ronda con ver-como-helper.js (banner + candado de rol real):
+  // gabi_asesor, gabi_brahian, gabi_fam, gabi_incentivos, retencion_riesgo,
+  // mapa_puestos, renovaciones — usan FIDELIDAD_DEFAULT ('parcial') porque el
+  // banner sí funciona pero los datos no se re-filtran por la persona simulada.
+  // Todavía SIN el banner (ni siquiera muestra "Viendo como…"), revisadas pero
+  // no instrumentadas esta ronda por tiempo/riesgo — la mayoría son herramientas
+  // grandes o de doble-cliente (portal+public) que preferí no tocar a la carrera:
+  novedades_admin: { nivel:'pendiente', nota:'Sin banner todavía — no instrumentada esta ronda.' },
+  coi:             { nivel:'pendiente', nota:'Sin banner todavía — no instrumentada esta ronda.' },
+  fam:             { nivel:'pendiente', nota:'Sin banner todavía — no instrumentada esta ronda (distinta de "GABI · FAM", que sí la tiene).' },
+  breaks:          { nivel:'pendiente', nota:'Sin banner todavía — no instrumentada esta ronda.' },
+  firmas_endorsement: { nivel:'pendiente', nota:'Sin banner todavía — no instrumentada esta ronda.' },
+  firmas:          { nivel:'pendiente', nota:'Sin banner todavía — no instrumentada esta ronda.' },
+  tarjetas:        { nivel:'pendiente', nota:'Sin banner todavía — no instrumentada esta ronda.' },
+  kam:             { nivel:'pendiente', nota:'Sin banner todavía — archivo grande (9,000+ líneas) con doble cliente Supabase; preferí revisarlo con más cuidado antes de tocarlo.' },
+  rrhh:            { nivel:'pendiente', nota:'Sin banner todavía — no instrumentada esta ronda.' },
+  quick_quote:     { nivel:'pendiente', nota:'Sin banner todavía — archivo muy grande (4,700+ líneas) con múltiples clientes Supabase; preferí revisarlo con más cuidado antes de tocarlo.' },
+  endorsement:     { nivel:'pendiente', nota:'Sin banner todavía — no instrumentada esta ronda.' },
+};
+const FIDELIDAD_DEFAULT = { nivel:'parcial', nota:'Banner y candado de rol real activos (SÍ verifican que quien abre el link sea de verdad director/socio en gabi_accesos). Los datos que carga la pantalla siguen viniendo con el RLS de esa sesión real — no se reescribió el fetch interno para forzar el filtro por la persona simulada. Sirve para revisar diseño/layout tal como lo vería esa persona, no para auditar sus cifras exactas.' };
+function fidelidadDe(clave){ return FIDELIDAD_SIMULACION[clave] || FIDELIDAD_DEFAULT; }
+
+let MAESTRA_LOADED = false;
+let MAESTRA_EXPANDED = {};
+async function cargarMaestraSiHaceFalta(force){
+  if(MAESTRA_LOADED && !force) return;
+  await Promise.all([ cargarCandadoArea(), cargarGabiAccesosSiHaceFalta() ]);
+  MAESTRA_LOADED = true;
+  poblarFiltrosMaestra();
+}
+
+function poblarFiltrosMaestra(){
+  const areas = Array.from(new Set(Object.values(SNAP).map(w=>w.area).filter(Boolean))).sort();
+  const selArea = document.getElementById('vmFArea');
+  if(selArea && selArea.options.length<=1) areas.forEach(a=>{ const o=document.createElement('option'); o.value=a; o.textContent=AREAS_LBL[a]||a; selArea.appendChild(o); });
+  const personas = Array.from(new Set((GA_ALL||[]).map(r=>r.email).filter(Boolean))).sort();
+  const selP = document.getElementById('vmFPersona');
+  if(selP && selP.options.length<=1) personas.forEach(e=>{ const o=document.createElement('option'); o.value=e; o.textContent=e; selP.appendChild(o); });
+  const nP = document.getElementById('maestraNumPersonas');
+  if(nP) nP.textContent = personas.length;
+}
+
+// Evalúa puede_ver(clave) para TODAS las personas activas (agrupadas por email),
+// reusando simularPuedeVer() — la MISMA lógica exacta que ya usa "Ver como".
+function personasQueVenClave(clave){
+  const porEmail = {};
+  (GA_ALL||[]).forEach(r=>{ if(!r.email) return; if(!porEmail[r.email]) porEmail[r.email]=[]; porEmail[r.email].push(r); });
+  const out = [];
+  Object.keys(porEmail).forEach(email=>{
+    const filas = porEmail[email];
+    const sim = simularPuedeVer(clave, filas);
+    if(sim.ok){
+      const hoy = new Date().toISOString().slice(0,10);
+      const activa = filas.find(r=>r.activo && String(r.vigencia_desde||"")<=hoy) || filas[0];
+      out.push({ email, rol: activa.rol, area: activa.area, motivo: motivoDeAcceso(clave, filas) });
+    }
+  });
+  out.sort((a,b)=>a.email.localeCompare(b.email));
+  return out;
+}
+
+// Explica EN POSITIVO por qué una persona sí ve la pantalla (paquete / rol / área / sin capa fina)
+function motivoDeAcceso(clave, filasGa){
+  const pa = (CA_PANTALLAS||[]).find(p=>p.clave===clave);
+  if(!pa) return 'sin capa fina — cualquier persona autenticada la ve (puede_ver hace fail-open)';
+  const hoy = new Date().toISOString().slice(0,10);
+  const activas = filasGa.filter(r=>r.activo && String(r.vigencia_desde||"")<=hoy);
+  const filaValida = activas.find(r=>
+    (pa.paquete==null || r.paquete===pa.paquete) && (pa.solo_roles==null || pa.solo_roles.indexOf(r.rol)>=0));
+  const partes = [];
+  if(filaValida){
+    if(pa.paquete) partes.push('paquete "'+pa.paquete+'"');
+    if(pa.solo_roles) partes.push('rol "'+filaValida.rol+'"');
+  }
+  const esDirSoc = activas.some(r=>r.rol==='director'||r.rol==='socio');
+  if(pa.areas_permitidas && pa.areas_permitidas.length){
+    if(esDirSoc) partes.push('bypass de candado de área (director/socio)');
+    else partes.push('área "'+(filaValida?filaValida.area:'')+'" dentro del candado');
+  }
+  return partes.length ? partes.join(' + ') : 'sin regla que lo explique (revisar)';
+}
+
+function urlAbrirComo(clave, email){
+  const w = SNAP[clave];
+  if(!w || !w.url) return null;
+  const sep = w.url.indexOf('?')>=0 ? '&' : '?';
+  return w.url + sep + 'ver_como=' + encodeURIComponent(email);
+}
+
+function renderMaestra(){
+  const cont = document.getElementById('maestraLista');
+  if(!cont) return;
+  if(GA_ALL_ERROR){ cont.innerHTML = '<div class="denied">No se pudo cargar gabi_accesos: '+esc(GA_ALL_ERROR)+'</div>'; return; }
+  const fArea = document.getElementById('vmFArea').value;
+  const fPersona = document.getElementById('vmFPersona').value;
+  const fEstado = document.getElementById('vmFEstado').value;
+  const fBusca = (document.getElementById('vmFBusca').value||'').toLowerCase();
+
+  let claves = Object.keys(SNAP);
+  if(fArea) claves = claves.filter(c=>SNAP[c].area===fArea);
+  if(fEstado) claves = claves.filter(c=>fEstado==='on' ? !!SNAP[c].habilitado : !SNAP[c].habilitado);
+  if(fBusca) claves = claves.filter(c=>String(SNAP[c].nombre||'').toLowerCase().indexOf(fBusca)>=0 || c.toLowerCase().indexOf(fBusca)>=0);
+
+  const filas = claves.map(clave=>({ clave, w:SNAP[clave], pa:(CA_PANTALLAS||[]).find(p=>p.clave===clave), personas: personasQueVenClave(clave) }))
+    .filter(f=> !fPersona || f.personas.some(p=>p.email===fPersona));
+
+  filas.sort((a,b)=>(AREAS_LBL[a.w.area]||a.w.area||'').localeCompare(AREAS_LBL[b.w.area]||b.w.area||'') || String(a.w.nombre||'').localeCompare(String(b.w.nombre||'')));
+
+  document.getElementById('vmCount').textContent = filas.length+' de '+Object.keys(SNAP).length+' widgets';
+
+  cont.innerHTML = filas.length ? filas.map(f=>{
+    const on = !!f.w.habilitado;
+    const tieneFina = !!f.pa;
+    const fid = fidelidadDe(f.clave);
+    const personasLista = fPersona ? f.personas.filter(p=>p.email===fPersona) : f.personas;
+    return '<div class="vm-row">'+
+      '<div class="vm-top" onclick="toggleMaestraDetalle(\''+esc(f.clave)+'\')">'+
+        '<span class="vm-name">'+esc(f.w.nombre)+'</span><span class="vm-clave">'+esc(f.clave)+'</span>'+
+        '<span class="vm-area">'+esc(AREAS_LBL[f.w.area]||f.w.area)+'</span>'+
+        '<div class="vm-meta">'+
+          '<span class="vm-pill '+(on?'on':'off')+'">'+(on?'encendido':'apagado')+'</span>'+
+          '<span class="vm-pill '+(tieneFina?'finca':'sinfina')+'">'+(tieneFina?'capa fina':'sin capa fina')+'</span>'+
+          '<span class="vm-count-badge">'+f.personas.length+' persona(s)</span>'+
+          '<button type="button" class="vm-expand">'+(MAESTRA_EXPANDED[f.clave]?'▲':'▼')+'</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="vm-detail'+(MAESTRA_EXPANDED[f.clave]?' open':'')+'" id="vmDetail-'+esc(f.clave)+'">'+
+        (tieneFina
+          ? '<div style="font-size:11.5px;color:var(--pg-muted);margin-bottom:10px">Paquete: <b>'+esc(f.pa.paquete||'—')+'</b>'+
+            (f.pa.solo_roles?' · Roles: <b>'+esc(f.pa.solo_roles.join(', '))+'</b>':'')+
+            (f.pa.areas_permitidas&&f.pa.areas_permitidas.length?' · Candado de área: <b>'+esc(f.pa.areas_permitidas.join(', '))+'</b>':' · Sin candado de área')+'</div>'
+          : '<div class="vm-fidelidad">Este widget NO tiene fila en <code>portal.pantalla_acceso</code>. <code>puede_ver()</code> hace fail-open: cualquier persona autenticada lo ve si está encendido. Solo lo gobierna el encendido/apagado y el área de arriba.</div>') +
+        '<div class="vm-fidelidad'+(fid.nivel==='fiel'?' fiel':'')+'">"Abrir como" — '+esc(fid.nota)+'</div>'+
+        personasLista.map(p=>{
+          const abrirUrl = urlAbrirComo(f.clave, p.email);
+          return '<div class="vm-persona">'+
+            '<span class="vpn">'+esc(p.email)+'</span><span class="vpr">'+esc(p.rol||'—')+' · '+esc(p.area||'—')+'</span>'+
+            '<span class="vpm">'+esc(p.motivo)+'</span>'+
+            '<span class="vpabrir">'+(abrirUrl
+              ? '<a class="vm-abrir-btn" href="'+esc(abrirUrl)+'" target="_blank" rel="noopener">👁 Abrir como…</a>'
+              : '<span class="vm-sinurl">sin URL registrada</span>')+'</span>'+
+          '</div>';
+        }).join('') + (personasLista.length ? '' : '<div style="font-size:11.5px;color:var(--pg-muted)">Nadie la ve hoy.</div>')+
+      '</div>'+
+    '</div>';
+  }).join('') : '<div style="color:var(--pg-muted);font-size:12.5px">Sin widgets para este filtro.</div>';
+
+  const notaEl = document.getElementById('maestraNota');
+  if(notaEl){
+    const parciales = Object.keys(SNAP).filter(c=>fidelidadDe(c).nivel==='parcial');
+    const pendientes = Object.keys(SNAP).filter(c=>fidelidadDe(c).nivel==='pendiente');
+    const noAplica = Object.keys(SNAP).filter(c=>fidelidadDe(c).nivel==='no_aplica');
+    notaEl.innerHTML = '<b>"Abrir como" es simulación de vista, no impersonación real.</b> El link agrega <code>?ver_como=email</code> a la URL real del widget (ver <code>ver-como-helper.js</code>); la pantalla destino verifica el ROL REAL de la sesión que la abre (debe tener fila activa con rol director o socio en gabi_accesos — nunca algo elegible desde la UI) y solo entonces muestra el banner fijo "Viendo como…". '+
+      (parciales.length ? '<b>Con banner, simulación parcial de datos</b> ('+parciales.length+'): '+parciales.join(', ')+' — el banner y el candado de rol SÍ funcionan, pero los datos siguen viniendo con el RLS de quien de verdad abrió el link, no reflejan fielmente el subconjunto que vería la persona simulada. Sirve para revisar diseño, no cifras exactas. ' : '')+
+      (pendientes.length ? '<b>Sin banner todavía</b> ('+pendientes.length+'): '+pendientes.join(', ')+' — <code>?ver_como=</code> no tiene ningún efecto ahí hoy. ' : '')+
+      (noAplica.length ? '<b>No aplica</b> ('+noAplica.length+'): '+noAplica.join(', ')+' — viven en otro repo/dominio, o sin URL registrada.' : '');
+  }
+}
+
+window.toggleMaestraDetalle = function(clave){
+  MAESTRA_EXPANDED[clave] = !MAESTRA_EXPANDED[clave];
+  renderMaestra();
+};
+
+document.getElementById('vmFArea').addEventListener('change', renderMaestra);
+document.getElementById('vmFPersona').addEventListener('change', renderMaestra);
+document.getElementById('vmFEstado').addEventListener('change', renderMaestra);
+document.getElementById('vmFBusca').addEventListener('input', renderMaestra);
 
 function usuariosDeArea(area){
   const kws = AREA_ROL_KEYWORDS[area]||[];
@@ -975,6 +1220,7 @@ document.getElementById("logoutBtn").addEventListener("click", async ()=>{ try{ 
 // se conserve intacto ni de cuándo corre el resto del script.
 document.getElementById("modoAreaBtn").addEventListener("click", ()=>cambiarModo("area"));
 document.getElementById("modoUsuarioBtn").addEventListener("click", ()=>cambiarModo("usuario"));
+document.getElementById("modoMaestraBtn").addEventListener("click", ()=>cambiarModo("maestra"));
 document.getElementById("verComoBtn").addEventListener("click", abrirVerComo);
 
 (async function init(){ await verificarAcceso(); })();
@@ -985,7 +1231,7 @@ document.getElementById("verComoBtn").addEventListener("click", abrirVerComo);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="control-maestro.html";
-var PGV_VERSION=5; // + columnas Renovaciones/Retención en la matriz; "Ver como" simula puede_ver real (paquete+solo_roles+candado) y dice por qué bloquea
+var PGV_VERSION=6; // + Vista Maestra: los 26 widgets, quién los ve y por qué (misma lógica de puede_ver), "Abrir como" con ?ver_como= y banner; corrige --pg-warn
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

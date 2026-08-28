@@ -11,7 +11,7 @@
   :root{
     --pg-ink:#1B2D3A; --pg-ink-2:#162630; --pg-mint:#2DBFA3; --pg-mint-soft:#C4E8DF; --pg-mint-deep:#229A82;
     --pg-bg:#F4F7FA; --pg-card:#FFFFFF; --pg-line:#E7EDF2; --pg-txt:#28323B; --pg-muted:#6B7D89;
-    --pg-pos:#1F9D6B; --pg-neg:#D5594F; --pg-warn:#B8841F;
+    --pg-pos:#1F9D6B; --pg-neg:#D5594F; --pg-warn:#D9A520;
     --tipo-felicitacion:#00C864; --tipo-novedad:#229A82; --tipo-aviso:#FFB400; --tipo-recordatorio:#8da0ad;
   }
   *{box-sizing:border-box;}
@@ -2053,7 +2053,7 @@ function cargarHistorialAccesos(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="novedades-admin.html";
-var PGV_VERSION=9;
+var PGV_VERSION=10; // corrige --pg-warn (era #B8841F, ahora #D9A520)
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

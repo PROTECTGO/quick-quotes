@@ -6,6 +6,7 @@
 <title>Mapa de Puestos · ProtectGo</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="ver-como-helper.js"></script>
 <style>
   :root{--petrol:#002F3D;--petrol2:#001E28;--teal:#2DBFA3;--teal2:#229A82;--menta:#BADFCE;--menta2:#E4F2EB;--bg:#FAF9F5;--muted:#4a6a75}
   *{box-sizing:border-box}
@@ -162,6 +163,7 @@
 const SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {db:{schema:'portal'}});
+if (window.gabiVerComoInit) gabiVerComoInit(sb);
 
 let colaboradores = {};   // id -> {nombre, foto}
 let admins = [];          // lista de correos con permiso de editar
@@ -349,7 +351,7 @@ async function loadHistorial(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="mapa-puestos.html";
-var PGV_VERSION=2;
+var PGV_VERSION=3; // Vista Maestra Ronda 1: banner "ver como" (ver-como-helper.js)
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');

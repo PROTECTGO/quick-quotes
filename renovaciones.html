@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="ver-como-helper.js"></script>
 <style>
 :root {
   --pg-ink:        #28323B;
@@ -193,6 +194,7 @@ body { margin: 0; background: var(--pg-bg); }
 const SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpdnBxc2Vwd3NmbWFmYW14a3p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTIxNjUsImV4cCI6MjA5MTk2ODE2NX0.pPe1qtWJhnx8Ffo4bvuwVF-tVrkPSmO63Kl7pKWQYqM";
 const SB = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+if (window.gabiVerComoInit) gabiVerComoInit(SB);
 
 function esc(s){ return (s===null||s===undefined) ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmtUSD(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US',{maximumFractionDigits:0}); }
@@ -561,7 +563,7 @@ window.marcarEstado = async function(id, estado){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=2; // Ronda Personas: bloque "Rendimiento por agente" del equipo de Brahian Toro, con política RLS propia sobre bos_registros
+var PGV_VERSION=3; // Vista Maestra Ronda 1: banner "ver como" (ver-como-helper.js) para directores/socios que abran esta pantalla con ?ver_como=
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

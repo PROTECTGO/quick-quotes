@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://gabi-liquidez.vercel.app/gabi-personas-shared.js"></script>
+<script src="ver-como-helper.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <style>
 :root {
@@ -129,6 +130,7 @@ SOLO su equipo aunque el permiso técnico sea de agencia completa.
 const SB_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
 const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpdnBxc2Vwd3NmbWFmYW14a3p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTIxNjUsImV4cCI6MjA5MTk2ODE2NX0.pPe1qtWJhnx8Ffo4bvuwVF-tVrkPSmO63Kl7pKWQYqM";
 const SB = window.supabase.createClient(SB_URL, SB_ANON);
+if (window.gabiVerComoInit) gabiVerComoInit(SB);
 
 const EQUIPO_RESPALDO = ["Carolina Sepulveda","Daniela Arbelaez","Dayanna Jaramillo","Juan Baquero",
   "Luis Miguel Ascanio","Maria Alejandra Garcia","Mau Ramirez","Samuel Pulgarin","Sandra Bolivar",

@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="ver-como-helper.js"></script>
 <style>
 :root {
   --pg-ink:        #28323B;
@@ -23,7 +24,7 @@
   --pg-muted:      #6B7D89;
   --pg-pos:        #1F9D6B;
   --pg-neg:        #D5594F;
-  --pg-warn:       #B8841F;
+  --pg-warn:       #D9A520;
   --pg-font-gabi:  "Fraunces", Georgia, serif;
   --pg-font-title: "Montserrat", "Arial Black", sans-serif;
   --pg-font-body:  "Inter", Arial, Helvetica, sans-serif;
@@ -231,6 +232,7 @@ body { margin: 0; background: var(--pg-bg); }
 const SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpdnBxc2Vwd3NmbWFmYW14a3p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTIxNjUsImV4cCI6MjA5MTk2ODE2NX0.pPe1qtWJhnx8Ffo4bvuwVF-tVrkPSmO63Kl7pKWQYqM";
 const SB = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+if (window.gabiVerComoInit) gabiVerComoInit(SB);
 
 /* =========================================================================
    AJUSTE 1 (10-ago-2026) — LAS VENTAS SE CUENTAN POR CLIENTE, NO POR PÓLIZA
@@ -792,8 +794,8 @@ async function cargarMiProceso(el) {
 
   // --- Gráfica dinámica de curvas (referencia visual: Utilidad por persona de GABI 360) ---
   if (CH_PROCESO) { try { CH_PROCESO.destroy(); } catch (e) {} }
-  const ptBg = hist.map(r => esMesEnCurso(r.mes) ? "#FFFFFF" : (r.estandar_ok ? "#1F9D6B" : "#B8841F"));
-  const ptBd = hist.map(r => esMesEnCurso(r.mes) ? "#2DBFA3" : (r.estandar_ok ? "#1F9D6B" : "#B8841F"));
+  const ptBg = hist.map(r => esMesEnCurso(r.mes) ? "#FFFFFF" : (r.estandar_ok ? "#1F9D6B" : "#D9A520"));
+  const ptBd = hist.map(r => esMesEnCurso(r.mes) ? "#2DBFA3" : (r.estandar_ok ? "#1F9D6B" : "#D9A520"));
   const ptR  = hist.map((r,i) => i===idxBestFee ? 6 : (esMesEnCurso(r.mes) ? 5.5 : 3.5));
   CH_PROCESO = new Chart(document.getElementById("chProceso"), {
     data: {

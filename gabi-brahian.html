@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://gabi-liquidez.vercel.app/gabi-personas-shared.js"></script>
 <script src="ver-como-helper.js"></script>
+<script src="asesor-oportunidad-shared.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <style>
 :root {
@@ -157,6 +158,7 @@ function renderShell(session){
         <div class="pg-tagline">Brahian Toro · líder comercial</div>
         <a data-tab="resumen" class="on"><span class="ico">◎</span> Resumen del equipo</a>
         <a data-tab="ventas"><span class="ico">◆</span> Ventas por cliente</a>
+        <a data-tab="oportunidad"><span class="ico">↗</span> Lo que dejan de ganar</a>
         <a data-tab="fees"><span class="ico">≈</span> Fees y captura (guía)</a>
         <a data-tab="constancia"><span class="ico">▮</span> Constancia y patrones</a>
         <a data-tab="utilidad"><span class="ico">$</span> Rendimiento del equipo</a>
@@ -207,6 +209,7 @@ async function showTab(tab){
   const root = document.getElementById('root');
   if (tab === 'resumen') return renderResumen(root);
   if (tab === 'ventas') return renderVentas(root);
+  if (tab === 'oportunidad') return renderOportunidadEquipo(root);
   if (tab === 'fees') return renderFees(root);
   if (tab === 'constancia') return renderConstancia(root);
   if (tab === 'utilidad') return renderUtilidadEquipo(root);
@@ -297,6 +300,26 @@ async function renderVentas(root){
     const row = document.getElementById('det' + el.dataset.i);
     row.style.display = row.style.display === 'none' ? '' : 'none';
   }));
+}
+
+/* ===================== 2b. LO QUE DEJAN DE GANAR (coaching) =====================
+   Módulo compartido con gabi-asesor.html (asesor-oportunidad-shared.js), en
+   modo equipo: SÍ ve nombres de su equipo (es su herramienta de coaching),
+   NUNCA cifras de nómina — la comisión de oportunidad que se muestra ya fue
+   decidida por Andrés como el número correcto a mostrar aquí; lo que se
+   omite es el costo/nómina que la empresa paga (esa es la línea que separa
+   "rendimiento y función" del resto de esta pantalla). Mismo tono de
+   oportunidad, nunca de castigo. */
+async function renderOportunidadEquipo(root){
+  root.innerHTML = `<div class="pg-top"><div class="pg-eyebrow">Tu equipo</div><h1>Lo que dejan de ganar</h1>
+    <div class="pg-sub">Tu herramienta de coaching: cuánta comisión queda por capturar por no cobrar el fee típico, y cuánto premium le falta a cada quien para subir de escalón. Quien más aparece aquí suele ser quien más vende — no es una lista de bajo desempeño.</div></div>
+    <div id="oportunidadMount"></div>`;
+  const mount = document.getElementById('oportunidadMount');
+  try {
+    await GabiOportunidad.render(mount, SB, { nombres: EQUIPO, modoEquipo: true, tituloSufijo: 'equipo de Brahian Toro' });
+  } catch(e) {
+    mount.innerHTML = errHTML('Lo que dejan de ganar (asesor-oportunidad-shared.js)', e);
+  }
 }
 
 /* ===================== 3. FEES Y CAPTURA (GUÍA) ===================== */

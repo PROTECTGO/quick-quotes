@@ -304,15 +304,21 @@ let COLA = [];
 
 function pintarEsqueleto(){
   document.getElementById("pg-contenido").innerHTML = `
+    <div class="pg-card">
+      <h2>Lo que viene: premium en juego por mes</h2>
+      <p class="pg-purpose">Premium que vence cada mes, por mes de vencimiento — el punto del mes actual va más grande.</p>
+      <div id="c-enjuego"><div class="pg-skel" style="height:170px"></div></div>
+    </div>
     <div class="pg-grid-3">
       <div class="pg-card">
         <h2>Renovado del mes</h2>
         <p class="pg-purpose">% de lo que vencía este mes que ya quedó renovado.</p>
         <div id="c-ring"><div class="pg-skel" style="height:150px"></div></div>
+        <div id="c-ring-contexto"></div>
       </div>
       <div class="pg-card">
-        <h2>Premium retenido vs perdido</h2>
-        <p class="pg-purpose">Por mes de renovación.</p>
+        <h2>Defendido vs perdido</h2>
+        <p class="pg-purpose">Premium retenido vs. premium perdido, por mes de renovación.</p>
         <div id="c-linea"><div class="pg-skel" style="height:150px"></div></div>
       </div>
       <div class="pg-card">
@@ -343,7 +349,7 @@ function footnote(){
 async function cargarTodo(){
   pintarEsqueleto();
   document.getElementById("pg-stamp").textContent = "cargando…";
-  await Promise.all([ cargarRing(), cargarLinea(), cargarGeneraGasta(), cargarCola(), cargarRendimientoAgente() ]);
+  await Promise.all([ cargarPremiumEnJuego(), cargarRing(), cargarLinea(), cargarGeneraGasta(), cargarCola(), cargarRendimientoAgente() ]);
   document.getElementById("pg-stamp").textContent = "datos al " + new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
 }
 
@@ -403,14 +409,45 @@ async function cargarRendimientoAgente(){
     (sinDatos.length ? '<div style="margin-top:10px;font-size:11.5px;color:var(--pg-muted)">Sin movimiento este período: '+sinDatos.map(a=>esc(a.nombre)).join(', ')+'.</div>' : '');
 }
 
-/* ---- Gráfica 1: anillo del mes ---- */
+function mesActualISO(){
+  const hoy = new Date();
+  return hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-01';
+}
+
+/* ---- G1: lo que viene — premium en juego por mes de vencimiento ----
+   Una sola línea con área rellena (cero barras). El punto del mes actual
+   se pinta más grande para que se note dónde estamos parados. */
+async function cargarPremiumEnJuego(){
+  const el = document.getElementById("c-enjuego");
+  const { data, error } = await SB.from('v_retencion_mensual').select('mes,premium_en_juego').order('mes',{ascending:true});
+  if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
+  const filas = data || [];
+  if(!filas.length){ el.innerHTML = '<div class="pg-purpose">Sin renovaciones asignadas todavía.</div>'; return; }
+  const mesHoy = mesActualISO();
+  el.innerHTML = '<div class="chart-wrap" style="height:220px"><canvas id="chEnJuego"></canvas></div>';
+  new Chart(document.getElementById("chEnJuego"), {
+    type:'line',
+    data:{ labels: filas.map(r=>fmtMes(r.mes)),
+      datasets:[{
+        label:'Premium en juego', data: filas.map(r=>Number(r.premium_en_juego||0)),
+        borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.18)', fill:true, tension:.25,
+        pointRadius: filas.map(r=>r.mes===mesHoy?7:3),
+        pointBackgroundColor: filas.map(r=>r.mes===mesHoy?'#2DBFA3':'#fff'),
+        pointBorderColor:'#2DBFA3', pointBorderWidth:2
+      }] },
+    options:{ maintainAspectRatio:false, plugins:{legend:{display:false},
+      tooltip:{ callbacks:{ label:(c)=> fmtUSD(c.parsed.y) + (filas[c.dataIndex].mes===mesHoy?' · mes en curso':'') } } },
+      scales:{ y:{ beginAtZero:true, ticks:{ callback:(v)=>fmtUSD(v) } } } }
+  });
+}
+
+/* ---- G3 (ring): anillo del mes + contexto con el denominador visible ---- */
 async function cargarRing(){
   const el = document.getElementById("c-ring");
-  const hoy = new Date();
-  const mesActual = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-01';
+  const mesActual = mesActualISO();
   const { data, error } = await SB.from('v_retencion_mensual').select('*').eq('mes', mesActual).maybeSingle();
   if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
-  const row = data || { renovadas:0, perdidas:0, en_gestion:0, pct_renovado:null, asignadas:0 };
+  const row = data || { renovadas:0, perdidas:0, en_gestion:0, pct_renovado:null, asignadas:0, premium_en_juego:0 };
   const cerradas = Number(row.renovadas||0) + Number(row.perdidas||0);
   el.innerHTML = '<div class="ring-wrap"><canvas id="chRing"></canvas><div class="ring-center" id="ringCenter"></div></div>';
   const ctx = document.getElementById("chRing");
@@ -425,21 +462,28 @@ async function cargarRing(){
       options:{ cutout:'72%', plugins:{legend:{display:false},tooltip:{enabled:false}} } });
     center.innerHTML = '<div class="rc-val">'+pct.toFixed(1)+'%</div><div class="rc-lbl">renovado · '+cerradas+' cerradas de '+Number(row.asignadas||0)+'</div>';
   }
+  const ctxEl = document.getElementById("c-ring-contexto");
+  if(ctxEl){
+    ctxEl.innerHTML = '<div class="gv-kpis" style="margin-top:14px">'+
+      '<div class="gv-kpi"><div class="lbl">Gestionadas</div><div class="val">'+Number(row.en_gestion||0)+'</div></div>'+
+      '<div class="gv-kpi"><div class="lbl">En juego este mes</div><div class="val">'+fmtUSD(row.premium_en_juego)+'</div></div>'+
+    '</div>';
+  }
 }
 
-/* ---- Gráfica 2: premium retenido vs perdido por mes ---- */
+/* ---- G2: defendido vs perdido — premium retenido vs perdido por mes ----
+   Siempre se pinta la gráfica (dos líneas, cero barras); el aviso de "se
+   va llenando" es condicional sobre los datos que llegaron, no hardcodeado
+   — desaparece solo apenas haya un mes con retenido o perdido > 0. */
 async function cargarLinea(){
   const el = document.getElementById("c-linea");
   const { data, error } = await SB.from('v_retencion_mensual').select('*').order('mes',{ascending:true});
   if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
   const filas = data || [];
+  if(!filas.length){ el.innerHTML = '<div class="pg-purpose">Sin renovaciones asignadas todavía.</div>'; return; }
   const todoCero = filas.every(r => Number(r.premium_retenido||0)===0 && Number(r.premium_perdido||0)===0);
-  if(!filas.length || todoCero){
-    const enJuego = filas.reduce((a,r)=>a+Number(r.premium_en_juego||0),0);
-    el.innerHTML = '<div class="stat-fallback"><div class="sf-val">'+fmtUSD(enJuego)+'</div><div class="sf-lbl">premium en juego — nada se ha cerrado todavía este período</div></div>';
-    return;
-  }
-  el.innerHTML = '<div class="chart-wrap"><canvas id="chLinea"></canvas></div>';
+  el.innerHTML = '<div class="chart-wrap"><canvas id="chLinea"></canvas></div>' +
+    (todoCero ? '<div class="pg-purpose" style="margin-top:10px">Se va llenando a medida que cierren las renovaciones de '+esc(fmtMes(filas[0].mes))+'.</div>' : '');
   CH_LINEA = new Chart(document.getElementById("chLinea"), {
     type:'line',
     data:{ labels: filas.map(r=>fmtMes(r.mes)),
@@ -447,7 +491,7 @@ async function cargarLinea(){
         { label:'Retenido', data: filas.map(r=>Number(r.premium_retenido||0)), borderColor:'#2DBFA3', backgroundColor:'#2DBFA3', tension:.25 },
         { label:'Perdido',  data: filas.map(r=>Number(r.premium_perdido||0)),  borderColor:'#D5594F', backgroundColor:'#D5594F', tension:.25 },
       ] },
-    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}}, scales:{ y:{ ticks:{ callback:(v)=>fmtUSD(v) } } } }
+    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}}, scales:{ y:{ beginAtZero:true, ticks:{ callback:(v)=>fmtUSD(v) } } } }
   });
 }
 
@@ -563,7 +607,7 @@ window.marcarEstado = async function(id, estado){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=3; // Vista Maestra Ronda 1: banner "ver como" (ver-como-helper.js) para directores/socios que abran esta pantalla con ?ver_como=
+var PGV_VERSION=4; // Ronda 2: gráfica "Lo que viene" (premium en juego por mes), Defendido vs perdido siempre visible con aviso condicional, contexto de gestionadas/en juego bajo el anillo
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

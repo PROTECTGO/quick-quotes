@@ -422,19 +422,24 @@ function mesActualISO(){
 
 /* ---- Tu bolsa de renovaciones (v_bolsa_persona_mensual) ----
    La vista YA filtra por RLS: dirección ve todo, cada miembro ve solo su
-   fila — no se agrega ningún filtro de usuario aquí. El fee de referencia
-   NO es plano: v_bolsa_persona_mensual ya aplica bolsas_area_tramos (<5,000
-   -> 50, >=5,000 -> 150) — no se recalculan tramos aquí, se leen las
-   columnas tal cual.
-   CORRECCIÓN: el conteo en firme arranca el 1-sep-2026 (columna
-   cuenta_en_firme). Meses con cuenta_en_firme=false son LÍNEA BASE, no
-   incumplimiento — se pintan en gris neutro, sin franja ni lenguaje de
-   brecha. La franja ámbar de oportunidad y el texto de brecha SOLO
-   aplican a meses con cuenta_en_firme=true (hoy: ninguno todavía). El
-   color por segmento se decide con el flag del PAR de puntos que arma
-   ese tramo de línea (Chart.js segment API, ctx.p0DataIndex/p1DataIndex):
-   solo se pinta verde/ámbar cuando AMBOS extremos del segmento ya cuentan
-   en firme. */
+   fila — no se agrega ningún filtro de usuario aquí.
+   SEGUNDA CORRECCIÓN (definitiva, ejemplo de Andrés): la plata cobrada en
+   una renovación vive en seller_fees de filas Renewal — renewal_fees es
+   solo una CASILLA de categoría, no dinero (hay filas con renewal_fees=150
+   y seller_fees=0). Y la bolsa NO es el 25% del estándar: es el estándar
+   COMPLETO (<5,000 premium -> $50, >=5,000 -> $150) — lo que sobra después
+   de la bolsa es la base de los % de la gente, ya medida por el motor
+   (resto_despues_bolsa/pago_lider_sobre_resto) pero sin alimentar ninguna
+   liquidación todavía. Nada de esto se recalcula aquí: se leen las
+   columnas de la vista tal cual.
+   El conteo en firme arranca el 1-sep-2026 (columna cuenta_en_firme).
+   Meses con cuenta_en_firme=false son LÍNEA BASE, no incumplimiento — se
+   pintan en gris neutro, sin franja ni lenguaje de brecha. La franja ámbar
+   de oportunidad y el texto de brecha SOLO aplican a meses con
+   cuenta_en_firme=true (hoy: ninguno todavía). El color por segmento se
+   decide con el flag del PAR de puntos que arma ese tramo de línea
+   (Chart.js segment API, ctx.p0DataIndex/p1DataIndex): solo se pinta
+   verde/ámbar cuando AMBOS extremos del segmento ya cuentan en firme. */
 async function cargarBolsa(){
   const el = document.getElementById("c-bolsa");
   const { data, error } = await SB.from('v_bolsa_persona_mensual').select('*').order('mes',{ascending:true});
@@ -447,13 +452,13 @@ async function cargarBolsa(){
   const porMes = {};
   rowsRaw.forEach(r=>{
     const k = String(r.mes);
-    if(!porMes[k]) porMes[k] = { mes:r.mes, cuenta_en_firme:false, bolsa_persona:0, bolsa_persona_potencial:0, renovaciones:0, renovaciones_con_fee:0, renovaciones_sin_ningun_fee:0, miembros:0 };
+    if(!porMes[k]) porMes[k] = { mes:r.mes, cuenta_en_firme:false, bolsa_persona:0, bolsa_persona_potencial:0, renovaciones:0, renovaciones_con_fee:0, renovaciones_sin_fee:0, miembros:0 };
     const g = porMes[k];
     g.bolsa_persona += Number(r.bolsa_persona||0);
     g.bolsa_persona_potencial += Number(r.bolsa_persona_potencial||0);
     g.renovaciones += Number(r.renovaciones||0);
     g.renovaciones_con_fee += Number(r.renovaciones_con_fee||0);
-    g.renovaciones_sin_ningun_fee += Number(r.renovaciones_sin_ningun_fee||0);
+    g.renovaciones_sin_fee += Number(r.renovaciones_sin_fee||0);
     g.miembros = Math.max(g.miembros, Number(r.miembros||0));
     if(r.cuenta_en_firme) g.cuenta_en_firme = true; // si cualquier fila del mes ya cuenta en firme, el mes cuenta en firme
   });
@@ -476,9 +481,9 @@ async function cargarBolsa(){
     : '';
 
   const textoFranja = ultimo.cuenta_en_firme
-    ? 'En '+esc(fmtMes(ultimo.mes))+' hubo <b>'+ultimo.renovaciones+' renovación(es)</b>, de las cuales <b>'+ultimo.renovaciones_con_fee+'</b> salieron con fee cobrado ('+pctCobertura.toFixed(1)+'%) y <b>'+ultimo.renovaciones_sin_ningun_fee+'</b> sin ningún fee. '+
+    ? 'En '+esc(fmtMes(ultimo.mes))+' hubo <b>'+ultimo.renovaciones+' renovación(es)</b>, de las cuales <b>'+ultimo.renovaciones_con_fee+'</b> salieron con fee cobrado ('+pctCobertura.toFixed(1)+'%) y <b>'+ultimo.renovaciones_sin_fee+'</b> sin ningún fee. '+
       'La franja ámbar es lo que valdría tu bolsa si cada renovación cobrara el fee de referencia según su tamaño — no depende solo de ti: depende de que se cobre el fee en la operación, no solo de tu gestión.'
-    : 'En '+esc(fmtMes(ultimo.mes))+' hubo <b>'+ultimo.renovaciones+' renovación(es)</b>, de las cuales <b>'+ultimo.renovaciones_con_fee+'</b> salieron con fee cobrado ('+pctCobertura.toFixed(1)+'%) y <b>'+ultimo.renovaciones_sin_ningun_fee+'</b> sin ningún fee. '+
+    : 'En '+esc(fmtMes(ultimo.mes))+' hubo <b>'+ultimo.renovaciones+' renovación(es)</b>, de las cuales <b>'+ultimo.renovaciones_con_fee+'</b> salieron con fee cobrado ('+pctCobertura.toFixed(1)+'%) y <b>'+ultimo.renovaciones_sin_fee+'</b> sin ningún fee. '+
       '<b>Este mes es línea base, no cuenta todavía</b> — el conteo en firme empieza el 1 de septiembre de 2026. Se muestra para comparar cómo estaba antes contra cómo queda después, no como algo pendiente.';
 
   el.innerHTML =
@@ -706,7 +711,7 @@ window.marcarEstado = async function(id, estado){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=6; // corrige "Tu bolsa": fee por tramo (no plano) + franja ámbar/brecha solo en meses cuenta_en_firme (arranca sep-2026), histórico en gris
+var PGV_VERSION=7; // 2a corrección "Tu bolsa": seller_fees (no renewal_fees) + bolsa=estándar completo (no 25%) + renovaciones_sin_fee
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

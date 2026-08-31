@@ -122,6 +122,24 @@ body { margin: 0; background: var(--pg-bg); }
 .cerradas-toggle { font-family: var(--pg-font-body); font-size:12.5px; font-weight:700; color: var(--pg-mint-deep); background:none; border:none; cursor:pointer; padding:0; margin-top:10px; }
 .kd-periodo-btn { background:#fff; color:var(--pg-ink); margin-top:0 !important; }
 .kd-periodo-btn.activo { background:var(--pg-ink); color:#fff; border-color:var(--pg-ink); }
+
+/* ---- casillas laterales numeradas (patrón gabi360) ---- */
+.pg-shell { display:flex; align-items:flex-start; gap:22px; }
+.pg-side2 { width:248px; flex-shrink:0; background:var(--pg-ink-2); color:#fff; border-radius:18px; padding:20px 14px; position:sticky; top:78px; }
+.pg-side2 .pg-group-label { font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:#8da0ad; margin:2px 8px 8px; font-weight:700; }
+.pg-side2 a { display:flex; gap:10px; align-items:flex-start; padding:10px 11px; border-radius:11px; color:#c3d0d8; font-size:13px; font-weight:600; text-decoration:none; margin-bottom:3px; cursor:pointer; }
+.pg-side2 a .ico { font-family:var(--pg-font-num); font-size:11px; color:var(--pg-mint); flex-shrink:0; padding-top:1px; }
+.pg-side2 a .sub { display:block; font-size:10.5px; color:#8da0ad; font-weight:400; margin-top:2px; }
+.pg-side2 a.on, .pg-side2 a:hover { background:rgba(45,191,163,.16); color:#fff; }
+.pg-side2 a.on { box-shadow: inset 3px 0 0 var(--pg-mint); }
+.pg-tabmain { flex:1; min-width:0; }
+.pg-tabsection { display:none; }
+.pg-tabsection.on { display:block; }
+@media (max-width:980px) { .pg-shell { flex-direction:column; } .pg-side2 { width:100%; position:relative; top:0; } }
+
+/* ---- drill-down de vendedor ---- */
+.pg-vendedor-pick { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+.pg-vendedor-pick select { font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--pg-line); background:#fff; }
 </style>
 </head>
 <body>
@@ -188,8 +206,10 @@ body { margin: 0; background: var(--pg-bg); }
       <div class="pg-sub">Pólizas por vencer, estado de gestión y el resultado del mes. Solo lectura y avance de estado — no se crean ni se borran filas aquí.</div>
     </div>
     <div id="pg-acceso"></div>
-    <div id="pg-direccion" style="display:none"></div>
-    <div id="pg-contenido" style="display:none"></div>
+    <div class="pg-shell" id="pg-shell" style="display:none">
+      <aside class="pg-side2" id="pg-side2"></aside>
+      <div class="pg-tabmain" id="pg-tabmain"></div>
+    </div>
   </main>
 </div>
 
@@ -204,6 +224,17 @@ function fmtUSD(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + N
 function fmtUSD2(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtFecha(s){ if(!s) return '—'; try{ const d=new Date(s+'T12:00:00'); return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return String(s); } }
 function fmtMes(s){ if(!s) return '—'; try{ const d=new Date(s+'T12:00:00'); return d.toLocaleDateString('es-CO',{month:'short',year:'numeric'}); }catch(e){ return String(s); } }
+
+/* charts vivos, para poder destruirlos al recargar — la barra lateral ya no
+   reconstruye el DOM en cada "Actualizar", así que el canvas se reutiliza y
+   Chart.js exige destruir la instancia anterior antes de crear la nueva. */
+const CH = {};
+function pintarChart(canvasId, cfg){
+  const c = document.getElementById(canvasId); if(!c) return null;
+  if(CH[canvasId]){ CH[canvasId].destroy(); delete CH[canvasId]; }
+  CH[canvasId] = new Chart(c.getContext('2d'), cfg);
+  return CH[canvasId];
+}
 
 /* =====================================================================
    1) LOGIN / SESIÓN (mismo patrón que gabi-asesor.html)
@@ -279,7 +310,7 @@ document.getElementById("pg-btn-logout").addEventListener("click", async () => {
    ===================================================================== */
 async function verificarAccesoYcargar(){
   const accesoEl = document.getElementById("pg-acceso");
-  const contEl = document.getElementById("pg-contenido");
+  const shellEl = document.getElementById("pg-shell");
   accesoEl.innerHTML = '<div class="pg-skel" style="width:60%"></div><div class="pg-skel" style="width:40%"></div>';
   let puede = false;
   try{
@@ -292,73 +323,199 @@ async function verificarAccesoYcargar(){
   }
   if(!puede){
     accesoEl.innerHTML = '<div class="pg-warn-box"><b>Tu usuario todavía no tiene el paquete "renovaciones" habilitado.</b><br>Pídele a Andrés que te lo active desde el Control Maestro — sin ese paquete no se puede ver ni mover la cola de retención.</div>';
-    contEl.style.display = "none";
+    shellEl.style.display = "none";
     return;
   }
   accesoEl.innerHTML = "";
-  contEl.style.display = "block";
-  await Promise.all([ cargarTodo(), cargarDireccion() ]);
+  shellEl.style.display = "flex";
+  pintarEsqueletoCompleto();
+  cablearTabs();
+  await cargarTodo();
+}
+
+/* =====================================================================
+   2b) NAVEGACIÓN LATERAL — 7 casillas numeradas (patrón gabi360)
+   ===================================================================== */
+const TABS = [
+  { key:'area',        num:'01', titulo:'El área',            sub:'Índice del mes, alertas, cola de hoy' },
+  { key:'vendedores',  num:'02', titulo:'Vendedores',          sub:'Índice por agente, drill-down' },
+  { key:'septiembre',  num:'03', titulo:'Desde septiembre',    sub:'Línea base del estándar nuevo' },
+  { key:'efectividad', num:'04', titulo:'Efectividad',         sub:'Últimos 12 meses, vs. 70%' },
+  { key:'esquema',     num:'05', titulo:'Esquema y bonos',     sub:'G1 · G2 · G3 de Karen' },
+  { key:'muro',        num:'06', titulo:'El muro',             sub:'Premium que viene' },
+  { key:'bolsa',       num:'07', titulo:'La bolsa',            sub:'Cobrado vs. referencia' },
+];
+const TABS_VALIDAS = TABS.map(t=>t.key);
+
+function activarTab(tabKey){
+  document.querySelectorAll('#pg-side2 a[data-tab]').forEach(x=>x.classList.remove('on'));
+  const link = document.querySelector('#pg-side2 a[data-tab="'+tabKey+'"]');
+  if(link) link.classList.add('on');
+  document.querySelectorAll('.pg-tabsection').forEach(sec=>sec.classList.remove('on'));
+  const sec = document.getElementById('tab-'+tabKey); if(sec) sec.classList.add('on');
+}
+function cablearTabs(){
+  document.querySelectorAll('#pg-side2 a[data-tab]').forEach(a=>{
+    a.addEventListener('click', ()=>{
+      activarTab(a.dataset.tab);
+      if(location.hash !== '#'+a.dataset.tab) location.hash = a.dataset.tab;
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  });
+  const key = (location.hash||'').replace('#','');
+  if(TABS_VALIDAS.indexOf(key)>=0) activarTab(key);
+  window.addEventListener('hashchange', ()=>{
+    const k = (location.hash||'').replace('#','');
+    if(TABS_VALIDAS.indexOf(k)>=0) activarTab(k);
+  });
 }
 
 /* =====================================================================
    3) LAS 3 GRÁFICAS + LA COLA OPERATIVA
    ===================================================================== */
-let CH_RING = null, CH_LINEA = null;
 let COLA = [];
 
-function pintarEsqueleto(){
-  document.getElementById("pg-contenido").innerHTML = `
-    <div class="pg-card">
-      <h2>Tu bolsa de renovaciones</h2>
-      <p class="pg-purpose">Tu parte de la bolsa de fees de renovación (área "renovaciones", <code>v_bolsa_persona_mensual</code>) — lo que realmente se cobró vs. lo que valdría si cada renovación cobrara el fee de referencia.</p>
-      <div id="c-bolsa"><div class="pg-skel" style="height:220px"></div></div>
-    </div>
-    <div class="pg-card">
-      <h2>Lo que viene: premium en juego por mes</h2>
-      <p class="pg-purpose">Premium que vence cada mes, por mes de vencimiento — el punto del mes actual va más grande.</p>
-      <div id="c-enjuego"><div class="pg-skel" style="height:170px"></div></div>
-    </div>
-    <div class="pg-grid-3">
-      <div class="pg-card">
-        <h2>Renovado del mes</h2>
-        <p class="pg-purpose">% de lo que vencía este mes que ya quedó renovado.</p>
-        <div id="c-ring"><div class="pg-skel" style="height:150px"></div></div>
-        <div id="c-ring-contexto"></div>
+function sectionDivider(t){ return `<div class="pg-section-divider"><span class="sd-line"></span><span class="sd-lbl">${esc(t)}</span><span class="sd-line"></span></div>`; }
+function footnote(){
+  return `<div class="pg-footnote">Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy). Esta pantalla no muestra caja, retiro de socios, costo o sueldo individual de nadie, utilidad de otros agentes ni el mapa de cuadrantes — para eso está GABI 360, que exige el paquete liquidez_core y rol socio/director.</div>`;
+}
+
+/* =====================================================================
+   3) ESQUELETO ÚNICO — barra lateral (01-07) + las 7 casillas
+   ===================================================================== */
+function pintarEsqueletoCompleto(){
+  document.getElementById('pg-side2').innerHTML =
+    '<div class="pg-group-label">Secciones</div>' +
+    TABS.map((t,i)=>'<a data-tab="'+t.key+'"'+(i===0?' class="on"':'')+'><span class="ico">'+t.num+'</span><span>'+esc(t.titulo)+'<span class="sub">'+esc(t.sub)+'</span></span></a>').join('');
+
+  document.getElementById('pg-tabmain').innerHTML = `
+    <section class="pg-tabsection on" id="tab-area">
+      <div id="kd-alertas"></div>
+      <div class="pg-grid-3">
+        <div class="pg-card">
+          <h2>Índice del mes</h2>
+          <p class="pg-purpose">% de lo que vencía este mes ya renovado — sin maquillar, siempre contra el 70% esperado.</p>
+          <div id="kd-indice"></div>
+        </div>
+        <div class="pg-card">
+          <h2>Renovaciones activas del área</h2>
+          <p class="pg-purpose">Cuántas cuentas activas tiene hoy el área, por subestado.</p>
+          <div id="kd-cartera"></div>
+        </div>
+        <div class="pg-card">
+          <h2>Renovado del mes (cola)</h2>
+          <p class="pg-purpose">% de lo asignado en la cola operativa que ya cerró este mes.</p>
+          <div id="c-ring"><div class="pg-skel" style="height:150px"></div></div>
+          <div id="c-ring-contexto"></div>
+        </div>
       </div>
       <div class="pg-card">
-        <h2>Defendido vs perdido</h2>
-        <p class="pg-purpose">Premium retenido vs. premium perdido, por mes de renovación.</p>
-        <div id="c-linea"><div class="pg-skel" style="height:150px"></div></div>
+        <h2>Línea mensual del área</h2>
+        <p class="pg-purpose">% renovado por mes de vencimiento (cerrados y el mes en curso, nunca futuros). La raya punteada es el 70% esperado.</p>
+        <div class="chart-wrap" style="height:220px"><canvas id="kd-chLinea"></canvas></div>
+        <div id="kd-tasa-anual" style="margin-top:10px;font-size:12.5px;color:var(--pg-muted)"></div>
+      </div>
+      ${sectionDivider("Cola de retención — calendario 3-2-1")}
+      <div class="pg-card">
+        <p class="pg-purpose">Ordenada por fecha de renovación — las vencidas primero. En rojo cuando faltan 15 días o menos. Marca el avance con un clic; "perdido" pide el motivo.</p>
+        <div id="c-cola"><div class="pg-skel" style="height:220px"></div></div>
+      </div>
+      <div class="pg-grid-3">
+        <div class="pg-card">
+          <h2>Lo que viene: premium en juego</h2>
+          <p class="pg-purpose">Premium que vence cada mes en la cola operativa.</p>
+          <div id="c-enjuego"><div class="pg-skel" style="height:170px"></div></div>
+        </div>
+        <div class="pg-card">
+          <h2>Defendido vs perdido</h2>
+          <p class="pg-purpose">Premium retenido vs. premium perdido, por mes de renovación (cola operativa).</p>
+          <div id="c-linea"><div class="pg-skel" style="height:150px"></div></div>
+        </div>
+      </div>
+      ${footnote()}
+    </section>
+
+    <section class="pg-tabsection" id="tab-vendedores">
+      <div class="pg-card">
+        <h2>Índice de renovación por vendedor</h2>
+        <p class="pg-purpose">% renovado por mes de vencimiento, por dueño de la última venta del término. Selecciona un vendedor para resaltar su curva y ver su detalle.</p>
+        <div class="pg-vendedor-pick">
+          <label style="font-size:12.5px;font-weight:700;color:var(--pg-muted)">Vendedor:</label>
+          <select id="vend-select"><option value="">— todos (top 8) —</option></select>
+        </div>
+        <div class="chart-wrap" style="height:280px"><canvas id="chVendedores"></canvas></div>
+      </div>
+      <div class="pg-card" id="vend-drill" style="display:none">
+        <h2 id="vend-drill-titulo">Detalle del vendedor</h2>
+        <div id="vend-drill-kpis"></div>
+        <div id="vend-drill-cuentas" style="margin-top:12px"></div>
+      </div>
+      ${sectionDivider("Equipo de Brahian Toro — cola operativa")}
+      <div class="pg-card">
+        <p class="pg-purpose">Solo renovaciones de agentes activos del equipo de Brahian, desde la cola operativa: cuántas están en gestión, cuántas ya se cerraron, cuántas se perdieron, y el fee de renovación cobrado.</p>
+        <div id="c-rendimiento"><div class="pg-skel" style="height:180px"></div></div>
+      </div>
+    </section>
+
+    <section class="pg-tabsection" id="tab-septiembre">
+      <div class="pg-card">
+        <h2>Con qué llega el área al 1 de septiembre</h2>
+        <p class="pg-purpose">Línea base del estándar nuevo — el conteo en firme empieza el 1-sep-2026. De aquí en adelante es cómo se va construyendo.</p>
+        <div id="sep-kpis"><div class="pg-skel" style="height:80px"></div></div>
+      </div>
+      <div class="pg-card">
+        <h2>Índice desde septiembre</h2>
+        <p class="pg-purpose">Solo meses desde el 1-sep-2026 en adelante — se va llenando con el tiempo.</p>
+        <div class="chart-wrap" style="height:220px"><canvas id="chSeptiembre"></canvas></div>
+        <div id="sep-vacio"></div>
+      </div>
+    </section>
+
+    <section class="pg-tabsection" id="tab-efectividad">
+      <div class="pg-card">
+        <h2 id="kd-efectividad-titulo">Efectividad para renovar</h2>
+        <p class="pg-purpose">Solo términos ya vencidos: cuántos renovó cada dueño de la última venta del término, vs. el 70% esperado. Ordenado por premium perdido.</p>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <button type="button" class="cerradas-toggle kd-periodo-btn activo" data-meses="12" data-anio="false" style="border:1px solid var(--pg-line);border-radius:999px;padding:5px 12px" onclick="kdCambiarPeriodo(12,false)">Últimos 12 meses</button>
+          <button type="button" class="cerradas-toggle kd-periodo-btn" data-meses="12" data-anio="true" style="border:1px solid var(--pg-line);border-radius:999px;padding:5px 12px" onclick="kdCambiarPeriodo(12,true)">Año en curso</button>
+        </div>
+        <div class="chart-wrap" style="height:240px"><canvas id="chEfectividad"></canvas></div>
+        <div id="kd-efectividad" style="margin-top:16px"></div>
+      </div>
+    </section>
+
+    <section class="pg-tabsection" id="tab-esquema">
+      <div id="kd-esquema"></div>
+    </section>
+
+    <section class="pg-tabsection" id="tab-muro">
+      <div class="pg-card">
+        <p class="pg-purpose">Premium que viene por mes (meses futuros, todavía sin vencer) — no es un porcentaje, es lo que se acerca.</p>
+        <div id="kd-muro"></div>
+      </div>
+    </section>
+
+    <section class="pg-tabsection" id="tab-bolsa">
+      <div class="pg-card">
+        <h2>Tu bolsa de renovaciones</h2>
+        <p class="pg-purpose">Tu parte de la bolsa de fees de renovación (área "renovaciones", <code>v_bolsa_persona_mensual</code>) — lo que realmente se cobró vs. lo que valdría si cada renovación cobrara el fee de referencia. Andrés dejó anotado que este estándar hay que ajustarlo — la fórmula actual (25% del área / 75% agencia) no cambia aquí; el ajuste queda pendiente de su decisión.</p>
+        <div id="c-bolsa"><div class="pg-skel" style="height:220px"></div></div>
       </div>
       <div class="pg-card">
         <h2>Genera vs gasta — dirección de renovaciones</h2>
         <p class="pg-purpose">Lo que produce el equipo comercial en renovaciones vs. lo que cuesta dirigirlo.</p>
         <div id="c-genera"><div class="pg-skel" style="height:150px"></div></div>
       </div>
-    </div>
-    ${sectionDivider("Cola de retención")}
-    <div class="pg-card">
-      <p class="pg-purpose">Ordenada por fecha de renovación — las vencidas primero. En rojo cuando faltan 15 días o menos. Marca el avance con un clic; "perdido" pide el motivo.</p>
-      <div id="c-cola"><div class="pg-skel" style="height:220px"></div></div>
-    </div>
-    ${sectionDivider("Rendimiento por agente")}
-    <div class="pg-card">
-      <h2>Rendimiento por agente — equipo de Brahian Toro</h2>
-      <p class="pg-purpose">Solo renovaciones de agentes activos del equipo de Brahian: cuántas están en gestión, cuántas ya se cerraron, cuántas se perdieron, y el fee de renovación cobrado. No incluye costos de nómina ni utilidad — eso es de socios, no vive aquí.</p>
-      <div id="c-rendimiento"><div class="pg-skel" style="height:180px"></div></div>
-    </div>
-    ${footnote()}
+    </section>
   `;
-}
-function sectionDivider(t){ return `<div class="pg-section-divider"><span class="sd-line"></span><span class="sd-lbl">${esc(t)}</span><span class="sd-line"></span></div>`; }
-function footnote(){
-  return `<div class="pg-footnote">Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy): retencion_asignaciones, v_retencion_mensual, v_direccion_renovaciones. Esta pantalla no muestra caja, retiro de socios, costo o sueldo individual de nadie, utilidad de otros agentes ni el mapa de cuadrantes — para eso está GABI 360, que exige el paquete liquidez_core y rol socio/director.</div>`;
 }
 
 async function cargarTodo(){
-  pintarEsqueleto();
   document.getElementById("pg-stamp").textContent = "cargando…";
-  await Promise.all([ cargarBolsa(), cargarPremiumEnJuego(), cargarRing(), cargarLinea(), cargarGeneraGasta(), cargarCola(), cargarRendimientoAgente() ]);
+  await Promise.all([
+    cargarBolsa(), cargarPremiumEnJuego(), cargarRing(), cargarLinea(), cargarGeneraGasta(), cargarCola(), cargarRendimientoAgente(),
+    cargarDireccion(), cargarVendedores(), cargarDesdeSeptiembre(),
+  ]);
   document.getElementById("pg-stamp").textContent = "datos al " + new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
 }
 
@@ -498,16 +655,16 @@ async function cargarBolsa(){
     '<p class="pg-purpose" style="margin-top:12px">'+textoFranja+'</p>'+
     lineaMiembros;
 
-  new Chart(document.getElementById("chBolsa"), {
+  pintarChart('chBolsa', {
     type:'line',
     data:{ labels, datasets:[
-      { label:'Tu bolsa', data: real, borderWidth:2.6, tension:.25, order:2, fill:false,
-        borderColor: GRIS,
+      { label:'Tu bolsa', data: real, borderWidth:2.6, tension:.4, order:2, fill:true,
+        borderColor: GRIS, backgroundColor:'rgba(154,169,180,.06)',
         pointRadius: 3,
         pointBackgroundColor: rows.map((r,i)=> enFirme[i] ? '#1F9D6B' : GRIS),
         pointBorderColor: rows.map((r,i)=> enFirme[i] ? '#1F9D6B' : GRIS),
         segment: { borderColor: ctx => segEnFirme(ctx) ? '#1F9D6B' : GRIS } },
-      { label:'Bolsa potencial (línea base / fee por tramo)', data: potencial, borderDash:[5,4], borderWidth:1.8, tension:.25, pointRadius:0, order:1, fill:'-1',
+      { label:'Bolsa potencial (línea base / fee por tramo)', data: potencial, borderDash:[5,4], borderWidth:1.8, tension:.4, pointRadius:0, order:1, fill:'-1',
         borderColor: GRIS, backgroundColor: GRIS_FILL,
         segment: {
           borderColor: ctx => segEnFirme(ctx) ? '#D9A520' : GRIS,
@@ -532,12 +689,12 @@ async function cargarPremiumEnJuego(){
   if(!filas.length){ el.innerHTML = '<div class="pg-purpose">Sin renovaciones asignadas todavía.</div>'; return; }
   const mesHoy = mesActualISO();
   el.innerHTML = '<div class="chart-wrap" style="height:220px"><canvas id="chEnJuego"></canvas></div>';
-  new Chart(document.getElementById("chEnJuego"), {
+  pintarChart('chEnJuego', {
     type:'line',
     data:{ labels: filas.map(r=>fmtMes(r.mes)),
       datasets:[{
         label:'Premium en juego', data: filas.map(r=>Number(r.premium_en_juego||0)),
-        borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.18)', fill:true, tension:.25,
+        borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.18)', fill:true, tension:.4,
         pointRadius: filas.map(r=>r.mes===mesHoy?7:3),
         pointBackgroundColor: filas.map(r=>r.mes===mesHoy?'#2DBFA3':'#fff'),
         pointBorderColor:'#2DBFA3', pointBorderWidth:2
@@ -557,15 +714,14 @@ async function cargarRing(){
   const row = data || { renovadas:0, perdidas:0, en_gestion:0, pct_renovado:null, asignadas:0, premium_en_juego:0 };
   const cerradas = Number(row.renovadas||0) + Number(row.perdidas||0);
   el.innerHTML = '<div class="ring-wrap"><canvas id="chRing"></canvas><div class="ring-center" id="ringCenter"></div></div>';
-  const ctx = document.getElementById("chRing");
   const center = document.getElementById("ringCenter");
   if(cerradas === 0){
-    CH_RING = new Chart(ctx, { type:'doughnut', data:{ labels:['En gestión'], datasets:[{ data:[1], backgroundColor:['#D8DFE4'], borderWidth:0 }] },
+    pintarChart('chRing', { type:'doughnut', data:{ labels:['En gestión'], datasets:[{ data:[1], backgroundColor:['#D8DFE4'], borderWidth:0 }] },
       options:{ cutout:'72%', plugins:{legend:{display:false},tooltip:{enabled:false}} } });
     center.innerHTML = '<div class="rc-val">'+Number(row.en_gestion||0)+'</div><div class="rc-lbl">sin cerrar aún</div>';
   } else {
     const pct = Number(row.pct_renovado||0);
-    CH_RING = new Chart(ctx, { type:'doughnut', data:{ labels:['Renovado','Resto'], datasets:[{ data:[pct, Math.max(0,100-pct)], backgroundColor:['#2DBFA3','#E7EDF2'], borderWidth:0 }] },
+    pintarChart('chRing', { type:'doughnut', data:{ labels:['Renovado','Resto'], datasets:[{ data:[pct, Math.max(0,100-pct)], backgroundColor:['#2DBFA3','#E7EDF2'], borderWidth:0 }] },
       options:{ cutout:'72%', plugins:{legend:{display:false},tooltip:{enabled:false}} } });
     center.innerHTML = '<div class="rc-val">'+pct.toFixed(1)+'%</div><div class="rc-lbl">renovado · '+cerradas+' cerradas de '+Number(row.asignadas||0)+'</div>';
   }
@@ -591,12 +747,12 @@ async function cargarLinea(){
   const todoCero = filas.every(r => Number(r.premium_retenido||0)===0 && Number(r.premium_perdido||0)===0);
   el.innerHTML = '<div class="chart-wrap"><canvas id="chLinea"></canvas></div>' +
     (todoCero ? '<div class="pg-purpose" style="margin-top:10px">Se va llenando a medida que cierren las renovaciones de '+esc(fmtMes(filas[0].mes))+'.</div>' : '');
-  CH_LINEA = new Chart(document.getElementById("chLinea"), {
+  pintarChart('chLinea', {
     type:'line',
     data:{ labels: filas.map(r=>fmtMes(r.mes)),
       datasets:[
-        { label:'Retenido', data: filas.map(r=>Number(r.premium_retenido||0)), borderColor:'#2DBFA3', backgroundColor:'#2DBFA3', tension:.25 },
-        { label:'Perdido',  data: filas.map(r=>Number(r.premium_perdido||0)),  borderColor:'#D5594F', backgroundColor:'#D5594F', tension:.25 },
+        { label:'Retenido', data: filas.map(r=>Number(r.premium_retenido||0)), borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.14)', fill:true, tension:.4 },
+        { label:'Perdido',  data: filas.map(r=>Number(r.premium_perdido||0)),  borderColor:'#D5594F', backgroundColor:'rgba(213,89,79,.12)', fill:true, tension:.4 },
       ] },
     options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}}, scales:{ y:{ beginAtZero:true, ticks:{ callback:(v)=>fmtUSD(v) } } } }
   });
@@ -717,12 +873,14 @@ function semaforoColor(pct){
 let KD_PERIODO = { meses:12, anioActual:false };
 
 async function cargarDireccion(){
-  const el = document.getElementById('pg-direccion');
   const idxR = await SB.from('v_indice_renovaciones_mensual_visible').select('*').order('mes',{ascending:true});
-  if(idxR.error || !idxR.data || !idxR.data.length){ el.style.display='none'; return; }
-  el.style.display = 'block';
+  if(idxR.error || !idxR.data || !idxR.data.length){
+    ['kd-alertas','kd-indice','kd-cartera','kd-efectividad','kd-esquema','kd-muro'].forEach(id=>{
+      const e = document.getElementById(id); if(e) e.innerHTML = '<div class="pg-purpose">Sin datos de dirección disponibles para tu usuario.</div>';
+    });
+    return;
+  }
   const idx = idxR.data;
-  pintarDireccionEsqueleto(el);
   const [carteraR, rojoR, rojoCuentasR, vendeR, grandeR, bolsaKarenR, ingresoR, escaleraR, participacionR] = await Promise.all([
     SB.from('v_cartera_activa_visible').select('area,estado,subestado,premium_activo').limit(5000),
     SB.from('v_alerta_mes_rojo_visible').select('*').maybeSingle(),
@@ -752,54 +910,33 @@ async function cargarEfectividad(){
   el.innerHTML = '<div class="pg-skel" style="height:120px"></div>';
   const { data, error } = await SB.rpc('f_efectividad_agente_renovar', { p_meses: KD_PERIODO.meses, p_anio_actual: KD_PERIODO.anioActual });
   if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
-  pintarEfectividad((data||[]).slice().sort((a,b)=>Number(b.premium_perdido||0)-Number(a.premium_perdido||0)));
+  const ordenado = (data||[]).slice().sort((a,b)=>Number(b.premium_perdido||0)-Number(a.premium_perdido||0));
+  pintarEfectividad(ordenado);
+  pintarEfectividadOndas(ordenado);
+}
+
+/* ---- 04 Efectividad graficada en ondas (curva suave sobre el ranking por premium perdido) ---- */
+function pintarEfectividadOndas(lista){
+  const c = document.getElementById('chEfectividad'); if(!c) return;
+  if(!lista.length) return;
+  const labels = lista.map(a=>a.dueno);
+  const data = lista.map(a=>Number(a.pct_renovado||0));
+  pintarChart('chEfectividad', {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'% renovado', data, borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.16)', fill:true, tension:.4, pointRadius:3,
+        pointBackgroundColor: data.map(v=>semaforoColor(v)), borderWidth:2.2 },
+      { label:'Estándar 70%', data: labels.map(()=>70), borderColor:'#D9A520', borderDash:[6,4], borderWidth:1.6, pointRadius:0, fill:false, tension:0 }
+    ]},
+    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:10}}}},
+      scales:{ x:{ ticks:{ font:{size:10}, maxRotation:60, minRotation:40 } }, y:{ min:0, max:100, ticks:{ callback:v=>v+'%' } } } }
+  });
 }
 window.kdCambiarPeriodo = function(meses, anioActual){
   KD_PERIODO = { meses, anioActual };
   document.querySelectorAll('.kd-periodo-btn').forEach(b=>b.classList.toggle('activo', b.dataset.meses==String(meses) && b.dataset.anio==String(anioActual)));
   cargarEfectividad();
 };
-
-function pintarDireccionEsqueleto(el){
-  el.innerHTML = `
-    ${sectionDivider('Vista de dirección · Renovaciones')}
-    <div id="kd-alertas"></div>
-    <div class="pg-card">
-      <h2>Índice de renovaciones del mes</h2>
-      <p class="pg-purpose">% de lo que vencía este mes ya renovado — sin maquillar, siempre contra el 70% esperado.</p>
-      <div id="kd-indice"></div>
-    </div>
-    <div class="pg-card">
-      <h2>Línea mensual</h2>
-      <p class="pg-purpose">% renovado por mes de vencimiento (cerrados y el mes en curso, nunca futuros). La raya punteada es el 70% esperado.</p>
-      <div class="chart-wrap" style="height:220px"><canvas id="kd-chLinea"></canvas></div>
-      <div id="kd-tasa-anual" style="margin-top:10px;font-size:12.5px;color:var(--pg-muted)"></div>
-    </div>
-    ${sectionDivider('Cartera activa')}
-    <div class="pg-card"><div id="kd-cartera"></div></div>
-    ${sectionDivider('Efectividad por agente')}
-    <div class="pg-card">
-      <h2 id="kd-efectividad-titulo">Efectividad para renovar</h2>
-      <p class="pg-purpose">Solo términos ya vencidos: cuántos renovó cada dueño de la última venta del término, vs. el 70% esperado. Ordenado por premium perdido.</p>
-      <div style="display:flex;gap:6px;margin-bottom:10px">
-        <button type="button" class="cerradas-toggle kd-periodo-btn activo" data-meses="12" data-anio="false" style="border:1px solid var(--pg-line);border-radius:999px;padding:5px 12px" onclick="kdCambiarPeriodo(12,false)">Últimos 12 meses</button>
-        <button type="button" class="cerradas-toggle kd-periodo-btn" data-meses="12" data-anio="true" style="border:1px solid var(--pg-line);border-radius:999px;padding:5px 12px" onclick="kdCambiarPeriodo(12,true)">Año en curso</button>
-      </div>
-      <div id="kd-efectividad"></div>
-    </div>
-    ${sectionDivider('Esquema de bono · Karen')}
-    <div id="kd-esquema"></div>
-    ${sectionDivider('Muro 2027')}
-    <div class="pg-card">
-      <p class="pg-purpose">Premium que viene por mes (meses futuros, todavía sin vencer) — no es un porcentaje, es lo que se acerca.</p>
-      <div id="kd-muro"></div>
-    </div>
-    ${sectionDivider('Calendario 3-2-1')}
-    <div class="pg-card">
-      <div class="pg-warn-box">TODO — pieza sin construir todavía en este ciclo. La cola operativa de hoy sigue abajo, en "Cola de retención".</div>
-    </div>
-  `;
-}
 
 function pintarIndiceMes(idx){
   const el = document.getElementById('kd-indice');
@@ -818,12 +955,12 @@ function pintarLineaMensual(idx){
   if(!filas.length) return;
   const labels = filas.map(r=>fmtMes(r.mes));
   const data = filas.map(r=>r.pct_renovado===null?null:Number(r.pct_renovado));
-  new Chart(document.getElementById('kd-chLinea'), {
+  pintarChart('kd-chLinea', {
     type:'line',
     data:{ labels, datasets:[
-      { label:'% renovado', data, borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.15)', fill:true, tension:.25, spanGaps:true,
+      { label:'% renovado', data, borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.15)', fill:true, tension:.4, spanGaps:true,
         pointBackgroundColor: filas.map(r=>semaforoColor(r.pct_renovado===null?null:Number(r.pct_renovado))), pointBorderWidth:0 },
-      { label:'Estándar 70%', data: labels.map(()=>70), borderColor:'#D9A520', borderDash:[6,4], borderWidth:1.6, pointRadius:0, fill:false }
+      { label:'Estándar 70%', data: labels.map(()=>70), borderColor:'#D9A520', borderDash:[6,4], borderWidth:1.6, pointRadius:0, fill:false, tension:0 }
     ]},
     options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}},
       scales:{ y:{ min:0, max:100, ticks:{ callback:v=>v+'%' } } } }
@@ -996,19 +1133,19 @@ function pintarEsquemaKaren(bolsaRows, ingresoRows, escaleraRows, participacionR
     '</div>'+
   '</div>';
 
-  new Chart(document.getElementById('kd-g1'), {
+  pintarChart('kd-g1', {
     type:'line',
     data:{ labels: g1Labels, datasets:[
-      { label:'Bolsa (25/75, liquidada)', data: g1Bolsa, stack:'ing', borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.35)', fill:true, tension:.15, pointRadius:1, borderWidth:2 },
-      { label:'0.35% premium (medido)', data: g1Premium, stack:'ing', borderColor:'#D9A520', backgroundColor:'rgba(217,165,32,.20)', borderDash:[5,4], fill:true, tension:.15, pointRadius:0, borderWidth:1.6 },
-      { label:'3.5% fees (medido)', data: g1Fees, stack:'ing', borderColor:'#8a6412', backgroundColor:'rgba(138,100,18,.16)', borderDash:[5,4], fill:true, tension:.15, pointRadius:0, borderWidth:1.6 },
+      { label:'Bolsa (25/75, liquidada)', data: g1Bolsa, stack:'ing', borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.35)', fill:true, tension:.4, pointRadius:1, borderWidth:2 },
+      { label:'0.35% premium (medido)', data: g1Premium, stack:'ing', borderColor:'#D9A520', backgroundColor:'rgba(217,165,32,.20)', borderDash:[5,4], fill:true, tension:.4, pointRadius:0, borderWidth:1.6 },
+      { label:'3.5% fees (medido)', data: g1Fees, stack:'ing', borderColor:'#8a6412', backgroundColor:'rgba(138,100,18,.16)', borderDash:[5,4], fill:true, tension:.4, pointRadius:0, borderWidth:1.6 },
     ]},
     options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:10}}}}, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>fmtUSD(v) } } } }
   });
 
   const g2Points = [{x:0,y:0}].concat(escaleraMensual.map(t=>({x:Number(t.umbral), y:Number(t.bono_usd)})));
   const g2Max = escaleraMensual.length ? Number(escaleraMensual[escaleraMensual.length-1].umbral)*1.1 : Math.max(premiumActual*1.2,1);
-  new Chart(document.getElementById('kd-g2'), {
+  pintarChart('kd-g2', {
     type:'line',
     data:{ datasets:[
       { label:'Escalera', data:g2Points, stepped:'before', borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.12)', fill:true, pointRadius:3, borderWidth:2 },
@@ -1018,7 +1155,7 @@ function pintarEsquemaKaren(bolsaRows, ingresoRows, escaleraRows, participacionR
       scales:{ x:{ type:'linear', min:0, max:g2Max, ticks:{ callback:v=>fmtUSD(v) } }, y:{ beginAtZero:true, ticks:{ callback:v=>fmtUSD(v) } } } }
   });
 
-  new Chart(document.getElementById('kd-g3'), {
+  pintarChart('kd-g3', {
     type:'doughnut',
     data:{ labels:['Avance','Resto'], datasets:[{ data:[ringPct, Math.max(0,100-ringPct)], backgroundColor:[semaforoColor(tasaAnual),'#E7EDF2'], borderWidth:0 }] },
     options:{ cutout:'72%', plugins:{legend:{display:false},tooltip:{enabled:false}} }
@@ -1054,6 +1191,129 @@ function pintarMuro2027(idx){
 }
 
 /* =====================================================================
+   3c) 02 VENDEDORES — índice de renovación en ondas + drill por agente
+   ===================================================================== */
+const PALETA_8 = ['#2DBFA3','#1B2D3A','#D9A520','#D5594F','#6B7D89','#8a6412','#1F9D6B','#5B8FB9'];
+let VEND_MENSUAL = [], VEND_TOTALES = [];
+
+async function cargarVendedores(){
+  const [mensualR, totalesR] = await Promise.all([
+    SB.from('v_efectividad_agente_mensual_visible').select('*').order('mes',{ascending:true}),
+    SB.rpc('f_efectividad_agente_renovar', { p_meses: 12, p_anio_actual: false })
+  ]);
+  if(mensualR.error || !mensualR.data || !mensualR.data.length){
+    const wrap = document.getElementById('chVendedores');
+    if(wrap && wrap.parentElement) wrap.parentElement.innerHTML = '<div class="pg-purpose">Sin datos disponibles.</div>';
+    return;
+  }
+  VEND_MENSUAL = mensualR.data;
+  VEND_TOTALES = totalesR.data || [];
+  const select = document.getElementById('vend-select');
+  const nombres = Array.from(new Set(VEND_MENSUAL.map(r=>r.dueno))).sort((a,b)=>a.localeCompare(b));
+  select.innerHTML = '<option value="">— todos (top 8) —</option>' + nombres.map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join('');
+  select.onchange = ()=> pintarVendedores(select.value || null);
+  pintarVendedores(null);
+}
+
+function pintarVendedores(resaltado){
+  const meses = Array.from(new Set(VEND_MENSUAL.map(r=>String(r.mes)))).sort();
+  const porAgente = {};
+  VEND_MENSUAL.forEach(r=>{
+    if(!porAgente[r.dueno]) porAgente[r.dueno] = {};
+    porAgente[r.dueno][String(r.mes)] = Number(r.pct_renovado||0);
+  });
+  const top8 = VEND_TOTALES.slice().sort((a,b)=>Number(b.vencieron||0)-Number(a.vencieron||0)).slice(0,8).map(a=>a.dueno);
+  const agentes = top8.slice();
+  if(resaltado && agentes.indexOf(resaltado)<0) agentes.push(resaltado);
+  const datasets = agentes.map((nom,i)=>{
+    const esResaltado = resaltado===nom;
+    const data = meses.map(m => (porAgente[nom] && porAgente[nom][m]!=null) ? porAgente[nom][m] : null);
+    return {
+      label: nom, data,
+      borderColor: PALETA_8[i%PALETA_8.length],
+      backgroundColor: esResaltado ? PALETA_8[i%PALETA_8.length]+'30' : 'transparent',
+      borderWidth: resaltado ? (esResaltado?3:1) : 1.8,
+      tension:.4, spanGaps:true, pointRadius:0, fill: esResaltado, order: esResaltado?0:1
+    };
+  });
+  pintarChart('chVendedores', {
+    type:'line',
+    data:{ labels: meses.map(fmtMes), datasets },
+    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:9}}}},
+      scales:{ y:{ min:0, max:100, ticks:{ callback:v=>v+'%' } } } }
+  });
+  if(resaltado) verVendedor(resaltado);
+  else document.getElementById('vend-drill').style.display = 'none';
+}
+
+async function verVendedor(nombre){
+  const box = document.getElementById('vend-drill');
+  const tit = document.getElementById('vend-drill-titulo');
+  const kpisEl = document.getElementById('vend-drill-kpis');
+  const cuentasEl = document.getElementById('vend-drill-cuentas');
+  box.style.display = 'block';
+  tit.textContent = 'Detalle · ' + nombre;
+  kpisEl.innerHTML = '<div class="pg-skel" style="height:40px"></div>';
+  cuentasEl.innerHTML = '';
+  const totales = VEND_TOTALES.find(a=>a.dueno===nombre);
+  const { data: cuentas, error } = await SB.from('v_cartera_activa_visible')
+    .select('llave,estado,subestado,premium_activo,vence_est')
+    .eq('dueno_ultima_venta', nombre).eq('estado','ACTIVA').order('premium_activo',{ascending:false});
+  kpisEl.innerHTML = '<div class="gv-kpis">'+
+    '<div class="gv-kpi"><div class="lbl">Vencieron (12m)</div><div class="val">'+(totales?totales.vencieron:0)+'</div></div>'+
+    '<div class="gv-kpi"><div class="lbl">Renovó</div><div class="val">'+(totales?totales.renovaron:0)+'</div></div>'+
+    '<div class="gv-kpi"><div class="lbl">%</div><div class="val" style="color:'+semaforoColor(totales?Number(totales.pct_renovado):null)+'">'+(totales?totales.pct_renovado+'%':'—')+'</div></div>'+
+    '<div class="gv-kpi"><div class="lbl">Cuentas activas hoy</div><div class="val">'+(cuentas?cuentas.length:0)+'</div></div>'+
+  '</div>';
+  if(error){ cuentasEl.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
+  const lista = cuentas || [];
+  cuentasEl.innerHTML = lista.length
+    ? '<div class="tablewrap" style="max-height:300px;overflow-y:auto"><table class="pg-table"><thead><tr><th>Cuenta</th><th>Subestado</th><th class="num">Premium</th><th>Vence</th></tr></thead><tbody>'+
+      lista.map(c=>'<tr><td>'+esc(c.llave)+'</td><td>'+esc(SUBESTADO_LBL[c.subestado]||c.subestado||'—')+'</td><td class="num">'+fmtUSD(c.premium_activo)+'</td><td>'+fmtFecha(c.vence_est)+'</td></tr>').join('')+
+      '</tbody></table></div>'
+    : '<div class="pg-purpose">Sin cuentas activas hoy.</div>';
+}
+
+/* =====================================================================
+   3d) 03 DESDE SEPTIEMBRE — línea base del estándar nuevo (1-sep-2026)
+   ===================================================================== */
+async function cargarDesdeSeptiembre(){
+  const kpisEl = document.getElementById('sep-kpis');
+  const [carteraR, idxR] = await Promise.all([
+    SB.from('v_cartera_activa_visible').select('area,estado,premium_activo').limit(5000),
+    SB.from('v_indice_renovaciones_mensual_visible').select('*').gte('mes','2026-09-01').order('mes',{ascending:true})
+  ]);
+  if(carteraR.error){ kpisEl.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(carteraR.error.message)+'</div>'; return; }
+  const cartera = carteraR.data || [];
+  const activas = cartera.filter(r=>r.estado==='ACTIVA');
+  const totalPremium = activas.reduce((s,r)=>s+Number(r.premium_activo||0),0);
+  const porArea = {};
+  activas.forEach(r=>{ const a=r.area||'—'; porArea[a]=(porArea[a]||0)+1; });
+  kpisEl.innerHTML = '<div class="gv-kpis">'+
+    '<div class="gv-kpi"><div class="lbl">Cuentas activas</div><div class="val">'+activas.length+'</div></div>'+
+    '<div class="gv-kpi"><div class="lbl">Premium activo</div><div class="val">'+fmtUSD(totalPremium)+'</div></div>'+
+    Object.entries(porArea).map(([a,n])=>'<div class="gv-kpi"><div class="lbl">'+esc(a)+'</div><div class="val">'+n+'</div></div>').join('')+
+  '</div>'+
+  '<p class="pg-purpose" style="margin-top:10px">Foto de hoy — el conteo en firme del estándar nuevo arranca el 1-sep-2026, así que esto es el punto de partida.</p>';
+
+  const filas = (idxR.data||[]).filter(r=>r.estado_mes!=='futuro');
+  const vacioEl = document.getElementById('sep-vacio');
+  if(!filas.length){
+    vacioEl.innerHTML = '<div class="pg-purpose">Todavía no hay meses cerrados desde septiembre — se va llenando con el tiempo.</div>';
+    return;
+  }
+  vacioEl.innerHTML = '';
+  pintarChart('chSeptiembre', {
+    type:'line',
+    data:{ labels: filas.map(r=>fmtMes(r.mes)), datasets:[
+      { label:'% renovado', data: filas.map(r=>r.pct_renovado===null?null:Number(r.pct_renovado)), borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.16)', fill:true, tension:.4, spanGaps:true },
+      { label:'Estándar 70%', data: filas.map(()=>70), borderColor:'#D9A520', borderDash:[6,4], pointRadius:0, fill:false, tension:0 }
+    ]},
+    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:10}}}}, scales:{ y:{ min:0, max:100, ticks:{ callback:v=>v+'%' } } } }
+  });
+}
+
+/* =====================================================================
    4) ARRANQUE
    ===================================================================== */
 (async function init() {
@@ -1068,7 +1328,7 @@ function pintarMuro2027(idx){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=10; // G1/G2/G3 con datos reales: bono_escalera/bono_participacion + lideres_config (0.35%/3.5% de Karen vía RPC) — ya no son TODO
+var PGV_VERSION=11; // Bug fix: split KAREN/RETENCION estaba invertido en v_cartera_activa. Rediseño de layout: 7 casillas laterales numeradas (patrón gabi360), gráficas mensuales a estilo ondas (tension 0.4), 02 Vendedores con drill-down por agente, 03 Desde septiembre (línea base)
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

@@ -49,7 +49,43 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media(max-width:900px){.grid{grid-template-columns:1fr}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+<div id="pgGate" style="position:fixed;inset:0;z-index:2147483000;background:#0D3040;display:flex;align-items:center;justify-content:center;padding:24px;font-family:Arial,Helvetica,sans-serif;">
+  <div style="max-width:380px;text-align:center;color:#fff;">
+    <div style="font-family:'Montserrat',Arial,sans-serif;font-weight:800;font-size:18px;margin-bottom:10px;">ProtectGo</div>
+    <div id="pgGateMsg" style="font-size:14px;line-height:1.6;color:#C7D2D9;">Verificando tu sesión…</div>
+    <a href="index.html" style="display:inline-block;margin-top:16px;color:#2DBFA3;font-weight:700;text-decoration:none;font-size:13px;">&larr; Volver al portal</a>
+  </div>
+</div>
+<script>
+/* Candado de sesión (ronda cierre final montaje) — mismo mecanismo de auto-relleno
+   por sesión que ya usa generador-firmas.html (SB.auth.getSession()), pero aquí SÍ
+   bloquea: sin sesión, o sin permiso real vía puede_ver(firmas_agencies), esta
+   herramienta no se abre. Antes de esta ronda, este archivo era un archivo suelto
+   sin ningún control — ahora respeta la misma capa fina que el resto del portal
+   (portal.pantalla_acceso, areas_permitidas). */
+(function(){
+  var SB_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+  var SB_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+  var CLAVE="firmas_agencies";
+  function msg(t){ var e=document.getElementById('pgGateMsg'); if(e) e.textContent=t; }
+  function abrir(){ var g=document.getElementById('pgGate'); if(g) g.remove(); }
+  if(!(window.supabase&&window.supabase.createClient)){ msg('No se pudo cargar la verificación de sesión. Vuelve al portal e intenta de nuevo.'); }
+  else {
+    var sb=window.supabase.createClient(SB_URL,SB_KEY);
+    sb.auth.getSession().then(function(r){
+      var ses=r&&r.data&&r.data.session;
+      if(!ses){ msg('Inicia sesión en el portal para usar este generador.'); return; }
+      sb.rpc('puede_ver',{p_clave:CLAVE}).then(function(res){
+        if(res.error){ msg('No se pudo verificar tu acceso ahora mismo. Intenta de nuevo.'); return; }
+        if(res.data===true) abrir();
+        else msg('Tu cuenta no tiene acceso a esta herramienta.');
+      });
+    });
+  }
+})();
+</script>
 <body>
 <a href="index.html" id="pgVolver" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
 <div class="wrap">
@@ -168,7 +204,7 @@ render();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="generador-firmas-agencies.html";
-var PGV_VERSION=1;
+var PGV_VERSION=2; // + candado de sesión/área (puede_ver) — ronda cierre final montaje
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');

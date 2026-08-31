@@ -259,6 +259,18 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
 .vm-pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700}
 .vm-pill.on{background:#E3F4EF;color:var(--pg-pos)} .vm-pill.off{background:#FCEEEC;color:var(--pg-neg)}
 .vm-pill.finca{background:#F1F5F8;color:var(--pg-ink)} .vm-pill.sinfina{background:#FBF3E2;color:var(--pg-warn)}
+.fp-row{display:flex;align-items:center;gap:14px;padding:11px 14px;border:1px solid var(--pg-line);border-radius:12px;background:var(--pg-card);margin-bottom:8px}
+.fp-thumb{width:52px;height:52px;border-radius:50%;object-fit:cover;flex:none;background:#EEF2F5;border:1px solid var(--pg-line)}
+.fp-thumb-ph{width:52px;height:52px;border-radius:50%;flex:none;background:#F1F5F8;color:var(--pg-muted);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;text-align:center;border:1px dashed #c7d2da}
+.fp-name{font-weight:700;color:var(--pg-ink);font-size:13.5px}
+.fp-email{font-size:11.5px;color:var(--pg-muted);font-family:var(--f-num)}
+.fp-info{flex:1;min-width:0}
+.fp-actions{display:flex;align-items:center;gap:8px;flex:none}
+.fp-btn{font-family:var(--f-body);font-weight:700;font-size:12px;border:1px solid var(--pg-line);background:#fff;color:var(--pg-ink);padding:7px 13px;border-radius:999px;cursor:pointer}
+.fp-btn:hover{border-color:var(--pg-mint,#2DBFA3)}
+.fp-btn:disabled{opacity:.55;cursor:default}
+.fp-status{font-size:11px;color:var(--pg-muted);min-width:70px;text-align:right}
+.fp-status.ok{color:var(--pg-pos)} .fp-status.err{color:var(--pg-neg)}
 .vm-count-badge{font-family:var(--f-num);font-size:12px;font-weight:700;color:var(--pg-ink);background:#F1F5F8;border-radius:999px;padding:3px 10px}
 .vm-expand{background:transparent;border:none;color:var(--pg-mint-deep);cursor:pointer;font-size:16px;padding:0 4px}
 .vm-detail{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--pg-line)}
@@ -314,6 +326,7 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
         <button class="mode-btn active" id="modoAreaBtn">Por área</button>
         <button class="mode-btn" id="modoUsuarioBtn">Por usuario</button>
         <button class="mode-btn" id="modoMaestraBtn">Vista Maestra</button>
+        <button class="mode-btn" id="modoFotosBtn">Fotos</button>
       </div>
       <button class="mtb-btn" id="verComoBtn">👁 Ver como…</button>
       <div class="spacer"></div>
@@ -358,6 +371,29 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
       </div>
       <div id="maestraLista"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
       <p class="pg-note" id="maestraNota" style="margin-top:20px"></p>
+    </div>
+
+    <!-- ===== FOTOS — panel de administración (solo sales@ sube; ronda "Fotos en firmas y tarjetas") =====
+         Sube UNA foto por persona, la recorta a cuadrado y la comprime en el navegador ANTES de
+         subirla a Supabase Storage (bucket público "fotos"), y guarda la asignación persona→URL en
+         portal.fotos_personas (email como llave — gabi_accesos es 1 fila POR PAQUETE, no por persona;
+         agentes no cubre a todo el mundo). generador-firmas.html y tarjetas.html leen esa tabla y
+         cargan la foto sola, sin campo editable ni botón de subir para nadie más. -->
+    <div id="fotosPanel" style="display:none">
+      <p class="mleyenda">
+        <b>Qué es esto:</b> la foto de cada persona para su firma y su tarjeta. Solo <b>sales@</b> la sube —
+        no es autoservicio. Se guarda por persona (<code>portal.fotos_personas</code>, llave = correo) y
+        queda ahí: la persona abre su generador y su foto ya está, sin subir nada. Quien no tenga foto
+        todavía genera su firma/tarjeta igual, sin foto — nunca se bloquea.
+      </p>
+      <div class="vm-toolbar">
+        <div class="vm-fld"><label>Buscar</label><input type="text" id="fpFBusca" placeholder="Nombre o correo…"></div>
+        <label style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--pg-ink);font-weight:600;margin-bottom:2px;">
+          <input type="checkbox" id="fpFSinFoto"> Solo sin foto todavía
+        </label>
+        <span class="vm-count" id="fpCount"></span>
+      </div>
+      <div id="fotosLista"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
     </div>
 
     <!-- ===== SECCIÓN CAJA Y LIQUIDEZ (solo sales@) — Ronda 1 Módulo Caja (reemplaza el panel F2) ===== -->
@@ -702,10 +738,13 @@ async function cambiarModo(m){
   document.getElementById("modoAreaBtn").className="mode-btn"+(m==="area"?" active":"");
   document.getElementById("modoUsuarioBtn").className="mode-btn"+(m==="usuario"?" active":"");
   document.getElementById("modoMaestraBtn").className="mode-btn"+(m==="maestra"?" active":"");
+  document.getElementById("modoFotosBtn").className="mode-btn"+(m==="fotos"?" active":"");
   document.getElementById("uspanel").style.display = m==="usuario" ? "block" : "none";
   document.getElementById("maestraPanel").style.display = m==="maestra" ? "block" : "none";
-  document.getElementById("lista").style.display = m==="maestra" ? "none" : "block";
-  document.getElementById("mleyenda").style.display = m==="maestra" ? "none" : "block";
+  document.getElementById("fotosPanel").style.display = m==="fotos" ? "block" : "none";
+  document.getElementById("lista").style.display = (m==="maestra"||m==="fotos") ? "none" : "block";
+  document.getElementById("mleyenda").style.display = (m==="maestra"||m==="fotos") ? "none" : "block";
+  document.getElementById("pg-candado-area").style.display = m==="fotos" ? "none" : "block";
   if(m==="usuario"){
     if(!AREA_SEL) AREA_SEL = Object.keys(AREAS_LBL)[0];
     await cargarUsuariosSiHaceFalta();
@@ -714,6 +753,10 @@ async function cambiarModo(m){
   if(m==="maestra"){
     await cargarMaestraSiHaceFalta();
     renderMaestra();
+  }
+  if(m==="fotos"){
+    await cargarFotosSiHaceFalta();
+    renderFotos();
   }
 }
 
@@ -753,6 +796,124 @@ async function cargarGabiAccesosSiHaceFalta(force){
   }catch(e){ GA_ALL_ERROR = e.message||String(e); GA_ALL = []; console.error("gabi_accesos:", e); }
   return GA_ALL;
 }
+
+// ===== FOTOS — panel de administración (ronda "Fotos en firmas y tarjetas") =====
+// Personas: gabi_accesos activas, colapsadas por email (1 fila por persona, no por paquete —
+// una persona puede tener varias filas ahí). Nombre: si hay match en agentes.nombre (por
+// user_id/auth_user_id) se usa ese; si no, se deriva del correo (nombre.apellido -> Nombre Apellido).
+let FP_PERSONAS = null, FP_FOTOS = null, FP_ERROR = null;
+function fpNombreDeEmail(email){
+  const local = String(email||'').split('@')[0];
+  return local.split(/[._-]+/).filter(Boolean).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ') || email;
+}
+async function cargarFotosSiHaceFalta(force){
+  if(FP_PERSONAS && FP_FOTOS && !force) return;
+  FP_ERROR = null;
+  try{
+    await cargarGabiAccesosSiHaceFalta(force);
+    const { data: agRows, error: agErr } = await SB.from('agentes').select('user_id,auth_user_id,nombre');
+    if(agErr) throw agErr;
+    const nombrePorUid = {};
+    (agRows||[]).forEach(a=>{
+      if(a.user_id) nombrePorUid[a.user_id] = a.nombre;
+      if(a.auth_user_id) nombrePorUid[a.auth_user_id] = a.nombre;
+    });
+    const porEmail = {};
+    (GA_ALL||[]).filter(g=>g.activo && g.email).forEach(g=>{
+      const email = String(g.email).trim().toLowerCase();
+      if(porEmail[email]) return;
+      porEmail[email] = { email, nombre: nombrePorUid[g.user_id] || fpNombreDeEmail(email) };
+    });
+    FP_PERSONAS = Object.values(porEmail).sort((a,b)=>a.nombre.localeCompare(b.nombre));
+
+    const { data: fpRows, error: fpErr } = await PORTAL.from('fotos_personas').select('email,foto_url,updated_at');
+    if(fpErr) throw fpErr;
+    FP_FOTOS = {};
+    (fpRows||[]).forEach(r=>{ FP_FOTOS[String(r.email).trim().toLowerCase()] = r; });
+  }catch(e){ FP_ERROR = e.message||String(e); FP_PERSONAS = FP_PERSONAS||[]; FP_FOTOS = FP_FOTOS||{}; console.error('fotos_personas:', e); }
+}
+
+function fpNormalizarEmail(email){
+  return String(email||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+// Recorta al cuadrado central y comprime a JPEG ANTES de subir — nunca se sube el archivo tal cual.
+async function fpRecortarYComprimir(file, size, quality){
+  size = size||640; quality = quality||0.85;
+  const img = await new Promise((res,rej)=>{
+    const i = new Image();
+    i.onload = ()=>res(i); i.onerror = ()=>rej(new Error('No se pudo leer la imagen'));
+    i.src = URL.createObjectURL(file);
+  });
+  const lado = Math.min(img.width, img.height);
+  const sx = (img.width-lado)/2, sy = (img.height-lado)/2;
+  const cv = document.createElement('canvas'); cv.width = size; cv.height = size;
+  const ctx = cv.getContext('2d');
+  ctx.drawImage(img, sx, sy, lado, lado, 0, 0, size, size);
+  return await new Promise(res=>cv.toBlob(res, 'image/jpeg', quality));
+}
+async function fpSubirFoto(email, file, statusEl, btnEl){
+  const emailN = String(email).trim().toLowerCase();
+  try{
+    btnEl.disabled = true; statusEl.textContent = 'recortando…'; statusEl.className = 'fp-status';
+    const blob = await fpRecortarYComprimir(file);
+    statusEl.textContent = 'subiendo…';
+    // fotos/{email-normalizado}-{timestamp}.jpg — el timestamp evita el caché de imágenes de Gmail
+    // cuando se reemplaza una foto (si el nombre del archivo no cambia, Gmail puede seguir mostrando la vieja).
+    const path = fpNormalizarEmail(emailN) + '-' + Date.now() + '.jpg';
+    const { error: upErr } = await SB.storage.from('fotos').upload(path, blob, { contentType:'image/jpeg', upsert:false });
+    if(upErr) throw upErr;
+    const { data: pub } = SB.storage.from('fotos').getPublicUrl(path);
+    const fotoAnterior = FP_FOTOS[emailN];
+    const { error: dbErr } = await PORTAL.from('fotos_personas').upsert({
+      email: emailN, foto_url: pub.publicUrl, storage_path: path,
+      updated_at: new Date().toISOString(), updated_by: 'sales@protectgoservices.com'
+    }, { onConflict: 'email' });
+    if(dbErr) throw dbErr;
+    // Limpia la foto vieja del bucket (best-effort — si falla, no rompe nada, solo queda huérfana).
+    if(fotoAnterior && fotoAnterior.storage_path && fotoAnterior.storage_path !== path){
+      try{ await SB.storage.from('fotos').remove([fotoAnterior.storage_path]); }catch(e){ console.error('no se pudo borrar foto anterior:', e); }
+    }
+    FP_FOTOS[emailN] = { email: emailN, foto_url: pub.publicUrl, storage_path: path, updated_at: new Date().toISOString() };
+    statusEl.textContent = 'Guardada ✓'; statusEl.className = 'fp-status ok';
+    renderFotos();
+  }catch(e){
+    console.error('subir foto:', e);
+    statusEl.textContent = 'Error: ' + (e.message||e); statusEl.className = 'fp-status err';
+    btnEl.disabled = false;
+  }
+}
+function renderFotos(){
+  const cont = document.getElementById('fotosLista');
+  const cnt = document.getElementById('fpCount');
+  if(FP_ERROR){ cont.innerHTML = '<div class="pg-warn-box">No se pudo cargar el panel de fotos: '+esc(FP_ERROR)+'</div>'; cnt.textContent=''; return; }
+  const busca = (document.getElementById('fpFBusca').value||'').trim().toLowerCase();
+  const soloSinFoto = document.getElementById('fpFSinFoto').checked;
+  let lista = (FP_PERSONAS||[]).map(p=>({ ...p, foto: FP_FOTOS[p.email]||null }));
+  if(busca) lista = lista.filter(p=>p.nombre.toLowerCase().includes(busca)||p.email.includes(busca));
+  if(soloSinFoto) lista = lista.filter(p=>!p.foto);
+  const totalSinFoto = (FP_PERSONAS||[]).filter(p=>!FP_FOTOS[p.email]).length;
+  cnt.textContent = lista.length + ' de ' + (FP_PERSONAS||[]).length + ' persona(s) · ' + totalSinFoto + ' sin foto todavía';
+  if(!lista.length){ cont.innerHTML = '<div class="pg-empty">Nadie coincide con el filtro.</div>'; return; }
+  cont.innerHTML = lista.map(p=>{
+    const thumb = p.foto ? '<img class="fp-thumb" src="'+esc(p.foto.foto_url)+'" alt="">' : '<div class="fp-thumb-ph">sin<br>foto</div>';
+    const inputId = 'fpFile-' + p.email.replace(/[^a-z0-9]/g,'');
+    return '<div class="fp-row">' + thumb +
+      '<div class="fp-info"><div class="fp-name">'+esc(p.nombre)+'</div><div class="fp-email">'+esc(p.email)+'</div></div>' +
+      '<span class="fp-status" id="st-'+esc(inputId)+'"></span>' +
+      '<div class="fp-actions">' +
+        '<input type="file" accept="image/jpeg,image/png,image/webp" id="'+inputId+'" style="display:none">' +
+        '<button type="button" class="fp-btn" id="btn-'+esc(inputId)+'">'+(p.foto?'Cambiar foto':'Subir foto')+'</button>' +
+      '</div></div>';
+  }).join('');
+  lista.forEach(p=>{
+    const inputId = 'fpFile-' + p.email.replace(/[^a-z0-9]/g,'');
+    const input = document.getElementById(inputId), btn = document.getElementById('btn-'+inputId), status = document.getElementById('st-'+inputId);
+    btn.addEventListener('click', ()=>input.click());
+    input.addEventListener('change', ()=>{ const f=input.files[0]; if(f) fpSubirFoto(p.email, f, status, btn); });
+  });
+}
+document.getElementById('fpFBusca').addEventListener('input', renderFotos);
+document.getElementById('fpFSinFoto').addEventListener('change', renderFotos);
 
 // Reproduce puede_ver(clave) de Postgres (ver definición real vía
 // select pg_get_functiondef(oid) from pg_proc where proname='puede_ver') para un set de filas
@@ -1221,6 +1382,7 @@ document.getElementById("logoutBtn").addEventListener("click", async ()=>{ try{ 
 document.getElementById("modoAreaBtn").addEventListener("click", ()=>cambiarModo("area"));
 document.getElementById("modoUsuarioBtn").addEventListener("click", ()=>cambiarModo("usuario"));
 document.getElementById("modoMaestraBtn").addEventListener("click", ()=>cambiarModo("maestra"));
+document.getElementById("modoFotosBtn").addEventListener("click", ()=>cambiarModo("fotos"));
 document.getElementById("verComoBtn").addEventListener("click", abrirVerComo);
 
 (async function init(){ await verificarAcceso(); })();
@@ -1231,7 +1393,7 @@ document.getElementById("verComoBtn").addEventListener("click", abrirVerComo);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="control-maestro.html";
-var PGV_VERSION=6; // + Vista Maestra: los 26 widgets, quién los ve y por qué (misma lógica de puede_ver), "Abrir como" con ?ver_como= y banner; corrige --pg-warn
+var PGV_VERSION=7; // + panel Fotos: sales@ sube la foto por persona (bucket fotos + portal.fotos_personas), filtro "sin foto todavía"
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

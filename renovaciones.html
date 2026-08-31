@@ -198,6 +198,7 @@ if (window.gabiVerComoInit) gabiVerComoInit(SB);
 
 function esc(s){ return (s===null||s===undefined) ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmtUSD(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US',{maximumFractionDigits:0}); }
+function fmtUSD2(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtFecha(s){ if(!s) return '—'; try{ const d=new Date(s+'T12:00:00'); return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return String(s); } }
 function fmtMes(s){ if(!s) return '—'; try{ const d=new Date(s+'T12:00:00'); return d.toLocaleDateString('es-CO',{month:'short',year:'numeric'}); }catch(e){ return String(s); } }
 
@@ -305,6 +306,11 @@ let COLA = [];
 function pintarEsqueleto(){
   document.getElementById("pg-contenido").innerHTML = `
     <div class="pg-card">
+      <h2>Tu bolsa de renovaciones</h2>
+      <p class="pg-purpose">Tu parte de la bolsa de fees de renovación (área "renovaciones", <code>v_bolsa_persona_mensual</code>) — lo que realmente se cobró vs. lo que valdría si cada renovación cobrara el fee de referencia.</p>
+      <div id="c-bolsa"><div class="pg-skel" style="height:220px"></div></div>
+    </div>
+    <div class="pg-card">
       <h2>Lo que viene: premium en juego por mes</h2>
       <p class="pg-purpose">Premium que vence cada mes, por mes de vencimiento — el punto del mes actual va más grande.</p>
       <div id="c-enjuego"><div class="pg-skel" style="height:170px"></div></div>
@@ -349,7 +355,7 @@ function footnote(){
 async function cargarTodo(){
   pintarEsqueleto();
   document.getElementById("pg-stamp").textContent = "cargando…";
-  await Promise.all([ cargarPremiumEnJuego(), cargarRing(), cargarLinea(), cargarGeneraGasta(), cargarCola(), cargarRendimientoAgente() ]);
+  await Promise.all([ cargarBolsa(), cargarPremiumEnJuego(), cargarRing(), cargarLinea(), cargarGeneraGasta(), cargarCola(), cargarRendimientoAgente() ]);
   document.getElementById("pg-stamp").textContent = "datos al " + new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
 }
 
@@ -412,6 +418,74 @@ async function cargarRendimientoAgente(){
 function mesActualISO(){
   const hoy = new Date();
   return hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-01';
+}
+
+/* ---- Tu bolsa de renovaciones (v_bolsa_persona_mensual) ----
+   La vista YA filtra por RLS: dirección ve todo, cada miembro ve solo su
+   fila — no se agrega ningún filtro de usuario aquí. Serie 1 (bolsa real,
+   verde sólida) + serie 2 (bolsa potencial, punteada ámbar, fill:'-1' para
+   rellenar la franja entre ambas) — mismo patrón que "Lo que ganaste vs.
+   lo que pudiste ganar" en asesor-oportunidad-shared.js. Tono de
+   oportunidad: la brecha es de la operación (¿se cobró el fee?), no un
+   juicio sobre la persona. */
+async function cargarBolsa(){
+  const el = document.getElementById("c-bolsa");
+  const { data, error } = await SB.from('v_bolsa_persona_mensual').select('*').order('mes',{ascending:true});
+  if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
+  const rowsRaw = data || [];
+  if(!rowsRaw.length){ el.innerHTML = '<div class="pg-purpose">Sin bolsa de renovaciones asignada todavía.</div>'; return; }
+
+  // Agrupa por mes — passthrough 1:1 para una sola persona (el caso de hoy); si la RLS
+  // deja ver más de una fila el mismo mes (dirección con varios miembros), se suma.
+  const porMes = {};
+  rowsRaw.forEach(r=>{
+    const k = String(r.mes);
+    if(!porMes[k]) porMes[k] = { mes:r.mes, bolsa_persona:0, bolsa_persona_potencial:0, renovaciones:0, renovaciones_con_fee:0, miembros:0 };
+    const g = porMes[k];
+    g.bolsa_persona += Number(r.bolsa_persona||0);
+    g.bolsa_persona_potencial += Number(r.bolsa_persona_potencial||0);
+    g.renovaciones += Number(r.renovaciones||0);
+    g.renovaciones_con_fee += Number(r.renovaciones_con_fee||0);
+    g.miembros = Math.max(g.miembros, Number(r.miembros||0));
+  });
+  const rows = Object.values(porMes).sort((a,b)=> String(a.mes) < String(b.mes) ? -1 : (String(a.mes) > String(b.mes) ? 1 : 0));
+
+  const mesHoy = mesActualISO();
+  const cerrados = rows.filter(r=>String(r.mes)!==mesHoy);
+  const ultimo = cerrados.length ? cerrados[cerrados.length-1] : rows[rows.length-1];
+  const pctCobertura = ultimo.renovaciones>0 ? (ultimo.renovaciones_con_fee/ultimo.renovaciones*100) : 0;
+
+  const labels = rows.map(r=>fmtMes(r.mes));
+  const real = rows.map(r=>r.bolsa_persona);
+  const potencial = rows.map(r=>r.bolsa_persona_potencial);
+
+  const lineaMiembros = ultimo.miembros>1
+    ? '<div class="pg-purpose" style="margin-top:6px">Este mes la bolsa se está partiendo entre '+ultimo.miembros+' persona(s).</div>'
+    : '';
+
+  el.innerHTML =
+    '<div style="text-align:center;padding:6px 0 14px">'+
+      '<div style="font-family:var(--pg-font-num);font-size:34px;font-weight:700;color:var(--pg-ink)">'+fmtUSD2(ultimo.bolsa_persona)+'</div>'+
+      '<div style="font-size:12px;color:var(--pg-muted);margin-top:2px">tu bolsa de '+esc(fmtMes(ultimo.mes))+' — el último mes cerrado</div>'+
+    '</div>'+
+    '<div class="chart-wrap" style="height:200px"><canvas id="chBolsa"></canvas></div>'+
+    '<p class="pg-purpose" style="margin-top:12px">'+
+      'En '+esc(fmtMes(ultimo.mes))+' hubo <b>'+ultimo.renovaciones+' renovación(es)</b>, de las cuales <b>'+ultimo.renovaciones_con_fee+'</b> salieron con fee cobrado ('+pctCobertura.toFixed(1)+'%). '+
+      'La franja ámbar es lo que valdría tu bolsa si cada renovación cobrara el fee de referencia — no depende solo de ti: depende de que se cobre el fee en la operación, no solo de tu gestión.'+
+    '</p>'+
+    lineaMiembros;
+
+  new Chart(document.getElementById("chBolsa"), {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'Tu bolsa', data: real, borderColor:'#1F9D6B', backgroundColor:'transparent', borderWidth:2.6, tension:.25, pointRadius:3, order:2, fill:false },
+      { label:'Bolsa potencial (fee de referencia)', data: potencial, borderColor:'#D9A520', borderDash:[5,4], borderWidth:1.8, tension:.25, pointRadius:0, order:1, fill:'-1', backgroundColor:'rgba(217,165,32,.20)' }
+    ] },
+    options:{ maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+      plugins:{ legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}},
+        tooltip:{ callbacks:{ label:(c)=> c.dataset.label+': '+fmtUSD2(c.parsed.y) } } },
+      scales:{ y:{ beginAtZero:true, ticks:{ callback:(v)=>fmtUSD(v) } } } }
+  });
 }
 
 /* ---- G1: lo que viene — premium en juego por mes de vencimiento ----
@@ -607,7 +681,7 @@ window.marcarEstado = async function(id, estado){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=4; // Ronda 2: gráfica "Lo que viene" (premium en juego por mes), Defendido vs perdido siempre visible con aviso condicional, contexto de gestionadas/en juego bajo el anillo
+var PGV_VERSION=5; // + "Tu bolsa de renovaciones" (v_bolsa_persona_mensual): bolsa real vs. potencial con franja ámbar
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

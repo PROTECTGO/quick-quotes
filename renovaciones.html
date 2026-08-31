@@ -186,6 +186,7 @@ body { margin: 0; background: var(--pg-bg); }
       <div class="pg-sub">Pólizas por vencer, estado de gestión y el resultado del mes. Solo lectura y avance de estado — no se crean ni se borran filas aquí.</div>
     </div>
     <div id="pg-acceso"></div>
+    <div id="pg-direccion" style="display:none"></div>
     <div id="pg-contenido" style="display:none"></div>
   </main>
 </div>
@@ -294,7 +295,7 @@ async function verificarAccesoYcargar(){
   }
   accesoEl.innerHTML = "";
   contEl.style.display = "block";
-  await cargarTodo();
+  await Promise.all([ cargarTodo(), cargarDireccion() ]);
 }
 
 /* =====================================================================
@@ -697,6 +698,204 @@ window.marcarEstado = async function(id, estado){
 };
 
 /* =====================================================================
+   3b) VISTA DE DIRECCIÓN — Karen Directora v2
+   Candado: server-side, en las vistas mismas (WHERE EXISTS gabi_accesos con
+   rol director/socio O area='renovaciones'). Si el usuario no califica, las
+   consultas vuelven vacías y esta sección no se pinta — no hay candado extra
+   en el cliente porque ya lo hace Postgres (así Angélica, que no tiene esa
+   área ni ese rol, no ve nada de esto aunque tenga el paquete 'renovaciones').
+   ===================================================================== */
+function semaforoColor(pct){
+  if(pct===null || pct===undefined || isNaN(pct)) return 'var(--pg-muted)';
+  if(pct>=70) return 'var(--pg-pos)';
+  if(pct>=50) return 'var(--pg-warn)';
+  return 'var(--pg-neg)';
+}
+
+async function cargarDireccion(){
+  const el = document.getElementById('pg-direccion');
+  const idxR = await SB.from('v_indice_renovaciones_mensual_visible').select('*').order('mes',{ascending:true});
+  if(idxR.error || !idxR.data || !idxR.data.length){ el.style.display='none'; return; }
+  el.style.display = 'block';
+  const idx = idxR.data;
+  pintarDireccionEsqueleto(el);
+  const [carteraR, efectR, rojoR, rojoCuentasR, vendeR, grandeR] = await Promise.all([
+    SB.from('v_cartera_activa_visible').select('area,estado,subestado,premium_activo').limit(5000),
+    SB.from('v_efectividad_agente_renovar_visible').select('*').order('premium_perdido',{ascending:false}),
+    SB.from('v_alerta_mes_rojo_visible').select('*').maybeSingle(),
+    SB.from('v_alerta_mes_rojo_cuentas_visible').select('*').limit(200),
+    SB.from('v_alerta_vende_no_renueva_visible').select('*').order('premium_perdido',{ascending:false}),
+    SB.from('v_alerta_cuenta_grande_visible').select('*').order('premium_activo',{ascending:false}),
+  ]);
+  pintarIndiceMes(idx);
+  pintarLineaMensual(idx);
+  pintarTasaAnual(idx);
+  pintarAlertas(rojoR.data, rojoCuentasR.data||[], vendeR.data||[], grandeR.data||[]);
+  pintarCarteraActiva(carteraR.data||[]);
+  pintarEfectividad(efectR.data||[]);
+  pintarMuro2027(idx);
+}
+
+function pintarDireccionEsqueleto(el){
+  el.innerHTML = `
+    ${sectionDivider('Vista de dirección · Renovaciones')}
+    <div class="pg-card">
+      <h2>Índice de renovaciones del mes</h2>
+      <p class="pg-purpose">% de lo que vencía este mes ya renovado — sin maquillar, siempre contra el 70% esperado.</p>
+      <div id="kd-indice"></div>
+    </div>
+    <div class="pg-card">
+      <h2>Línea mensual</h2>
+      <p class="pg-purpose">% renovado por mes de vencimiento (cerrados y el mes en curso). La raya punteada es el 70% esperado.</p>
+      <div class="chart-wrap" style="height:220px"><canvas id="kd-chLinea"></canvas></div>
+      <div id="kd-tasa-anual" style="margin-top:10px;font-size:12.5px;color:var(--pg-muted)"></div>
+    </div>
+    ${sectionDivider('Alertas')}
+    <div id="kd-alertas"></div>
+    ${sectionDivider('Cartera activa')}
+    <div class="pg-card"><div id="kd-cartera"></div></div>
+    ${sectionDivider('Efectividad por agente')}
+    <div class="pg-card">
+      <p class="pg-purpose">Solo términos ya vencidos: cuántos renovó cada dueño del término, vs. el 70% esperado. Ordenado por premium perdido.</p>
+      <div id="kd-efectividad"></div>
+    </div>
+    ${sectionDivider('Esquema de bono · Karen')}
+    <div class="pg-card">
+      <h2>G1 · G2 · G3</h2>
+      <p class="pg-purpose">Área apilada de ingreso, escalera de bono mensual y anillo de bono anual del esquema de Karen.</p>
+      <div class="pg-warn-box">TODO — falta la especificación exacta de estas 3 gráficas más allá de la bolsa 25/75 con escalera de directora ya construida (ver "Tu bolsa" arriba). Pendiente de definir con Andrés.</div>
+    </div>
+    ${sectionDivider('Muro 2027')}
+    <div class="pg-card">
+      <p class="pg-purpose">Premium que viene por mes (meses futuros, todavía sin vencer) — no es un porcentaje, es lo que se acerca.</p>
+      <div id="kd-muro"></div>
+    </div>
+    ${sectionDivider('Calendario 3-2-1')}
+    <div class="pg-card">
+      <div class="pg-warn-box">TODO — pieza sin construir todavía en este ciclo. La prioridad quedó en el motor (cartera activa, índice mensual, efectividad, alertas) según lo pedido.</div>
+    </div>
+  `;
+}
+
+function pintarIndiceMes(idx){
+  const el = document.getElementById('kd-indice');
+  const actual = idx.find(r=>r.estado_mes==='en_curso');
+  if(!actual){ el.innerHTML = '<div class="pg-purpose">Sin mes en curso con datos todavía.</div>'; return; }
+  const pct = actual.pct_renovado===null ? null : Number(actual.pct_renovado);
+  const color = semaforoColor(pct);
+  el.innerHTML = '<div style="text-align:center;padding:10px 0">'+
+    '<div style="font-family:var(--pg-font-num);font-size:52px;font-weight:700;color:'+color+'">'+(pct===null?'—':pct.toFixed(1)+'%')+'</div>'+
+    '<div style="font-size:13px;color:var(--pg-muted);margin-top:4px">'+esc(fmtMes(actual.mes))+' · '+(actual.renovaron??0)+' renovadas de '+actual.vencieron+' vencidas · esperado 70%</div>'+
+  '</div>';
+}
+
+function pintarLineaMensual(idx){
+  const filas = idx.filter(r=>r.estado_mes!=='futuro');
+  if(!filas.length) return;
+  const labels = filas.map(r=>fmtMes(r.mes));
+  const data = filas.map(r=>r.pct_renovado===null?null:Number(r.pct_renovado));
+  new Chart(document.getElementById('kd-chLinea'), {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'% renovado', data, borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.15)', fill:true, tension:.25, spanGaps:true,
+        pointBackgroundColor: filas.map(r=>semaforoColor(r.pct_renovado===null?null:Number(r.pct_renovado))), pointBorderWidth:0 },
+      { label:'Estándar 70%', data: labels.map(()=>70), borderColor:'#D9A520', borderDash:[6,4], borderWidth:1.6, pointRadius:0, fill:false }
+    ]},
+    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}},
+      scales:{ y:{ min:0, max:100, ticks:{ callback:v=>v+'%' } } } }
+  });
+}
+
+function pintarTasaAnual(idx){
+  const anio = String(new Date().getFullYear());
+  const cerrados = idx.filter(r=>r.estado_mes!=='futuro' && String(r.mes).slice(0,4)===anio);
+  const vencieron = cerrados.reduce((s,r)=>s+Number(r.vencieron||0),0);
+  const renovaron = cerrados.reduce((s,r)=>s+Number(r.renovaron||0),0);
+  const pct = vencieron>0 ? (100*renovaron/vencieron) : null;
+  document.getElementById('kd-tasa-anual').innerHTML = 'Tasa anual '+anio+': <b style="color:'+semaforoColor(pct)+'">'+(pct===null?'—':pct.toFixed(1)+'%')+'</b> ('+renovaron+' de '+vencieron+' vencidas)';
+}
+
+function pintarAlertas(rojo, rojoCuentas, vende, grande){
+  const el = document.getElementById('kd-alertas');
+  const enRojo = rojo && rojo.en_rojo;
+  const vendeAlerta = vende.filter(a=>a.en_alerta);
+  const estandar = vende[0] ? vende[0].estandar_pct : 70;
+  const promedioArea = vende[0] ? vende[0].promedio_area : null;
+  let html = '<div class="pg-grid-3">';
+  html += '<div class="pg-card"><h2>Mes en rojo</h2>'+
+    (rojo
+      ? (enRojo
+          ? '<div class="pg-warn-box" style="background:#FCEEEC;border-color:#F1BEB6;color:#7a2c22"><b style="color:var(--pg-neg)">EN ROJO</b> — '+esc(fmtMes(rojo.mes))+' proyecta '+rojo.pct_renovado+'%, por debajo del '+rojo.estandar_pct+'% esperado.</div>'
+          : '<div class="pg-pill ok">En verde</div>')
+      : '<div class="pg-purpose">Sin mes en curso.</div>')+
+    (rojoCuentas.length ? '<div class="tablewrap" style="margin-top:10px;max-height:220px;overflow-y:auto"><table class="pg-table"><thead><tr><th>Cuenta</th><th>Dueño</th><th class="num">Premium</th></tr></thead><tbody>'+
+      rojoCuentas.map(c=>'<tr><td>'+esc(c.llave)+'</td><td>'+esc(c.dueno||'—')+'</td><td class="num">'+fmtUSD(c.premium_termino)+'</td></tr>').join('')+
+      '</tbody></table></div>' : '')+
+  '</div>';
+  html += '<div class="pg-card"><h2>Vende pero no renueva</h2>'+
+    '<p class="pg-purpose">Bajo el '+estandar+'% Y bajo el promedio del área ('+(promedioArea===null?'—':promedioArea+'%')+').</p>'+
+    (vendeAlerta.length ? '<div class="tablewrap" style="max-height:220px;overflow-y:auto"><table class="pg-table"><thead><tr><th>Agente</th><th class="num">%</th><th class="num">Perdido</th></tr></thead><tbody>'+
+      vendeAlerta.map(a=>'<tr><td>'+esc(a.dueno)+'</td><td class="num" style="color:var(--pg-neg);font-weight:700">'+a.pct_renovado+'%</td><td class="num">'+fmtUSD(a.premium_perdido)+'</td></tr>').join('')+
+      '</tbody></table></div>' : '<div class="pg-purpose">Nadie en alerta.</div>')+
+  '</div>';
+  html += '<div class="pg-card"><h2>Cuenta grande a 15 días</h2>'+
+    '<p class="pg-purpose">TODO: falta cruzar con gestión (la cola de retención vive por policy_num; esta vista es por DOT/NOM-llave).</p>'+
+    (grande.length ? '<div class="tablewrap" style="max-height:220px;overflow-y:auto"><table class="pg-table"><thead><tr><th>Cuenta</th><th class="num">Premium</th><th class="num">Días</th></tr></thead><tbody>'+
+      grande.map(g=>'<tr><td>'+esc(g.llave)+'</td><td class="num">'+fmtUSD(g.premium_activo)+'</td><td class="num">'+g.dias_restantes+'</td></tr>').join('')+
+      '</tbody></table></div>' : '<div class="pg-purpose">Sin cuentas grandes en ese rango.</div>')+
+  '</div>';
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function pintarCarteraActiva(cartera){
+  const el = document.getElementById('kd-cartera');
+  const porArea = {};
+  cartera.forEach(r=>{
+    const a = r.area||'—';
+    if(!porArea[a]) porArea[a] = { area:a, estados:{} };
+    const g = porArea[a].estados[r.estado] || (porArea[a].estados[r.estado]={n:0,premium:0});
+    g.n++; g.premium += Number(r.premium_activo||0);
+  });
+  const areas = Object.values(porArea);
+  if(!areas.length){ el.innerHTML = '<div class="pg-purpose">Sin cuentas todavía.</div>'; return; }
+  el.innerHTML = '<div class="pg-grid-3">'+areas.map(a=>{
+    const activa = a.estados.ACTIVA||{n:0,premium:0};
+    const cancelada = a.estados.CANCELADA||{n:0,premium:0};
+    const vencida = a.estados.VENCIDA||{n:0,premium:0};
+    return '<div><div style="font-family:var(--pg-font-title);font-weight:800;font-size:13px;color:var(--pg-ink);margin-bottom:6px">'+esc(a.area)+'</div>'+
+      '<div style="font-family:var(--pg-font-num);font-size:24px;font-weight:700;color:var(--pg-ink)">'+activa.n+'</div>'+
+      '<div style="font-size:12px;color:var(--pg-muted)">activas · '+fmtUSD(activa.premium)+'</div>'+
+      '<div style="font-size:11.5px;color:var(--pg-muted);margin-top:6px">'+cancelada.n+' canceladas · '+vencida.n+' vencidas</div>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+
+function pintarEfectividad(efect){
+  const el = document.getElementById('kd-efectividad');
+  if(!efect.length){ el.innerHTML='<div class="pg-purpose">Sin datos todavía.</div>'; return; }
+  const anio = new Date().getFullYear();
+  el.innerHTML = '<div class="tablewrap"><table class="pg-table"><thead><tr><th>Dueño</th><th class="num">Vencieron</th><th class="num">Renovó</th><th class="num">%</th><th class="num">Premium perdido</th><th class="num">Ventas nuevas '+anio+'</th></tr></thead><tbody>'+
+    efect.map(a=>'<tr><td>'+esc(a.dueno)+'</td><td class="num">'+a.vencieron+'</td><td class="num">'+a.renovaron+'</td>'+
+      '<td class="num" style="color:'+(Number(a.pct_renovado)<70?'var(--pg-neg)':'var(--pg-pos)')+';font-weight:700">'+a.pct_renovado+'%</td>'+
+      '<td class="num">'+fmtUSD(a.premium_perdido)+'</td><td class="num">'+a.ventas_nuevas_ano+'</td></tr>').join('')+
+    '</tbody></table></div>';
+}
+
+function pintarMuro2027(idx){
+  const el = document.getElementById('kd-muro');
+  const futuros = idx.filter(r=>r.estado_mes==='futuro');
+  if(!futuros.length){ el.innerHTML = '<div class="pg-purpose">Sin meses futuros con datos.</div>'; return; }
+  el.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:10px">'+futuros.map(r=>
+    '<div style="flex:1;min-width:110px;text-align:center;background:var(--pg-bg);border:1px solid var(--pg-line);border-radius:12px;padding:10px 8px">'+
+      '<div style="font-size:11px;color:var(--pg-muted);text-transform:uppercase;font-weight:700">'+esc(fmtMes(r.mes))+'</div>'+
+      '<div style="font-family:var(--pg-font-num);font-size:15px;font-weight:700;color:var(--pg-ink);margin-top:3px">'+fmtUSD(r.premium_vencido)+'</div>'+
+      '<div style="font-size:10.5px;color:var(--pg-muted)">'+r.vencieron+' cuentas</div>'+
+    '</div>').join('')+
+  '</div>';
+}
+
+/* =====================================================================
    4) ARRANQUE
    ===================================================================== */
 (async function init() {
@@ -711,7 +910,7 @@ window.marcarEstado = async function(id, estado){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=7; // 2a corrección "Tu bolsa": seller_fees (no renewal_fees) + bolsa=estándar completo (no 25%) + renovaciones_sin_fee
+var PGV_VERSION=8; // Herramienta de Karen Directora v2: vista de dirección (índice mensual, cartera activa, efectividad por agente, alertas, Muro 2027)
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

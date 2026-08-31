@@ -422,12 +422,19 @@ function mesActualISO(){
 
 /* ---- Tu bolsa de renovaciones (v_bolsa_persona_mensual) ----
    La vista YA filtra por RLS: dirección ve todo, cada miembro ve solo su
-   fila — no se agrega ningún filtro de usuario aquí. Serie 1 (bolsa real,
-   verde sólida) + serie 2 (bolsa potencial, punteada ámbar, fill:'-1' para
-   rellenar la franja entre ambas) — mismo patrón que "Lo que ganaste vs.
-   lo que pudiste ganar" en asesor-oportunidad-shared.js. Tono de
-   oportunidad: la brecha es de la operación (¿se cobró el fee?), no un
-   juicio sobre la persona. */
+   fila — no se agrega ningún filtro de usuario aquí. El fee de referencia
+   NO es plano: v_bolsa_persona_mensual ya aplica bolsas_area_tramos (<5,000
+   -> 50, >=5,000 -> 150) — no se recalculan tramos aquí, se leen las
+   columnas tal cual.
+   CORRECCIÓN: el conteo en firme arranca el 1-sep-2026 (columna
+   cuenta_en_firme). Meses con cuenta_en_firme=false son LÍNEA BASE, no
+   incumplimiento — se pintan en gris neutro, sin franja ni lenguaje de
+   brecha. La franja ámbar de oportunidad y el texto de brecha SOLO
+   aplican a meses con cuenta_en_firme=true (hoy: ninguno todavía). El
+   color por segmento se decide con el flag del PAR de puntos que arma
+   ese tramo de línea (Chart.js segment API, ctx.p0DataIndex/p1DataIndex):
+   solo se pinta verde/ámbar cuando AMBOS extremos del segmento ya cuentan
+   en firme. */
 async function cargarBolsa(){
   const el = document.getElementById("c-bolsa");
   const { data, error } = await SB.from('v_bolsa_persona_mensual').select('*').order('mes',{ascending:true});
@@ -440,13 +447,15 @@ async function cargarBolsa(){
   const porMes = {};
   rowsRaw.forEach(r=>{
     const k = String(r.mes);
-    if(!porMes[k]) porMes[k] = { mes:r.mes, bolsa_persona:0, bolsa_persona_potencial:0, renovaciones:0, renovaciones_con_fee:0, miembros:0 };
+    if(!porMes[k]) porMes[k] = { mes:r.mes, cuenta_en_firme:false, bolsa_persona:0, bolsa_persona_potencial:0, renovaciones:0, renovaciones_con_fee:0, renovaciones_sin_ningun_fee:0, miembros:0 };
     const g = porMes[k];
     g.bolsa_persona += Number(r.bolsa_persona||0);
     g.bolsa_persona_potencial += Number(r.bolsa_persona_potencial||0);
     g.renovaciones += Number(r.renovaciones||0);
     g.renovaciones_con_fee += Number(r.renovaciones_con_fee||0);
+    g.renovaciones_sin_ningun_fee += Number(r.renovaciones_sin_ningun_fee||0);
     g.miembros = Math.max(g.miembros, Number(r.miembros||0));
+    if(r.cuenta_en_firme) g.cuenta_en_firme = true; // si cualquier fila del mes ya cuenta en firme, el mes cuenta en firme
   });
   const rows = Object.values(porMes).sort((a,b)=> String(a.mes) < String(b.mes) ? -1 : (String(a.mes) > String(b.mes) ? 1 : 0));
 
@@ -458,32 +467,48 @@ async function cargarBolsa(){
   const labels = rows.map(r=>fmtMes(r.mes));
   const real = rows.map(r=>r.bolsa_persona);
   const potencial = rows.map(r=>r.bolsa_persona_potencial);
+  const enFirme = rows.map(r=>!!r.cuenta_en_firme);
+  const GRIS = '#9AA9B4', GRIS_FILL = 'rgba(154,169,180,.12)';
+  const segEnFirme = ctx => enFirme[ctx.p0DataIndex] && enFirme[ctx.p1DataIndex];
 
   const lineaMiembros = ultimo.miembros>1
     ? '<div class="pg-purpose" style="margin-top:6px">Este mes la bolsa se está partiendo entre '+ultimo.miembros+' persona(s).</div>'
     : '';
 
+  const textoFranja = ultimo.cuenta_en_firme
+    ? 'En '+esc(fmtMes(ultimo.mes))+' hubo <b>'+ultimo.renovaciones+' renovación(es)</b>, de las cuales <b>'+ultimo.renovaciones_con_fee+'</b> salieron con fee cobrado ('+pctCobertura.toFixed(1)+'%) y <b>'+ultimo.renovaciones_sin_ningun_fee+'</b> sin ningún fee. '+
+      'La franja ámbar es lo que valdría tu bolsa si cada renovación cobrara el fee de referencia según su tamaño — no depende solo de ti: depende de que se cobre el fee en la operación, no solo de tu gestión.'
+    : 'En '+esc(fmtMes(ultimo.mes))+' hubo <b>'+ultimo.renovaciones+' renovación(es)</b>, de las cuales <b>'+ultimo.renovaciones_con_fee+'</b> salieron con fee cobrado ('+pctCobertura.toFixed(1)+'%) y <b>'+ultimo.renovaciones_sin_ningun_fee+'</b> sin ningún fee. '+
+      '<b>Este mes es línea base, no cuenta todavía</b> — el conteo en firme empieza el 1 de septiembre de 2026. Se muestra para comparar cómo estaba antes contra cómo queda después, no como algo pendiente.';
+
   el.innerHTML =
     '<div style="text-align:center;padding:6px 0 14px">'+
       '<div style="font-family:var(--pg-font-num);font-size:34px;font-weight:700;color:var(--pg-ink)">'+fmtUSD2(ultimo.bolsa_persona)+'</div>'+
-      '<div style="font-size:12px;color:var(--pg-muted);margin-top:2px">tu bolsa de '+esc(fmtMes(ultimo.mes))+' — el último mes cerrado</div>'+
+      '<div style="font-size:12px;color:var(--pg-muted);margin-top:2px">tu bolsa de '+esc(fmtMes(ultimo.mes))+' — el último mes cerrado'+(ultimo.cuenta_en_firme?'':' · línea base')+'</div>'+
     '</div>'+
     '<div class="chart-wrap" style="height:200px"><canvas id="chBolsa"></canvas></div>'+
-    '<p class="pg-purpose" style="margin-top:12px">'+
-      'En '+esc(fmtMes(ultimo.mes))+' hubo <b>'+ultimo.renovaciones+' renovación(es)</b>, de las cuales <b>'+ultimo.renovaciones_con_fee+'</b> salieron con fee cobrado ('+pctCobertura.toFixed(1)+'%). '+
-      'La franja ámbar es lo que valdría tu bolsa si cada renovación cobrara el fee de referencia — no depende solo de ti: depende de que se cobre el fee en la operación, no solo de tu gestión.'+
-    '</p>'+
+    '<p class="pg-purpose" style="margin-top:12px">'+textoFranja+'</p>'+
     lineaMiembros;
 
   new Chart(document.getElementById("chBolsa"), {
     type:'line',
     data:{ labels, datasets:[
-      { label:'Tu bolsa', data: real, borderColor:'#1F9D6B', backgroundColor:'transparent', borderWidth:2.6, tension:.25, pointRadius:3, order:2, fill:false },
-      { label:'Bolsa potencial (fee de referencia)', data: potencial, borderColor:'#D9A520', borderDash:[5,4], borderWidth:1.8, tension:.25, pointRadius:0, order:1, fill:'-1', backgroundColor:'rgba(217,165,32,.20)' }
+      { label:'Tu bolsa', data: real, borderWidth:2.6, tension:.25, order:2, fill:false,
+        borderColor: GRIS,
+        pointRadius: 3,
+        pointBackgroundColor: rows.map((r,i)=> enFirme[i] ? '#1F9D6B' : GRIS),
+        pointBorderColor: rows.map((r,i)=> enFirme[i] ? '#1F9D6B' : GRIS),
+        segment: { borderColor: ctx => segEnFirme(ctx) ? '#1F9D6B' : GRIS } },
+      { label:'Bolsa potencial (línea base / fee por tramo)', data: potencial, borderDash:[5,4], borderWidth:1.8, tension:.25, pointRadius:0, order:1, fill:'-1',
+        borderColor: GRIS, backgroundColor: GRIS_FILL,
+        segment: {
+          borderColor: ctx => segEnFirme(ctx) ? '#D9A520' : GRIS,
+          backgroundColor: ctx => segEnFirme(ctx) ? 'rgba(217,165,32,.20)' : GRIS_FILL
+        } }
     ] },
     options:{ maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
       plugins:{ legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}},
-        tooltip:{ callbacks:{ label:(c)=> c.dataset.label+': '+fmtUSD2(c.parsed.y) } } },
+        tooltip:{ callbacks:{ label:(c)=> c.dataset.label+': '+fmtUSD2(c.parsed.y)+(enFirme[c.dataIndex]?'':' (línea base)') } } },
       scales:{ y:{ beginAtZero:true, ticks:{ callback:(v)=>fmtUSD(v) } } } }
   });
 }
@@ -681,7 +706,7 @@ window.marcarEstado = async function(id, estado){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=5; // + "Tu bolsa de renovaciones" (v_bolsa_persona_mensual): bolsa real vs. potencial con franja ámbar
+var PGV_VERSION=6; // corrige "Tu bolsa": fee por tramo (no plano) + franja ámbar/brecha solo en meses cuenta_en_firme (arranca sep-2026), histórico en gris
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

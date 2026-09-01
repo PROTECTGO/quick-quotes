@@ -31,7 +31,7 @@
   --pg-font-num:   "JetBrains Mono", "Courier New", monospace;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: linear-gradient(180deg, var(--pg-bg) 0%, #FFFFFF 480px); }
+body { margin: 0; background: var(--pg-bg); }
 .pg-app { background: var(--pg-bg); color: var(--pg-txt); font-family: var(--pg-font-body); min-height: 100vh; }
 
 .pg-viewbar { background: var(--pg-ink-2); padding: 16px 30px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; position:sticky; top:0; z-index:20; }
@@ -53,11 +53,11 @@ body { margin: 0; background: linear-gradient(180deg, var(--pg-bg) 0%, #FFFFFF 4
 .pg-section-divider .sd-line { flex:1; height:1px; background: var(--pg-line); }
 .pg-section-divider .sd-lbl { font-family: var(--pg-font-title); font-weight:800; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color: var(--pg-ink); background: var(--pg-bg); padding: 0 4px; }
 
-.pg-card { position:relative; background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 16px; padding: 24px 22px 22px; margin-bottom:18px; box-shadow: 0 1px 3px rgba(27,45,58,.05), 0 8px 20px rgba(27,45,58,.05); overflow:hidden; transition: transform 180ms ease, box-shadow 180ms ease; }
-.pg-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--pg-mint), var(--pg-mint-dark)); }
-.pg-card:hover { transform: translateY(-2px); box-shadow: 0 2px 6px rgba(27,45,58,.06), 0 14px 30px rgba(27,45,58,.09); }
-.pg-card h2 { font-family: var(--pg-font-title); font-size: 16.5px; font-weight: 700; color: var(--pg-ink); margin: 0 0 14px; display:flex; align-items:center; gap:8px; position:relative; padding-bottom:12px; }
-.pg-card h2::after { content:''; position:absolute; left:0; bottom:0; width:40px; height:3px; border-radius:999px; background:var(--pg-mint); }
+.pg-card { position:relative; background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 14px; padding: 24px 22px 22px; margin-bottom:18px; box-shadow: 0 6px 18px rgba(27,45,58,.045); overflow:hidden; transition: transform 180ms ease, box-shadow 180ms ease; }
+.pg-card::before { content:none; }
+.pg-card:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(27,45,58,.07); }
+.pg-card h2 { font-family: var(--pg-font-title); font-size: 16px; font-weight: 700; color: var(--pg-ink); margin: 0 0 4px; display:flex; align-items:center; gap:8px; position:relative; padding-bottom:7px; }
+.pg-card h2::after { content:''; position:absolute; left:0; bottom:0; width:28px; height:2px; border-radius:2px; background:var(--pg-mint-dark); }
 
 .pg-grid-3 { display:grid; grid-template-columns: repeat(3,1fr); gap: 16px; align-items:stretch; }
 .pg-grid-2 { display:grid; grid-template-columns: repeat(2,1fr); gap: 16px; align-items:stretch; }
@@ -101,18 +101,21 @@ body { margin: 0; background: linear-gradient(180deg, var(--pg-bg) 0%, #FFFFFF 4
 .gv-kpi .lbl { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--pg-muted); }
 .gv-kpi .val { font-family: var(--pg-font-num); font-size:19px; font-weight:700; color:var(--pg-ink); margin-top:3px; }
 
-/* ---- tarjetas pequeñas (fichas de KPI): profundidad + lavado por estado ---- */
-.pg-tile { position:relative; border-radius:14px; padding:16px 16px 15px; background:#fff; border:1px solid var(--pg-line); box-shadow: 0 1px 2px rgba(27,45,58,.04), 0 6px 14px rgba(27,45,58,.05); transition: transform 160ms ease, box-shadow 160ms ease; overflow:hidden; }
-.pg-tile:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(27,45,58,.06), 0 10px 20px rgba(27,45,58,.08); }
-.pg-tile::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--pg-mint); }
-.pg-tile.acc-warn::before { background:var(--pg-warn); }
-.pg-tile.acc-bad::before { background:var(--pg-neg); }
-.pg-tile .lbl { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--pg-muted); }
-.pg-tile .val { font-family: var(--pg-font-num); font-size:38px; font-weight:600; color:var(--pg-ink); margin-top:6px; line-height:1.05; }
-.pg-tile .sub { font-size:11.5px; color:var(--pg-muted); margin-top:5px; }
-.wash-bien   { background: rgba(45,191,163,.07); }
-.wash-revisar{ background: rgba(217,165,32,.07); }
-.wash-mal    { background: rgba(213,89,79,.07); }
+/* ---- Vendedores (mockup v2): heroe, KPIs de 3, mini-grid de 4 ---- */
+.pgu { font-size:12px; color:var(--pg-muted); font-weight:500; }
+.kpis3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:0 0 18px; }
+.k .l { font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--pg-muted); font-weight:600; }
+.k .v { font-family:var(--pg-font-num); font-weight:600; font-size:34px; color:var(--pg-ink); margin:6px 0 2px; letter-spacing:-.01em; }
+.k .s { font-size:12.5px; color:var(--pg-muted); }
+.k .s b { font-family:var(--pg-font-num); color:var(--pg-ink); font-weight:600; }
+.k.red .v { color:var(--pg-neg); }
+.mini { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.mini div { background:#F7FAFC; border-radius:12px; padding:12px 14px; }
+.mini .l { font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--pg-muted); font-weight:600; }
+.mini .v { font-family:var(--pg-font-num); font-weight:600; font-size:18px; color:var(--pg-ink); }
+.vend-leg { display:flex; gap:18px; font-size:12.5px; color:var(--pg-muted); margin:6px 0 10px; flex-wrap:wrap; }
+.vend-leg i { width:12px; height:12px; border-radius:4px; display:inline-block; vertical-align:-2px; margin-right:6px; }
+.svg-tip { position:absolute; background:var(--pg-ink-2); color:#fff; font-size:12px; padding:8px 10px; border-radius:8px; pointer-events:none; display:none; font-family:var(--pg-font-num); z-index:80; }
 
 .chart-wrap { position:relative; height:170px; }
 
@@ -121,9 +124,9 @@ body { margin: 0; background: linear-gradient(180deg, var(--pg-bg) 0%, #FFFFFF 4
 .pg-table th[data-sort] { cursor:pointer; user-select:none; }
 .pg-table th[data-sort]:hover { color:var(--pg-ink); }
 .pg-table th .arrow { font-size:9px; margin-left:3px; color:var(--pg-mint-deep); }
-.vend-infostrip { display:flex; gap:22px; flex-wrap:wrap; font-size:12.5px; color:var(--pg-muted); margin-bottom:18px; padding-bottom:16px; border-bottom:1px solid var(--pg-line); }
-.vend-infostrip b { font-family:var(--pg-font-num); }
-.vend-frase { font-size:15px; color:var(--pg-ink); font-weight:600; margin-bottom:10px; }
+.vend-frase { font-family:var(--pg-font-title); font-weight:700; font-size:19px; color:var(--pg-ink); margin:6px 0 2px; }
+.vend-frase b { font-family:var(--pg-font-num); font-weight:600; }
+.vend-frase .gap { color:#8C6A10; }
 .pg-table td { border-bottom:1px solid var(--pg-line); padding:9px 8px; vertical-align:middle; }
 .pg-table td.num { font-family: var(--pg-font-num); }
 .pg-table tr.rojo td { background:#FCEEEC; }
@@ -184,23 +187,50 @@ body { margin: 0; background: linear-gradient(180deg, var(--pg-bg) 0%, #FFFFFF 4
 .pg-vendedor-pick select { font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--pg-line); background:#fff; }
 
 /* ---- Mi cola: chips, buscador, layout con ficha lateral ---- */
-.cola-toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
-.cola-chips { display:flex; gap:6px; flex-wrap:wrap; }
-.cola-chip { font-family:var(--pg-font-body); font-size:12px; font-weight:700; border:1.5px solid var(--pg-line); background:#fff; color:var(--pg-ink); border-radius:999px; padding:7px 14px; cursor:pointer; transition: background 140ms ease, border-color 140ms ease; }
+.chips-row { display:flex; gap:10px; margin:0 0 14px; flex-wrap:wrap; align-items:center; }
+.cola-chips { display:flex; gap:10px; flex-wrap:wrap; }
+.cola-chip { font-family:var(--pg-font-body); font-size:13px; font-weight:600; border:1.5px solid var(--pg-line); background:#fff; color:var(--pg-ink); border-radius:999px; padding:8px 16px; cursor:pointer; transition: background 140ms ease, border-color 140ms ease; }
 .cola-chip:hover { border-color:var(--pg-mint); }
-.cola-chip.on { background:var(--pg-mint); color:#fff; border-color:var(--pg-mint); }
-.cola-buscar { margin-left:auto; font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--pg-line); min-width:220px; }
+.cola-chip.on { background:var(--pg-mint-dark); color:#fff; border-color:var(--pg-mint-dark); }
+.avance { margin-left:auto; font-size:12.5px; color:var(--pg-muted); }
+.avance b { font-family:var(--pg-font-num); color:var(--pg-ink); }
+.cola-buscar-row { display:flex; justify-content:flex-end; margin-bottom:14px; }
+.cola-buscar { font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--pg-line); min-width:220px; }
 .cola-layout { display:flex; gap:16px; align-items:flex-start; }
 .cola-lista { flex:1; min-width:0; }
 .cola-panel { width:400px; flex-shrink:0; background:var(--pg-card); border:1px solid var(--pg-line); border-radius:16px; padding:18px; position:sticky; top:90px; max-height:calc(100vh - 110px); overflow-y:auto; }
 @media (max-width:1180px) { .cola-layout { flex-direction:column; } .cola-panel { width:100%; position:relative; top:0; } }
-.cola-row { cursor:pointer; }
-.cola-row td { padding:15px 10px; border-bottom:1px solid rgba(231,237,242,.55); transition: box-shadow 140ms ease, background 140ms ease; }
-.cola-row:hover td { background:var(--pg-bg); box-shadow: 0 2px 10px rgba(27,45,58,.06); }
-.cola-row.sel td { background:#E3F4EF; }
-.cola-udot { display:inline-block; width:10px; height:10px; border-radius:50%; }
-.cola-vence-dias { font-weight:700; }
-.cola-vence-fecha { font-size:10.5px; color:var(--pg-muted); }
+/* ---- tabla de la cola (mockup v2): filas-tarjeta, sin lavado de fondo ---- */
+.cola-tabla { width:100%; border-collapse:separate; border-spacing:0 8px; }
+.cola-tabla th { font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--pg-muted); font-weight:600; text-align:left; padding:0 14px 4px; white-space:nowrap; }
+.cola-tabla th.num, .cola-tabla td.num { text-align:right; }
+.cola-tabla tr.f td { background:#fff; padding:12px 14px; height:54px; border-top:1px solid var(--pg-line); border-bottom:1px solid var(--pg-line); }
+.cola-tabla tr.f td:first-child { border-left:3px solid #DDE3E8; border-radius:12px 0 0 12px; width:30px; }
+.cola-tabla tr.rojo td:first-child { border-left-color:var(--pg-neg); }
+.cola-tabla tr.amb td:first-child { border-left-color:var(--pg-warn); }
+.cola-tabla tr.f td:last-child { border-right:1px solid var(--pg-line); border-radius:0 12px 12px 0; }
+.cola-tabla tr.f { cursor:pointer; }
+.cola-tabla tr.f:hover td { background:#FAFCFD; }
+.cola-tabla tr.f.sel td { background:#EAF7F3; }
+.cola-udot { width:10px; height:10px; border-radius:50%; display:inline-block; }
+.cola-udot.r { background:var(--pg-neg); box-shadow:0 0 0 3px rgba(213,89,79,.14); }
+.cola-udot.a { background:var(--pg-warn); box-shadow:0 0 0 3px rgba(217,165,32,.16); }
+.cola-udot.g { background:#C5CED5; box-shadow:none; }
+.cola-cta { font-weight:700; color:var(--pg-ink); }
+.cola-cta small { display:block; font-weight:500; color:var(--pg-muted); font-family:var(--pg-font-num); font-size:11.5px; }
+.cola-vence-dias { font-family:var(--pg-font-num); font-weight:600; font-size:14px; }
+.cola-vence-fecha { display:block; color:var(--pg-muted); font-size:11.5px; }
+.cola-vence.r .cola-vence-dias { color:var(--pg-neg); }
+.cola-vence.a .cola-vence-dias { color:#8C6A10; }
+.cola-sig { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-family:var(--pg-font-num); }
+.cola-sig i { width:9px; height:9px; border-radius:50%; display:inline-block; }
+.cola-sig.ok i { background:var(--pg-pos); }
+.cola-sig.no i { background:var(--pg-warn); }
+.cola-pill { border-radius:999px; padding:5px 11px; font-size:12px; font-weight:600; background:#EEF2F5; color:var(--pg-ink); display:inline-block; }
+.chk { width:20px; height:20px; border-radius:7px; border:1.5px solid #C9D3DA; display:inline-block; background:#fff; cursor:pointer; }
+.chk.on { background:var(--pg-mint-dark); border-color:var(--pg-mint-dark); position:relative; }
+.chk.on::after { content:''; position:absolute; left:6px; top:2px; width:5px; height:10px; border:solid #fff; border-width:0 2px 2px 0; transform:rotate(45deg); }
+.chk.off { background:#F1F4F6; border-style:dashed; cursor:default; }
 .ficha-cerrar { float:right; background:none; border:none; color:var(--pg-muted); font-size:18px; cursor:pointer; line-height:1; }
 .ficha-nav { display:flex; gap:8px; margin-bottom:12px; }
 .ficha-nav button { font-family:var(--pg-font-body); font-size:12px; font-weight:700; border:1px solid var(--pg-line); background:#fff; border-radius:999px; padding:6px 12px; cursor:pointer; }
@@ -211,18 +241,24 @@ body { margin: 0; background: linear-gradient(180deg, var(--pg-bg) 0%, #FFFFFF 4
 .muro-tile:hover { border-color:var(--pg-mint); }
 .muro-tile-detalle { margin-top:10px; }
 
-/* ---- cabecera de Mi cola: el mes en curso ---- */
-.cola-cabecera { margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid var(--pg-line); }
-.cola-cab-grid { display:flex; align-items:center; gap:26px; flex-wrap:wrap; }
-.cola-cab-texto { flex:1; min-width:280px; }
-.cola-cab-mes { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:6px; }
-.cola-cab-mes-txt { font-family:var(--pg-font-title); font-weight:800; font-size:19px; color:var(--pg-ink); letter-spacing:.03em; }
-.cola-cab-dias { font-size:13px; color:var(--pg-muted); }
-.cola-cab-entran { font-family:var(--pg-font-title); font-weight:800; font-size:32px; color:var(--pg-ink); margin-bottom:12px; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
-.cola-cab-entran b { font-family:var(--pg-font-num); }
-.cola-cab-premium { font-family:var(--pg-font-num); font-size:22px; font-weight:700; color:var(--pg-mint-deep); }
-.cola-cab-fila3 { display:flex; gap:24px; flex-wrap:wrap; font-size:13px; color:var(--pg-muted); }
-.cola-cab-fila3 b { font-family:var(--pg-font-num); color:var(--pg-ink); font-size:16px; }
+/* ---- cabecera de Mi cola: el mes en curso (mockup v2, pixel exacto) ---- */
+.cola-mes { display:grid; grid-template-columns:1fr 220px; gap:26px; align-items:center; padding:28px 30px; }
+.cola-cab-mes { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+.cola-cab-mes-txt { font-family:var(--pg-font-title); font-weight:800; font-size:20px; color:var(--pg-ink); letter-spacing:.06em; }
+.cola-cab-dias { font-size:13px; color:var(--pg-muted); font-weight:500; }
+.cola-cab-entran { font-family:var(--pg-font-title); font-weight:800; font-size:38px; color:var(--pg-ink); margin:10px 0 4px; letter-spacing:-.02em; line-height:1.05; }
+.cola-cab-entran b { font-family:var(--pg-font-num); font-weight:600; color:var(--pg-mint-dark); }
+.cola-cab-prem { font-family:var(--pg-font-num); color:var(--pg-muted); font-size:16px; }
+.cola-cab-fila3 { display:flex; gap:26px; margin-top:20px; }
+.cola-cab-fila3 > div { padding:10px 16px 10px 0; flex:1; border-right:1px solid var(--pg-line); }
+.cola-cab-fila3 > div:last-child { border-right:0; }
+.cola-cab-fila3 .l { font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--pg-muted); font-weight:600; }
+.cola-cab-fila3 .v { font-family:var(--pg-font-num); font-weight:600; font-size:28px; color:var(--pg-ink); margin-top:2px; }
+.cola-cab-fila3 .falta .v { color:#8C6A10; }
+.cola-cab-ring { width:200px; height:200px; margin:auto; position:relative; }
+.cola-cab-ring .c { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.cola-cab-ring .p { font-family:var(--pg-font-num); font-weight:600; font-size:30px; }
+.cola-cab-ring .s { font-size:11px; letter-spacing:.14em; color:var(--pg-muted); text-transform:uppercase; font-weight:600; }
 </style>
 </head>
 <body>
@@ -329,21 +365,10 @@ function etiqueta(s){ return ETIQUETAS[s] !== undefined ? ETIQUETAS[s] : (s||'�
 function fmtDiasVence(dias){
   if(dias===null||dias===undefined||isNaN(dias)) return '—';
   const n = Number(dias);
-  if(n < 0) return 'vencida hace '+Math.abs(n)+'d';
+  if(n < 0) return 'vencida hace '+Math.abs(n)+' d';
   if(n === 0) return 'vence hoy';
-  return 'en '+n+'d';
+  return 'en '+n+' días';
 }
-const URGENCIA_COLOR = { rojo:'var(--pg-neg)', ambar:'var(--pg-warn)', gris:'var(--pg-muted)' };
-const URGENCIA_HALO  = { rojo:'rgba(213,89,79,.20)', ambar:'rgba(217,165,32,.20)', gris:'rgba(107,125,137,.20)' };
-const URGENCIA_WASH  = { rojo:'rgba(213,89,79,.045)', ambar:'rgba(217,165,32,.045)', gris:'transparent' };
-function estadoPct(pct){
-  if(pct===null||pct===undefined||isNaN(pct)) return 'neutro';
-  if(pct>=70) return 'bien';
-  if(pct>=50) return 'revisar';
-  return 'mal';
-}
-const WASH_ESTADO = { bien:'wash-bien', revisar:'wash-revisar', mal:'wash-mal', neutro:'' };
-const ACC_ESTADO  = { bien:'', revisar:'acc-warn', mal:'acc-bad', neutro:'' };
 function fmtHora(s){
   if(!s) return '—';
   try{
@@ -420,6 +445,22 @@ function bloqueAnillo(pct, meta, color, valorTexto, etiquetaTexto, tamano){
     svgAnillo(pct, meta, color, tamano, 10)+
     '<div class="ring-center"><div class="rc-val" style="color:'+color+'">'+valorTexto+'</div>'+(etiquetaTexto?'<div class="rc-lbl">'+etiquetaTexto+'</div>':'')+'</div>'+
   '</div>';
+}
+
+/* ---- anillo de la cabecera de Mi cola (mockup v2): 200px, trazo 9px, un solo
+   color plano, marca de meta como linea radial (no comparte CSS con Bonos). ---- */
+function anilloMes(pct, meta){
+  const color = semaforoColor(pct);
+  const p = Math.max(0, Math.min(100, pct||0));
+  const circunf = 2*Math.PI*84;
+  const dash = circunf * p / 100;
+  const m = Math.max(0, Math.min(100, meta==null?70:meta));
+  const angDeg = (m/100)*360;
+  return '<svg viewBox="0 0 200 200" width="200" height="200">'+
+    '<circle cx="100" cy="100" r="84" fill="none" stroke="#EEF2F5" stroke-width="9"/>'+
+    '<circle cx="100" cy="100" r="84" fill="none" stroke="'+color+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+dash.toFixed(2)+' '+circunf.toFixed(2)+'" transform="rotate(-90 100 100)"/>'+
+    '<line x1="100" y1="6" x2="100" y2="24" stroke="#1B2D3A" stroke-width="3" stroke-linecap="round" transform="rotate('+angDeg+' 100 100)"/>'+
+  '</svg>';
 }
 
 /* ---- bloques plegables: recuerda estado mientras se trabaja (no persiste al recargar la página) ---- */
@@ -589,29 +630,25 @@ function pintarEsqueletoCompleto(){
 
   document.getElementById('pg-tabmain').innerHTML = `
     <section class="pg-tabsection on" id="tab-cola">
-      <div class="pg-card">
-        <div id="cola-cabecera"><div class="pg-skel" style="height:130px"></div></div>
-        <div class="cola-toolbar">
-          <div class="cola-chips" id="cola-chips"></div>
-          <input type="text" class="cola-buscar" id="cola-buscar" placeholder="Buscar por nombre o DOT…">
-        </div>
-        <div class="pg-limite" id="cola-semana">—</div>
-        <div class="cola-layout">
-          <div class="cola-lista" id="cola-lista"><div class="pg-skel" style="height:220px"></div></div>
-          <aside class="cola-panel" id="cola-panel" style="display:none"></aside>
-        </div>
-        <div id="cola-resumen" style="margin-top:12px;font-size:13.5px;color:var(--pg-ink)"></div>
-        <div id="area-estado-dato" style="font-size:11.5px;color:var(--pg-muted);margin-top:6px"></div>
+      <div class="pg-card cola-mes" id="cola-cabecera"><div class="pg-skel" style="height:130px"></div></div>
+      <div class="chips-row">
+        <div class="cola-chips" id="cola-chips"></div>
+        <span class="avance" id="cola-semana">—</span>
       </div>
+      <div class="cola-buscar-row"><input type="text" class="cola-buscar" id="cola-buscar" placeholder="Buscar por nombre o DOT…"></div>
+      <div class="cola-layout">
+        <div class="cola-lista" id="cola-lista"><div class="pg-skel" style="height:220px"></div></div>
+        <aside class="cola-panel" id="cola-panel" style="display:none"></aside>
+      </div>
+      <div id="cola-resumen" style="margin-top:12px;font-size:13.5px;color:var(--pg-ink)"></div>
+      <div id="area-estado-dato" style="font-size:11.5px;color:var(--pg-muted);margin-top:6px"></div>
     </section>
 
     <section class="pg-tabsection" id="tab-vendedores">
-      <div class="pg-card">
-        <div class="pg-vendedor-pick">
-          <select id="vend-select"><option value="">Selecciona un vendedor…</option></select>
-        </div>
-        <div id="vend-ficha"><div class="pg-limite" style="color:var(--pg-muted);font-size:13px">Selecciona un vendedor para ver su ficha.</div></div>
+      <div class="pg-vendedor-pick">
+        <select id="vend-select"><option value="">Selecciona un vendedor…</option></select>
       </div>
+      <div id="vend-ficha"><div class="pg-limite" style="color:var(--pg-muted);font-size:13px">Selecciona un vendedor para ver su ficha.</div></div>
       <div class="pg-card">
         <h2>Todos los agentes</h2>
         <div id="vend-lista-todos"><div class="pg-skel" style="height:120px"></div></div>
@@ -792,18 +829,19 @@ function pintarCarteraArea(cartera){
 const ESTADOS_TRABAJO = ['pendiente','contactado','cotizando','renovado','perdido','retirado'];
 const COLA_CHIPS = [
   { key:'pendientes',  label:'Pendientes' },
+  { key:'este_mes',    label:'Este mes' },
   { key:'contactadas', label:'Contactadas' },
   { key:'sin_senal',   label:'Sin señal de vida' },
   { key:'verificadas', label:'Verificadas con Jeff' },
-  { key:'este_mes',    label:'Este mes' },
   { key:'todas',       label:'Todas' },
 ];
 let COLA_FILAS = [];
-let COLA_FILTRO_CHIP = 'todas';
+let COLA_FILTRO_CHIP = 'pendientes';
 let COLA_BUSQUEDA = '';
 let COLA_FICHA_ROW = null;
 let COLA_FICHA_LISTA = [];
 let MES_EN_CURSO = null;
+let MES_VENCIERON = 0;
 function rowId(r){ return 'rf_'+String(r.llave+'|'+r.vence).replace(/[^a-zA-Z0-9]/g,'_'); }
 
 async function cargarCola(){
@@ -813,9 +851,13 @@ async function cargarCola(){
     SB.from('v_indice_renovaciones_v3_visible').select('mes,vencieron,renovaron,pct_renovado,premium_vencido').eq('estado_mes','en_curso').maybeSingle(),
   ]);
   MES_EN_CURSO = idxR.data ? idxR.data.mes : null;
-  pintarCabeceraCola(idxR.data);
-  if(colaR.error){ lista.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(colaR.error.message)+'</div>'; return; }
+  MES_VENCIERON = idxR.data ? Number(idxR.data.vencieron||0) : 0;
+  if(colaR.error){ lista.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(colaR.error.message)+'</div>'; pintarCabeceraCola(idxR.data, 0, 0); return; }
   COLA_FILAS = (colaR.data||[]).slice().sort((a,b)=> (Number(a.bloque)-Number(b.bloque)) || (Number(b.premium_activo||0)-Number(a.premium_activo||0)));
+  const filasMes = MES_EN_CURSO ? COLA_FILAS.filter(r=> String(r.mes_vence)===String(MES_EN_CURSO)) : [];
+  const premSenalMes = filasMes.reduce((s,r)=>s+Number(r.premium_con_senal||0),0);
+  const premConfirmarMes = filasMes.reduce((s,r)=>s+Number(r.premium_por_confirmar||0),0);
+  pintarCabeceraCola(idxR.data, premSenalMes, premConfirmarMes);
   pintarChipsCola();
   cablearBuscadorCola();
   repintarCola();
@@ -823,7 +865,7 @@ async function cargarCola(){
   cargarContadorSemana();
 }
 
-function pintarCabeceraCola(row){
+function pintarCabeceraCola(row, premSenal, premConfirmar){
   const el = document.getElementById('cola-cabecera'); if(!el) return;
   if(!row){ el.innerHTML = '<div class="pg-limite">Sin datos del mes en curso.</div>'; return; }
   const vencieron = Number(row.vencieron||0);
@@ -834,18 +876,17 @@ function pintarCabeceraCola(row){
   const dias = diasRestantesMes(row.mes);
   const color = semaforoColor(pct);
   el.innerHTML =
-    '<div class="cola-cab-grid">'+
-      '<div class="cola-cab-texto">'+
-        '<div class="cola-cab-mes"><span class="cola-cab-mes-txt">'+esc(fmtMesLargoMayus(row.mes))+'</span><span class="cola-cab-dias">quedan '+dias+' días</span></div>'+
-        '<div class="cola-cab-entran">Entras a renovar <b>'+vencieron+'</b> cuentas <span class="cola-cab-premium">'+fmtUSD(row.premium_vencido)+'</span></div>'+
-        '<div class="cola-cab-fila3">'+
-          '<div>Meta 70% → <b>'+metaCuentas+'</b> cuentas</div>'+
-          '<div>Renovadas <b>'+renovaron+'</b></div>'+
-          '<div>Faltan <b>'+faltan+'</b></div>'+
-        '</div>'+
+    '<div>'+
+      '<div class="cola-cab-mes"><span class="cola-cab-mes-txt">'+esc(fmtMesLargoMayus(row.mes))+'</span><span class="cola-cab-dias">quedan '+dias+' días</span></div>'+
+      '<div class="cola-cab-entran">Entras a renovar <b>'+vencieron+'</b> cuentas</div>'+
+      '<div class="cola-cab-prem">'+fmtUSD(row.premium_vencido)+' en juego · '+fmtUSD(premSenal||0)+' con señal de vida · '+fmtUSD(premConfirmar||0)+' por confirmar</div>'+
+      '<div class="cola-cab-fila3">'+
+        '<div><div class="l">Meta 70%</div><div class="v">'+metaCuentas+' <span class="pgu">cuentas</span></div></div>'+
+        '<div><div class="l">Renovadas</div><div class="v">'+renovaron+'</div></div>'+
+        '<div class="falta"><div class="l">Faltan</div><div class="v">'+faltan+'</div></div>'+
       '</div>'+
-      bloqueAnillo(pct, 70, color, pct.toFixed(1)+'%', 'meta 70%', 118)+
-    '</div>';
+    '</div>'+
+    '<div class="cola-cab-ring">'+anilloMes(pct,70)+'<div class="c"><div class="p" style="color:'+color+'">'+pct.toFixed(1)+'%</div><div class="s">meta 70%</div></div></div>';
 }
 
 function pintarChipsCola(){
@@ -866,7 +907,7 @@ async function cargarContadorSemana(){
   const { data } = await SB.from('renov_trabajo').select('llave,vence').gte('trabajada_at', desde);
   const claves = new Set(COLA_FILAS.map(r=> r.llave+'|'+r.vence));
   const n = (data||[]).filter(t=> claves.has(t.llave+'|'+t.vence)).length;
-  el.textContent = n+' cuenta'+(n===1?'':'s')+' trabajada'+(n===1?'':'s')+' esta semana';
+  el.innerHTML = '<b>'+n+'</b> de '+MES_VENCIERON+' trabajadas esta semana';
 }
 
 function filasFiltradasCola(){
@@ -890,7 +931,7 @@ function repintarCola(){
   const filas = filasFiltradasCola();
   const lista = document.getElementById('cola-lista');
   lista.innerHTML = filas.length
-    ? '<div class="tablewrap"><table class="pg-table"><thead><tr><th></th><th>DOT</th><th>Cuenta</th><th>Agente</th><th class="num">Premium</th><th>Vence</th><th>Señal</th><th>Jeff</th><th>Contactado</th><th>Estado</th><th>Notas</th></tr></thead><tbody id="cola-tbody">'+
+    ? '<div class="tablewrap"><table class="cola-tabla"><thead><tr><th></th><th>Cuenta</th><th>Agente</th><th class="num">Premium</th><th>Vence</th><th>Señal</th><th>Jeff</th><th>Contacto</th><th>Estado</th><th class="num">Notas</th></tr></thead><tbody id="cola-tbody">'+
         filas.map(filaCola).join('')+
       '</tbody></table></div>'
     : '<div class="pg-limite">Sin cuentas para este filtro.</div>';
@@ -908,27 +949,25 @@ function repintarCola(){
 function filaCola(r){
   const id = rowId(r);
   const sel = COLA_FICHA_ROW && COLA_FICHA_ROW.llave===r.llave && COLA_FICHA_ROW.vence===r.vence;
-  const colorSenal = r.sin_senal ? 'var(--pg-warn)' : 'var(--pg-pos)';
-  const senalHtml = r.sin_senal
-    ? '<span style="font-size:11px;color:var(--pg-warn);font-weight:700">'+(r.dias_sin_mov!=null?r.dias_sin_mov+'d · ':'')+'confirmar con Jeff antes de trabajarla</span>'
-    : '<span style="font-size:11px;color:var(--pg-muted)">'+(r.dias_sin_mov!=null?r.dias_sin_mov+'d':'')+'</span>';
-  const premiumHtml = fmtUSD(r.premium_activo) + (Number(r.n_polizas)>1 ? ' <span style="font-size:10px;color:var(--pg-muted);font-weight:700">×'+r.n_polizas+'</span>' : '');
+  const uClase = r.urgencia==='rojo' ? 'rojo' : (r.urgencia==='ambar' ? 'amb' : '');
+  const dotClase = r.urgencia==='rojo' ? 'r' : (r.urgencia==='ambar' ? 'a' : 'g');
+  const veClase = r.urgencia==='rojo' ? 'r' : (r.urgencia==='ambar' ? 'a' : '');
+  const cuentaSub = [ r.dot?('DOT '+esc(r.dot)):null, Number(r.n_polizas)>1?('×'+r.n_polizas+' pólizas'):null, r.otras_fechas?('vence en otras fechas: '+esc(r.otras_fechas)):null ].filter(Boolean).join(' · ');
   const contactadoDisabled = r.sin_senal && !r.verificado_financiera;
-  const uColor = URGENCIA_COLOR[r.urgencia]||'var(--pg-muted)';
-  const uHalo = URGENCIA_HALO[r.urgencia]||'rgba(107,125,137,.20)';
-  const uWash = URGENCIA_WASH[r.urgencia]||'transparent';
-  return '<tr class="cola-row'+(sel?' sel':'')+'" data-row-id="'+id+'" style="background:'+uWash+'">'+
-      '<td><span class="cola-udot" style="background:'+uColor+';box-shadow:0 0 0 4px '+uHalo+'"></span></td>'+
-      '<td>'+esc(r.dot||'—')+'</td>'+
-      '<td><b>'+esc(r.cuenta_nombre||r.llave)+'</b></td>'+
+  const sigClase = r.sin_senal ? 'no' : 'ok';
+  const sigTxt = (r.dias_sin_mov!=null ? r.dias_sin_mov+' d' : '—') + (r.sin_senal ? ' · confirmar con Jeff' : '');
+  const estadoTxt = (r.estado_trabajo||'pendiente'); const estadoCap = estadoTxt.charAt(0).toUpperCase()+estadoTxt.slice(1);
+  return '<tr class="f'+(uClase?' '+uClase:'')+(sel?' sel':'')+'" data-row-id="'+id+'">'+
+      '<td><i class="cola-udot '+dotClase+'"></i></td>'+
+      '<td class="cola-cta">'+esc(r.cuenta_nombre||r.llave)+(cuentaSub?'<small>'+cuentaSub+'</small>':'')+'</td>'+
       '<td>'+esc(r.agente||'—')+'</td>'+
-      '<td class="num">'+premiumHtml+'</td>'+
-      '<td><div class="cola-vence-dias">'+fmtDiasVence(r.dias_para_vencer)+'</div><div class="cola-vence-fecha">'+fmtFecha(r.vence)+'</div></td>'+
-      '<td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+colorSenal+';margin-right:5px"></span>'+senalHtml+'</td>'+
-      '<td><input type="checkbox" class="chk-jeff" '+(r.verificado_financiera?'checked':'')+'></td>'+
-      '<td><input type="checkbox" class="chk-contactado" '+(r.contactado?'checked':'')+(contactadoDisabled?' disabled':'')+'></td>'+
-      '<td><select class="sel-estado">'+ESTADOS_TRABAJO.map(e=>'<option value="'+e+'" '+((r.estado_trabajo||'pendiente')===e?'selected':'')+'>'+e[0].toUpperCase()+e.slice(1)+'</option>').join('')+'</select></td>'+
-      '<td class="num"><span class="pg-pill muted">'+(r.n_notas||0)+'</span></td>'+
+      '<td class="num">'+fmtUSD(r.premium_activo)+'</td>'+
+      '<td class="cola-vence'+(veClase?' '+veClase:'')+'"><div class="cola-vence-dias">'+fmtDiasVence(r.dias_para_vencer)+'</div><div class="cola-vence-fecha">'+fmtFecha(r.vence)+'</div></td>'+
+      '<td><span class="cola-sig '+sigClase+'"><i></i>'+sigTxt+'</span></td>'+
+      '<td><span class="chk'+(r.verificado_financiera?' on':'')+'" data-jeff></span></td>'+
+      '<td><span class="chk'+(r.contactado?' on':'')+(contactadoDisabled?' off':'')+'" data-contacto></span></td>'+
+      '<td><span class="cola-pill">'+esc(estadoCap)+'</span></td>'+
+      '<td class="num">'+(r.n_notas||0)+'</td>'+
     '</tr>';
 }
 
@@ -938,28 +977,26 @@ function cablearFilasCola(filas){
     const id = rowId(r);
     const tr = tbody.querySelector('tr[data-row-id="'+id+'"]'); if(!tr) return;
     tr.querySelectorAll('td').forEach(td=>{
-      if(td.querySelector('input,select')) return;
+      if(td.querySelector('.chk')) return;
       td.addEventListener('click', ()=> abrirFicha(r, filas));
     });
-    const chkJeff = tr.querySelector('.chk-jeff');
-    chkJeff.addEventListener('click', e=> e.stopPropagation());
-    chkJeff.addEventListener('change', async ()=>{
-      await onChkJeff(r, chkJeff.checked, chkJeff);
-      const chkCont = tr.querySelector('.chk-contactado');
-      if(chkCont) chkCont.disabled = r.sin_senal && !r.verificado_financiera;
+    const chkJeff = tr.querySelector('[data-jeff]');
+    chkJeff.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const nuevo = !chkJeff.classList.contains('on');
+      await onChkJeff(r, nuevo, { checked: nuevo });
+      chkJeff.classList.toggle('on', !!r.verificado_financiera);
+      const chkCont = tr.querySelector('[data-contacto]');
+      if(chkCont) chkCont.classList.toggle('off', r.sin_senal && !r.verificado_financiera);
       if(COLA_FICHA_ROW && COLA_FICHA_ROW.llave===r.llave && COLA_FICHA_ROW.vence===r.vence) pintarFicha(r, filas);
     });
-    const chkCont = tr.querySelector('.chk-contactado');
-    chkCont.addEventListener('click', e=> e.stopPropagation());
-    chkCont.addEventListener('change', async ()=>{
-      await onChkContactado(r, chkCont.checked, chkCont);
-      if(COLA_FICHA_ROW && COLA_FICHA_ROW.llave===r.llave && COLA_FICHA_ROW.vence===r.vence) pintarFicha(r, filas);
-    });
-    const selEstado = tr.querySelector('.sel-estado');
-    selEstado.addEventListener('click', e=> e.stopPropagation());
-    let prevValue = selEstado.value;
-    selEstado.addEventListener('change', async ()=>{
-      await onSelEstado(r, selEstado.value, selEstado, prevValue); prevValue = selEstado.value;
+    const chkCont = tr.querySelector('[data-contacto]');
+    chkCont.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      if(chkCont.classList.contains('off')) return;
+      const nuevo = !chkCont.classList.contains('on');
+      await onChkContactado(r, nuevo, { checked: nuevo });
+      chkCont.classList.toggle('on', !!r.contactado);
       if(COLA_FICHA_ROW && COLA_FICHA_ROW.llave===r.llave && COLA_FICHA_ROW.vence===r.vence) pintarFicha(r, filas);
     });
   });
@@ -970,14 +1007,14 @@ function abrirFicha(row, filasActuales){
   COLA_FICHA_ROW = row;
   COLA_FICHA_LISTA = filasActuales;
   document.getElementById('cola-panel').style.display = 'block';
-  document.querySelectorAll('.cola-row').forEach(tr=>tr.classList.remove('sel'));
+  document.querySelectorAll('.cola-tabla tr.f').forEach(tr=>tr.classList.remove('sel'));
   const trSel = document.querySelector('tr[data-row-id="'+rowId(row)+'"]'); if(trSel) trSel.classList.add('sel');
   pintarFicha(row, filasActuales);
 }
 function cerrarFicha(){
   COLA_FICHA_ROW = null;
   const panel = document.getElementById('cola-panel'); if(panel){ panel.style.display = 'none'; panel.innerHTML=''; }
-  document.querySelectorAll('.cola-row.sel').forEach(tr=>tr.classList.remove('sel'));
+  document.querySelectorAll('.cola-tabla tr.f.sel').forEach(tr=>tr.classList.remove('sel'));
 }
 window.cerrarFicha = cerrarFicha;
 window.navegarFicha = function(delta){
@@ -1024,14 +1061,14 @@ function pintarFicha(row, filasActuales){
   document.getElementById('ficha-sig').addEventListener('click', ()=> navegarFicha(1));
   document.getElementById('ficha-btn-jeff').addEventListener('click', async ()=>{
     await onChkJeff(row, !row.verificado_financiera, { checked: !row.verificado_financiera });
-    const trChk = document.querySelector('tr[data-row-id="'+rowId(row)+'"] .chk-jeff'); if(trChk) trChk.checked = row.verificado_financiera;
-    const trCont = document.querySelector('tr[data-row-id="'+rowId(row)+'"] .chk-contactado'); if(trCont) trCont.disabled = row.sin_senal && !row.verificado_financiera;
+    const trChk = document.querySelector('tr[data-row-id="'+rowId(row)+'"] [data-jeff]'); if(trChk) trChk.classList.toggle('on', !!row.verificado_financiera);
+    const trCont = document.querySelector('tr[data-row-id="'+rowId(row)+'"] [data-contacto]'); if(trCont) trCont.classList.toggle('off', row.sin_senal && !row.verificado_financiera);
     pintarFicha(row, filasActuales);
   });
   document.getElementById('ficha-btn-contactado').addEventListener('click', async (e)=>{
     if(e.currentTarget.disabled) return;
     await onChkContactado(row, !row.contactado, { checked: !row.contactado });
-    const trChk = document.querySelector('tr[data-row-id="'+rowId(row)+'"] .chk-contactado'); if(trChk) trChk.checked = row.contactado;
+    const trChk = document.querySelector('tr[data-row-id="'+rowId(row)+'"] [data-contacto]'); if(trChk) trChk.classList.toggle('on', !!row.contactado);
     pintarFicha(row, filasActuales);
   });
   const selEstado = document.getElementById('ficha-sel-estado');
@@ -1039,7 +1076,8 @@ function pintarFicha(row, filasActuales){
   selEstado.addEventListener('change', async ()=>{
     await onSelEstado(row, selEstado.value, selEstado, prevValue);
     prevValue = selEstado.value;
-    const trSel = document.querySelector('tr[data-row-id="'+rowId(row)+'"] .sel-estado'); if(trSel) trSel.value = row.estado_trabajo;
+    const trPill = document.querySelector('tr[data-row-id="'+rowId(row)+'"] .cola-pill');
+    if(trPill) trPill.textContent = row.estado_trabajo.charAt(0).toUpperCase()+row.estado_trabajo.slice(1);
   });
   const btnGuardar = panel.querySelector('.btn-guardar-nota');
   if(btnGuardar) btnGuardar.addEventListener('click', ()=> guardarNotaFila(row));
@@ -1155,26 +1193,152 @@ window.seleccionarAgente = async function(nombre){
   pintarFichaVendedor(nombre, resumen, vsR.data||[], prR.data||[]);
 };
 
-function fichaBox(titulo, valorPrincipal, sub){
-  return '<div class="pg-tile">'+
-    '<div class="lbl">'+esc(titulo)+'</div>'+
-    '<div class="val">'+valorPrincipal+'</div>'+
-    (sub ? '<div class="sub">'+sub+'</div>' : '')+
-  '</div>';
+/* ---- graficas de Vendedores (mockup v2): SVG puro portado casi literal,
+   Chart.js no puede replicar el relleno de dos curvas + hueco entre ellas. ---- */
+const SVGNS = 'http://www.w3.org/2000/svg';
+function svgNode(t,a){ const e=document.createElementNS(SVGNS,t); for(const k in a) e.setAttribute(k,a[k]); return e; }
+function svgSmooth(pts){
+  let d = 'M'+pts[0][0]+','+pts[0][1];
+  for(let i=0;i<pts.length-1;i++){
+    const x0=pts[i][0], y0=pts[i][1], x1=pts[i+1][0], y1=pts[i+1][1];
+    const cx=(x0+x1)/2;
+    d += ' C'+cx+','+y0+' '+cx+','+y1+' '+x1+','+y1;
+  }
+  return d;
 }
-function fichaTasaRing(r, tasa){
-  const color = semaforoColor(tasa);
-  const estado = estadoPct(tasa);
-  const acc = ACC_ESTADO[estado] ? ' '+ACC_ESTADO[estado] : '';
-  const wash = WASH_ESTADO[estado] ? ' '+WASH_ESTADO[estado] : '';
-  const necesarias = Math.ceil(Number(r.vencio_n||0)*0.70);
-  const faltan = Math.max(0, necesarias - Number(r.renovo_n||0));
-  const sub = tasa===null ? 'Sin vencidas todavía' : (faltan>0 ? 'Le faltaron '+faltan+' cuentas para el estándar' : 'Cumplió el estándar');
-  return '<div class="pg-tile'+acc+wash+'" style="text-align:center">'+
-    '<div class="lbl" style="text-align:left">Tasa de renovación</div>'+
-    bloqueAnillo(tasa===null?0:tasa, 70, color, tasa===null?'—':tasa.toFixed(1)+'%', null, 96)+
-    '<div class="sub">'+sub+'</div>'+
-  '</div>';
+function svgGrad(svg,id,c,a1,a2){
+  const d=svgNode('defs',{});
+  const g=svgNode('linearGradient',{id:id,x1:0,y1:0,x2:0,y2:1});
+  g.appendChild(svgNode('stop',{offset:0,'stop-color':c,'stop-opacity':a1}));
+  g.appendChild(svgNode('stop',{offset:1,'stop-color':c,'stop-opacity':a2}));
+  d.appendChild(g); svg.appendChild(d);
+}
+function svgAxis(svg,W,H,pad,max,step,labels){
+  for(let v=0; v<=max; v+=step){
+    const y = H-pad.b-(v/max)*(H-pad.t-pad.b);
+    svg.appendChild(svgNode('line',{x1:pad.l,x2:W-pad.r,y1:y,y2:y,stroke:'#EEF2F5'}));
+    const t = svgNode('text',{x:pad.l-10,y:y+4,'text-anchor':'end','font-size':11,fill:'#6B7D89','font-family':'JetBrains Mono'});
+    t.textContent = v; svg.appendChild(t);
+  }
+  labels.forEach((m,i)=>{
+    const x = pad.l + i*(W-pad.l-pad.r)/(labels.length-1||1);
+    const t = svgNode('text',{x:x,y:H-pad.b+20,'text-anchor':'middle','font-size':12,fill:'#6B7D89','font-family':'Inter'});
+    t.textContent = m; svg.appendChild(t);
+  });
+}
+function dibujarHeroSvg(idSvg, filas){
+  const svg = document.getElementById(idSvg); if(!svg) return;
+  svg.innerHTML = '';
+  const n = filas.length; if(!n) return;
+  const labels = filas.map(m=>mesCorto(m.mes));
+  const V = filas.map(m=>Number(m.vendido_n||0));
+  const R = filas.map(m=>Number(m.renovado_n||0));
+  const W=1100, H=400, pad={l:44,r:20,t:24,b:40};
+  const maxVal = Math.max(1, ...V, ...R);
+  const max = Math.ceil(maxVal*1.15/5)*5 || 5;
+  const step = Math.max(1, Math.round(max/3));
+  svgGrad(svg,'gvHero','#229A82',.16,0);
+  svgGrad(svg,'grHero','#5B6BD6',.18,0);
+  svgAxis(svg,W,H,pad,max,step,labels);
+  const X = i=> pad.l + i*(W-pad.l-pad.r)/(n-1||1);
+  const Y = v=> H-pad.b-(v/max)*(H-pad.t-pad.b);
+  const pv = V.map((v,i)=>[X(i),Y(v)]);
+  const pr = R.map((v,i)=>[X(i),Y(v)]);
+  const dUp = svgSmooth(pv);
+  const dDown = svgSmooth(pr.slice().reverse());
+  svg.appendChild(svgNode('path',{d: dUp+' '+dDown.replace(/^M/,'L')+' Z', fill:'#F2D68A', opacity:.32}));
+  svg.appendChild(svgNode('path',{d: dUp+' L'+X(n-1)+','+Y(0)+' L'+X(0)+','+Y(0)+' Z', fill:'url(#gvHero)'}));
+  svg.appendChild(svgNode('path',{d: svgSmooth(pr)+' L'+X(n-1)+','+Y(0)+' L'+X(0)+','+Y(0)+' Z', fill:'url(#grHero)'}));
+  svg.appendChild(svgNode('path',{d: dUp, fill:'none', stroke:'#229A82','stroke-width':3,'stroke-linecap':'round'}));
+  svg.appendChild(svgNode('path',{d: svgSmooth(pr), fill:'none', stroke:'#5B6BD6','stroke-width':3,'stroke-linecap':'round'}));
+  pv.forEach(p=> svg.appendChild(svgNode('circle',{cx:p[0],cy:p[1],r:4.5,fill:'#229A82',stroke:'#fff','stroke-width':2})));
+  pr.forEach(p=> svg.appendChild(svgNode('circle',{cx:p[0],cy:p[1],r:4.5,fill:'#5B6BD6',stroke:'#fff','stroke-width':2})));
+  let idxMaxV = 0; V.forEach((v,i)=>{ if(v>V[idxMaxV]) idxMaxV=i; });
+  const idxActual = n-1;
+  const tv = svgNode('text',{x:X(idxMaxV),y:Y(V[idxMaxV])-14,'text-anchor':'middle','font-size':12,'font-weight':600,fill:'#1B2D3A','font-family':'JetBrains Mono'});
+  tv.textContent = V[idxMaxV]; svg.appendChild(tv);
+  const trTxt = svgNode('text',{x:X(idxActual),y:Y(R[idxActual])-14,'text-anchor':'middle','font-size':12,'font-weight':600,fill:'#1B2D3A','font-family':'JetBrains Mono'});
+  trTxt.textContent = R[idxActual]; svg.appendChild(trTxt);
+  const tip = document.getElementById('svg-tip');
+  svg.onmousemove = (e)=>{
+    if(!tip) return;
+    const rect = svg.getBoundingClientRect();
+    const xRatio = (e.clientX-rect.left)/rect.width*W;
+    const i = Math.max(0, Math.min(n-1, Math.round((xRatio-pad.l)/((W-pad.l-pad.r)/(n-1||1)))));
+    tip.style.display='block';
+    tip.style.left=(e.pageX+12)+'px';
+    tip.style.top=(e.pageY-10)+'px';
+    tip.textContent = labels[i]+' · vendió '+V[i]+' · renovó '+R[i]+' · se fueron '+Math.max(V[i]-R[i],0);
+  };
+  svg.onmouseleave = ()=>{ if(tip) tip.style.display='none'; };
+}
+function dibujarPipeSvg(idSvg, filas){
+  const svg = document.getElementById(idSvg); if(!svg) return;
+  svg.innerHTML = '';
+  const n = filas.length; if(!n) return;
+  const W=520, H=300, pad={l:52,r:14,t:20,b:36};
+  const labels = filas.map(p=>mesCorto(p.mes_vence));
+  const A = filas.map(p=>Number(p.premium_con_senal||0)/1000);
+  const B = filas.map(p=>Number(p.premium_por_confirmar||0)/1000);
+  const totalMax = Math.max(1, ...A.map((a,i)=>a+B[i]));
+  const max = Math.ceil(totalMax*1.15/20)*20 || 20;
+  const step = Math.max(20, Math.round(max/4/20)*20) || 20;
+  svgGrad(svg,'gsPipe','#229A82',.22,.03);
+  svgGrad(svg,'gcPipe','#D9A520',.22,.03);
+  for(let v=0; v<=max; v+=step){
+    const y = H-pad.b-(v/max)*(H-pad.t-pad.b);
+    svg.appendChild(svgNode('line',{x1:pad.l,x2:W-pad.r,y1:y,y2:y,stroke:'#EEF2F5'}));
+    const t = svgNode('text',{x:pad.l-8,y:y+4,'text-anchor':'end','font-size':10,fill:'#6B7D89','font-family':'JetBrains Mono'});
+    t.textContent = '$'+v+'k'; svg.appendChild(t);
+  }
+  labels.forEach((m,i)=>{
+    const x = pad.l+i*(W-pad.l-pad.r)/(n-1||1);
+    const t = svgNode('text',{x,y:H-pad.b+18,'text-anchor':'middle','font-size':11,fill:'#6B7D89','font-family':'Inter'});
+    t.textContent = m; svg.appendChild(t);
+  });
+  const X = i=> pad.l+i*(W-pad.l-pad.r)/(n-1||1);
+  const Y = v=> H-pad.b-(v/max)*(H-pad.t-pad.b);
+  const top = A.map((a,i)=>[X(i),Y(a+B[i])]);
+  const mid = A.map((a,i)=>[X(i),Y(a)]);
+  svg.appendChild(svgNode('path',{d: svgSmooth(top)+' '+svgSmooth(mid.slice().reverse()).replace(/^M/,'L')+' Z', fill:'url(#gcPipe)'}));
+  svg.appendChild(svgNode('path',{d: svgSmooth(mid)+' L'+X(n-1)+','+Y(0)+' L'+X(0)+','+Y(0)+' Z', fill:'url(#gsPipe)'}));
+  svg.appendChild(svgNode('path',{d: svgSmooth(top), fill:'none', stroke:'#D9A520','stroke-width':3}));
+  svg.appendChild(svgNode('path',{d: svgSmooth(mid), fill:'none', stroke:'#229A82','stroke-width':3.5}));
+}
+function dibujarTasaSvg(idSvg, filas){
+  const svg = document.getElementById(idSvg); if(!svg) return;
+  svg.innerHTML = '';
+  const n = filas.length; if(!n) return;
+  const W=520, H=300, pad={l:44,r:14,t:20,b:36}, max=100;
+  const labels = filas.map(m=>mesCorto(m.mes));
+  const PCT = filas.map(m=> m.pct_renovado===null||m.pct_renovado===undefined ? null : Number(m.pct_renovado));
+  svgGrad(svg,'gtTasa','#5B6BD6',.14,0);
+  for(let v=0; v<=100; v+=25){
+    const y = H-pad.b-(v/max)*(H-pad.t-pad.b);
+    svg.appendChild(svgNode('line',{x1:pad.l,x2:W-pad.r,y1:y,y2:y,stroke:'#EEF2F5'}));
+    const t = svgNode('text',{x:pad.l-8,y:y+4,'text-anchor':'end','font-size':10,fill:'#6B7D89','font-family':'JetBrains Mono'});
+    t.textContent = v+'%'; svg.appendChild(t);
+  }
+  labels.forEach((m,i)=>{
+    const x = pad.l+i*(W-pad.l-pad.r)/(n-1||1);
+    const t = svgNode('text',{x,y:H-pad.b+18,'text-anchor':'middle','font-size':11,fill:'#6B7D89','font-family':'Inter'});
+    t.textContent = m; svg.appendChild(t);
+  });
+  const X = i=> pad.l+i*(W-pad.l-pad.r)/(n-1||1);
+  const Y = v=> H-pad.b-(v/max)*(H-pad.t-pad.b);
+  const pts = PCT.map((p,i)=>[X(i), Y(p==null?0:p)]);
+  const pts70 = PCT.map((p,i)=>[X(i), Y(Math.min(p==null?0:p,70))]);
+  svg.appendChild(svgNode('path',{d: svgSmooth(pts70)+' L'+X(n-1)+','+Y(70)+' L'+X(0)+','+Y(70)+' Z', fill:'#F2D68A', opacity:.3}));
+  svg.appendChild(svgNode('path',{d: svgSmooth(pts)+' L'+X(n-1)+','+Y(0)+' L'+X(0)+','+Y(0)+' Z', fill:'url(#gtTasa)'}));
+  svg.appendChild(svgNode('line',{x1:pad.l,x2:W-pad.r,y1:Y(70),y2:Y(70),stroke:'#1B2D3A','stroke-width':2,'stroke-dasharray':'6 6'}));
+  const lb = svgNode('text',{x:W-pad.r,y:Y(70)-8,'text-anchor':'end','font-size':11,'font-weight':600,fill:'#1B2D3A','font-family':'Inter'});
+  lb.textContent = 'estándar 70%'; svg.appendChild(lb);
+  svg.appendChild(svgNode('path',{d: svgSmooth(pts), fill:'none', stroke:'#5B6BD6','stroke-width':2.5,'stroke-linecap':'round'}));
+  pts.forEach((p,i)=>{
+    if(PCT[i]==null) return;
+    const bad = PCT[i]<50;
+    svg.appendChild(svgNode('circle',{cx:p[0],cy:p[1],r:bad?5.5:4,fill:bad?'#D5594F':'#5B6BD6',stroke:'#fff','stroke-width':2}));
+  });
 }
 function rankingTasa(nombre){
   const ordenados = VEND_RESUMEN.slice().sort((a,b)=> (Number(b.tasa_renovacion)||-1) - (Number(a.tasa_renovacion)||-1));
@@ -1200,75 +1364,43 @@ function pintarFichaVendedor(nombre, r, mensual, porRenovar){
   const tasa = r.tasa_renovacion===null||r.tasa_renovacion===undefined ? null : Number(r.tasa_renovacion);
   const { puesto, total } = rankingTasa(nombre);
   const { mejor, peor } = mejorPeorMes(mensual);
-  const premiumPerdido = Math.max(0, Number(r.vencio_premium||0) - Number(r.renovo_premium||0));
-  const metaAnual = Math.ceil(Number(r.vencio_n||0)*0.70);
-  const faltanAnual = Math.max(0, metaAnual - Number(r.renovo_n||0));
-  const frase = 'De '+(r.vencio_n||0)+' cuentas que le vencieron, renovó '+(r.renovo_n||0)+'. Le faltaban '+faltanAnual+' para el estándar.';
+  const metaAnualR = Math.round(Number(r.vencio_n||0)*0.70);
+  const faltanAnual = Math.max(0, metaAnualR - Number(r.renovo_n||0));
 
   el.innerHTML =
-    '<div class="pg-grid-3" style="margin-bottom:16px">'+
-      fichaBox('Vendió', r.vendio_n+' cuentas', fmtUSD(r.vendio_premium))+
-      fichaBox('Le vencieron', r.vencio_n+' cuentas', fmtUSD(r.vencio_premium))+
-      fichaBox('Renovó', r.renovo_n+' cuentas', fmtUSD(r.renovo_premium)+'<br>el mismo '+r.renovo_el_mismo_n+' · el área '+r.renovo_el_area_n)+
-      fichaTasaRing(r, tasa)+
-      fichaBox('Por renovar resto del año', fmtUSD(r.por_renovar_ano), 'con señal '+fmtUSD(r.por_renovar_ano_con_senal)+' · por confirmar '+fmtUSD(r.por_renovar_ano_por_confirmar))+
-      fichaBox('Por renovar este mes', fmtUSD(r.por_renovar_mes), r.por_renovar_mes_cuentas+' cuentas')+
+    '<div class="pg-card hero">'+
+      '<h2>Vendido contra renovado · últimos 12 meses</h2>'+
+      '<div class="vend-frase">De <b>'+(r.vencio_n||0)+'</b> cuentas que le vencieron, renovó <b>'+(r.renovo_n||0)+'</b>. <span class="gap">Le faltaban <b>'+faltanAnual+'</b> para el estándar.</span></div>'+
+      '<div class="vend-leg"><span><i style="background:#229A82"></i>Vendió (cuentas nuevas)</span><span><i style="background:#5B6BD6"></i>Renovó</span><span><i style="background:#F2D68A"></i>Lo que se fue</span></div>'+
+      '<svg id="chHero" viewBox="0 0 1100 400" width="100%" height="400" style="display:block"></svg>'+
     '</div>'+
-    '<div class="vend-infostrip">'+
-      '<div>Puesto <b style="color:var(--pg-ink)">'+puesto+'</b> de '+total+'</div>'+
-      '<div>Mejor mes <b style="color:var(--pg-pos)">'+(mejor? mesCorto(mejor.mes)+' '+Number(mejor.pct_renovado).toFixed(1)+'%' : '—')+'</b></div>'+
-      '<div>Peor mes <b style="color:var(--pg-neg)">'+(peor? mesCorto(peor.mes)+' '+Number(peor.pct_renovado).toFixed(1)+'%' : '—')+'</b></div>'+
-      '<div>Premium perdido <b style="color:var(--pg-neg)">'+fmtUSD(premiumPerdido)+'</b></div>'+
+    '<div class="kpis3">'+
+      '<div class="pg-card k"><div class="l">Vendió</div><div class="v">'+(r.vendio_n||0)+'</div><div class="s">cuentas · <b>'+fmtUSD(r.vendio_premium)+'</b></div></div>'+
+      '<div class="pg-card k"><div class="l">Le vencieron</div><div class="v">'+(r.vencio_n||0)+'</div><div class="s">cuentas · <b>'+fmtUSD(r.vencio_premium)+'</b></div></div>'+
+      '<div class="pg-card k red"><div class="l">Tasa de renovación</div><div class="v">'+(tasa===null?'—':tasa.toFixed(1)+'%')+'</div><div class="s">renovó <b>'+(r.renovo_n||0)+'</b> · le faltaban <b>'+faltanAnual+'</b> para el 70%</div></div>'+
     '</div>'+
-    '<div class="vend-frase">'+esc(frase)+'</div>'+
-    '<div class="chart-wrap" style="height:400px;margin-bottom:24px"><canvas id="chVendRenov"></canvas></div>'+
-    '<div class="pg-grid-2">'+
-      '<div class="chart-wrap" style="height:320px"><canvas id="chPorRenovar"></canvas></div>'+
-      '<div class="chart-wrap" style="height:320px"><canvas id="chTasaMensual"></canvas></div>'+
-    '</div>';
+    '<div class="pg-card" style="padding:18px 22px">'+
+      '<div class="mini">'+
+        '<div><div class="l">Puesto en el área</div><div class="v">'+puesto+' <span class="pgu">de '+total+'</span></div></div>'+
+        '<div><div class="l">Mejor mes</div><div class="v">'+(mejor?esc(mesCorto(mejor.mes)):'—')+' <span class="pgu">'+(mejor?Number(mejor.pct_renovado).toFixed(0)+'%':'')+'</span></div></div>'+
+        '<div><div class="l">Peor mes</div><div class="v">'+(peor?esc(mesCorto(peor.mes)):'—')+' <span class="pgu">'+(peor?Number(peor.pct_renovado).toFixed(0)+'%':'')+'</span></div></div>'+
+        '<div><div class="l">Cerró él mismo / el área</div><div class="v">'+(r.renovo_el_mismo_n||0)+' <span class="pgu">/ '+(r.renovo_el_area_n||0)+'</span></div></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="pg-grid-2" style="margin-top:18px">'+
+      '<div class="pg-card"><h2>Por renovar, mes a mes</h2><svg id="chPipe" viewBox="0 0 520 300" width="100%" height="300" style="display:block"></svg></div>'+
+      '<div class="pg-card"><h2>Tasa mensual contra el 70%</h2><svg id="chTasa" viewBox="0 0 520 300" width="100%" height="300" style="display:block"></svg></div>'+
+    '</div>'+
+    '<div class="svg-tip" id="svg-tip"></div>';
 
   const cerrados = mensual.filter(m=>m.estado_mes!=='futuro');
   const ult12 = cerrados.slice(-12);
-  const labelsUlt12 = ult12.map(m=>mesCorto(m.mes));
-
-  const gradRenovado = (ctx) => {
-    const g = ctx.chart.ctx.createLinearGradient(0,0,0,400);
-    g.addColorStop(0,'rgba(27,45,58,.32)'); g.addColorStop(1,'rgba(27,45,58,.02)');
-    return g;
-  };
-  pintarChart('chVendRenov', {
-    type:'line',
-    data:{ labels: labelsUlt12, datasets:[
-      { label:'Renovado', data: ult12.map(m=>Number(m.renovado_premium||0)), borderColor:'#1B2D3A', backgroundColor:gradRenovado, fill:'origin', tension:.45, borderWidth:4, pointRadius:5, pointBackgroundColor:'#1B2D3A', pointBorderColor:'#fff', pointBorderWidth:2, order:2 },
-      { label:'Vendido', data: ult12.map(m=>Number(m.vendido_premium||0)), borderColor:'#2DBFA3', backgroundColor:'rgba(217,165,32,.32)', fill:'-1', tension:.45, borderWidth:4, pointRadius:5, pointBackgroundColor:'#2DBFA3', pointBorderColor:'#fff', pointBorderWidth:2, order:1 },
-    ]},
-    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}}, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>fmtUSD(v) } }, x:{ ticks:{ font:{size:11} } } } }
-  });
+  dibujarHeroSvg('chHero', ult12);
+  dibujarTasaSvg('chTasa', ult12);
 
   const hoy = mesActualISO();
   const proximos12 = porRenovar.filter(p=>String(p.mes_vence) >= hoy).slice(0,12);
-  const gradSenal = (ctx) => { const g=ctx.chart.ctx.createLinearGradient(0,0,0,320); g.addColorStop(0,'rgba(45,191,163,.45)'); g.addColorStop(1,'rgba(45,191,163,.05)'); return g; };
-  const gradConfirmar = (ctx) => { const g=ctx.chart.ctx.createLinearGradient(0,0,0,320); g.addColorStop(0,'rgba(217,165,32,.45)'); g.addColorStop(1,'rgba(217,165,32,.05)'); return g; };
-  pintarChart('chPorRenovar', {
-    type:'line',
-    data:{ labels: proximos12.map(p=>mesCorto(p.mes_vence)), datasets:[
-      { label:'Con señal', data: proximos12.map(p=>Number(p.premium_con_senal||0)), borderColor:'#2DBFA3', backgroundColor:gradSenal, fill:true, tension:.45, pointRadius:4, pointBackgroundColor:'#2DBFA3', pointBorderColor:'#fff', pointBorderWidth:2, borderWidth:3.5, stack:'pr' },
-      { label:'Por confirmar', data: proximos12.map(p=>Number(p.premium_por_confirmar||0)), borderColor:'#D9A520', backgroundColor:gradConfirmar, fill:true, tension:.45, pointRadius:4, pointBackgroundColor:'#D9A520', pointBorderColor:'#fff', pointBorderWidth:2, borderWidth:3.5, stack:'pr' },
-    ]},
-    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:10}}}}, scales:{ y:{ beginAtZero:true, stacked:true, ticks:{ callback:v=>fmtUSD(v) } } } }
-  });
-
-  pintarChart('chTasaMensual', {
-    type:'line',
-    data:{ labels: labelsUlt12, datasets:[
-      { label:'% renovado', data: ult12.map(m=>m.pct_renovado===null?null:Number(m.pct_renovado)), borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.18)', fill:true, tension:.45, spanGaps:true, borderWidth:4,
-        pointRadius: ult12.map(m=> (m.pct_renovado!==null && Number(m.pct_renovado)<50) ? 7 : 4),
-        pointBackgroundColor: ult12.map(m=> m.pct_renovado!==null && Number(m.pct_renovado)<50 ? '#D5594F' : '#2DBFA3'),
-        pointBorderColor:'#fff', pointBorderWidth:2 },
-      { label:'Estándar 70%', data: labelsUlt12.map(()=>70), borderColor:'#D9A520', borderDash:[6,4], borderWidth:1.6, pointRadius:0, fill:'-1', backgroundColor:'rgba(217,165,32,.16)', tension:0 },
-    ]},
-    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:10}}}}, scales:{ y:{ min:0, max:100, ticks:{ callback:v=>v+'%' } } } }
-  });
+  dibujarPipeSvg('chPipe', proximos12);
 }
 
 let VEND_ORDEN = { col:'tasa_renovacion', asc:false };
@@ -1520,7 +1652,7 @@ function pintarBonos(bolsaRows, ingresoRows, escaleraRows, participacionRows, ta
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=21; // El mes en curso pasa a la cabecera de Mi cola (con anillo de avance) + chip "Este mes"; casilla 06 solo la onda; Vendedores rehecho con grafica heroe (hueco ambar vendido/renovado), dos graficas grandes, seis fichas con anillo de tasa, mas info y lista ordenable; sistema visual mas vibrante (tarjetas con profundidad, cifras 38px, lavado por estado, anillos, ondas con degradado, titulos con firma de menta) solo en esta pantalla.
+var PGV_VERSION=22; // Punto medio de vuelta al mockup de Andres: tarjetas planas (radio 14, una sola sombra, sin franja arriba, sin lavados de fondo), cabecera del mes con anillo de un solo color y marca de meta como linea radial, chips reordenados (Pendientes por defecto) con el avance semanal dentro de la fila, filas de la cola de 54px con borde izquierdo por urgencia y checkboxes propios, Vendedores con grafica heroe y dos graficas secundarias hechas en SVG puro (conteos de cuentas, no premium; renovado en indigo) en vez de Chart.js.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

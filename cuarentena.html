@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GABI · Cuarentena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="ver-como-helper.js"></script>
+<style>
+:root {
+  --pg-ink:        #28323B;
+  --pg-ink-2:      #1B2D3A;
+  --pg-mint:       #2DBFA3;
+  --pg-mint-dark:  #229A82;
+  --pg-mint-deep:  #1B8E78;
+  --pg-mint-soft:  #C4E8DF;
+  --pg-bg:         #F4F7FA;
+  --pg-card:       #FFFFFF;
+  --pg-line:       #E7EDF2;
+  --pg-txt:        #28323B;
+  --pg-muted:      #6B7D89;
+  --pg-pos:        #1F9D6B;
+  --pg-neg:        #D5594F;
+  --pg-warn:       #D9A520;
+  --pg-font-gabi:  "Fraunces", Georgia, serif;
+  --pg-font-title: "Montserrat", "Arial Black", sans-serif;
+  --pg-font-body:  "Inter", Arial, Helvetica, sans-serif;
+  --pg-font-num:   "JetBrains Mono", "Courier New", monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--pg-bg); }
+.pg-app { background: var(--pg-bg); color: var(--pg-txt); font-family: var(--pg-font-body); min-height: 100vh; }
+
+.pg-viewbar { background: var(--pg-ink-2); padding: 16px 30px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; position:sticky; top:0; z-index:20; }
+.pg-viewbar .pg-brand { display:flex; align-items:center; gap:10px; margin-right: 6px; }
+.pg-viewbar .pg-logo { width:34px; height:34px; border-radius:9px; background:var(--pg-mint); display:flex; align-items:center; justify-content:center; font-family:var(--pg-font-title); font-weight:800; color:var(--pg-ink-2); font-size:13px; }
+.pg-viewbar .pg-wordmark { font-family: var(--pg-font-gabi); font-style: italic; font-weight: 800; font-size: 21px; color: #fff; letter-spacing: -0.5px; }
+.pg-badge { background: var(--pg-mint); color: var(--pg-ink-2); border:1px solid var(--pg-mint); font-family: var(--pg-font-body); font-weight:700; font-size:12px; padding: 9px 15px; border-radius:999px; letter-spacing:.02em; }
+.pg-viewbar .pg-actions { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.pg-btn { font-family: var(--pg-font-body); font-weight:700; font-size:12.5px; border-radius:999px; padding:9px 16px; border:1px solid rgba(255,255,255,.25); background:transparent; color:#dfe8ec; cursor:pointer; text-decoration:none; display:inline-block; }
+.pg-btn:hover { background: rgba(255,255,255,.08); }
+.pg-btn.primary { background: var(--pg-mint); color:var(--pg-ink-2); border-color:var(--pg-mint); }
+.pg-stamp { color:#8da0ad; font-size:11px; }
+
+.pg-main { padding: 30px 38px 60px; max-width: 1280px; margin: 0 auto; }
+.pg-top { margin-bottom: 22px; }
+.pg-top h1 { font-family: var(--pg-font-title); font-size: 26px; font-weight: 800; color: var(--pg-ink); margin: 0; }
+.pg-eyebrow { font-family: var(--pg-font-body); font-size: 11.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--pg-mint-deep); margin-bottom: 6px; }
+
+.pg-card { background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 18px; padding: 22px; margin-bottom:16px; box-shadow: 0 1px 3px rgba(27,45,58,.04); }
+.pg-card h2 { font-family: var(--pg-font-title); font-size: 16.5px; font-weight: 800; color: var(--pg-ink); margin: 0 0 14px; }
+
+.pg-pill { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space:nowrap;}
+.pg-pill.warn { background: #FBF0DC; color: #8a6412; }
+.pg-pill.muted{ background:#EEF2F5; color:var(--pg-muted); }
+
+.pg-limite { font-size:11.5px; color:var(--pg-muted); margin-top:8px; }
+.pg-skel { height:14px; background:linear-gradient(90deg,#eef2f5,#f7f9fb,#eef2f5); background-size:200% 100%; animation:pgshimmer 1.2s infinite; border-radius:6px; margin:6px 0; }
+@keyframes pgshimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.pg-footnote { font-size: 11.5px; color: var(--pg-muted); margin-top: 22px; border-top:1px solid var(--pg-line); padding-top:14px; }
+
+.pg-login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; background: var(--pg-ink-2); }
+.pg-login-card { background:#fff; border-radius:20px; padding:36px 34px; width:100%; max-width:360px; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+.pg-login-card .pg-brand { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+.pg-login-card .pg-logo { width:36px; height:36px; border-radius:9px; background:var(--pg-mint); display:flex; align-items:center; justify-content:center; font-family:var(--pg-font-title); font-weight:800; color:var(--pg-ink-2); font-size:13px; }
+.pg-login-card .pg-wordmark { font-family: var(--pg-font-gabi); font-style: italic; font-weight: 800; font-size: 22px; color: var(--pg-ink-2); }
+.pg-login-card label { font-size:12px; font-weight:700; color:var(--pg-muted); display:block; margin:12px 0 5px; }
+.pg-login-card input { width:100%; padding:11px 13px; border-radius:10px; border:1px solid var(--pg-line); font-size:14px; font-family:var(--pg-font-body); }
+.pg-login-card button { width:100%; margin-top:18px; padding:12px; border-radius:999px; border:none; background:var(--pg-mint); color:var(--pg-ink-2); font-weight:800; font-size:14px; cursor:pointer; }
+.pg-login-card button:hover { background:var(--pg-mint-dark); }
+.pg-login-msg { font-size:12.5px; color:var(--pg-neg); margin-top:10px; min-height:16px; }
+.pg-warn-box   { background: #FBF0DC; border: 1px solid #ECD08C; border-radius: 12px; padding: 13px 17px; color: #6b4e0c; font-size:12.5px; line-height:1.55; }
+.pg-warn-box b { color: var(--pg-warn); }
+
+.gv-kpis { display:flex; gap:12px; flex-wrap:wrap; }
+.gv-kpi { flex:1; min-width:150px; background:var(--pg-bg); border:1px solid var(--pg-line); border-radius:14px; padding:14px 16px; cursor:pointer; transition:border-color .12s, background .12s; }
+.gv-kpi:hover { border-color:var(--pg-mint); }
+.gv-kpi.on { background:#E3F4EF; border-color:var(--pg-mint); }
+.gv-kpi .lbl { font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--pg-muted); }
+.gv-kpi .val { font-family: var(--pg-font-num); font-size:22px; font-weight:700; color:var(--pg-ink); margin-top:3px; }
+
+.cq-resumen { font-size:13.5px; color:var(--pg-ink); margin-bottom:14px; }
+.cq-resumen b { font-family:var(--pg-font-num); }
+
+.cq-filtros { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+.cq-filtros select { font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--pg-line); background:#fff; color:var(--pg-ink); }
+.cq-filtros .limpiar { font-family:var(--pg-font-body); font-size:12.5px; font-weight:700; color:var(--pg-mint-deep); background:none; border:none; cursor:pointer; padding:0; }
+
+.pg-table { width:100%; border-collapse:collapse; font-size:13px; }
+.pg-table th { text-align:left; color:var(--pg-muted); font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid var(--pg-line); padding:8px 8px; white-space:nowrap; cursor:pointer; user-select:none; }
+.pg-table th:hover { color:var(--pg-ink); }
+.pg-table th .arrow { font-size:9px; margin-left:3px; color:var(--pg-mint-deep); }
+.pg-table td { border-bottom:1px solid var(--pg-line); padding:9px 8px; vertical-align:middle; }
+.pg-table td.num { font-family: var(--pg-font-num); }
+.tablewrap { overflow-x:auto; }
+.cq-motivos { display:flex; gap:4px; flex-wrap:wrap; }
+</style>
+</head>
+<body>
+<a href="index.html" id="pgVolver" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
+
+<!-- ============================================================================
+  GABI · Cuarentena (pantalla propia, paquete implícito por rol/área)
+  Acceso vía portal.pantalla_acceso (clave 'cuarentena', solo_roles
+  director/socio/financiera) → puede_ver(). Candado real en
+  public.bos_cuarentena (RLS): director, socio, o área renovaciones/
+  retención/financiera. No hay edición desde aquí — la fila se corrige
+  en el Google Sheet del BOS y desaparece sola de esta lista.
+============================================================================ -->
+
+<div id="pg-login-screen" class="pg-login-wrap">
+  <div class="pg-login-card">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+    <div style="font-size:13px;color:#6B7D89;">Cuarentena — entra con tu usuario del equipo.</div>
+    <label>Correo</label>
+    <input type="email" id="pg-login-email" autocomplete="username" placeholder="tunombre@protectgoservices.com">
+    <label>Contraseña</label>
+    <input type="password" id="pg-login-pass" autocomplete="current-password">
+    <button id="pg-login-btn">Entrar</button>
+    <div class="pg-login-msg" id="pg-login-msg"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #E7EDF2;">
+      <a href="#" id="pg-reset-link" style="font-size:12.5px;color:#1B8E78;font-weight:600;text-decoration:none;">¿Primera vez o olvidaste tu clave de GABI? Créala aquí</a>
+      <div id="pg-reset-box" style="display:none;margin-top:10px;">
+        <div style="font-size:12px;color:#6B7D89;line-height:1.5;margin-bottom:8px;">Tu clave de GABI es <b>independiente</b> de la del Portal. Escribe tu correo <b>arriba</b> y te enviamos un enlace para crearla.</div>
+        <button id="pg-reset-btn" style="width:100%;">Enviar correo para crear mi clave</button>
+        <div class="pg-login-msg" id="pg-reset-msg" style="color:#6B7D89;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="pg-setpass-screen" class="pg-login-wrap" style="display:none;">
+  <div class="pg-login-card">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+    <div style="font-size:13px;color:#6B7D89;">Crea tu contraseña de GABI (independiente de la del Portal).</div>
+    <label>Nueva contraseña</label>
+    <input type="password" id="pg-newpass" autocomplete="new-password" placeholder="mínimo 8 caracteres">
+    <label>Repite la contraseña</label>
+    <input type="password" id="pg-newpass2" autocomplete="new-password">
+    <button id="pg-setpass-btn">Guardar y entrar</button>
+    <div class="pg-login-msg" id="pg-setpass-msg" style="color:#6B7D89;"></div>
+  </div>
+</div>
+
+<div class="pg-app" id="pg-app" style="display:none;">
+  <div class="pg-viewbar">
+    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
+    <span class="pg-badge">Cuarentena</span>
+    <div class="pg-actions">
+      <span class="pg-stamp" id="pg-stamp">datos al —</span>
+      <button class="pg-btn" id="pg-btn-refresh">Actualizar</button>
+      <button class="pg-btn" id="pg-btn-logout">Cerrar sesión</button>
+    </div>
+  </div>
+  <main class="pg-main" id="pg-root">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Financiera · Dirección</div>
+      <h1>Cuarentena BOS</h1>
+    </div>
+    <div id="pg-acceso"></div>
+    <div id="pg-shell" style="display:none">
+      <div class="pg-card">
+        <h2>Por motivo</h2>
+        <div id="cq-contadores" class="gv-kpis"><div class="pg-skel" style="width:100%"></div></div>
+      </div>
+      <div class="pg-card">
+        <div class="cq-resumen" id="cq-resumen">Cargando…</div>
+        <div class="cq-filtros">
+          <select id="cq-filtro-motivo"><option value="">Todos los motivos</option></select>
+          <select id="cq-filtro-vendedor"><option value="">Todos los vendedores</option></select>
+          <button type="button" class="limpiar" id="cq-limpiar-filtros">Quitar filtros</button>
+        </div>
+        <div class="tablewrap">
+          <table class="pg-table" id="cq-tabla">
+            <thead><tr>
+              <th data-sort="sheet_row">Fila BOS</th>
+              <th data-sort="seller">Vendedor</th>
+              <th data-sort="insured">Cuenta</th>
+              <th data-sort="policy_num">Póliza</th>
+              <th data-sort="effective_date">Vigencia</th>
+              <th data-sort="policy_premium">Premium</th>
+              <th>Qué le falta</th>
+            </tr></thead>
+            <tbody id="cq-tbody"><tr><td colspan="7"><div class="pg-skel" style="height:120px"></div></td></tr></tbody>
+          </table>
+        </div>
+        <div class="pg-limite">Esto no se edita aquí: se corrige en el Google Sheet del BOS y la fila sale sola de esta lista.</div>
+      </div>
+    </div>
+    <div class="pg-footnote">Datos en vivo · actualizado a las <span id="pg-foot-stamp">—</span></div>
+  </main>
+</div>
+
+<script>
+const SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpdnBxc2Vwd3NmbWFmYW14a3p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTIxNjUsImV4cCI6MjA5MTk2ODE2NX0.pPe1qtWJhnx8Ffo4bvuwVF-tVrkPSmO63Kl7pKWQYqM";
+const SB = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+if (window.gabiVerComoInit) gabiVerComoInit(SB);
+
+function esc(s){ return (s===null||s===undefined) ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtUSD(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US',{maximumFractionDigits:0}); }
+function fmtFecha(s){ if(!s) return '—'; try{ const d=new Date(s+'T12:00:00'); return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return String(s); } }
+
+/* PostgREST corta en 1000 filas por defecto. Pagina por rangos de 1000 hasta
+   que un bloque venga incompleto. */
+async function fetchPaginado(queryFactory, batchSize){
+  batchSize = batchSize || 1000;
+  let rows = [], offset = 0;
+  while(true){
+    const { data, error } = await queryFactory().range(offset, offset + batchSize - 1);
+    if(error) return { data: null, error };
+    const batch = data || [];
+    rows = rows.concat(batch);
+    if(batch.length < batchSize) break;
+    offset += batchSize;
+  }
+  return { data: rows, error: null };
+}
+
+/* =====================================================================
+   1) LOGIN / SESIÓN
+   ===================================================================== */
+let RECOVERY_MODE = false;
+const _IS_RECOVERY = /(?:^|[#&])type=recovery(?:&|$)/.test(window.location.hash || "");
+let SESION_EMAIL = '';
+
+function mostrarSetPassword() {
+  RECOVERY_MODE = true;
+  const l = document.getElementById("pg-login-screen"); if (l) l.style.display = "none";
+  const a = document.getElementById("pg-app"); if (a) a.style.display = "none";
+  const s = document.getElementById("pg-setpass-screen"); if (s) s.style.display = "flex";
+}
+async function enviarRecuperacion() {
+  const email = (document.getElementById("pg-login-email").value || "").trim();
+  const m = document.getElementById("pg-reset-msg");
+  if (!email || !/@/.test(email)) { m.style.color = "#D5594F"; m.textContent = "Escribe tu correo arriba primero."; return; }
+  const btn = document.getElementById("pg-reset-btn"); btn.disabled = true;
+  m.style.color = "#6B7D89"; m.textContent = "Enviando…";
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await SB.auth.resetPasswordForEmail(email, { redirectTo });
+  btn.disabled = false;
+  if (error) { m.style.color = "#D5594F"; m.textContent = "No se pudo enviar: " + error.message; return; }
+  m.style.color = "#1F9D6B";
+  m.textContent = "Listo ✓ Revisa el correo de " + email + ". El enlace te deja crear tu clave (puede tardar unos minutos).";
+}
+async function guardarNuevaClave() {
+  const p1 = document.getElementById("pg-newpass").value || "";
+  const p2 = document.getElementById("pg-newpass2").value || "";
+  const m = document.getElementById("pg-setpass-msg");
+  if (p1.length < 8) { m.style.color = "#D5594F"; m.textContent = "La clave debe tener al menos 8 caracteres."; return; }
+  if (p1 !== p2) { m.style.color = "#D5594F"; m.textContent = "Las dos claves no coinciden."; return; }
+  const btn = document.getElementById("pg-setpass-btn"); btn.disabled = true;
+  m.style.color = "#6B7D89"; m.textContent = "Guardando…";
+  const { error } = await SB.auth.updateUser({ password: p1 });
+  btn.disabled = false;
+  if (error) { m.style.color = "#D5594F"; m.textContent = "No se pudo guardar: " + error.message; return; }
+  m.style.color = "#1F9D6B"; m.textContent = "¡Clave creada! Entrando…";
+  history.replaceState(null, "", window.location.pathname);
+  setTimeout(() => { location.reload(); }, 900);
+}
+document.getElementById("pg-reset-link").addEventListener("click", (e) => {
+  e.preventDefault();
+  const b = document.getElementById("pg-reset-box");
+  b.style.display = b.style.display === "none" ? "block" : "none";
+});
+document.getElementById("pg-reset-btn").addEventListener("click", enviarRecuperacion);
+document.getElementById("pg-setpass-btn").addEventListener("click", guardarNuevaClave);
+
+async function mostrarApp() {
+  document.getElementById("pg-login-screen").style.display = "none";
+  document.getElementById("pg-app").style.display = "block";
+  const { data: { session } } = await SB.auth.getSession();
+  SESION_EMAIL = (session && session.user && session.user.email) || '';
+  await verificarAccesoYcargar();
+}
+document.getElementById("pg-login-btn").addEventListener("click", async () => {
+  const email = document.getElementById("pg-login-email").value.trim();
+  const pass = document.getElementById("pg-login-pass").value;
+  const msgEl = document.getElementById("pg-login-msg");
+  msgEl.textContent = "";
+  const { error } = await SB.auth.signInWithPassword({ email, password: pass });
+  if (error) { msgEl.textContent = "No pudimos iniciar sesión: " + error.message; return; }
+  await mostrarApp();
+});
+document.getElementById("pg-btn-refresh").addEventListener("click", cargarCuarentena);
+document.getElementById("pg-btn-logout").addEventListener("click", async () => {
+  await SB.auth.signOut();
+  location.reload();
+});
+
+/* =====================================================================
+   2) CANDADO — puede_ver('cuarentena')
+   ===================================================================== */
+async function verificarAccesoYcargar(){
+  const accesoEl = document.getElementById("pg-acceso");
+  const shellEl = document.getElementById("pg-shell");
+  accesoEl.innerHTML = '<div class="pg-skel" style="width:60%"></div><div class="pg-skel" style="width:40%"></div>';
+  let puede = false;
+  try{
+    const { data, error } = await SB.rpc('puede_ver', { p_clave: 'cuarentena' });
+    if(error) throw error;
+    puede = !!data;
+  }catch(e){
+    accesoEl.innerHTML = '<div class="pg-warn-box"><b>No pudimos verificar tu acceso.</b> ' + esc(e.message||'') + '</div>';
+    return;
+  }
+  if(!puede){
+    accesoEl.innerHTML = '<div class="pg-warn-box"><b>Todavía no tienes acceso a esta pantalla.</b><br>Pídele a Andrés que te lo active.</div>';
+    shellEl.style.display = "none";
+    return;
+  }
+  accesoEl.innerHTML = "";
+  shellEl.style.display = "block";
+  await cargarCuarentena();
+}
+
+/* =====================================================================
+   3) DATOS + FILTROS + ORDEN
+   ===================================================================== */
+const MOTIVOS_CANONICOS = [
+  'sin fecha de vigencia',
+  'fecha de vigencia fuera de rango',
+  'sin numero de poliza',
+  'sin DOT (poliza de transporte)',
+  'sin premium',
+  'sin vendedor',
+  'vendedor fuera del roster',
+];
+let CQ_FILAS = [];
+let CQ_FILTRO_MOTIVO = '';
+let CQ_FILTRO_VENDEDOR = '';
+let CQ_ORDEN = { col: 'policy_premium', asc: false };
+
+async function cargarCuarentena(){
+  document.getElementById("pg-stamp").textContent = "cargando…";
+  const { data, error } = await fetchPaginado(()=> SB.from('bos_cuarentena').select('*'));
+  if(error){
+    document.getElementById('cq-tbody').innerHTML = '<tr><td colspan="7"><div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div></td></tr>';
+    return;
+  }
+  CQ_FILAS = data || [];
+  pintarContadores();
+  pintarFiltros();
+  repintarTabla();
+  const hhmm = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById("pg-stamp").textContent = "datos al " + hhmm;
+  const foot = document.getElementById('pg-foot-stamp'); if(foot) foot.textContent = hhmm;
+}
+
+function pintarContadores(){
+  const el = document.getElementById('cq-contadores');
+  el.innerHTML = MOTIVOS_CANONICOS.map(m=>{
+    const n = CQ_FILAS.filter(r=>(r.motivos||[]).includes(m)).length;
+    const on = CQ_FILTRO_MOTIVO===m ? ' on' : '';
+    return '<div class="gv-kpi'+on+'" data-motivo="'+esc(m)+'"><div class="lbl">'+esc(m)+'</div><div class="val">'+n+'</div></div>';
+  }).join('');
+  el.querySelectorAll('[data-motivo]').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      const m = card.dataset.motivo;
+      CQ_FILTRO_MOTIVO = (CQ_FILTRO_MOTIVO===m) ? '' : m;
+      const sel = document.getElementById('cq-filtro-motivo'); if(sel) sel.value = CQ_FILTRO_MOTIVO;
+      pintarContadores();
+      repintarTabla();
+    });
+  });
+}
+
+function pintarFiltros(){
+  const selMotivo = document.getElementById('cq-filtro-motivo');
+  selMotivo.innerHTML = '<option value="">Todos los motivos</option>' +
+    MOTIVOS_CANONICOS.map(m=>'<option value="'+esc(m)+'">'+esc(m)+'</option>').join('');
+  selMotivo.value = CQ_FILTRO_MOTIVO;
+  selMotivo.onchange = ()=>{ CQ_FILTRO_MOTIVO = selMotivo.value; pintarContadores(); repintarTabla(); };
+
+  const vendedores = Array.from(new Set(CQ_FILAS.map(r=>r.seller).filter(Boolean))).sort();
+  const selVend = document.getElementById('cq-filtro-vendedor');
+  selVend.innerHTML = '<option value="">Todos los vendedores</option>' +
+    vendedores.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');
+  selVend.value = CQ_FILTRO_VENDEDOR;
+  selVend.onchange = ()=>{ CQ_FILTRO_VENDEDOR = selVend.value; repintarTabla(); };
+
+  document.getElementById('cq-limpiar-filtros').onclick = ()=>{
+    CQ_FILTRO_MOTIVO = ''; CQ_FILTRO_VENDEDOR = '';
+    selMotivo.value = ''; selVend.value = '';
+    pintarContadores();
+    repintarTabla();
+  };
+
+  document.querySelectorAll('#cq-tabla th[data-sort]').forEach(th=>{
+    th.onclick = ()=>{
+      const col = th.dataset.sort;
+      if(CQ_ORDEN.col === col) CQ_ORDEN.asc = !CQ_ORDEN.asc;
+      else CQ_ORDEN = { col, asc: true };
+      repintarTabla();
+    };
+  });
+}
+
+function filasFiltradas(){
+  return CQ_FILAS.filter(r=>{
+    if(CQ_FILTRO_MOTIVO && !(r.motivos||[]).includes(CQ_FILTRO_MOTIVO)) return false;
+    if(CQ_FILTRO_VENDEDOR && r.seller !== CQ_FILTRO_VENDEDOR) return false;
+    return true;
+  });
+}
+
+function repintarTabla(){
+  const filas = filasFiltradas();
+  const col = CQ_ORDEN.col, asc = CQ_ORDEN.asc;
+  const ordenadas = filas.slice().sort((a,b)=>{
+    let va = a[col], vb = b[col];
+    if(va===null||va===undefined) return 1;
+    if(vb===null||vb===undefined) return -1;
+    if(typeof va === 'string') va = va.toLowerCase();
+    if(typeof vb === 'string') vb = vb.toLowerCase();
+    if(va < vb) return asc ? -1 : 1;
+    if(va > vb) return asc ? 1 : -1;
+    return 0;
+  });
+
+  document.querySelectorAll('#cq-tabla th[data-sort]').forEach(th=>{
+    const base = th.textContent.replace(/\s*[▲▼]$/,'');
+    th.textContent = base;
+    if(th.dataset.sort === col) th.innerHTML = esc(base) + '<span class="arrow">'+(asc?'▲':'▼')+'</span>';
+  });
+
+  document.getElementById('cq-tbody').innerHTML = ordenadas.length ? ordenadas.map(filaCuarentena).join('')
+    : '<tr><td colspan="7"><div class="pg-limite">Sin filas para este filtro.</div></td></tr>';
+
+  const total = filas.length;
+  const premium = filas.reduce((s,r)=>s+Number(r.policy_premium||0),0);
+  document.getElementById('cq-resumen').innerHTML = '<b>'+total+'</b> fila'+(total===1?'':'s')+' en cuarentena · <b>'+fmtUSD(premium)+'</b> de premium';
+}
+
+function filaCuarentena(r){
+  const motivosHtml = (r.motivos||[]).map(m=>'<span class="pg-pill warn">'+esc(m)+'</span>').join('');
+  return '<tr>'+
+    '<td class="num">'+esc(r.sheet_row)+'</td>'+
+    '<td>'+esc(r.seller||'—')+'</td>'+
+    '<td>'+esc(r.insured||'—')+'</td>'+
+    '<td>'+esc(r.policy_num||'—')+'</td>'+
+    '<td>'+fmtFecha(r.effective_date)+'</td>'+
+    '<td class="num">'+fmtUSD(r.policy_premium)+'</td>'+
+    '<td><div class="cq-motivos">'+motivosHtml+'</div></td>'+
+  '</tr>';
+}
+
+/* =====================================================================
+   4) ARRANQUE
+   ===================================================================== */
+(async function init() {
+  if (_IS_RECOVERY) { mostrarSetPassword(); return; }
+  const { data: { session } } = await SB.auth.getSession();
+  if (session) await mostrarApp();
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var PGV_ARCHIVO="cuarentena.html";
+var PGV_VERSION=1; // Pantalla nueva: cuarentena BOS para financiera y dirección
+try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
+function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
+  if(document.getElementById('pgvBar'))return;
+  var b=document.createElement('div');
+  b.id='pgvBar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
+  b.innerHTML='🔄 Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
+  document.body.appendChild(b);
+  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+if(!window.__pgIdle){window.__pgIdle=setInterval(function(){if(window.__pgLastInput&&Date.now()-window.__pgLastInput>30000){try{location.reload(!0)}catch(e){location.reload()}}},5000);}try{var _b=document.getElementById('pgvBar');if(_b&&!_b.__aug){_b.__aug=1;var _s=document.createElement('span');_s.style.cssText='font-weight:800';_s.textContent='Guarda tu trabajo y la página se actualizará sola.';_b.insertBefore(_s,_b.firstChild);}}catch(e){}
+}
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION)pgvBanner();
+    });
+  }catch(e){}
+}
+function pgvCheck(){
+  if(window.supabase&&window.supabase.createClient){pgvRun();return;}
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload=pgvRun;
+  document.head.appendChild(s);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);});
+else setTimeout(pgvCheck,400);
+setInterval(pgvCheck,600000);
+})();
+</script>
+</body>
+</html>

@@ -519,7 +519,7 @@ async function cargarArea(){
     SB.from('v_alerta_mes_rojo_cuentas_visible').select('*'),
     SB.from('v_alerta_vende_no_renueva_visible').select('*').order('premium_perdido',{ascending:false}),
     SB.from('v_alerta_cuenta_grande_visible').select('*').order('premium_activo',{ascending:false}),
-    fetchPaginado(()=> SB.from('v_cartera_activa_visible').select('llave,area,estado,subestado,premium_activo,dueno_ultima_venta').order('llave',{ascending:true})),
+    SB.from('v_cartera_estado_v3_visible').select('area,estado,cuentas,premium').eq('area','KAREN'),
   ]);
   if(idxR.error || !idxR.data || !idxR.data.length){
     document.getElementById('area-indice-card').innerHTML = '<div class="pg-limite" style="color:var(--pg-muted)">Sin datos de dirección disponibles para tu usuario.</div>';
@@ -632,28 +632,31 @@ function pintarAlertasArea(rojo, rojoCuentas, vende, grande){
 
 /* ---- cartera: separa activas de canceladas, por área ---- */
 function pintarCarteraArea(cartera){
-  const karen = cartera.filter(r=>r.area==='KAREN');
-  const retencion = cartera.filter(r=>r.area==='RETENCION');
-  function resumen(rows){
-    const activas = rows.filter(r=>r.estado==='ACTIVA');
-    const canceladas = rows.filter(r=>r.estado==='CANCELADA');
-    const vencidas = rows.filter(r=>r.estado==='VENCIDA');
-    const premActivo = activas.reduce((s,r)=>s+Number(r.premium_activo||0),0);
-    return { activas, canceladas, vencidas, premActivo };
-  }
-  const rk = resumen(karen), rr = resumen(retencion);
-  function tarjeta(nombre, r){
-    return '<div><div style="font-family:var(--pg-font-title);font-weight:800;font-size:13px;color:var(--pg-ink);margin-bottom:6px">'+esc(nombre)+'</div>'+
-      '<div style="font-family:var(--pg-font-num);font-size:24px;font-weight:700;color:var(--pg-ink)">'+r.activas.length+'</div>'+
-      '<div style="font-size:12px;color:var(--pg-muted)">activas · '+fmtUSD(r.premActivo)+'</div>'+
-      '<div style="font-size:11.5px;color:var(--pg-muted);margin-top:6px">'+r.canceladas.length+' canceladas · '+r.vencidas.length+' vencidas</div>'+
+  const porEstado = {};
+  cartera.forEach(r=>{ porEstado[r.estado] = r; });
+  const ESTADOS_ORDEN = [
+    { estado:'ACTIVA',            color:'var(--pg-pos)',  destacada:false },
+    { estado:'ACTIVA SIN SENAL',  color:'var(--pg-warn)', destacada:true  },
+    { estado:'RENOVADA',          color:'var(--pg-ink)',  destacada:false },
+    { estado:'VENCIDA',           color:'var(--pg-ink)',  destacada:false },
+  ];
+  function tarjeta(cfg){
+    const r = porEstado[cfg.estado] || { cuentas:0, premium:0 };
+    const premium = Number(r.premium||0);
+    const fondo = cfg.destacada ? '#FBF0DC' : 'var(--pg-bg)';
+    const borde = cfg.destacada ? '#ECD08C' : 'var(--pg-line)';
+    return '<div style="flex:1;min-width:140px;background:'+fondo+';border:1px solid '+borde+';border-radius:14px;padding:14px 16px">'+
+      '<div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--pg-muted)">'+esc(cfg.estado)+'</div>'+
+      '<div style="font-family:var(--pg-font-num);font-size:'+(cfg.destacada?'26px':'22px')+';font-weight:700;color:'+cfg.color+'">'+(r.cuentas||0)+'</div>'+
+      (premium>0 ? '<div style="font-size:11.5px;color:var(--pg-muted);margin-top:2px">'+fmtUSD(premium)+'</div>' : '')+
     '</div>';
   }
-  const resumenTexto = rk.activas.length+' / '+rr.activas.length;
+  const activaN = porEstado['ACTIVA'] ? porEstado['ACTIVA'].cuentas : 0;
+  const sinSenalN = porEstado['ACTIVA SIN SENAL'] ? porEstado['ACTIVA SIN SENAL'].cuentas : 0;
   document.getElementById('area-cartera').innerHTML = bloquePlegable('cartera-area',
-    'Área de renovaciones · agentes activos y cartera suelta hacia Retención',
-    resumenTexto,
-    '<div class="pg-grid-2">'+tarjeta('Área de renovaciones · agentes activos', rk)+tarjeta('Cartera suelta hacia Retención', rr)+'</div>',
+    'Estado de la cartera',
+    activaN+' activas · '+sinSenalN+' sin señal',
+    '<div style="display:flex;gap:12px;flex-wrap:wrap">'+ESTADOS_ORDEN.map(tarjeta).join('')+'</div>',
     false);
 }
 
@@ -923,7 +926,7 @@ function pintarListaTodosAgentes(rows){
    6) 03 EL MURO
    ===================================================================== */
 async function cargarMuro(){
-  const { data, error } = await SB.from('v_indice_renovaciones_mensual_visible').select('*').eq('estado_mes','futuro').order('mes',{ascending:true});
+  const { data, error } = await SB.from('v_indice_renovaciones_v3_visible').select('*').eq('estado_mes','futuro').order('mes',{ascending:true});
   const el = document.getElementById('kd-muro');
   if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
   const futuros = data || [];
@@ -1007,7 +1010,7 @@ function round2(n){ return Math.round(Number(n||0)*100)/100; }
 
 async function cargarEsquemaBonos(){
   const [idxR, bolsaR, ingresoR, escaleraR, participacionR] = await Promise.all([
-    SB.from('v_indice_renovaciones_mensual_visible').select('mes,estado_mes,vencieron,renovaron,pct_renovado').order('mes',{ascending:true}),
+    SB.from('v_indice_renovaciones_v3_visible').select('mes,estado_mes,vencieron,renovaron,pct_renovado').order('mes',{ascending:true}),
     SB.from('v_bolsa_persona_mensual').select('mes,alias_bos,bolsa_persona,cuenta_en_firme,miembros').order('mes',{ascending:true}),
     SB.rpc('f_ingreso_mensual_lider', { p_alias: 'Karen Suaza' }),
     SB.from('bono_escalera').select('*').eq('area','renovaciones').eq('activo', true).order('tipo').order('orden'),
@@ -1096,7 +1099,7 @@ function pintarBonos(bolsaRows, ingresoRows, escaleraRows, participacionRows, ta
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=17; // Hotfix Renovaciones del mes: mes actual se toma del servidor (estado_mes='en_curso'), no del reloj del navegador; filtro explicito area='KAREN' en v_renov_grupo_visible
+var PGV_VERSION=18; // El muro y Bonos migran a v_indice_renovaciones_v3_visible (antes daban % distinto al de la casilla 01 y Vendedores); bloque de cartera de la casilla 01 pasa de v_cartera_activa_visible a v_cartera_estado_v3_visible (4 estados: ACTIVA, ACTIVA SIN SENAL, RENOVADA, VENCIDA), filtrado explícito area=KAREN. Ninguna vista vieja se borra.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

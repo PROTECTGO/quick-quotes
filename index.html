@@ -318,6 +318,9 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 <!-- Fuga de cartera / Risk Department (Angélica Páez) -->
 <a class="card on" data-widget="retencion_riesgo" href="retencion-riesgo.html"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86l-8.18 14.18A1.5 1.5 0 0 0 3.32 20h17.36a1.5 1.5 0 0 0 1.21-1.96L13.71 3.86a1.5 1.5 0 0 0-2.42 0z"/></svg></div><span class="tag">RETENCI&Oacute;N</span></div><h3>Fuga de cartera</h3><p>Cancelaciones, endosos negativos y anulaciones: qu&eacute; se cae y cu&aacute;nto pesa.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a>
 
+<!-- Cuarentena BOS (financiera y dirección) -->
+<a class="card on" data-widget="cuarentena" href="cuarentena.html"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg></div><span class="tag">FIN</span></div><h3>Cuarentena BOS</h3><p>Filas del registro que entraron mal llenadas &mdash; se corrigen en el Sheet y salen solas.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a>
+
 <!-- GABI 360 · Direccion (solo sales@) -->
 <a class="card on" id="card-gabi360" data-widget="gabi_360" href="https://gabi-liquidez.vercel.app/gabi360.html" target="_blank" rel="noopener" style="display:none"><div class="top"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 13l4-3"/><path d="M12 5V3M4.5 6.5 6 8M19.5 6.5 18 8"/></svg></div><span class="tag">DIR</span></div><h3>GABI 360 &middot; Direcci&oacute;n</h3><p>El tablero de direcci&oacute;n: liquidez, retiros, utilidad por persona, patrones de alerta y retenci&oacute;n de la agencia.</p><div class="foot"><span class="chip ready">Listo</span><span class="go">Abrir &#8594;</span></div></a>
 <!-- GABI · Mi panel (lider/directora: Brahian, Angelica) -->
@@ -749,7 +752,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
-var PGV_VERSION=13; // corrige --pg-warn (era #B8841F, ahora #D9A520)
+var PGV_VERSION=14; // Tarjeta nueva: Cuarentena BOS (financiera y dirección)
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

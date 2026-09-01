@@ -159,6 +159,33 @@ body { margin: 0; background: var(--pg-bg); }
 /* ---- selector de vendedor ---- */
 .pg-vendedor-pick { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
 .pg-vendedor-pick select { font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--pg-line); background:#fff; }
+
+/* ---- Mi cola: chips, buscador, layout con ficha lateral ---- */
+.cola-toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
+.cola-chips { display:flex; gap:6px; flex-wrap:wrap; }
+.cola-chip { font-family:var(--pg-font-body); font-size:12px; font-weight:700; border:1px solid var(--pg-line); background:#fff; color:var(--pg-ink); border-radius:999px; padding:6px 13px; cursor:pointer; }
+.cola-chip:hover { background:var(--pg-bg); }
+.cola-chip.on { background:var(--pg-ink); color:#fff; border-color:var(--pg-ink); }
+.cola-buscar { margin-left:auto; font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--pg-line); min-width:220px; }
+.cola-layout { display:flex; gap:16px; align-items:flex-start; }
+.cola-lista { flex:1; min-width:0; }
+.cola-panel { width:400px; flex-shrink:0; background:var(--pg-card); border:1px solid var(--pg-line); border-radius:16px; padding:18px; position:sticky; top:90px; max-height:calc(100vh - 110px); overflow-y:auto; }
+@media (max-width:1180px) { .cola-layout { flex-direction:column; } .cola-panel { width:100%; position:relative; top:0; } }
+.cola-row { cursor:pointer; }
+.cola-row:hover td { background:var(--pg-bg); }
+.cola-row.sel td { background:#E3F4EF; }
+.cola-udot { display:inline-block; width:9px; height:9px; border-radius:50%; }
+.cola-vence-dias { font-weight:700; }
+.cola-vence-fecha { font-size:10.5px; color:var(--pg-muted); }
+.ficha-cerrar { float:right; background:none; border:none; color:var(--pg-muted); font-size:18px; cursor:pointer; line-height:1; }
+.ficha-nav { display:flex; gap:8px; margin-bottom:12px; }
+.ficha-nav button { font-family:var(--pg-font-body); font-size:12px; font-weight:700; border:1px solid var(--pg-line); background:#fff; border-radius:999px; padding:6px 12px; cursor:pointer; }
+.ficha-nav button:disabled { opacity:.4; cursor:default; }
+.ficha-seccion { margin-top:16px; padding-top:14px; border-top:1px solid var(--pg-line); }
+.ficha-seccion h3 { font-family:var(--pg-font-title); font-size:12.5px; font-weight:800; color:var(--pg-ink); margin:0 0 8px; }
+.muro-tile { flex:1; min-width:170px; text-align:center; background:var(--pg-bg); border:1px solid var(--pg-line); border-radius:16px; padding:22px 14px; cursor:pointer; }
+.muro-tile:hover { border-color:var(--pg-mint); }
+.muro-tile-detalle { margin-top:10px; }
 </style>
 </head>
 <body>
@@ -246,6 +273,27 @@ const MESES_CORTOS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct
 function mesCorto(s){ if(!s) return '—'; try{ const d=new Date(String(s)+'T12:00:00'); return MESES_CORTOS[d.getMonth()]; }catch(e){ return String(s); } }
 function mesActualISO(){ const hoy=new Date(); return hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-01'; }
 function sumarMeses(iso, n){ const d=new Date(iso+'T12:00:00'); d.setMonth(d.getMonth()+n); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; }
+/* diccionario: la base guarda sin acentos a propósito, la pantalla traduce siempre */
+const ETIQUETAS = {
+  'SIN SENAL DE VIDA': 'Sin señal de vida',
+  'ACTIVA SIN SENAL':  'Activa sin señal',
+  'CANC. PARCIAL':     'Cancelación parcial',
+  'CON RECORTES':      'Con recortes',
+  'LIMPIA':            'Limpia',
+  'CANCELADA':         'Cancelada',
+  'VENCIDA':           'Vencida',
+  'RENOVADA':          'Renovada',
+  'ACTIVA':            'Activa',
+};
+function etiqueta(s){ return ETIQUETAS[s] !== undefined ? ETIQUETAS[s] : (s||'—'); }
+function fmtDiasVence(dias){
+  if(dias===null||dias===undefined||isNaN(dias)) return '—';
+  const n = Number(dias);
+  if(n < 0) return 'vencida hace '+Math.abs(n)+'d';
+  if(n === 0) return 'vence hoy';
+  return 'en '+n+'d';
+}
+const URGENCIA_COLOR = { rojo:'var(--pg-neg)', ambar:'var(--pg-warn)', gris:'var(--pg-muted)' };
 function fmtHora(s){
   if(!s) return '—';
   try{
@@ -414,11 +462,12 @@ async function verificarAccesoYcargar(){
    2b) NAVEGACIÓN LATERAL — 5 casillas
    ===================================================================== */
 const TABS = [
-  { key:'area',       num:'01', titulo:'El área' },
+  { key:'cola',       num:'01', titulo:'Mi cola' },
   { key:'vendedores', num:'02', titulo:'Vendedores' },
   { key:'muro',       num:'03', titulo:'El muro' },
   { key:'bolsa',      num:'04', titulo:'La bolsa' },
   { key:'bonos',      num:'05', titulo:'Bonos' },
+  { key:'area',       num:'06', titulo:'El área' },
 ];
 const TABS_VALIDAS = TABS.map(t=>t.key);
 
@@ -454,12 +503,20 @@ function pintarEsqueletoCompleto(){
     TABS.map((t,i)=>'<a data-tab="'+t.key+'"'+(i===0?' class="on"':'')+'><span class="ico">'+t.num+'</span><span>'+esc(t.titulo)+'</span></a>').join('');
 
   document.getElementById('pg-tabmain').innerHTML = `
-    <section class="pg-tabsection on" id="tab-area">
-      <div class="pg-card" id="area-indice-card"><div class="pg-skel" style="height:260px"></div></div>
-      <div id="area-alertas"></div>
-      <div id="area-cartera"></div>
-      <div id="area-renovaciones-mes"></div>
-      <div id="area-estado-dato" style="font-size:11.5px;color:var(--pg-muted);margin-top:10px"></div>
+    <section class="pg-tabsection on" id="tab-cola">
+      <div class="pg-card">
+        <div class="cola-toolbar">
+          <div class="cola-chips" id="cola-chips"></div>
+          <input type="text" class="cola-buscar" id="cola-buscar" placeholder="Buscar por nombre o DOT…">
+        </div>
+        <div class="pg-limite" id="cola-semana">—</div>
+        <div class="cola-layout">
+          <div class="cola-lista" id="cola-lista"><div class="pg-skel" style="height:220px"></div></div>
+          <aside class="cola-panel" id="cola-panel" style="display:none"></aside>
+        </div>
+        <div id="cola-resumen" style="margin-top:12px;font-size:13.5px;color:var(--pg-ink)"></div>
+        <div id="area-estado-dato" style="font-size:11.5px;color:var(--pg-muted);margin-top:6px"></div>
+      </div>
     </section>
 
     <section class="pg-tabsection" id="tab-vendedores">
@@ -496,13 +553,19 @@ function pintarEsqueletoCompleto(){
     <section class="pg-tabsection" id="tab-bonos">
       <div id="kd-esquema"><div class="pg-skel" style="height:220px"></div></div>
     </section>
+
+    <section class="pg-tabsection" id="tab-area">
+      <div class="pg-card" id="area-indice-card"><div class="pg-skel" style="height:260px"></div></div>
+      <div id="area-alertas"></div>
+      <div id="area-cartera"></div>
+    </section>
   `;
 }
 
 async function cargarTodo(){
   document.getElementById("pg-stamp").textContent = "cargando…";
   await Promise.all([
-    cargarArea(), cargarVendedores(), cargarMuro(), cargarBolsa(), cargarGeneraGasta(), cargarEsquemaBonos(),
+    cargarCola(), cargarArea(), cargarVendedores(), cargarMuro(), cargarBolsa(), cargarGeneraGasta(), cargarEsquemaBonos(),
   ]);
   const hhmm = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   document.getElementById("pg-stamp").textContent = "datos al " + hhmm;
@@ -510,7 +573,7 @@ async function cargarTodo(){
 }
 
 /* =====================================================================
-   4) 01 EL ÁREA
+   4) 06 EL ÁREA — índice, alertas, estados de cartera (dirección)
    ===================================================================== */
 async function cargarArea(){
   const [idxR, rojoR, rojoCuentasR, vendeR, grandeR, carteraR] = await Promise.all([
@@ -525,22 +588,12 @@ async function cargarArea(){
     document.getElementById('area-indice-card').innerHTML = '<div class="pg-limite" style="color:var(--pg-muted)">Sin datos de dirección disponibles para tu usuario.</div>';
     return;
   }
-  if(MES_RENOV_ACTUAL === null){
-    /* el mes "actual" lo decide el servidor (estado_mes='en_curso'), no el reloj del
-       navegador: cerca de medianoche UTC, un navegador en una zona horaria más
-       atrasada (ej. Bogotá) todavía marca el mes anterior y desincroniza la lista
-       del índice. */
-    const filaActual = idxR.data.find(r=>r.estado_mes==='en_curso');
-    MES_RENOV_ACTUAL = filaActual ? filaActual.mes : mesActualISO();
-  }
   pintarIndiceArea(idxR.data);
   pintarAlertasArea(rojoR.data, rojoCuentasR.data||[], vendeR.data||[], grandeR.data||[]);
   pintarCarteraArea(carteraR.data||[]);
-  await cargarRenovacionesDelMes(MES_RENOV_ACTUAL);
-  cargarEstadoDato();
 }
 
-/* ---- pie de casilla 01: hora real del dato (foto del motor + BOS), no la hora del reloj ---- */
+/* ---- pie de casilla 01 (Mi cola): hora real del dato (foto del motor + BOS), no la hora del reloj ---- */
 async function cargarEstadoDato(){
   const el = document.getElementById('area-estado-dato'); if(!el) return;
   const { data, error } = await SB.from('v_renov_estado_dato').select('*').maybeSingle();
@@ -618,8 +671,11 @@ function pintarAlertasArea(rojo, rojoCuentas, vende, grande){
     : '<div class="pg-limite">Nadie en alerta.</div>');
 
   const cuerpoGrande = (grande.length
-    ? '<div class="tablewrap"><table class="pg-table"><thead><tr><th>DOT</th><th>Agente</th><th class="num">Premium</th><th class="num">Días</th></tr></thead><tbody>'+
-      grande.map(g=>'<tr><td>'+esc(g.llave)+'</td><td>'+esc(g.dueno_ultima_venta||'—')+'</td><td class="num">'+fmtUSD(g.premium_activo)+'</td><td class="num">'+g.dias_restantes+'</td></tr>').join('')+
+    ? '<div class="tablewrap"><table class="pg-table"><thead><tr><th>DOT</th><th>Cuenta</th><th>Agente</th><th class="num">Premium</th><th class="num">Días</th></tr></thead><tbody>'+
+      grande.map(g=>{
+        const colorSenal = g.sin_senal ? 'var(--pg-warn)' : 'var(--pg-pos)';
+        return '<tr><td>'+esc(g.dot||g.llave)+'</td><td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+colorSenal+';margin-right:6px"></span>'+esc(g.cuenta_nombre||g.llave)+'</td><td>'+esc(g.dueno_ultima_venta||'—')+'</td><td class="num">'+fmtUSD(g.premium_activo)+'</td><td class="num">'+g.dias_restantes+'</td></tr>';
+      }).join('')+
       '</tbody></table></div>'
     : '<div class="pg-limite">Sin cuentas grandes en ese rango.</div>');
 
@@ -646,7 +702,7 @@ function pintarCarteraArea(cartera){
     const fondo = cfg.destacada ? '#FBF0DC' : 'var(--pg-bg)';
     const borde = cfg.destacada ? '#ECD08C' : 'var(--pg-line)';
     return '<div style="flex:1;min-width:140px;background:'+fondo+';border:1px solid '+borde+';border-radius:14px;padding:14px 16px">'+
-      '<div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--pg-muted)">'+esc(cfg.estado)+'</div>'+
+      '<div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--pg-muted)">'+esc(etiqueta(cfg.estado))+'</div>'+
       '<div style="font-family:var(--pg-font-num);font-size:'+(cfg.destacada?'26px':'22px')+';font-weight:700;color:'+cfg.color+'">'+(r.cuentas||0)+'</div>'+
       (premium>0 ? '<div style="font-size:11.5px;color:var(--pg-muted);margin-top:2px">'+fmtUSD(premium)+'</div>' : '')+
     '</div>';
@@ -660,104 +716,253 @@ function pintarCarteraArea(cartera){
     false);
 }
 
-/* ---- renovaciones del mes: v_renov_grupo_visible + renov_trabajo, navegación de mes ---- */
-let MES_RENOV_ACTUAL = null;
-let RENOV_FILAS = [];
+/* =====================================================================
+   4b) 01 MI COLA — v_renov_cola_visible + renov_trabajo. Orden fijo
+   (bloque, luego premium desc) — el orden ES la prioridad.
+   ===================================================================== */
 const ESTADOS_TRABAJO = ['pendiente','contactado','cotizando','renovado','perdido','retirado'];
-window.renovMesCambiar = function(delta){
-  MES_RENOV_ACTUAL = sumarMeses(MES_RENOV_ACTUAL, delta);
-  cargarRenovacionesDelMes(MES_RENOV_ACTUAL);
-};
+const COLA_CHIPS = [
+  { key:'pendientes',  label:'Pendientes' },
+  { key:'contactadas', label:'Contactadas' },
+  { key:'sin_senal',   label:'Sin señal de vida' },
+  { key:'verificadas', label:'Verificadas con Jeff' },
+  { key:'todas',       label:'Todas' },
+];
+let COLA_FILAS = [];
+let COLA_FILTRO_CHIP = 'todas';
+let COLA_BUSQUEDA = '';
+let COLA_FICHA_ROW = null;
+let COLA_FICHA_LISTA = [];
 function rowId(r){ return 'rf_'+String(r.llave+'|'+r.vence).replace(/[^a-zA-Z0-9]/g,'_'); }
 
-async function cargarRenovacionesDelMes(mesIso){
-  const { data, error } = await fetchPaginado(()=> SB.from('v_renov_grupo_visible').select('*')
-    .eq('mes_vence', mesIso).eq('area','KAREN').order('premium_activo',{ascending:false}).order('llave',{ascending:true}));
-  const contEl = document.getElementById('area-renovaciones-mes');
-  if(error){ contEl.innerHTML = '<div class="pg-card"><div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div></div>'; return; }
-  RENOV_FILAS = data || [];
-  const sumaSenal = RENOV_FILAS.reduce((s,r)=>s+Number(r.premium_con_senal||0),0);
-  const sumaConfirmar = RENOV_FILAS.reduce((s,r)=>s+Number(r.premium_por_confirmar||0),0);
-  const nav = '<div style="display:flex;align-items:center;gap:8px" onclick="event.stopPropagation()">'+
-    '<button type="button" class="pg-toggle-link" onclick="renovMesCambiar(-1)">‹</button>'+
-    '<button type="button" class="pg-toggle-link" onclick="renovMesCambiar(1)">›</button>'+
-  '</div>';
-  const tituloConNav = esc(fmtMes(mesIso))+' '+nav;
-  const resumen = fmtUSD(sumaSenal)+' con señal de vida · '+fmtUSD(sumaConfirmar)+' por confirmar · '+RENOV_FILAS.length+' cuentas';
-  const cuerpo = RENOV_FILAS.length
-    ? '<div class="tablewrap"><table class="pg-table renov-tabla"><thead><tr><th></th><th>DOT</th><th>Cuenta</th><th>Agente</th><th class="num">Premium</th><th>Vence</th><th>Señal</th><th>Jeff</th><th>Contactado</th><th>Estado</th><th>Notas</th></tr></thead><tbody id="renov-tbody">'+
-        RENOV_FILAS.map(filaRenov).join('')+
-      '</tbody></table></div>'
-    : '<div class="pg-limite">Sin cuentas por renovar este mes.</div>';
-  contEl.innerHTML = bloquePlegable('renov-mes-'+mesIso, tituloConNav, resumen, cuerpo, true);
-  if(RENOV_FILAS.length) cablearFilasRenov();
+async function cargarCola(){
+  const lista = document.getElementById('cola-lista');
+  const { data, error } = await fetchPaginado(()=> SB.from('v_renov_cola_visible').select('*').eq('area','KAREN'));
+  if(error){ lista.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
+  COLA_FILAS = (data||[]).slice().sort((a,b)=> (Number(a.bloque)-Number(b.bloque)) || (Number(b.premium_activo||0)-Number(a.premium_activo||0)));
+  pintarChipsCola();
+  cablearBuscadorCola();
+  repintarCola();
+  cargarEstadoDato();
+  cargarContadorSemana();
 }
 
-function filaRenov(r){
+function pintarChipsCola(){
+  const el = document.getElementById('cola-chips'); if(!el) return;
+  el.innerHTML = COLA_CHIPS.map(c=>'<button type="button" class="cola-chip'+(COLA_FILTRO_CHIP===c.key?' on':'')+'" data-chip="'+c.key+'">'+esc(c.label)+'</button>').join('');
+  el.querySelectorAll('[data-chip]').forEach(b=> b.addEventListener('click', ()=>{
+    COLA_FILTRO_CHIP = b.dataset.chip; pintarChipsCola(); repintarCola();
+  }));
+}
+function cablearBuscadorCola(){
+  const inp = document.getElementById('cola-buscar'); if(!inp) return;
+  inp.value = COLA_BUSQUEDA;
+  inp.oninput = ()=>{ COLA_BUSQUEDA = inp.value; repintarCola(); };
+}
+async function cargarContadorSemana(){
+  const el = document.getElementById('cola-semana'); if(!el) return;
+  const desde = new Date(Date.now() - 7*24*60*60*1000).toISOString();
+  const { data } = await SB.from('renov_trabajo').select('llave,vence').gte('trabajada_at', desde);
+  const claves = new Set(COLA_FILAS.map(r=> r.llave+'|'+r.vence));
+  const n = (data||[]).filter(t=> claves.has(t.llave+'|'+t.vence)).length;
+  el.textContent = n+' cuenta'+(n===1?'':'s')+' trabajada'+(n===1?'':'s')+' esta semana';
+}
+
+function filasFiltradasCola(){
+  const q = COLA_BUSQUEDA.trim().toLowerCase();
+  return COLA_FILAS.filter(r=>{
+    if(COLA_FILTRO_CHIP==='pendientes' && (r.estado_trabajo||'pendiente')!=='pendiente') return false;
+    if(COLA_FILTRO_CHIP==='contactadas' && !r.contactado) return false;
+    if(COLA_FILTRO_CHIP==='sin_senal' && !r.sin_senal) return false;
+    if(COLA_FILTRO_CHIP==='verificadas' && !r.verificado_financiera) return false;
+    if(q){
+      const nombre = (r.cuenta_nombre||r.llave||'').toLowerCase();
+      const dot = (r.dot||'').toLowerCase();
+      if(nombre.indexOf(q)<0 && dot.indexOf(q)<0) return false;
+    }
+    return true;
+  });
+}
+
+function repintarCola(){
+  const filas = filasFiltradasCola();
+  const lista = document.getElementById('cola-lista');
+  lista.innerHTML = filas.length
+    ? '<div class="tablewrap"><table class="pg-table"><thead><tr><th></th><th>DOT</th><th>Cuenta</th><th>Agente</th><th class="num">Premium</th><th>Vence</th><th>Señal</th><th>Jeff</th><th>Contactado</th><th>Estado</th><th>Notas</th></tr></thead><tbody id="cola-tbody">'+
+        filas.map(filaCola).join('')+
+      '</tbody></table></div>'
+    : '<div class="pg-limite">Sin cuentas para este filtro.</div>';
+  cablearFilasCola(filas);
+  const sumaSenal = filas.reduce((s,r)=>s+Number(r.premium_con_senal||0),0);
+  const sumaConfirmar = filas.reduce((s,r)=>s+Number(r.premium_por_confirmar||0),0);
+  document.getElementById('cola-resumen').textContent = fmtUSD(sumaSenal)+' con señal de vida · '+fmtUSD(sumaConfirmar)+' por confirmar · '+filas.length+' cuentas';
+  COLA_FICHA_LISTA = filas;
+  if(COLA_FICHA_ROW){
+    const sigue = filas.some(r=> r.llave===COLA_FICHA_ROW.llave && r.vence===COLA_FICHA_ROW.vence);
+    if(!sigue) cerrarFicha();
+  }
+}
+
+function filaCola(r){
   const id = rowId(r);
+  const sel = COLA_FICHA_ROW && COLA_FICHA_ROW.llave===r.llave && COLA_FICHA_ROW.vence===r.vence;
   const colorSenal = r.sin_senal ? 'var(--pg-warn)' : 'var(--pg-pos)';
   const senalHtml = r.sin_senal
     ? '<span style="font-size:11px;color:var(--pg-warn);font-weight:700">'+(r.dias_sin_mov!=null?r.dias_sin_mov+'d · ':'')+'confirmar con Jeff antes de trabajarla</span>'
     : '<span style="font-size:11px;color:var(--pg-muted)">'+(r.dias_sin_mov!=null?r.dias_sin_mov+'d':'')+'</span>';
   const premiumHtml = fmtUSD(r.premium_activo) + (Number(r.n_polizas)>1 ? ' <span style="font-size:10px;color:var(--pg-muted);font-weight:700">×'+r.n_polizas+'</span>' : '');
-  return '<tr class="renov-row" data-row-id="'+id+'">'+
-      '<td class="renov-chevron" style="cursor:pointer;color:var(--pg-muted)">▸</td>'+
+  const contactadoDisabled = r.sin_senal && !r.verificado_financiera;
+  return '<tr class="cola-row'+(sel?' sel':'')+'" data-row-id="'+id+'">'+
+      '<td><span class="cola-udot" style="background:'+(URGENCIA_COLOR[r.urgencia]||'var(--pg-muted)')+'"></span></td>'+
       '<td>'+esc(r.dot||'—')+'</td>'+
-      '<td class="renov-toggle" style="cursor:pointer"><b>'+esc(r.cuenta_nombre||r.llave)+'</b></td>'+
+      '<td><b>'+esc(r.cuenta_nombre||r.llave)+'</b></td>'+
       '<td>'+esc(r.agente||'—')+'</td>'+
       '<td class="num">'+premiumHtml+'</td>'+
-      '<td>'+fmtFecha(r.vence)+'</td>'+
+      '<td><div class="cola-vence-dias">'+fmtDiasVence(r.dias_para_vencer)+'</div><div class="cola-vence-fecha">'+fmtFecha(r.vence)+'</div></td>'+
       '<td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+colorSenal+';margin-right:5px"></span>'+senalHtml+'</td>'+
       '<td><input type="checkbox" class="chk-jeff" '+(r.verificado_financiera?'checked':'')+'></td>'+
-      '<td><input type="checkbox" class="chk-contactado" '+(r.contactado?'checked':'')+'></td>'+
+      '<td><input type="checkbox" class="chk-contactado" '+(r.contactado?'checked':'')+(contactadoDisabled?' disabled':'')+'></td>'+
       '<td><select class="sel-estado">'+ESTADOS_TRABAJO.map(e=>'<option value="'+e+'" '+((r.estado_trabajo||'pendiente')===e?'selected':'')+'>'+e[0].toUpperCase()+e.slice(1)+'</option>').join('')+'</select></td>'+
-      '<td class="num renov-toggle" style="cursor:pointer"><span class="pg-pill muted">'+(r.n_notas||0)+'</span></td>'+
-    '</tr>'+
-    '<tr class="renov-detail" id="det-'+id+'" style="display:none"><td colspan="10"><div class="renov-detail-inner"></div></td></tr>';
+      '<td class="num"><span class="pg-pill muted">'+(r.n_notas||0)+'</span></td>'+
+    '</tr>';
 }
 
-function cablearFilasRenov(){
-  const tbody = document.getElementById('renov-tbody'); if(!tbody) return;
-  RENOV_FILAS.forEach(r=>{
+function cablearFilasCola(filas){
+  const tbody = document.getElementById('cola-tbody'); if(!tbody) return;
+  filas.forEach(r=>{
     const id = rowId(r);
     const tr = tbody.querySelector('tr[data-row-id="'+id+'"]'); if(!tr) return;
-    const det = document.getElementById('det-'+id);
-    const inner = det.querySelector('.renov-detail-inner');
-    const chevron = tr.querySelector('.renov-chevron');
-    tr.querySelectorAll('.renov-chevron, .renov-toggle').forEach(td=>
-      td.addEventListener('click', ()=> toggleDetalleFila(r, det, inner, chevron)));
+    tr.querySelectorAll('td').forEach(td=>{
+      if(td.querySelector('input,select')) return;
+      td.addEventListener('click', ()=> abrirFicha(r, filas));
+    });
     const chkJeff = tr.querySelector('.chk-jeff');
     chkJeff.addEventListener('click', e=> e.stopPropagation());
-    chkJeff.addEventListener('change', ()=> onChkJeff(r, chkJeff.checked, chkJeff));
+    chkJeff.addEventListener('change', async ()=>{
+      await onChkJeff(r, chkJeff.checked, chkJeff);
+      const chkCont = tr.querySelector('.chk-contactado');
+      if(chkCont) chkCont.disabled = r.sin_senal && !r.verificado_financiera;
+      if(COLA_FICHA_ROW && COLA_FICHA_ROW.llave===r.llave && COLA_FICHA_ROW.vence===r.vence) pintarFicha(r, filas);
+    });
     const chkCont = tr.querySelector('.chk-contactado');
     chkCont.addEventListener('click', e=> e.stopPropagation());
-    chkCont.addEventListener('change', ()=> onChkContactado(r, chkCont.checked, chkCont));
+    chkCont.addEventListener('change', async ()=>{
+      await onChkContactado(r, chkCont.checked, chkCont);
+      if(COLA_FICHA_ROW && COLA_FICHA_ROW.llave===r.llave && COLA_FICHA_ROW.vence===r.vence) pintarFicha(r, filas);
+    });
     const selEstado = tr.querySelector('.sel-estado');
     selEstado.addEventListener('click', e=> e.stopPropagation());
     let prevValue = selEstado.value;
-    selEstado.addEventListener('change', async ()=>{ await onSelEstado(r, selEstado.value, selEstado, prevValue); prevValue = selEstado.value; });
+    selEstado.addEventListener('change', async ()=>{
+      await onSelEstado(r, selEstado.value, selEstado, prevValue); prevValue = selEstado.value;
+      if(COLA_FICHA_ROW && COLA_FICHA_ROW.llave===r.llave && COLA_FICHA_ROW.vence===r.vence) pintarFicha(r, filas);
+    });
   });
 }
 
-function toggleDetalleFila(row, detEl, innerEl, chevronEl){
-  const abrir = detEl.style.display === 'none';
-  detEl.style.display = abrir ? '' : 'none';
-  if(chevronEl) chevronEl.textContent = abrir ? '▾' : '▸';
-  if(abrir && !innerEl.dataset.cargado){ innerEl.dataset.cargado='1'; renderDetalleFila(row, innerEl); }
+/* ---- ficha lateral: se abre al lado, sin cambiar de página ---- */
+function abrirFicha(row, filasActuales){
+  COLA_FICHA_ROW = row;
+  COLA_FICHA_LISTA = filasActuales;
+  document.getElementById('cola-panel').style.display = 'block';
+  document.querySelectorAll('.cola-row').forEach(tr=>tr.classList.remove('sel'));
+  const trSel = document.querySelector('tr[data-row-id="'+rowId(row)+'"]'); if(trSel) trSel.classList.add('sel');
+  pintarFicha(row, filasActuales);
 }
-function renderDetalleFila(row, innerEl){
-  let html = '';
-  if(row.otras_fechas){
-    html += '<div class="pg-limite" style="margin-bottom:10px">También tiene pólizas venciendo en '+esc(row.otras_fechas)+'.</div>';
-  }
-  const notasId = 'notas_'+rowId(row);
-  html += '<div class="pg-toggle-link" style="cursor:default;color:var(--pg-ink)">Notas</div><div id="'+notasId+'"><div class="pg-skel" style="height:40px"></div></div>'+
-    '<div class="pg-nota-input"><textarea id="nota-input-'+rowId(row)+'" placeholder="Agregar nota…"></textarea><button type="button" class="btn-guardar-nota">Guardar</button></div>';
-  innerEl.innerHTML = html;
-  const btnGuardar = innerEl.querySelector('.btn-guardar-nota');
+function cerrarFicha(){
+  COLA_FICHA_ROW = null;
+  const panel = document.getElementById('cola-panel'); if(panel){ panel.style.display = 'none'; panel.innerHTML=''; }
+  document.querySelectorAll('.cola-row.sel').forEach(tr=>tr.classList.remove('sel'));
+}
+window.cerrarFicha = cerrarFicha;
+window.navegarFicha = function(delta){
+  if(!COLA_FICHA_ROW || !COLA_FICHA_LISTA.length) return;
+  const idx = COLA_FICHA_LISTA.findIndex(r=> r.llave===COLA_FICHA_ROW.llave && r.vence===COLA_FICHA_ROW.vence);
+  const next = COLA_FICHA_LISTA[idx+delta];
+  if(!next) return;
+  abrirFicha(next, COLA_FICHA_LISTA);
+};
+
+function pintarFicha(row, filasActuales){
+  const panel = document.getElementById('cola-panel'); if(!panel) return;
+  const idx = filasActuales.findIndex(r=> r.llave===row.llave && r.vence===row.vence);
+  const puedeAnterior = idx>0;
+  const puedeSiguiente = idx>=0 && idx<filasActuales.length-1;
+  const estadoActual = row.estado_trabajo || 'pendiente';
+  const contactadoDisabled = row.sin_senal && !row.verificado_financiera;
+  panel.innerHTML =
+    '<button type="button" class="ficha-cerrar" onclick="cerrarFicha()">✕</button>'+
+    '<div class="ficha-nav">'+
+      '<button type="button" id="ficha-ant" '+(puedeAnterior?'':'disabled')+'>‹ Anterior</button>'+
+      '<button type="button" id="ficha-sig" '+(puedeSiguiente?'':'disabled')+'>Siguiente ›</button>'+
+    '</div>'+
+    '<div style="font-family:var(--pg-font-title);font-weight:800;font-size:15px;color:var(--pg-ink)">'+esc(row.cuenta_nombre||row.llave)+'</div>'+
+    '<div style="font-size:12px;color:var(--pg-muted);margin-top:2px">'+esc(row.agente||'—')+' · DOT '+esc(row.dot||'—')+'</div>'+
+    (row.otras_fechas ? '<div class="pg-limite" style="margin-top:8px">También tiene pólizas venciendo en '+esc(row.otras_fechas)+'.</div>' : '')+
+    '<div class="ficha-seccion"><h3>Verificación y contacto</h3>'+
+      '<div class="acciones">'+
+        '<button type="button" id="ficha-btn-jeff" class="'+(row.verificado_financiera?'activo':'')+'">Verificado con Jeff</button>'+
+        '<button type="button" id="ficha-btn-contactado" class="'+(row.contactado?'activo':'')+'" '+(contactadoDisabled?'disabled':'')+'>Contactado hoy</button>'+
+      '</div>'+
+      '<select id="ficha-sel-estado" style="margin-top:10px;font-family:var(--pg-font-body);font-size:13px;padding:7px 10px;border-radius:10px;border:1px solid var(--pg-line)">'+
+        ESTADOS_TRABAJO.map(e=>'<option value="'+e+'" '+(estadoActual===e?'selected':'')+'>'+e[0].toUpperCase()+e.slice(1)+'</option>').join('')+
+      '</select>'+
+    '</div>'+
+    '<div class="ficha-seccion"><h3>Pólizas del grupo</h3><div id="ficha-polizas"><div class="pg-skel" style="height:60px"></div></div></div>'+
+    '<div class="ficha-seccion"><h3>Historia de la cuenta</h3><div id="ficha-historia"><div class="pg-skel" style="height:60px"></div></div></div>'+
+    '<div class="ficha-seccion"><h3>Último movimiento</h3><div style="font-size:13px;color:var(--pg-ink)">'+(row.dias_sin_mov!=null ? 'Hace '+row.dias_sin_mov+' días en el BOS' : 'Sin dato')+'</div></div>'+
+    '<div class="ficha-seccion"><h3>Notas</h3><div id="notas_'+rowId(row)+'"><div class="pg-skel" style="height:40px"></div></div>'+
+      '<div class="pg-nota-input"><textarea id="nota-input-'+rowId(row)+'" placeholder="Agregar nota…"></textarea><button type="button" class="btn-guardar-nota">Guardar</button></div>'+
+    '</div>';
+
+  document.getElementById('ficha-ant').addEventListener('click', ()=> navegarFicha(-1));
+  document.getElementById('ficha-sig').addEventListener('click', ()=> navegarFicha(1));
+  document.getElementById('ficha-btn-jeff').addEventListener('click', async ()=>{
+    await onChkJeff(row, !row.verificado_financiera, { checked: !row.verificado_financiera });
+    const trChk = document.querySelector('tr[data-row-id="'+rowId(row)+'"] .chk-jeff'); if(trChk) trChk.checked = row.verificado_financiera;
+    const trCont = document.querySelector('tr[data-row-id="'+rowId(row)+'"] .chk-contactado'); if(trCont) trCont.disabled = row.sin_senal && !row.verificado_financiera;
+    pintarFicha(row, filasActuales);
+  });
+  document.getElementById('ficha-btn-contactado').addEventListener('click', async (e)=>{
+    if(e.currentTarget.disabled) return;
+    await onChkContactado(row, !row.contactado, { checked: !row.contactado });
+    const trChk = document.querySelector('tr[data-row-id="'+rowId(row)+'"] .chk-contactado'); if(trChk) trChk.checked = row.contactado;
+    pintarFicha(row, filasActuales);
+  });
+  const selEstado = document.getElementById('ficha-sel-estado');
+  let prevValue = selEstado.value;
+  selEstado.addEventListener('change', async ()=>{
+    await onSelEstado(row, selEstado.value, selEstado, prevValue);
+    prevValue = selEstado.value;
+    const trSel = document.querySelector('tr[data-row-id="'+rowId(row)+'"] .sel-estado'); if(trSel) trSel.value = row.estado_trabajo;
+  });
+  const btnGuardar = panel.querySelector('.btn-guardar-nota');
   if(btnGuardar) btnGuardar.addEventListener('click', ()=> guardarNotaFila(row));
   cargarNotasFila(row);
+  cargarPolizasFicha(row);
+  cargarHistoriaFicha(row);
 }
+
+async function cargarPolizasFicha(row){
+  const el = document.getElementById('ficha-polizas'); if(!el) return;
+  const esDot = /^\d+$/.test(row.llave);
+  if(!esDot){ el.innerHTML = '<div class="pg-limite">Cuenta sin DOT — detalle de pólizas no disponible.</div>'; return; }
+  const { data, error } = await SB.from('bos_registros').select('policy_num,coverage,mga,carrier,policy_premium,effective_date')
+    .eq('dot', row.llave).eq('categoria','venta').order('effective_date',{ascending:true});
+  if(error || !data || !data.length){ el.innerHTML = '<div class="pg-limite">Sin pólizas encontradas.</div>'; return; }
+  el.innerHTML = '<div class="tablewrap"><table class="pg-table"><thead><tr><th>Número</th><th>Cobertura</th><th>MGA</th><th>Carrier</th><th class="num">Premium</th><th>Vigente desde</th></tr></thead><tbody>'+
+    data.map(p=>'<tr><td>'+esc(p.policy_num||'—')+'</td><td>'+esc(p.coverage||'—')+'</td><td>'+esc(p.mga||'—')+'</td><td>'+esc(p.carrier||'—')+'</td><td class="num">'+fmtUSD(p.policy_premium)+'</td><td>'+fmtFecha(p.effective_date)+'</td></tr>').join('')+
+    '</tbody></table></div>';
+}
+async function cargarHistoriaFicha(row){
+  const el = document.getElementById('ficha-historia'); if(!el) return;
+  const { data, error } = await SB.from('v_renov_historia_cuenta_visible').select('*').eq('llave', row.llave).order('vence',{ascending:false});
+  if(error || !data || !data.length){ el.innerHTML = '<div class="pg-limite">Sin historia previa.</div>'; return; }
+  el.innerHTML = '<div class="tablewrap"><table class="pg-table"><thead><tr><th>Cobertura</th><th>Agente</th><th class="num">Vendido</th><th>Vence</th><th>Estado</th><th>¿Renovó?</th></tr></thead><tbody>'+
+    data.map(h=>'<tr><td>'+esc(h.coverage||'—')+'</td><td>'+esc(h.agente||'—')+'</td><td class="num">'+fmtUSD(h.premium_vendido)+'</td><td>'+fmtFecha(h.vence)+'</td><td>'+esc(etiqueta(h.estado_poliza))+'</td><td>'+(h.renovada? 'Sí — '+esc(h.agente_renovacion||'—') : 'No')+'</td></tr>').join('')+
+    '</tbody></table></div>';
+}
+
 async function cargarNotasFila(row){
   const { data } = await SB.from('renov_notas').select('*').eq('llave', row.llave).order('created_at',{ascending:false});
   const notas = data || [];
@@ -931,13 +1136,36 @@ async function cargarMuro(){
   if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
   const futuros = data || [];
   if(!futuros.length){ el.innerHTML = '<div class="pg-limite">Sin meses futuros con datos.</div>'; return; }
-  el.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:12px">'+futuros.map(r=>
-    '<div style="flex:1;min-width:130px;text-align:center;background:var(--pg-bg);border:1px solid var(--pg-line);border-radius:14px;padding:16px 10px">'+
-      '<div style="font-size:11.5px;color:var(--pg-muted);text-transform:uppercase;font-weight:700">'+esc(fmtMes(r.mes))+'</div>'+
-      '<div style="font-family:var(--pg-font-num);font-size:19px;font-weight:700;color:var(--pg-ink);margin-top:4px">'+fmtUSD(r.premium_vencido)+'</div>'+
-      '<div style="font-size:11px;color:var(--pg-muted)">'+r.vencieron+' cuentas</div>'+
-    '</div>').join('')+
+  el.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:14px">'+futuros.map(r=>{
+    const id = 'muro-'+String(r.mes).replace(/[^a-zA-Z0-9]/g,'_');
+    return '<div class="muro-tile" data-muro-id="'+id+'" data-mes="'+esc(r.mes)+'">'+
+      '<div style="font-size:12px;color:var(--pg-muted);text-transform:uppercase;font-weight:700">'+esc(fmtMes(r.mes))+'</div>'+
+      '<div style="font-family:var(--pg-font-num);font-size:28px;font-weight:700;color:var(--pg-ink);margin-top:6px">'+fmtUSD(r.premium_vencido)+'</div>'+
+      '<div style="font-size:12px;color:var(--pg-muted)">'+r.vencieron+' cuentas</div>'+
+      '<div class="muro-tile-detalle" id="'+id+'" style="display:none"></div>'+
+    '</div>';
+  }).join('')+
   '</div>';
+  el.querySelectorAll('.muro-tile').forEach(tile=>{
+    tile.addEventListener('click', ()=> toggleMuroMes(tile.dataset.mes, tile.dataset.muroId));
+  });
+}
+async function toggleMuroMes(mes, id){
+  const det = document.getElementById(id); if(!det) return;
+  const abrir = det.style.display === 'none';
+  det.style.display = abrir ? 'block' : 'none';
+  if(!abrir || det.dataset.cargado) return;
+  det.dataset.cargado = '1';
+  det.innerHTML = '<div class="pg-skel" style="height:60px"></div>';
+  const { data, error } = await fetchPaginado(()=> SB.from('v_renov_grupo_visible').select('cuenta_nombre,agente,premium_activo')
+    .eq('mes_vence', mes).eq('area','KAREN').order('premium_activo',{ascending:false}));
+  if(error){ det.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
+  const filas = data || [];
+  det.innerHTML = filas.length
+    ? '<div class="tablewrap" style="text-align:left"><table class="pg-table"><thead><tr><th>Cuenta</th><th>Agente</th><th class="num">Premium</th></tr></thead><tbody>'+
+        filas.map(r=>'<tr><td>'+esc(r.cuenta_nombre||'—')+'</td><td>'+esc(r.agente||'—')+'</td><td class="num">'+fmtUSD(r.premium_activo)+'</td></tr>').join('')+
+      '</tbody></table></div>'
+    : '<div class="pg-limite">Sin cuentas.</div>';
 }
 
 /* =====================================================================
@@ -968,8 +1196,7 @@ async function cargarBolsa(){
       '<div style="font-family:var(--pg-font-num);font-size:34px;font-weight:700;color:var(--pg-ink)">'+fmtUSD2(ultimo.bolsa_persona)+'</div>'+
       '<div style="font-size:12px;color:var(--pg-muted);margin-top:2px">'+esc(fmtMes(ultimo.mes))+(ultimo.cuenta_en_firme?'':' · línea base')+'</div>'+
     '</div>'+
-    '<div class="chart-wrap" style="height:200px"><canvas id="chBolsa"></canvas></div>'+
-    '<div class="pg-limite">Ajuste del estándar pendiente de decisión — fórmula actual sin cambios (25% área / 75% agencia).</div>';
+    '<div class="chart-wrap" style="height:200px"><canvas id="chBolsa"></canvas></div>';
 
   const labels = rows.map(r=>fmtMes(r.mes));
   pintarChart('chBolsa', {
@@ -1099,7 +1326,7 @@ function pintarBonos(bolsaRows, ingresoRows, escaleraRows, participacionRows, ta
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=18; // El muro y Bonos migran a v_indice_renovaciones_v3_visible (antes daban % distinto al de la casilla 01 y Vendedores); bloque de cartera de la casilla 01 pasa de v_cartera_activa_visible a v_cartera_estado_v3_visible (4 estados: ACTIVA, ACTIVA SIN SENAL, RENOVADA, VENCIDA), filtrado explícito area=KAREN. Ninguna vista vieja se borra.
+var PGV_VERSION=20; // Alerta de cuenta grande: agrega columna Cuenta (cuenta_nombre de v_alerta_cuenta_grande_visible) y punto de senal ambar/verde segun sin_senal, igual que en Mi cola.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

@@ -671,8 +671,11 @@ function pintarAlertasArea(rojo, rojoCuentas, vende, grande){
     : '<div class="pg-limite">Nadie en alerta.</div>');
 
   const cuerpoGrande = (grande.length
-    ? '<div class="tablewrap"><table class="pg-table"><thead><tr><th>DOT</th><th>Agente</th><th class="num">Premium</th><th class="num">Días</th></tr></thead><tbody>'+
-      grande.map(g=>'<tr><td>'+esc(g.llave)+'</td><td>'+esc(g.dueno_ultima_venta||'—')+'</td><td class="num">'+fmtUSD(g.premium_activo)+'</td><td class="num">'+g.dias_restantes+'</td></tr>').join('')+
+    ? '<div class="tablewrap"><table class="pg-table"><thead><tr><th>DOT</th><th>Cuenta</th><th>Agente</th><th class="num">Premium</th><th class="num">Días</th></tr></thead><tbody>'+
+      grande.map(g=>{
+        const colorSenal = g.sin_senal ? 'var(--pg-warn)' : 'var(--pg-pos)';
+        return '<tr><td>'+esc(g.dot||g.llave)+'</td><td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+colorSenal+';margin-right:6px"></span>'+esc(g.cuenta_nombre||g.llave)+'</td><td>'+esc(g.dueno_ultima_venta||'—')+'</td><td class="num">'+fmtUSD(g.premium_activo)+'</td><td class="num">'+g.dias_restantes+'</td></tr>';
+      }).join('')+
       '</tbody></table></div>'
     : '<div class="pg-limite">Sin cuentas grandes en ese rango.</div>');
 
@@ -1323,7 +1326,7 @@ function pintarBonos(bolsaRows, ingresoRows, escaleraRows, participacionRows, ta
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=19; // Montaje final: casilla 01 pasa a ser Mi cola (v_renov_cola_visible) con ficha lateral; el indice+alertas+estados se mudan a la casilla 06 El area; diccionario de etiquetas con tildes; El muro clicable; nota de decision pendiente quitada de La bolsa.
+var PGV_VERSION=20; // Alerta de cuenta grande: agrega columna Cuenta (cuenta_nombre de v_alerta_cuenta_grande_visible) y punto de senal ambar/verde segun sin_senal, igual que en Mi cola.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

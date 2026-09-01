@@ -525,6 +525,14 @@ async function cargarArea(){
     document.getElementById('area-indice-card').innerHTML = '<div class="pg-limite" style="color:var(--pg-muted)">Sin datos de dirección disponibles para tu usuario.</div>';
     return;
   }
+  if(MES_RENOV_ACTUAL === null){
+    /* el mes "actual" lo decide el servidor (estado_mes='en_curso'), no el reloj del
+       navegador: cerca de medianoche UTC, un navegador en una zona horaria más
+       atrasada (ej. Bogotá) todavía marca el mes anterior y desincroniza la lista
+       del índice. */
+    const filaActual = idxR.data.find(r=>r.estado_mes==='en_curso');
+    MES_RENOV_ACTUAL = filaActual ? filaActual.mes : mesActualISO();
+  }
   pintarIndiceArea(idxR.data);
   pintarAlertasArea(rojoR.data, rojoCuentasR.data||[], vendeR.data||[], grandeR.data||[]);
   pintarCarteraArea(carteraR.data||[]);
@@ -650,7 +658,7 @@ function pintarCarteraArea(cartera){
 }
 
 /* ---- renovaciones del mes: v_renov_grupo_visible + renov_trabajo, navegación de mes ---- */
-let MES_RENOV_ACTUAL = mesActualISO();
+let MES_RENOV_ACTUAL = null;
 let RENOV_FILAS = [];
 const ESTADOS_TRABAJO = ['pendiente','contactado','cotizando','renovado','perdido','retirado'];
 window.renovMesCambiar = function(delta){
@@ -661,7 +669,7 @@ function rowId(r){ return 'rf_'+String(r.llave+'|'+r.vence).replace(/[^a-zA-Z0-9
 
 async function cargarRenovacionesDelMes(mesIso){
   const { data, error } = await fetchPaginado(()=> SB.from('v_renov_grupo_visible').select('*')
-    .eq('mes_vence', mesIso).order('premium_activo',{ascending:false}).order('llave',{ascending:true}));
+    .eq('mes_vence', mesIso).eq('area','KAREN').order('premium_activo',{ascending:false}).order('llave',{ascending:true}));
   const contEl = document.getElementById('area-renovaciones-mes');
   if(error){ contEl.innerHTML = '<div class="pg-card"><div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div></div>'; return; }
   RENOV_FILAS = data || [];
@@ -1088,7 +1096,7 @@ function pintarBonos(bolsaRows, ingresoRows, escaleraRows, participacionRows, ta
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=16; // Ajustes finos v3: paginacion por rangos (v_cartera_activa_visible, v_renov_grupo_visible) para no cortar en 1000 filas; pie de casilla 01 con hora real del dato (v_renov_estado_dato)
+var PGV_VERSION=17; // Hotfix Renovaciones del mes: mes actual se toma del servidor (estado_mes='en_curso'), no del reloj del navegador; filtro explicito area='KAREN' en v_renov_grupo_visible
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

@@ -96,6 +96,17 @@ body { margin: 0; background: var(--pg-bg); }
 .pg-table td.num { font-family: var(--pg-font-num); }
 .tablewrap { overflow-x:auto; }
 .cq-motivos { display:flex; gap:4px; flex-wrap:wrap; }
+
+/* ---- roster de vendedores (financiera/direccion) ---- */
+.roster-tabla select { font-family:var(--pg-font-body); font-size:12.5px; padding:6px 10px; border-radius:8px; border:1px solid var(--pg-line); background:#fff; color:var(--pg-ink); }
+tr.roster-retirado td { color:var(--pg-muted); }
+.roster-err { color:var(--pg-neg); font-size:11px; margin-top:3px; }
+.roster-btn { font-family:var(--pg-font-body); font-weight:700; font-size:12.5px; border-radius:999px; padding:9px 16px; border:1px solid var(--pg-mint); background:#fff; color:var(--pg-mint-deep); cursor:pointer; }
+.roster-btn:hover { background:#E3F4EF; }
+.roster-agregar-caja { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:12px; padding:14px; background:var(--pg-bg); border:1px solid var(--pg-line); border-radius:12px; }
+.roster-agregar-caja input[type=text] { font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--pg-line); min-width:240px; flex:1; }
+.roster-agregar-caja select { font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--pg-line); background:#fff; }
+.roster-agregar-caja .roster-err { width:100%; margin-top:0; }
 </style>
 </head>
 <body>
@@ -187,6 +198,19 @@ body { margin: 0; background: var(--pg-bg); }
           </table>
         </div>
         <div class="pg-limite">Esto no se edita aquí: se corrige en el Google Sheet del BOS y la fila sale sola de esta lista.</div>
+      </div>
+      <div class="pg-card" id="roster-card" style="display:none">
+        <h2>Roster de vendedores</h2>
+        <div class="pg-warn-box" style="margin-bottom:14px"><b>El nombre debe quedar escrito EXACTAMENTE igual que en la columna SELLER del BOS.</b> Si no coincide, las ventas de esa persona caen a cuarentena.</div>
+        <div class="cq-resumen" id="roster-resumen">Cargando…</div>
+        <div class="tablewrap">
+          <table class="pg-table roster-tabla" id="roster-tabla">
+            <thead><tr><th>Nombre</th><th>Estado</th><th>Área</th><th>Notas</th></tr></thead>
+            <tbody id="roster-tbody"><tr><td colspan="4"><div class="pg-skel" style="height:80px"></div></td></tr></tbody>
+          </table>
+        </div>
+        <button type="button" class="roster-btn" id="roster-btn-agregar" style="margin-top:14px">+ Agregar vendedor</button>
+        <div id="roster-form-agregar" style="display:none"></div>
       </div>
     </div>
     <div class="pg-footnote">Datos en vivo · actualizado a las <span id="pg-foot-stamp">—</span></div>
@@ -284,7 +308,10 @@ document.getElementById("pg-login-btn").addEventListener("click", async () => {
   if (error) { msgEl.textContent = "No pudimos iniciar sesión: " + error.message; return; }
   await mostrarApp();
 });
-document.getElementById("pg-btn-refresh").addEventListener("click", cargarCuarentena);
+document.getElementById("pg-btn-refresh").addEventListener("click", async ()=>{
+  await cargarCuarentena();
+  await cargarRosterSiCorresponde();
+});
 document.getElementById("pg-btn-logout").addEventListener("click", async () => {
   await SB.auth.signOut();
   location.reload();
@@ -314,6 +341,7 @@ async function verificarAccesoYcargar(){
   accesoEl.innerHTML = "";
   shellEl.style.display = "block";
   await cargarCuarentena();
+  await cargarRosterSiCorresponde();
 }
 
 /* =====================================================================
@@ -448,7 +476,138 @@ function filaCuarentena(r){
 }
 
 /* =====================================================================
-   4) ARRANQUE
+   4) ROSTER DE VENDEDORES — solo director/socio/financiera. La pantalla
+   entera ya exige puede_ver('cuarentena'), pero ese candado tambien deja
+   pasar areas de venta (renovaciones/retencion/fam) que pueden LEER
+   cuarentena sin deber ver ni tocar el roster. El filtro real de este
+   bloque es el rol en gabi_accesos — mismo dato que usan las policies de
+   RLS de public.roster_agentes (roster_lee_area_y_direccion /
+   roster_escribe_direccion), leido aqui vía la propia fila del usuario
+   (RLS "lee_su_acceso": auth.uid() = user_id).
+   ===================================================================== */
+let ROSTER_FILAS = [];
+
+async function cargarRosterSiCorresponde(){
+  const card = document.getElementById('roster-card');
+  let autorizado = false;
+  try{
+    const hoy = new Date().toISOString().slice(0,10);
+    const { data, error } = await SB.from('gabi_accesos').select('rol,activo,vigencia_desde').eq('activo', true).lte('vigencia_desde', hoy);
+    if(error) throw error;
+    autorizado = (data||[]).some(r=> ['director','socio','financiera'].includes(r.rol));
+  }catch(e){ autorizado = false; }
+  if(!autorizado){ card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  const btn = document.getElementById('roster-btn-agregar');
+  if(!btn.dataset.cableado){ btn.dataset.cableado = '1'; btn.addEventListener('click', toggleFormAgregarRoster); }
+  await cargarRoster();
+}
+
+async function cargarRoster(){
+  const tbody = document.getElementById('roster-tbody');
+  const { data, error } = await SB.from('roster_agentes').select('*').order('nombre',{ascending:true});
+  if(error){ tbody.innerHTML = '<tr><td colspan="4"><div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div></td></tr>'; return; }
+  ROSTER_FILAS = data || [];
+  repintarRoster();
+}
+
+function rosterSlug(nombre){ return 'rr_' + String(nombre).replace(/[^a-zA-Z0-9]/g,'_'); }
+
+function repintarRoster(){
+  const activos = ROSTER_FILAS.filter(r=>r.estado==='ACTIVO').slice().sort((a,b)=> a.nombre.localeCompare(b.nombre,'es'));
+  const retirados = ROSTER_FILAS.filter(r=>r.estado!=='ACTIVO').slice().sort((a,b)=> a.nombre.localeCompare(b.nombre,'es'));
+  const ordenados = activos.concat(retirados);
+  document.getElementById('roster-tbody').innerHTML = ordenados.length
+    ? ordenados.map(filaRoster).join('')
+    : '<tr><td colspan="4"><div class="pg-limite">Sin vendedores en el roster.</div></td></tr>';
+  document.getElementById('roster-resumen').innerHTML = '<b>'+activos.length+'</b> activo'+(activos.length===1?'':'s')+' · <b>'+retirados.length+'</b> retirado'+(retirados.length===1?'':'s');
+  cablearFilasRoster();
+}
+
+function filaRoster(r){
+  const retirado = r.estado !== 'ACTIVO';
+  const slug = rosterSlug(r.nombre);
+  return '<tr class="'+(retirado?'roster-retirado':'')+'" data-nombre="'+esc(r.nombre)+'">'+
+    '<td>'+esc(r.nombre)+'<div class="roster-err" id="err_'+slug+'"></div></td>'+
+    '<td><select class="roster-sel-estado" data-nombre="'+esc(r.nombre)+'">'+
+      '<option value="ACTIVO"'+(r.estado==='ACTIVO'?' selected':'')+'>Activo</option>'+
+      '<option value="RETIRADO"'+(r.estado==='RETIRADO'?' selected':'')+'>Retirado</option>'+
+    '</select></td>'+
+    '<td><select class="roster-sel-area" data-nombre="'+esc(r.nombre)+'">'+
+      '<option value="KAREN"'+(r.area_renovaciones==='KAREN'?' selected':'')+'>Karen</option>'+
+      '<option value="RETENCION"'+(r.area_renovaciones==='RETENCION'?' selected':'')+'>Retención</option>'+
+    '</select></td>'+
+    '<td>'+esc(r.notas||'—')+'</td>'+
+  '</tr>';
+}
+
+function cablearFilasRoster(){
+  document.querySelectorAll('#roster-tbody .roster-sel-estado').forEach(sel=>{
+    let prev = sel.value;
+    sel.addEventListener('change', async ()=>{
+      const ok = await actualizarRoster(sel.dataset.nombre, { estado: sel.value });
+      if(ok) prev = sel.value; else sel.value = prev;
+    });
+  });
+  document.querySelectorAll('#roster-tbody .roster-sel-area').forEach(sel=>{
+    let prev = sel.value;
+    sel.addEventListener('change', async ()=>{
+      const ok = await actualizarRoster(sel.dataset.nombre, { area_renovaciones: sel.value });
+      if(ok) prev = sel.value; else sel.value = prev;
+    });
+  });
+}
+
+async function actualizarRoster(nombre, patch){
+  const errEl = document.getElementById('err_'+rosterSlug(nombre));
+  if(errEl) errEl.textContent = '';
+  const { error } = await SB.from('roster_agentes').update(Object.assign({ updated_at: new Date().toISOString() }, patch)).eq('nombre', nombre);
+  if(error){
+    if(errEl) errEl.textContent = 'No se pudo guardar: ' + error.message;
+    return false;
+  }
+  const fila = ROSTER_FILAS.find(r=>r.nombre===nombre);
+  if(fila) Object.assign(fila, patch);
+  repintarRoster();
+  return true;
+}
+
+function toggleFormAgregarRoster(){
+  const caja = document.getElementById('roster-form-agregar');
+  const abrir = caja.style.display === 'none';
+  if(abrir){
+    caja.innerHTML =
+      '<div class="roster-agregar-caja">'+
+        '<input type="text" id="roster-nuevo-nombre" placeholder="Nombre exacto como en SELLER del BOS">'+
+        '<select id="roster-nuevo-estado"><option value="ACTIVO" selected>Activo</option><option value="RETIRADO">Retirado</option></select>'+
+        '<select id="roster-nuevo-area"><option value="KAREN" selected>Karen</option><option value="RETENCION">Retención</option></select>'+
+        '<button type="button" class="roster-btn" id="roster-btn-guardar-nuevo">Guardar</button>'+
+        '<div class="roster-err" id="roster-nuevo-err"></div>'+
+      '</div>';
+    document.getElementById('roster-btn-guardar-nuevo').addEventListener('click', guardarNuevoRoster);
+  }
+  caja.style.display = abrir ? 'block' : 'none';
+}
+
+async function guardarNuevoRoster(){
+  const nombre = (document.getElementById('roster-nuevo-nombre').value||'').trim();
+  const estado = document.getElementById('roster-nuevo-estado').value;
+  const area = document.getElementById('roster-nuevo-area').value;
+  const errEl = document.getElementById('roster-nuevo-err');
+  errEl.textContent = '';
+  if(!nombre){ errEl.textContent = 'Escribe el nombre primero.'; return; }
+  if(ROSTER_FILAS.some(r=> r.nombre === nombre)){
+    errEl.textContent = 'Ese nombre ya existe en el roster.';
+    return;
+  }
+  const { error } = await SB.from('roster_agentes').insert({ nombre, estado, area_renovaciones: area, updated_at: new Date().toISOString() });
+  if(error){ errEl.textContent = 'No se pudo agregar: ' + error.message; return; }
+  document.getElementById('roster-form-agregar').style.display = 'none';
+  await cargarRoster();
+}
+
+/* =====================================================================
+   5) ARRANQUE
    ===================================================================== */
 (async function init() {
   if (_IS_RECOVERY) { mostrarSetPassword(); return; }
@@ -462,7 +621,7 @@ function filaCuarentena(r){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="cuarentena.html";
-var PGV_VERSION=1; // Pantalla nueva: cuarentena BOS para financiera y dirección
+var PGV_VERSION=2; // Se agrega el bloque "Roster de vendedores" (public.roster_agentes): lista ACTIVO/RETIRADO ordenada, selectores de estado y area (KAREN/RETENCION) por fila con guardado inline, formulario para agregar, y advertencia de que el nombre debe calzar exacto con SELLER del BOS. Visible solo para rol director/socio/financiera (gabi_accesos), aunque areas de venta puedan seguir viendo la tabla de cuarentena.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

@@ -227,7 +227,7 @@ body { margin: 0; background: var(--pg-bg); }
       <aside class="pg-side2" id="pg-side2"></aside>
       <div class="pg-tabmain" id="pg-tabmain"></div>
     </div>
-    <div class="pg-footnote">Datos en vivo, actualizado a las <span id="pg-foot-stamp">—</span>.</div>
+    <div class="pg-footnote">Datos en vivo · actualizado a las <span id="pg-foot-stamp">—</span></div>
   </main>
 </div>
 
@@ -373,7 +373,7 @@ async function verificarAccesoYcargar(){
     return;
   }
   if(!puede){
-    accesoEl.innerHTML = '<div class="pg-warn-box"><b>Tu usuario todavía no tiene el paquete "renovaciones" habilitado.</b><br>Pídele a Andrés que te lo active desde el Control Maestro.</div>';
+    accesoEl.innerHTML = '<div class="pg-warn-box"><b>Todavía no tienes acceso a esta pantalla.</b><br>Pídele a Andrés que te lo active.</div>';
     shellEl.style.display = "none";
     return;
   }
@@ -960,7 +960,7 @@ function pintarBonos(bolsaRows, ingresoRows, escaleraRows, participacionRows, ta
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=13; // Fix regla 3: "Renovaciones del mes" y "Cuenta grande a 15 días" filtran area='KAREN' (antes mezclaban cartera suelta de RETENCION) — verificado exacto contra septiembre 2026: 22 cuentas / $427,147, 7 agentes activos
+var PGV_VERSION=14; // Pie de página en lenguaje humano: "Datos en vivo · actualizado a las HH:MM", sin IDs ni nombres de paquetes/roles; mensaje de acceso denegado simplificado
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

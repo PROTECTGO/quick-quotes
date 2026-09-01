@@ -848,16 +848,13 @@ async function cargarCola(){
   const lista = document.getElementById('cola-lista');
   const [colaR, idxR] = await Promise.all([
     fetchPaginado(()=> SB.from('v_renov_cola_visible').select('*').eq('area','KAREN')),
-    SB.from('v_indice_renovaciones_v3_visible').select('mes,vencieron,renovaron,pct_renovado,premium_vencido').eq('estado_mes','en_curso').maybeSingle(),
+    SB.from('v_indice_renovaciones_v3_visible').select('mes,vencieron,renovaron,pct_renovado,premium_vencido,premium_con_senal,premium_por_confirmar').eq('estado_mes','en_curso').maybeSingle(),
   ]);
   MES_EN_CURSO = idxR.data ? idxR.data.mes : null;
   MES_VENCIERON = idxR.data ? Number(idxR.data.vencieron||0) : 0;
   if(colaR.error){ lista.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(colaR.error.message)+'</div>'; pintarCabeceraCola(idxR.data, 0, 0); return; }
   COLA_FILAS = (colaR.data||[]).slice().sort((a,b)=> (Number(a.bloque)-Number(b.bloque)) || (Number(b.premium_activo||0)-Number(a.premium_activo||0)));
-  const filasMes = MES_EN_CURSO ? COLA_FILAS.filter(r=> String(r.mes_vence)===String(MES_EN_CURSO)) : [];
-  const premSenalMes = filasMes.reduce((s,r)=>s+Number(r.premium_con_senal||0),0);
-  const premConfirmarMes = filasMes.reduce((s,r)=>s+Number(r.premium_por_confirmar||0),0);
-  pintarCabeceraCola(idxR.data, premSenalMes, premConfirmarMes);
+  pintarCabeceraCola(idxR.data, Number(idxR.data?.premium_con_senal||0), Number(idxR.data?.premium_por_confirmar||0));
   pintarChipsCola();
   cablearBuscadorCola();
   repintarCola();
@@ -901,9 +898,19 @@ function cablearBuscadorCola(){
   inp.value = COLA_BUSQUEDA;
   inp.oninput = ()=>{ COLA_BUSQUEDA = inp.value; repintarCola(); };
 }
+/* lunes 00:00 de la semana en curso en hora de Medellin (UTC-5 fijo, sin horario
+   de verano) — el domingo cuenta como fin de esa semana, no como inicio de la
+   siguiente. Devuelve el instante UTC equivalente en ISO. */
+function inicioSemanaMedellin(){
+  const bogota = new Date(Date.now() - 5*60*60*1000);
+  const dow = bogota.getUTCDay(); // 0=domingo … 6=sabado, en hora de Bogota
+  const diasDesdeLunes = (dow + 6) % 7;
+  const lunesBogota = Date.UTC(bogota.getUTCFullYear(), bogota.getUTCMonth(), bogota.getUTCDate() - diasDesdeLunes, 0, 0, 0);
+  return new Date(lunesBogota + 5*60*60*1000).toISOString();
+}
 async function cargarContadorSemana(){
   const el = document.getElementById('cola-semana'); if(!el) return;
-  const desde = new Date(Date.now() - 7*24*60*60*1000).toISOString();
+  const desde = inicioSemanaMedellin();
   const { data } = await SB.from('renov_trabajo').select('llave,vence').gte('trabajada_at', desde);
   const claves = new Set(COLA_FILAS.map(r=> r.llave+'|'+r.vence));
   const n = (data||[]).filter(t=> claves.has(t.llave+'|'+t.vence)).length;
@@ -1652,7 +1659,7 @@ function pintarBonos(bolsaRows, ingresoRows, escaleraRows, participacionRows, ta
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=22; // Punto medio de vuelta al mockup de Andres: tarjetas planas (radio 14, una sola sombra, sin franja arriba, sin lavados de fondo), cabecera del mes con anillo de un solo color y marca de meta como linea radial, chips reordenados (Pendientes por defecto) con el avance semanal dentro de la fila, filas de la cola de 54px con borde izquierdo por urgencia y checkboxes propios, Vendedores con grafica heroe y dos graficas secundarias hechas en SVG puro (conteos de cuentas, no premium; renovado en indigo) en vez de Chart.js.
+var PGV_VERSION=23; // Dos cambios quirurgicos sobre v22: (1) la cabecera del mes lee premium_con_senal/premium_por_confirmar directo de v_indice_renovaciones_v3_visible en vez de sumarlos de la cola (la cola excluye cuentas ya renovadas, asi que la suma quedaba corta); (2) el contador "trabajadas esta semana" pasa de una ventana rodante de 7 dias a la semana calendario (lunes 00:00 hora de Medellin, domingo como cierre).
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

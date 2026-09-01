@@ -246,6 +246,32 @@ const MESES_CORTOS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct
 function mesCorto(s){ if(!s) return '—'; try{ const d=new Date(String(s)+'T12:00:00'); return MESES_CORTOS[d.getMonth()]; }catch(e){ return String(s); } }
 function mesActualISO(){ const hoy=new Date(); return hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-01'; }
 function sumarMeses(iso, n){ const d=new Date(iso+'T12:00:00'); d.setMonth(d.getMonth()+n); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; }
+function fmtHora(s){
+  if(!s) return '—';
+  try{
+    let iso = String(s).trim().replace(' ', 'T').replace(/([+-]\d{2})$/, '$1:00');
+    const d = new Date(iso);
+    if(isNaN(d.getTime())) return '—';
+    return d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){ return '—'; }
+}
+
+/* PostgREST corta en 1000 filas por defecto (el .limit() del cliente no lo sube).
+   Pagina por rangos de 1000 hasta que un bloque venga incompleto. queryFactory()
+   debe devolver un builder NUEVO en cada llamada (no reusar uno ya ejecutado). */
+async function fetchPaginado(queryFactory, batchSize){
+  batchSize = batchSize || 1000;
+  let rows = [], offset = 0;
+  while(true){
+    const { data, error } = await queryFactory().range(offset, offset + batchSize - 1);
+    if(error) return { data: null, error };
+    const batch = data || [];
+    rows = rows.concat(batch);
+    if(batch.length < batchSize) break;
+    offset += batchSize;
+  }
+  return { data: rows, error: null };
+}
 
 /* charts vivos — se destruyen antes de redibujar (el DOM ya no se reconstruye
    en cada "Actualizar", ni al abrir/cerrar bloques plegables). */
@@ -433,6 +459,7 @@ function pintarEsqueletoCompleto(){
       <div id="area-alertas"></div>
       <div id="area-cartera"></div>
       <div id="area-renovaciones-mes"></div>
+      <div id="area-estado-dato" style="font-size:11.5px;color:var(--pg-muted);margin-top:10px"></div>
     </section>
 
     <section class="pg-tabsection" id="tab-vendedores">
@@ -492,7 +519,7 @@ async function cargarArea(){
     SB.from('v_alerta_mes_rojo_cuentas_visible').select('*'),
     SB.from('v_alerta_vende_no_renueva_visible').select('*').order('premium_perdido',{ascending:false}),
     SB.from('v_alerta_cuenta_grande_visible').select('*').order('premium_activo',{ascending:false}),
-    SB.from('v_cartera_activa_visible').select('llave,area,estado,subestado,premium_activo,dueno_ultima_venta').limit(5000),
+    fetchPaginado(()=> SB.from('v_cartera_activa_visible').select('llave,area,estado,subestado,premium_activo,dueno_ultima_venta').order('llave',{ascending:true})),
   ]);
   if(idxR.error || !idxR.data || !idxR.data.length){
     document.getElementById('area-indice-card').innerHTML = '<div class="pg-limite" style="color:var(--pg-muted)">Sin datos de dirección disponibles para tu usuario.</div>';
@@ -502,6 +529,17 @@ async function cargarArea(){
   pintarAlertasArea(rojoR.data, rojoCuentasR.data||[], vendeR.data||[], grandeR.data||[]);
   pintarCarteraArea(carteraR.data||[]);
   await cargarRenovacionesDelMes(MES_RENOV_ACTUAL);
+  cargarEstadoDato();
+}
+
+/* ---- pie de casilla 01: hora real del dato (foto del motor + BOS), no la hora del reloj ---- */
+async function cargarEstadoDato(){
+  const el = document.getElementById('area-estado-dato'); if(!el) return;
+  const { data, error } = await SB.from('v_renov_estado_dato').select('*').maybeSingle();
+  if(error || !data){ el.innerHTML = ''; return; }
+  const rojo = data.semaforo === 'rojo';
+  el.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+(rojo?'var(--pg-neg)':'var(--pg-pos)')+';margin-right:6px"></span>'+
+    'Datos al minuto '+fmtHora(data.foto_at)+(rojo?' · revisar sincronización':'');
 }
 
 /* ---- índice del mes: pieza principal + onda rediseñada ---- */
@@ -622,8 +660,8 @@ window.renovMesCambiar = function(delta){
 function rowId(r){ return 'rf_'+String(r.llave+'|'+r.vence).replace(/[^a-zA-Z0-9]/g,'_'); }
 
 async function cargarRenovacionesDelMes(mesIso){
-  const { data, error } = await SB.from('v_renov_grupo_visible').select('*')
-    .eq('mes_vence', mesIso).order('premium_activo',{ascending:false});
+  const { data, error } = await fetchPaginado(()=> SB.from('v_renov_grupo_visible').select('*')
+    .eq('mes_vence', mesIso).order('premium_activo',{ascending:false}).order('llave',{ascending:true}));
   const contEl = document.getElementById('area-renovaciones-mes');
   if(error){ contEl.innerHTML = '<div class="pg-card"><div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div></div>'; return; }
   RENOV_FILAS = data || [];
@@ -1050,7 +1088,7 @@ function pintarBonos(bolsaRows, ingresoRows, escaleraRows, participacionRows, ta
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=15; // Karen v3: casilla 01 y 02 sobre el nuevo backend (v_renov_grupo_visible, v_indice_renovaciones_v3_visible, v_agente_resumen_ano_visible, v_agente_vendido_vs_renovado_visible, v_agente_por_renovar_visible, renov_trabajo)
+var PGV_VERSION=16; // Ajustes finos v3: paginacion por rangos (v_cartera_activa_visible, v_renov_grupo_visible) para no cortar en 1000 filas; pie de casilla 01 con hora real del dato (v_renov_estado_dato)
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

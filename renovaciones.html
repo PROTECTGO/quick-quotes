@@ -63,7 +63,8 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
    ============================================================ */
 .wrap{max-width:1300px;margin:0 auto;padding:0 28px 70px}
 
-.top{display:flex;align-items:center;justify-content:space-between;padding:20px 0 16px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:20px 0 16px 150px}
+@media (max-width:600px){ .top{padding-left:0} }
 .brand{display:flex;align-items:baseline;gap:10px}
 .gabi{font-family:var(--f-gabi);font-style:italic;font-weight:800;font-size:27px;color:var(--ink);letter-spacing:-.5px}
 .brand .sep{width:1px;height:20px;background:var(--line);margin:0 3px}
@@ -1070,7 +1071,7 @@ $('btn-imprimir-ano').addEventListener('click', ()=> imprimir('ano'));
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=24; // Rediseno completo sobre la maqueta karen_completa_A aprobada por Andres, replicada pixel a pixel: navegador de 6 casillas, cinta del año clicable con franja oscura del mes (premium de la vista, nunca sumado de la cola), Mi cola sobre v_renov_ano_visible (año completo, chip Urgente=en_ventana, meses cerrados si se pueden marcar), Vendedores con barras pareadas, El muro con marcas de promedio/estandar de la propia vista, La bolsa y Bonos (escalera bono_escalera) en SVG a mano, El area con los totales del año, y reporte imprimible de mes/año. Se cae el sistema anterior de Chart.js, anillos y ficha lateral con notas — no estan en la maqueta aprobada.
+var PGV_VERSION=25; // Fix visual: el boton flotante "Volver al portal" (fixed, top:14 left:14) quedaba encima del wordmark GABI de la barra superior. Se le da padding-left a .top para que la marca arranque despues del boton, con una media query que lo quita en pantallas angostas.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

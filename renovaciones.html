@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="ver-como-helper.js"></script>
 <style>
 :root {
@@ -29,56 +28,19 @@
   --pg-font-title: "Montserrat", "Arial Black", sans-serif;
   --pg-font-body:  "Inter", Arial, Helvetica, sans-serif;
   --pg-font-num:   "JetBrains Mono", "Courier New", monospace;
+
+  /* ---- v24: tokens de la maqueta aprobada, pixel exacto ---- */
+  --ink:#1B2D3A;--ink2:#152430;--mint:#2DBFA3;--mint-deep:#229A82;--mint-soft:#C4E8DF;
+  --bg:#F4F7FA;--card:#FFF;--line:#E7EDF2;--txt:#28323B;--muted:#6B7D89;
+  --renov:#229A82;--falta:#5B6BD6;--ambar:#D9A520;--rojo:#D5594F;
+  --f-tit:'Montserrat',system-ui,sans-serif;--f-body:'Inter',system-ui,sans-serif;
+  --f-num:'JetBrains Mono',ui-monospace,monospace;--f-gabi:'Fraunces',Georgia,serif;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--pg-bg); }
-.pg-app { background: var(--pg-bg); color: var(--pg-txt); font-family: var(--pg-font-body); min-height: 100vh; }
+body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(--txt); -webkit-font-smoothing: antialiased; }
+.pg-app { min-height: 100vh; }
 
-.pg-viewbar { background: var(--pg-ink-2); padding: 16px 30px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; position:sticky; top:0; z-index:20; }
-.pg-viewbar .pg-brand { display:flex; align-items:center; gap:10px; margin-right: 6px; }
-.pg-viewbar .pg-logo { width:34px; height:34px; border-radius:9px; background:var(--pg-mint); display:flex; align-items:center; justify-content:center; font-family:var(--pg-font-title); font-weight:800; color:var(--pg-ink-2); font-size:13px; }
-.pg-viewbar .pg-wordmark { font-family: var(--pg-font-gabi); font-style: italic; font-weight: 800; font-size: 21px; color: #fff; letter-spacing: -0.5px; }
-.pg-badge { background: var(--pg-mint); color: var(--pg-ink-2); border:1px solid var(--pg-mint); font-family: var(--pg-font-body); font-weight:700; font-size:12px; padding: 9px 15px; border-radius:999px; letter-spacing:.02em; }
-.pg-viewbar .pg-actions { margin-left:auto; display:flex; align-items:center; gap:10px; }
-.pg-btn { font-family: var(--pg-font-body); font-weight:700; font-size:12.5px; border-radius:999px; padding:9px 16px; border:1px solid rgba(255,255,255,.25); background:transparent; color:#dfe8ec; cursor:pointer; text-decoration:none; display:inline-block; }
-.pg-btn:hover { background: rgba(255,255,255,.08); }
-.pg-btn.primary { background: var(--pg-mint); color:var(--pg-ink-2); border-color:var(--pg-mint); }
-.pg-stamp { color:#8da0ad; font-size:11px; }
-
-.pg-main { padding: 30px 38px 60px; max-width: 1280px; margin: 0 auto; }
-.pg-top { margin-bottom: 22px; }
-.pg-top h1 { font-family: var(--pg-font-title); font-size: 26px; font-weight: 800; color: var(--pg-ink); margin: 0; }
-.pg-eyebrow { font-family: var(--pg-font-body); font-size: 11.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--pg-mint-deep); margin-bottom: 6px; }
-.pg-section-divider { display:flex; align-items:center; gap:14px; margin: 28px 0 16px; }
-.pg-section-divider .sd-line { flex:1; height:1px; background: var(--pg-line); }
-.pg-section-divider .sd-lbl { font-family: var(--pg-font-title); font-weight:800; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color: var(--pg-ink); background: var(--pg-bg); padding: 0 4px; }
-
-.pg-card { position:relative; background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 14px; padding: 24px 22px 22px; margin-bottom:18px; box-shadow: 0 6px 18px rgba(27,45,58,.045); overflow:hidden; transition: transform 180ms ease, box-shadow 180ms ease; }
-.pg-card::before { content:none; }
-.pg-card:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(27,45,58,.07); }
-.pg-card h2 { font-family: var(--pg-font-title); font-size: 16px; font-weight: 700; color: var(--pg-ink); margin: 0 0 4px; display:flex; align-items:center; gap:8px; position:relative; padding-bottom:7px; }
-.pg-card h2::after { content:''; position:absolute; left:0; bottom:0; width:28px; height:2px; border-radius:2px; background:var(--pg-mint-dark); }
-
-.pg-grid-3 { display:grid; grid-template-columns: repeat(3,1fr); gap: 16px; align-items:stretch; }
-.pg-grid-2 { display:grid; grid-template-columns: repeat(2,1fr); gap: 16px; align-items:stretch; }
-@media (max-width: 1080px) { .pg-grid-3, .pg-grid-2 { grid-template-columns: 1fr; } }
-
-.pg-pill { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space:nowrap;}
-.pg-pill.ok   { background: #E3F4EF; color: var(--pg-pos); }
-.pg-pill.due  { background: #FCEEEC; color: var(--pg-neg); }
-.pg-pill.warn { background: #FBF0DC; color: #8a6412; }
-.pg-pill.muted{ background:#EEF2F5; color:var(--pg-muted); }
-
-.pg-warn-box   { background: #FBF0DC; border: 1px solid #ECD08C; border-radius: 12px; padding: 13px 17px; color: #6b4e0c; font-size:12.5px; line-height:1.55; }
-.pg-warn-box b { color: var(--pg-warn); }
-.pg-limite { font-size:11.5px; color:var(--pg-muted); margin-top:8px; }
-
-.pg-skel { height:14px; background:linear-gradient(90deg,#eef2f5,#f7f9fb,#eef2f5); background-size:200% 100%; animation:pgshimmer 1.2s infinite; border-radius:6px; margin:6px 0; }
-@keyframes pgshimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-.pg-footnote { font-size: 11.5px; color: var(--pg-muted); margin-top: 22px; border-top:1px solid var(--pg-line); padding-top:14px; }
-
-/* ---- pantalla de login ---- */
+/* ---- pantalla de login (fuera del alcance de la maqueta) ---- */
 .pg-login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; background: var(--pg-ink-2); }
 .pg-login-card { background:#fff; border-radius:20px; padding:36px 34px; width:100%; max-width:360px; box-shadow:0 10px 40px rgba(0,0,0,.25); }
 .pg-login-card .pg-brand { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
@@ -90,179 +52,203 @@ body { margin: 0; background: var(--pg-bg); }
 .pg-login-card button:hover { background:var(--pg-mint-dark); }
 .pg-login-msg { font-size:12.5px; color:var(--pg-neg); margin-top:10px; min-height:16px; }
 
-.ring-wrap { position:relative; height:170px; display:flex; align-items:center; justify-content:center; }
-.ring-wrap canvas { max-height:170px; }
-.ring-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none; }
-.ring-center .rc-val { font-family: var(--pg-font-num); font-size:26px; font-weight:700; color:var(--pg-ink); line-height:1.1; }
-.ring-center .rc-lbl { font-size:10.5px; color:var(--pg-muted); text-transform:uppercase; letter-spacing:.05em; margin-top:3px; max-width:120px; }
+.pg-warn-box   { background: #FBF0DC; border: 1px solid #ECD08C; border-radius: 12px; padding: 13px 17px; color: #6b4e0c; font-size:12.5px; line-height:1.55; margin: 16px 0; }
+.pg-warn-box b { color: var(--pg-warn); }
+.pg-skel { height:14px; background:linear-gradient(90deg,#eef2f5,#f7f9fb,#eef2f5); background-size:200% 100%; animation:pgshimmer 1.2s infinite; border-radius:6px; margin:6px 0; }
+@keyframes pgshimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-.gv-kpis { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
-.gv-kpi { flex:1; min-width:110px; }
-.gv-kpi .lbl { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--pg-muted); }
-.gv-kpi .val { font-family: var(--pg-font-num); font-size:19px; font-weight:700; color:var(--pg-ink); margin-top:3px; }
+/* ============================================================
+   v24 · maqueta karen_completa_A aprobada por Andres, replicada
+   pixel a pixel (tokens, tamanos, espaciados, transiciones).
+   ============================================================ */
+.wrap{max-width:1300px;margin:0 auto;padding:0 28px 70px}
 
-/* ---- Vendedores (mockup v2): heroe, KPIs de 3, mini-grid de 4 ---- */
-.pgu { font-size:12px; color:var(--pg-muted); font-weight:500; }
-.kpis3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:0 0 18px; }
-.k .l { font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--pg-muted); font-weight:600; }
-.k .v { font-family:var(--pg-font-num); font-weight:600; font-size:34px; color:var(--pg-ink); margin:6px 0 2px; letter-spacing:-.01em; }
-.k .s { font-size:12.5px; color:var(--pg-muted); }
-.k .s b { font-family:var(--pg-font-num); color:var(--pg-ink); font-weight:600; }
-.k.red .v { color:var(--pg-neg); }
-.mini { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
-.mini div { background:#F7FAFC; border-radius:12px; padding:12px 14px; }
-.mini .l { font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--pg-muted); font-weight:600; }
-.mini .v { font-family:var(--pg-font-num); font-weight:600; font-size:18px; color:var(--pg-ink); }
-.vend-leg { display:flex; gap:18px; font-size:12.5px; color:var(--pg-muted); margin:6px 0 10px; flex-wrap:wrap; }
-.vend-leg i { width:12px; height:12px; border-radius:4px; display:inline-block; vertical-align:-2px; margin-right:6px; }
-.svg-tip { position:absolute; background:var(--pg-ink-2); color:#fff; font-size:12px; padding:8px 10px; border-radius:8px; pointer-events:none; display:none; font-family:var(--pg-font-num); z-index:80; }
+.top{display:flex;align-items:center;justify-content:space-between;padding:20px 0 16px}
+.brand{display:flex;align-items:baseline;gap:10px}
+.gabi{font-family:var(--f-gabi);font-style:italic;font-weight:800;font-size:27px;color:var(--ink);letter-spacing:-.5px}
+.brand .sep{width:1px;height:20px;background:var(--line);margin:0 3px}
+.brand .sec{font-family:var(--f-tit);font-weight:700;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.acts{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.btn{font-family:var(--f-body);font-weight:600;font-size:12.5px;padding:9px 15px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--txt);cursor:pointer;transition:all .16s}
+.btn:hover{border-color:var(--mint);color:var(--mint-deep);transform:translateY(-1px)}
+.btn.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.pri:hover{background:var(--ink2);color:#fff}
 
-.chart-wrap { position:relative; height:170px; }
+/* ------- navegador de casillas ------- */
+.nav{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:22px;overflow-x:auto}
+.nv{display:flex;align-items:baseline;gap:8px;padding:12px 16px 13px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .16s;border-radius:9px 9px 0 0}
+.nv:hover{background:#fff}
+.nv .k{font-family:var(--f-num);font-size:11px;font-weight:700;color:#B6C2CB}
+.nv .t{font-family:var(--f-tit);font-weight:700;font-size:13.5px;color:var(--muted)}
+.nv.on{border-bottom-color:var(--mint-deep);background:#fff}
+.nv.on .t{color:var(--ink)}
+.nv.on .k{color:var(--mint-deep)}
+.nv .b{font-family:var(--f-num);font-size:10.5px;font-weight:700;background:var(--rojo);color:#fff;border-radius:999px;padding:1px 6px}
 
-.pg-table { width:100%; border-collapse:collapse; font-size:13px; }
-.pg-table th { text-align:left; color:var(--pg-muted); font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid var(--pg-line); padding:8px 8px; white-space:nowrap; }
-.pg-table th[data-sort] { cursor:pointer; user-select:none; }
-.pg-table th[data-sort]:hover { color:var(--pg-ink); }
-.pg-table th .arrow { font-size:9px; margin-left:3px; color:var(--pg-mint-deep); }
-.vend-frase { font-family:var(--pg-font-title); font-weight:700; font-size:19px; color:var(--pg-ink); margin:6px 0 2px; }
-.vend-frase b { font-family:var(--pg-font-num); font-weight:600; }
-.vend-frase .gap { color:#8C6A10; }
-.pg-table td { border-bottom:1px solid var(--pg-line); padding:9px 8px; vertical-align:middle; }
-.pg-table td.num { font-family: var(--pg-font-num); }
-.pg-table tr.rojo td { background:#FCEEEC; }
-.acciones { display:flex; gap:5px; flex-wrap:wrap; }
-.acciones button { font-family: var(--pg-font-body); font-size:11px; font-weight:700; border:1px solid var(--pg-line); background:#fff; color:var(--pg-ink); border-radius:999px; padding:5px 10px; cursor:pointer; }
-.acciones button:hover { background:var(--pg-bg); }
-.acciones button.activo { background:var(--pg-ink); color:#fff; border-color:var(--pg-ink); }
-.acciones button.perdido-btn { color: var(--pg-neg); border-color:#F1BEB6; }
-.acciones button.perdido-btn.activo { background: var(--pg-neg); color:#fff; border-color:var(--pg-neg); }
-.acciones button.retirado-btn { color: var(--pg-muted); border-color:#D5DCE2; }
-.acciones button.retirado-btn.activo { background: var(--pg-muted); color:#fff; border-color:var(--pg-muted); }
-.tablewrap { overflow-x:auto; }
-.pg-toggle-link { font-family: var(--pg-font-body); font-size:12.5px; font-weight:700; color: var(--pg-mint-deep); background:none; border:none; cursor:pointer; padding:0; margin-top:10px; }
-.kd-periodo-btn { background:#fff; color:var(--pg-ink); }
-.kd-periodo-btn.activo { background:var(--pg-ink); color:#fff; border-color:var(--pg-ink); }
+.pane{display:none}.pane.on{display:block}
+.sec-t{font-family:var(--f-tit);font-weight:800;font-size:17px;color:var(--ink);margin:26px 0 3px}
+.sec-s{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 3px rgba(27,45,58,.05)}
+.ph{padding:19px 24px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+.pt{font-family:var(--f-tit);font-weight:800;font-size:15.5px;color:var(--ink)}
+.ps{font-size:12px;color:var(--muted);margin-top:3px;max-width:640px;line-height:1.5}
+.leg{display:flex;gap:15px;font-size:11.5px;color:var(--muted);align-items:center;flex-wrap:wrap}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 
-/* ---- casillas laterales numeradas ---- */
-.pg-shell { display:flex; align-items:flex-start; gap:22px; }
-.pg-side2 { width:220px; flex-shrink:0; background:var(--pg-ink-2); color:#fff; border-radius:18px; padding:20px 14px; position:sticky; top:78px; }
-.pg-side2 .pg-group-label { font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:#8da0ad; margin:2px 8px 8px; font-weight:700; }
-.pg-side2 a { display:flex; gap:10px; align-items:center; padding:11px 11px; border-radius:11px; color:#c3d0d8; font-size:13.5px; font-weight:700; text-decoration:none; margin-bottom:3px; cursor:pointer; }
-.pg-side2 a .ico { font-family:var(--pg-font-num); font-size:11px; color:var(--pg-mint); flex-shrink:0; }
-.pg-side2 a.on, .pg-side2 a:hover { background:rgba(45,191,163,.16); color:#fff; }
-.pg-side2 a.on { box-shadow: inset 3px 0 0 var(--pg-mint); }
-.pg-tabmain { flex:1; min-width:0; }
-.pg-tabsection { display:none; }
-.pg-tabsection.on { display:block; }
-@media (max-width:980px) { .pg-shell { flex-direction:column; } .pg-side2 { width:100%; position:relative; top:0; } }
+/* ------- cinta del año ------- */
+.months{display:grid;grid-template-columns:repeat(12,1fr);gap:8px;margin:16px 0 0;padding:0 24px 14px;align-items:end}
+.mo{cursor:pointer;text-align:center;border-radius:10px;padding:6px 3px 8px;transition:background .16s}
+.mo:hover{background:#F4F7FA}
+.mo .bar{height:104px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;margin-bottom:7px;position:relative}
+.mo .tick{position:absolute;left:-3px;right:-3px;border-top:2px dashed rgba(217,165,32,.85);z-index:2}
+.mo .seg-f{background:var(--falta);border-radius:4px 4px 0 0;transition:height .45s cubic-bezier(.2,.8,.2,1)}
+.mo .seg-r{background:var(--renov);border-radius:0 0 4px 4px;transition:height .45s cubic-bezier(.2,.8,.2,1)}
+.mo.futuro .seg-f{opacity:.42}
+.mo .lbl{font-family:var(--f-tit);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.mo .num{font-family:var(--f-num);font-size:12px;font-weight:600;color:var(--ink);margin-top:2px}
+.mo.on{background:#fff;box-shadow:0 0 0 2px var(--mint)}
+.mo.on .lbl{color:var(--mint-deep)}
 
-/* ---- bloques plegables ---- */
-.pg-plegable { padding:0; overflow:hidden; }
-.pg-plegable-header { display:flex; align-items:center; gap:12px; padding:18px 22px; cursor:pointer; }
-.pg-plegable-header:hover { background:var(--pg-bg); }
-.pg-plegable-chevron { font-size:12px; color:var(--pg-muted); width:14px; flex-shrink:0; }
-.pg-plegable-titulos { flex:1; min-width:0; }
-.pg-plegable-titulos h2 { margin:0; padding-bottom:0; }
-.pg-plegable-titulos h2::after { display:none; }
-.pg-plegable-resumen { font-family:var(--pg-font-num); font-size:13px; font-weight:700; color:var(--pg-ink); white-space:nowrap; }
-.pg-plegable-body { padding:0 22px 20px; }
+/* ------- franja oscura ------- */
+.strip{background:linear-gradient(135deg,#1B2D3A 0%,#233A4A 100%);border-radius:16px;padding:26px 30px;color:#fff;display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;margin:16px 0 4px;box-shadow:0 4px 18px rgba(27,45,58,.16)}
+.st-eye{font-family:var(--f-tit);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mint);margin-bottom:6px}
+.st-big{font-family:var(--f-num);font-size:58px;font-weight:700;line-height:1;letter-spacing:-2px}
+.st-big small{font-family:var(--f-body);font-size:17px;font-weight:500;opacity:.75;letter-spacing:0;margin-left:9px}
+.st-nums{display:flex;gap:30px;margin-top:18px;flex-wrap:wrap}
+.st-n .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.62;margin-bottom:3px}
+.st-n .v{font-family:var(--f-num);font-size:19px;font-weight:600}
+.st-n .v.mint{color:var(--mint)}
+.ring .pct{font-family:var(--f-num);font-size:26px;font-weight:700;fill:#fff}
+.ring .cap{font-size:11px;opacity:.7;margin-top:6px;text-align:center}
 
-/* ---- filas de cuenta (renovaciones del mes) ---- */
-.cuenta-fila { border:1px solid var(--pg-line); border-radius:12px; margin-bottom:8px; overflow:hidden; }
-.cuenta-fila-header { display:flex; align-items:center; gap:12px; padding:12px 14px; cursor:pointer; }
-.cuenta-fila-header:hover { background:var(--pg-bg); }
-.cuenta-fila-detalle { display:none; padding:0 14px 16px; border-top:1px solid var(--pg-line); }
-.cuenta-fila.abierta .cuenta-fila-detalle { display:block; }
-.cuenta-fila.abierta .cuenta-fila-chevron { transform:rotate(90deg); }
-.cuenta-fila-chevron { transition:transform .12s; color:var(--pg-muted); font-size:11px; }
-.pg-nota { border-bottom:1px solid var(--pg-line); padding:8px 0; font-size:12.5px; }
-.pg-nota .autor { font-weight:700; color:var(--pg-ink); }
-.pg-nota .fecha { color:var(--pg-muted); font-size:11px; margin-left:6px; }
-.pg-nota-input { display:flex; gap:8px; margin-top:10px; }
-.pg-nota-input textarea { flex:1; font-family:var(--pg-font-body); font-size:12.5px; padding:8px 10px; border-radius:10px; border:1px solid var(--pg-line); resize:vertical; min-height:36px; }
-.pg-nota-input button { font-family:var(--pg-font-body); font-weight:700; font-size:12px; border:none; background:var(--pg-mint); color:var(--pg-ink-2); border-radius:10px; padding:8px 14px; cursor:pointer; }
+/* ------- chips y cola ------- */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 14px}
+.chip{font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--mint);color:var(--mint-deep)}
+.chip.on{background:var(--mint-deep);border-color:var(--mint-deep);color:#fff}
+.chip .n{font-family:var(--f-num);font-weight:700;margin-left:6px;opacity:.85}
+.card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:13px;padding:15px 18px;margin-bottom:9px;display:grid;grid-template-columns:1fr auto auto;gap:20px;align-items:center;transition:transform .16s,box-shadow .16s;cursor:pointer}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(27,45,58,.09)}
+.card.u-rojo{border-left-color:var(--rojo)}.card.u-ambar{border-left-color:var(--ambar)}.card.u-gris{border-left-color:#C9D4DC}
+.card.hecha{opacity:.62;background:#FAFCFB}
+.c-nom{font-family:var(--f-tit);font-weight:700;font-size:16px;color:var(--ink);letter-spacing:-.15px}
+.c-meta{font-size:12px;color:var(--muted);margin-top:4px;display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.c-meta .dot{width:3px;height:3px;border-radius:50%;background:#C9D4DC}
+.c-meta .mono{font-family:var(--f-num);font-size:11.5px}
+.c-prem{font-family:var(--f-num);font-size:20px;font-weight:700;color:var(--ink);text-align:right;white-space:nowrap}
+.c-prem .pz{display:block;font-family:var(--f-body);font-size:11px;font-weight:500;color:var(--muted);margin-top:2px}
+.pill{font-size:11px;font-weight:700;padding:5px 11px;border-radius:999px;white-space:nowrap}
+.p-pend{background:#EEF1F4;color:#5A6B78}.p-cont{background:#E6E9FA;color:#3E4CB0}
+.p-cot{background:#FBF1D8;color:#8A6A14}.p-ren{background:var(--mint-soft);color:#186F5D}
+.p-per{background:#FAE7E5;color:#A63F36}
+.acciones{display:flex;gap:6px;margin-top:11px;opacity:0;max-height:0;overflow:hidden;transition:opacity .18s,max-height .18s}
+.card:hover .acciones{opacity:1;max-height:44px}
+.mini{font-size:11.5px;font-weight:600;padding:6px 11px;border-radius:7px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--txt);transition:all .14s}
+.mini:hover{border-color:var(--mint);color:var(--mint-deep);background:#F7FCFB}
+.mini[disabled]{opacity:.42;cursor:not-allowed}
+.sen{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#8A6A14;background:#FBF1D8;padding:3px 8px;border-radius:6px}
+.sen:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--ambar)}
+.vacio{background:#fff;border:1px dashed var(--line);border-radius:13px;padding:34px;text-align:center;color:var(--muted);font-size:13.5px}
 
-/* ---- selector de vendedor ---- */
-.pg-vendedor-pick { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
-.pg-vendedor-pick select { font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--pg-line); background:#fff; }
+/* ------- vendedores ------- */
+.vr{display:grid;grid-template-columns:180px 1fr 132px;gap:16px;align-items:center;padding:11px 24px;border-bottom:1px solid var(--line);transition:background .14s}
+.vr:last-child{border-bottom:none}
+.vr:hover{background:#F9FBFC}
+.vn{font-weight:600;font-size:13.5px;color:var(--ink)}
+.vn small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:1px}
+.vbars{position:relative;height:30px}
+.vb{position:absolute;left:0;height:11px;border-radius:0 5px 5px 0;transition:width .55s cubic-bezier(.2,.8,.2,1)}
+.vb.a{top:2px;background:var(--falta)}
+.vb.b{top:17px;background:var(--renov)}
+.vnum{text-align:right;font-family:var(--f-num);font-size:13px;font-weight:700;color:var(--ink)}
+.vpct{font-family:var(--f-num);font-size:11px;font-weight:700;padding:2px 7px;border-radius:5px;background:#EEF1F4;color:#5A6B78;display:inline-block;margin-top:3px}
+.vpct.bien{background:var(--mint-soft);color:#186F5D}
+.vpct.bajo{background:#FBF1D8;color:#8A6A14}
 
-/* ---- Mi cola: chips, buscador, layout con ficha lateral ---- */
-.chips-row { display:flex; gap:10px; margin:0 0 14px; flex-wrap:wrap; align-items:center; }
-.cola-chips { display:flex; gap:10px; flex-wrap:wrap; }
-.cola-chip { font-family:var(--pg-font-body); font-size:13px; font-weight:600; border:1.5px solid var(--pg-line); background:#fff; color:var(--pg-ink); border-radius:999px; padding:8px 16px; cursor:pointer; transition: background 140ms ease, border-color 140ms ease; }
-.cola-chip:hover { border-color:var(--pg-mint); }
-.cola-chip.on { background:var(--pg-mint-dark); color:#fff; border-color:var(--pg-mint-dark); }
-.avance { margin-left:auto; font-size:12.5px; color:var(--pg-muted); }
-.avance b { font-family:var(--pg-font-num); color:var(--pg-ink); }
-.cola-buscar-row { display:flex; justify-content:flex-end; margin-bottom:14px; }
-.cola-buscar { font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--pg-line); min-width:220px; }
-.cola-layout { display:flex; gap:16px; align-items:flex-start; }
-.cola-lista { flex:1; min-width:0; }
-.cola-panel { width:400px; flex-shrink:0; background:var(--pg-card); border:1px solid var(--pg-line); border-radius:16px; padding:18px; position:sticky; top:90px; max-height:calc(100vh - 110px); overflow-y:auto; }
-@media (max-width:1180px) { .cola-layout { flex-direction:column; } .cola-panel { width:100%; position:relative; top:0; } }
-/* ---- tabla de la cola (mockup v2): filas-tarjeta, sin lavado de fondo ---- */
-.cola-tabla { width:100%; border-collapse:separate; border-spacing:0 8px; }
-.cola-tabla th { font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--pg-muted); font-weight:600; text-align:left; padding:0 14px 4px; white-space:nowrap; }
-.cola-tabla th.num, .cola-tabla td.num { text-align:right; }
-.cola-tabla tr.f td { background:#fff; padding:12px 14px; height:54px; border-top:1px solid var(--pg-line); border-bottom:1px solid var(--pg-line); }
-.cola-tabla tr.f td:first-child { border-left:3px solid #DDE3E8; border-radius:12px 0 0 12px; width:30px; }
-.cola-tabla tr.rojo td:first-child { border-left-color:var(--pg-neg); }
-.cola-tabla tr.amb td:first-child { border-left-color:var(--pg-warn); }
-.cola-tabla tr.f td:last-child { border-right:1px solid var(--pg-line); border-radius:0 12px 12px 0; }
-.cola-tabla tr.f { cursor:pointer; }
-.cola-tabla tr.f:hover td { background:#FAFCFD; }
-.cola-tabla tr.f.sel td { background:#EAF7F3; }
-.cola-udot { width:10px; height:10px; border-radius:50%; display:inline-block; }
-.cola-udot.r { background:var(--pg-neg); box-shadow:0 0 0 3px rgba(213,89,79,.14); }
-.cola-udot.a { background:var(--pg-warn); box-shadow:0 0 0 3px rgba(217,165,32,.16); }
-.cola-udot.g { background:#C5CED5; box-shadow:none; }
-.cola-cta { font-weight:700; color:var(--pg-ink); }
-.cola-cta small { display:block; font-weight:500; color:var(--pg-muted); font-family:var(--pg-font-num); font-size:11.5px; }
-.cola-vence-dias { font-family:var(--pg-font-num); font-weight:600; font-size:14px; }
-.cola-vence-fecha { display:block; color:var(--pg-muted); font-size:11.5px; }
-.cola-vence.r .cola-vence-dias { color:var(--pg-neg); }
-.cola-vence.a .cola-vence-dias { color:#8C6A10; }
-.cola-sig { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-family:var(--pg-font-num); }
-.cola-sig i { width:9px; height:9px; border-radius:50%; display:inline-block; }
-.cola-sig.ok i { background:var(--pg-pos); }
-.cola-sig.no i { background:var(--pg-warn); }
-.cola-pill { border-radius:999px; padding:5px 11px; font-size:12px; font-weight:600; background:#EEF2F5; color:var(--pg-ink); display:inline-block; }
-.chk { width:20px; height:20px; border-radius:7px; border:1.5px solid #C9D3DA; display:inline-block; background:#fff; cursor:pointer; }
-.chk.on { background:var(--pg-mint-dark); border-color:var(--pg-mint-dark); position:relative; }
-.chk.on::after { content:''; position:absolute; left:6px; top:2px; width:5px; height:10px; border:solid #fff; border-width:0 2px 2px 0; transform:rotate(45deg); }
-.chk.off { background:#F1F4F6; border-style:dashed; cursor:default; }
-.ficha-cerrar { float:right; background:none; border:none; color:var(--pg-muted); font-size:18px; cursor:pointer; line-height:1; }
-.ficha-nav { display:flex; gap:8px; margin-bottom:12px; }
-.ficha-nav button { font-family:var(--pg-font-body); font-size:12px; font-weight:700; border:1px solid var(--pg-line); background:#fff; border-radius:999px; padding:6px 12px; cursor:pointer; }
-.ficha-nav button:disabled { opacity:.4; cursor:default; }
-.ficha-seccion { margin-top:16px; padding-top:14px; border-top:1px solid var(--pg-line); }
-.ficha-seccion h3 { font-family:var(--pg-font-title); font-size:12.5px; font-weight:800; color:var(--pg-ink); margin:0 0 8px; }
-.muro-tile { flex:1; min-width:170px; text-align:center; background:var(--pg-bg); border:1px solid var(--pg-line); border-radius:16px; padding:22px 14px; cursor:pointer; }
-.muro-tile:hover { border-color:var(--pg-mint); }
-.muro-tile-detalle { margin-top:10px; }
+/* ------- muro ------- */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.al{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:13px 24px;border-bottom:1px solid var(--line);transition:background .14s}
+.al:last-child{border-bottom:none}
+.al:hover{background:#F9FBFC}
+.al .n{font-family:var(--f-tit);font-weight:700;font-size:14px;color:var(--ink)}
+.al .m{font-size:11.5px;color:var(--muted);margin-top:3px}
+.al .p{font-family:var(--f-num);font-size:16px;font-weight:700;text-align:right}
+.dch{font-family:var(--f-num);font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;display:inline-block;margin-top:4px}
+.dch.r{background:#FAE7E5;color:#A63F36}.dch.a{background:#FBF1D8;color:#8A6A14}.dch.g{background:#EEF1F4;color:#5A6B78}
+.barrow{display:grid;grid-template-columns:150px 1fr 96px;gap:12px;align-items:center;padding:10px 24px;border-bottom:1px solid var(--line)}
+.barrow:last-child{border-bottom:none}
+.track{position:relative;height:22px;background:var(--bg);border-radius:6px;overflow:visible}
+.fillb{height:22px;border-radius:6px;transition:width .55s cubic-bezier(.2,.8,.2,1)}
+.mk{position:absolute;top:-4px;bottom:-4px;width:2px}
+.mk.prom{background:#8FA3B0}
+.mk.est{background:var(--ambar)}
+.mklab{position:absolute;top:-19px;font-family:var(--f-num);font-size:9.5px;font-weight:700;transform:translateX(-50%);white-space:nowrap}
 
-/* ---- cabecera de Mi cola: el mes en curso (mockup v2, pixel exacto) ---- */
-.cola-mes { display:grid; grid-template-columns:1fr 220px; gap:26px; align-items:center; padding:28px 30px; }
-.cola-cab-mes { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:6px; }
-.cola-cab-mes-txt { font-family:var(--pg-font-title); font-weight:800; font-size:20px; color:var(--pg-ink); letter-spacing:.06em; }
-.cola-cab-dias { font-size:13px; color:var(--pg-muted); font-weight:500; }
-.cola-cab-entran { font-family:var(--pg-font-title); font-weight:800; font-size:38px; color:var(--pg-ink); margin:10px 0 4px; letter-spacing:-.02em; line-height:1.05; }
-.cola-cab-entran b { font-family:var(--pg-font-num); font-weight:600; color:var(--pg-mint-dark); }
-.cola-cab-prem { font-family:var(--pg-font-num); color:var(--pg-muted); font-size:16px; }
-.cola-cab-fila3 { display:flex; gap:26px; margin-top:20px; }
-.cola-cab-fila3 > div { padding:10px 16px 10px 0; flex:1; border-right:1px solid var(--pg-line); }
-.cola-cab-fila3 > div:last-child { border-right:0; }
-.cola-cab-fila3 .l { font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--pg-muted); font-weight:600; }
-.cola-cab-fila3 .v { font-family:var(--pg-font-num); font-weight:600; font-size:28px; color:var(--pg-ink); margin-top:2px; }
-.cola-cab-fila3 .falta .v { color:#8C6A10; }
-.cola-cab-ring { width:200px; height:200px; margin:auto; position:relative; }
-.cola-cab-ring .c { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.cola-cab-ring .p { font-family:var(--pg-font-num); font-weight:600; font-size:30px; }
-.cola-cab-ring .s { font-size:11px; letter-spacing:.14em; color:var(--pg-muted); text-transform:uppercase; font-weight:600; }
+/* ------- bolsa / bonos ------- */
+#svgBolsa,#svgArea{width:100%;display:block}
+.gl{stroke:var(--line);stroke-width:1}
+.ax{font-family:var(--f-tit);font-size:10.5px;font-weight:700;fill:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.axn{font-family:var(--f-num);font-size:10px;font-weight:600;fill:var(--muted)}
+.esc{display:flex;flex-direction:column-reverse;gap:0;padding:6px 24px 20px}
+.pel{display:grid;grid-template-columns:104px 1fr auto;gap:18px;align-items:center;padding:15px 18px;border-radius:12px;margin-top:8px;border:1px solid var(--line);background:#fff;transition:all .2s}
+.pel.logrado{background:linear-gradient(90deg,#F2FAF8,#fff);border-color:var(--mint)}
+.pel.siguiente{border-color:var(--ambar);background:linear-gradient(90deg,#FEFBF3,#fff);box-shadow:0 3px 12px rgba(217,165,32,.14)}
+.pel .u{font-family:var(--f-num);font-size:26px;font-weight:700;color:var(--ink);line-height:1;margin-bottom:6px}
+.pel .d{font-size:12px;color:var(--muted);margin-top:2px}
+.pel .b{font-family:var(--f-num);font-size:19px;font-weight:700;color:var(--mint-deep);text-align:right}
+.pel .b small{display:block;font-family:var(--f-body);font-size:11px;color:var(--muted);font-weight:500;margin-top:2px}
+.pel.futuro{opacity:.55}
+.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;display:inline-block;white-space:nowrap}
+.badge.ok{background:var(--mint-soft);color:#186F5D}
+.badge.next{background:#FBF1D8;color:#8A6A14}
+
+/* ------- área ------- */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.kp{background:#fff;border:1px solid var(--line);border-radius:15px;padding:18px 20px;transition:transform .18s,box-shadow .18s}
+.kp:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(27,45,58,.08)}
+.kp .k{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.kp .v{font-family:var(--f-num);font-size:36px;font-weight:700;color:var(--ink);margin-top:6px;letter-spacing:-1px;line-height:1.05}
+.kp .d{font-size:11.5px;color:var(--muted);margin-top:4px}
+.kp.oscuro{background:linear-gradient(150deg,#1B2D3A,#26404F);border-color:#1B2D3A}
+.kp.oscuro .k{color:var(--mint)}.kp.oscuro .v{color:#fff}.kp.oscuro .d{color:rgba(255,255,255,.65)}
+.estados{padding:8px 24px 20px}
+.er{display:grid;grid-template-columns:180px 1fr 150px;gap:14px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.er:last-child{border-bottom:none}
+.er .l{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:var(--ink)}
+.er .l i{width:11px;height:11px;border-radius:3px}
+.er .t{height:20px;background:var(--bg);border-radius:6px;overflow:hidden}
+.er .t i{display:block;height:100%;border-radius:6px;transition:width .55s cubic-bezier(.2,.8,.2,1)}
+.er .n{text-align:right;font-family:var(--f-num);font-size:13.5px;font-weight:700;color:var(--ink)}
+.er .n small{display:block;font-family:var(--f-body);font-size:11px;color:var(--muted);font-weight:500;margin-top:1px}
+
+.tip{position:fixed;z-index:70;background:var(--ink);color:#fff;border-radius:9px;padding:9px 12px;font-size:12px;line-height:1.55;pointer-events:none;opacity:0;transition:opacity .12s;box-shadow:0 6px 20px rgba(27,45,58,.3)}
+.tip .tt{font-family:var(--f-tit);font-weight:700;font-size:12px;display:block;margin-bottom:3px}
+.tip b{font-family:var(--f-num)}
+.pie{margin-top:26px;font-size:11.5px;color:var(--muted);text-align:center;padding-top:16px;border-top:1px solid var(--line)}
+
+#reporte{display:none}
+@media print{
+  body{background:#fff}.noprint{display:none!important}
+  #reporte{display:block;color:#000}
+  .rp-h{border-bottom:2.5px solid #1B2D3A;padding-bottom:12px;margin-bottom:18px}
+  .rp-h h1{font-family:var(--f-tit);font-size:19px;margin:0 0 4px}
+  .rp-h .m{font-size:11px;color:#555}
+  .rp-k{display:flex;gap:32px;margin-bottom:20px}
+  .rp-k div .k{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:#555}
+  .rp-k div .v{font-family:var(--f-num);font-size:19px;font-weight:700}
+  table{width:100%;border-collapse:collapse;font-size:10.5px}
+  th{text-align:left;border-bottom:1.5px solid #1B2D3A;padding:6px 5px;font-size:9px;text-transform:uppercase;letter-spacing:.08em}
+  td{border-bottom:1px solid #ddd;padding:6px 5px}
+  td.n{font-family:var(--f-num);text-align:right}
+  .rp-f{margin-top:38px;display:flex;gap:60px}
+  .rp-f div{border-top:1px solid #000;padding-top:5px;font-size:10px;width:210px}
+  @page{margin:1.5cm}
+}
+@media(max-width:1080px){.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-<a href="index.html" id="pgVolver" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
+<a href="index.html" id="pgVolver" class="noprint" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
 
 <!-- ============================================================================
   GABI · Renovaciones (pantalla propia, paquete "renovaciones")
@@ -308,28 +294,133 @@ body { margin: 0; background: var(--pg-bg); }
 </div>
 
 <div class="pg-app" id="pg-app" style="display:none;">
-  <div class="pg-viewbar">
-    <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
-    <span class="pg-badge">Renovaciones</span>
-    <div class="pg-actions">
-      <span class="pg-stamp" id="pg-stamp">datos al —</span>
-      <button class="pg-btn" id="pg-btn-refresh">Actualizar</button>
-      <button class="pg-btn" id="pg-btn-logout">Cerrar sesión</button>
+<div class="wrap noprint">
+  <div class="top">
+    <div class="brand"><span class="gabi">GABI</span><span class="sep"></span>
+      <span class="sec" id="secLabel">Renovaciones · Karen</span></div>
+    <div class="acts">
+      <span class="pg-stamp" id="pg-stamp" style="font-size:11px;color:var(--muted);margin-right:2px">datos al —</span>
+      <button class="btn" type="button" id="pg-btn-refresh">Actualizar</button>
+      <button class="btn" type="button" id="pg-btn-logout">Cerrar sesión</button>
+      <button class="btn" type="button" id="btn-imprimir-mes">Imprimir el mes</button>
+      <button class="btn pri" type="button" id="btn-imprimir-ano">Imprimir el año</button>
     </div>
   </div>
-  <main class="pg-main" id="pg-root">
-    <div class="pg-top">
-      <div class="pg-eyebrow">Área de renovaciones</div>
-      <h1>Renovaciones</h1>
+
+  <div id="pg-acceso"></div>
+
+  <div id="pg-shell" style="display:none">
+    <div class="nav" id="nav"></div>
+
+    <!-- 01 MI COLA -->
+    <div class="pane on" id="p-cola">
+      <div class="panel">
+        <div class="ph">
+          <div><div class="pt">Tu año <span id="tuAnio"></span></div><div class="ps" id="rbSub"></div></div>
+          <div class="leg"><span><i style="background:#229A82"></i>Renovadas</span>
+            <span><i style="background:#5B6BD6"></i>Por renovar</span>
+            <span><i style="background:#D9A520"></i>Meta 70% del mes</span></div>
+        </div>
+        <div class="months" id="months"></div>
+      </div>
+
+      <div class="strip">
+        <div>
+          <div class="st-eye" id="stMes"></div>
+          <div class="st-big"><span id="stC"></span><small>cuentas entran a renovar</small></div>
+          <div class="st-nums">
+            <div class="st-n"><div class="k">En juego</div><div class="v" id="stP"></div></div>
+            <div class="st-n"><div class="k">Con señal de vida</div><div class="v mint" id="stS"></div></div>
+            <div class="st-n"><div class="k">Por confirmar</div><div class="v" id="stX"></div></div>
+            <div class="st-n"><div class="k">Meta 70%</div><div class="v" id="stM"></div></div>
+          </div>
+        </div>
+        <div>
+          <svg width="128" height="128" viewBox="0 0 128 128" class="ring">
+            <circle cx="64" cy="64" r="52" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="13"/>
+            <circle id="arc" cx="64" cy="64" r="52" fill="none" stroke="#2DBFA3" stroke-width="13"
+              stroke-linecap="round" transform="rotate(-90 64 64)" stroke-dasharray="0 327"
+              style="transition:stroke-dasharray .7s cubic-bezier(.2,.8,.2,1)"/>
+            <text class="pct" x="64" y="72" text-anchor="middle" id="arcT">0%</text></svg>
+          <div class="cap">renovado del mes</div>
+        </div>
+      </div>
+
+      <div class="sec-t">Mi cola</div>
+      <div class="sec-s" id="colaSub"></div>
+      <div class="chips" id="chips"></div>
+      <div id="cola"></div>
     </div>
-    <div id="pg-acceso"></div>
-    <div class="pg-shell" id="pg-shell" style="display:none">
-      <aside class="pg-side2" id="pg-side2"></aside>
-      <div class="pg-tabmain" id="pg-tabmain"></div>
+
+    <!-- 02 VENDEDORES -->
+    <div class="pane" id="p-vend">
+      <div class="panel">
+        <div class="ph">
+          <div><div class="pt">Quién renueva lo que vende</div>
+            <div class="ps">La barra de arriba es lo que vendió y vence este año; la de abajo, lo que ya se renovó contigo. El hueco entre las dos es lo que está en juego.</div></div>
+          <div class="leg"><span><i style="background:#5B6BD6"></i>Vencen</span>
+            <span><i style="background:#229A82"></i>Renovadas</span></div>
+        </div>
+        <div id="vlist" style="padding:12px 0 8px"></div>
+      </div>
     </div>
-    <div class="pg-footnote">Datos en vivo · actualizado a las <span id="pg-foot-stamp">—</span></div>
-  </main>
+
+    <!-- 03 EL MURO -->
+    <div class="pane" id="p-muro">
+      <div class="grid2">
+        <div class="panel">
+          <div class="ph"><div><div class="pt">Cuentas grandes por vencer</div>
+            <div class="ps">Las que más pesan y están cerca. Estas se llaman primero.</div></div></div>
+          <div id="grandes" style="padding:12px 0 6px"></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><div><div class="pt">Vende pero no renueva</div>
+            <div class="ps" id="vnrSub">Porcentaje renovado de cada vendedor en el año, contra el promedio del área y el estándar.</div></div></div>
+          <div id="vnr" style="padding:26px 0 12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 LA BOLSA -->
+    <div class="pane" id="p-bolsa">
+      <div class="kpis" id="bolsaKpis"></div>
+      <div class="panel">
+        <div class="ph">
+          <div><div class="pt">Tu bolsa mes a mes</div>
+            <div class="ps">Las barras son lo que entró a la bolsa. La línea es qué porcentaje de tus renovaciones llevó fee cobrado — ahí está la palanca real.</div></div>
+          <div class="leg"><span><i style="background:#229A82"></i>Bolsa del mes</span>
+            <span><i style="background:#D9A520"></i>Renovaciones con fee</span></div>
+        </div>
+        <svg id="svgBolsa" viewBox="0 0 820 260" preserveAspectRatio="none" style="height:260px"></svg>
+      </div>
+    </div>
+
+    <!-- 05 BONOS -->
+    <div class="pane" id="p-bonos">
+      <div class="panel">
+        <div class="ph"><div><div class="pt">La escalera del año</div>
+          <div class="ps" id="bonoSub"></div></div></div>
+        <div class="esc" id="escalera"></div>
+      </div>
+    </div>
+
+    <!-- 06 EL ÁREA -->
+    <div class="pane" id="p-area">
+      <div class="kpis" id="areaKpis"></div>
+      <div class="panel">
+        <div class="ph"><div><div class="pt">Tu cartera hoy</div>
+          <div class="ps">Todas las cuentas del área, no solo las de este mes. "Sin señal" son las que llevan más de 180 días quietas y Financiera debe confirmar.</div></div></div>
+        <div class="estados" id="estados"></div>
+      </div>
+    </div>
+
+    <div class="pie" id="pie"></div>
+  </div>
 </div>
+</div>
+
+<div class="tip" id="tip"></div>
+<div id="reporte"></div>
 
 <script>
 const SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
@@ -341,14 +432,8 @@ function esc(s){ return (s===null||s===undefined) ? '' : String(s).replace(/[&<>
 function fmtUSD(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US',{maximumFractionDigits:0}); }
 function fmtUSD2(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtFecha(s){ if(!s) return '—'; try{ const d=new Date(s+'T12:00:00'); return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return String(s); } }
-function fmtMes(s){ if(!s) return '—'; try{ const d=new Date(s+'T12:00:00'); return d.toLocaleDateString('es-CO',{month:'short',year:'numeric'}); }catch(e){ return String(s); } }
 const MESES_CORTOS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 function mesCorto(s){ if(!s) return '—'; try{ const d=new Date(String(s)+'T12:00:00'); return MESES_CORTOS[d.getMonth()]; }catch(e){ return String(s); } }
-const MESES_LARGOS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-function fmtMesLargoMayus(s){ if(!s) return '—'; try{ const d=new Date(String(s)+'T12:00:00'); return (MESES_LARGOS[d.getMonth()]+' '+d.getFullYear()).toUpperCase(); }catch(e){ return String(s); } }
-function diasRestantesMes(s){ try{ const d=new Date(String(s)+'T12:00:00'); const ultimoDia=new Date(d.getFullYear(), d.getMonth()+1, 0).getDate(); return Math.max(0, ultimoDia - new Date().getDate()); }catch(e){ return null; } }
-function mesActualISO(){ const hoy=new Date(); return hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-01'; }
-function sumarMeses(iso, n){ const d=new Date(iso+'T12:00:00'); d.setMonth(d.getMonth()+n); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; }
 /* diccionario: la base guarda sin acentos a propósito, la pantalla traduce siempre */
 const ETIQUETAS = {
   'SIN SENAL DE VIDA': 'Sin señal de vida',
@@ -362,13 +447,6 @@ const ETIQUETAS = {
   'ACTIVA':            'Activa',
 };
 function etiqueta(s){ return ETIQUETAS[s] !== undefined ? ETIQUETAS[s] : (s||'—'); }
-function fmtDiasVence(dias){
-  if(dias===null||dias===undefined||isNaN(dias)) return '—';
-  const n = Number(dias);
-  if(n < 0) return 'vencida hace '+Math.abs(n)+' d';
-  if(n === 0) return 'vence hoy';
-  return 'en '+n+' días';
-}
 function fmtHora(s){
   if(!s) return '—';
   try{
@@ -395,95 +473,6 @@ async function fetchPaginado(queryFactory, batchSize){
   }
   return { data: rows, error: null };
 }
-
-/* charts vivos — se destruyen antes de redibujar (el DOM ya no se reconstruye
-   en cada "Actualizar", ni al abrir/cerrar bloques plegables). */
-const CH = {};
-function pintarChart(canvasId, cfg){
-  const c = document.getElementById(canvasId); if(!c) return null;
-  if(CH[canvasId]){ CH[canvasId].destroy(); delete CH[canvasId]; }
-  CH[canvasId] = new Chart(c.getContext('2d'), cfg);
-  return CH[canvasId];
-}
-function semaforoColor(pct){
-  if(pct===null || pct===undefined || isNaN(pct)) return 'var(--pg-muted)';
-  if(pct>=70) return 'var(--pg-pos)';
-  if(pct>=50) return 'var(--pg-warn)';
-  return 'var(--pg-neg)';
-}
-
-/* ---- anillo de progreso (D4: reemplaza las barras planas en avance del mes y tasa de renovación) ---- */
-let ANILLO_SEQ = 0;
-function svgAnillo(pct, meta, color, tamano, grosor){
-  tamano = tamano || 120; grosor = grosor || 10;
-  const r = (tamano - grosor) / 2, cx = tamano/2, cy = tamano/2;
-  const circunf = 2*Math.PI*r;
-  const p = Math.max(0, Math.min(100, pct||0));
-  const dash = circunf * p / 100;
-  const id = 'ranillo_'+(ANILLO_SEQ++);
-  let metaMarca = '';
-  if(meta!==null && meta!==undefined){
-    const m = Math.max(0, Math.min(100, meta));
-    const ang = (m/100)*2*Math.PI - Math.PI/2;
-    const mx = cx + r*Math.cos(ang), my = cy + r*Math.sin(ang);
-    metaMarca = '<circle cx="'+mx.toFixed(2)+'" cy="'+my.toFixed(2)+'" r="3.2" fill="var(--pg-ink)" stroke="#fff" stroke-width="1.4"/>';
-  }
-  return '<svg width="'+tamano+'" height="'+tamano+'" viewBox="0 0 '+tamano+' '+tamano+'">'+
-    '<defs><linearGradient id="'+id+'" x1="0%" y1="0%" x2="100%" y2="100%">'+
-      '<stop offset="0%" style="stop-color:'+color+';stop-opacity:.55"/>'+
-      '<stop offset="100%" style="stop-color:'+color+';stop-opacity:1"/>'+
-    '</linearGradient></defs>'+
-    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" style="stroke:var(--pg-line)" stroke-width="'+grosor+'"/>'+
-    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="url(#'+id+')" stroke-width="'+grosor+'" stroke-linecap="round" '+
-      'stroke-dasharray="'+dash.toFixed(2)+' '+circunf.toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')"/>'+
-    metaMarca+
-  '</svg>';
-}
-function bloqueAnillo(pct, meta, color, valorTexto, etiquetaTexto, tamano){
-  tamano = tamano || 120;
-  return '<div class="ring-wrap" style="height:'+tamano+'px">'+
-    svgAnillo(pct, meta, color, tamano, 10)+
-    '<div class="ring-center"><div class="rc-val" style="color:'+color+'">'+valorTexto+'</div>'+(etiquetaTexto?'<div class="rc-lbl">'+etiquetaTexto+'</div>':'')+'</div>'+
-  '</div>';
-}
-
-/* ---- anillo de la cabecera de Mi cola (mockup v2): 200px, trazo 9px, un solo
-   color plano, marca de meta como linea radial (no comparte CSS con Bonos). ---- */
-function anilloMes(pct, meta){
-  const color = semaforoColor(pct);
-  const p = Math.max(0, Math.min(100, pct||0));
-  const circunf = 2*Math.PI*84;
-  const dash = circunf * p / 100;
-  const m = Math.max(0, Math.min(100, meta==null?70:meta));
-  const angDeg = (m/100)*360;
-  return '<svg viewBox="0 0 200 200" width="200" height="200">'+
-    '<circle cx="100" cy="100" r="84" fill="none" stroke="#EEF2F5" stroke-width="9"/>'+
-    '<circle cx="100" cy="100" r="84" fill="none" stroke="'+color+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+dash.toFixed(2)+' '+circunf.toFixed(2)+'" transform="rotate(-90 100 100)"/>'+
-    '<line x1="100" y1="6" x2="100" y2="24" stroke="#1B2D3A" stroke-width="3" stroke-linecap="round" transform="rotate('+angDeg+' 100 100)"/>'+
-  '</svg>';
-}
-
-/* ---- bloques plegables: recuerda estado mientras se trabaja (no persiste al recargar la página) ---- */
-const PLEGADO_ESTADO = {};
-function bloquePlegable(id, tituloHtml, resumenHtml, contenidoHtml, iniciaPlegado){
-  if(PLEGADO_ESTADO[id]===undefined) PLEGADO_ESTADO[id] = !!iniciaPlegado;
-  const plegado = PLEGADO_ESTADO[id];
-  return '<div class="pg-card pg-plegable" data-plegable-id="'+id+'">'+
-    '<div class="pg-plegable-header" onclick="togglePlegable(\''+id+'\')">'+
-      '<span class="pg-plegable-chevron">'+(plegado?'▸':'▾')+'</span>'+
-      '<div class="pg-plegable-titulos"><h2>'+tituloHtml+'</h2></div>'+
-      '<div class="pg-plegable-resumen">'+resumenHtml+'</div>'+
-    '</div>'+
-    '<div class="pg-plegable-body" style="'+(plegado?'display:none':'')+'">'+contenidoHtml+'</div>'+
-  '</div>';
-}
-window.togglePlegable = function(id){
-  PLEGADO_ESTADO[id] = !PLEGADO_ESTADO[id];
-  const wrap = document.querySelector('[data-plegable-id="'+id+'"]'); if(!wrap) return;
-  const body = wrap.querySelector('.pg-plegable-body'); const chev = wrap.querySelector('.pg-plegable-chevron');
-  if(body) body.style.display = PLEGADO_ESTADO[id] ? 'none' : '';
-  if(chev) chev.textContent = PLEGADO_ESTADO[id] ? '▸' : '▾';
-};
 
 /* =====================================================================
    1) LOGIN / SESIÓN
@@ -578,1074 +567,496 @@ async function verificarAccesoYcargar(){
     return;
   }
   accesoEl.innerHTML = "";
-  shellEl.style.display = "flex";
-  pintarEsqueletoCompleto();
-  cablearTabs();
+  shellEl.style.display = "block";
   await cargarTodo();
 }
 
 /* =====================================================================
-   2b) NAVEGACIÓN LATERAL — 5 casillas
+   3) DATOS EN VIVO — reemplazan las constantes JS de la maqueta
    ===================================================================== */
-const TABS = [
-  { key:'cola',       num:'01', titulo:'Mi cola' },
-  { key:'vendedores', num:'02', titulo:'Vendedores' },
-  { key:'muro',       num:'03', titulo:'El muro' },
-  { key:'bolsa',      num:'04', titulo:'La bolsa' },
-  { key:'bonos',      num:'05', titulo:'Bonos' },
-  { key:'area',       num:'06', titulo:'El área' },
-];
-const TABS_VALIDAS = TABS.map(t=>t.key);
+const NOM_MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const PILL = {
+  pendiente:['p-pend','Pendiente'], contactado:['p-cont','Contactada'], cotizando:['p-cot','Cotizando'],
+  renovado:['p-ren','Renovada'], perdido:['p-per','Perdida'], retirado:['p-per','Retirada'],
+};
+const ESTADOS_CARTERA_ORDEN = ['ACTIVA','ACTIVA SIN SENAL','RENOVADA','VENCIDA'];
+const ESTADOS_CARTERA_COLOR = {'ACTIVA':'#229A82','ACTIVA SIN SENAL':'#D9A520','RENOVADA':'#5B6BD6','VENCIDA':'#C9D4DC'};
 
-function activarTab(tabKey){
-  document.querySelectorAll('#pg-side2 a[data-tab]').forEach(x=>x.classList.remove('on'));
-  const link = document.querySelector('#pg-side2 a[data-tab="'+tabKey+'"]');
-  if(link) link.classList.add('on');
-  document.querySelectorAll('.pg-tabsection').forEach(sec=>sec.classList.remove('on'));
-  const sec = document.getElementById('tab-'+tabKey); if(sec) sec.classList.add('on');
-}
-function cablearTabs(){
-  document.querySelectorAll('#pg-side2 a[data-tab]').forEach(a=>{
-    a.addEventListener('click', ()=>{
-      activarTab(a.dataset.tab);
-      if(location.hash !== '#'+a.dataset.tab) location.hash = a.dataset.tab;
-      window.scrollTo({top:0, behavior:'smooth'});
-    });
-  });
-  const key = (location.hash||'').replace('#','');
-  if(TABS_VALIDAS.indexOf(key)>=0) activarTab(key);
-  window.addEventListener('hashchange', ()=>{
-    const k = (location.hash||'').replace('#','');
-    if(TABS_VALIDAS.indexOf(k)>=0) activarTab(k);
-  });
-}
-
-/* =====================================================================
-   3) ESQUELETO ÚNICO
-   ===================================================================== */
-function pintarEsqueletoCompleto(){
-  document.getElementById('pg-side2').innerHTML =
-    '<div class="pg-group-label">Secciones</div>' +
-    TABS.map((t,i)=>'<a data-tab="'+t.key+'"'+(i===0?' class="on"':'')+'><span class="ico">'+t.num+'</span><span>'+esc(t.titulo)+'</span></a>').join('');
-
-  document.getElementById('pg-tabmain').innerHTML = `
-    <section class="pg-tabsection on" id="tab-cola">
-      <div class="pg-card cola-mes" id="cola-cabecera"><div class="pg-skel" style="height:130px"></div></div>
-      <div class="chips-row">
-        <div class="cola-chips" id="cola-chips"></div>
-        <span class="avance" id="cola-semana">—</span>
-      </div>
-      <div class="cola-buscar-row"><input type="text" class="cola-buscar" id="cola-buscar" placeholder="Buscar por nombre o DOT…"></div>
-      <div class="cola-layout">
-        <div class="cola-lista" id="cola-lista"><div class="pg-skel" style="height:220px"></div></div>
-        <aside class="cola-panel" id="cola-panel" style="display:none"></aside>
-      </div>
-      <div id="cola-resumen" style="margin-top:12px;font-size:13.5px;color:var(--pg-ink)"></div>
-      <div id="area-estado-dato" style="font-size:11.5px;color:var(--pg-muted);margin-top:6px"></div>
-    </section>
-
-    <section class="pg-tabsection" id="tab-vendedores">
-      <div class="pg-vendedor-pick">
-        <select id="vend-select"><option value="">Selecciona un vendedor…</option></select>
-      </div>
-      <div id="vend-ficha"><div class="pg-limite" style="color:var(--pg-muted);font-size:13px">Selecciona un vendedor para ver su ficha.</div></div>
-      <div class="pg-card">
-        <h2>Todos los agentes</h2>
-        <div id="vend-lista-todos"><div class="pg-skel" style="height:120px"></div></div>
-      </div>
-    </section>
-
-    <section class="pg-tabsection" id="tab-muro">
-      <div class="pg-card">
-        <h2>El muro</h2>
-        <div id="kd-muro"><div class="pg-skel" style="height:120px"></div></div>
-      </div>
-    </section>
-
-    <section class="pg-tabsection" id="tab-bolsa">
-      <div class="pg-card">
-        <h2>Tu bolsa de renovaciones</h2>
-        <div id="c-bolsa"><div class="pg-skel" style="height:220px"></div></div>
-      </div>
-      <div class="pg-card">
-        <h2>Genera vs gasta</h2>
-        <div id="c-genera"><div class="pg-skel" style="height:150px"></div></div>
-      </div>
-    </section>
-
-    <section class="pg-tabsection" id="tab-bonos">
-      <div id="kd-esquema"><div class="pg-skel" style="height:220px"></div></div>
-    </section>
-
-    <section class="pg-tabsection" id="tab-area">
-      <div class="pg-card" id="area-indice-card"><h2>Tendencia de renovación</h2><div class="pg-skel" style="height:280px"></div></div>
-      <div id="area-alertas"></div>
-      <div id="area-cartera"></div>
-    </section>
-  `;
-}
+let AÑO_ACTUAL = null, MES_ACTUAL = null, MES_SEL = null;
+let IDX_MESES = [];      // v_indice_renovaciones_v3_visible, 12 meses del año en curso
+let AÑO_FILAS = [];      // v_renov_ano_visible, area=KAREN
+let AGENTES_RESUMEN = [];// v_agente_resumen_ano_visible
+let ALERTA_VNR = [];     // v_alerta_vende_no_renueva_visible
+let ALERTA_GRANDES = []; // v_alerta_cuenta_grande_visible
+let BOLSA_FILAS = [];    // v_bolsa_persona_mensual, alias_bos='Karen Suaza'
+let ESCALERA = [];       // bono_escalera, area=renovaciones tipo=anual activo=true
+let CARTERA = [];        // v_cartera_estado_v3_visible
+let CHIP_SEL = 'todas';
+let TAB = 'cola';
+const $ = id => document.getElementById(id);
+function rowIdAno(r){ return 'rf_'+String(r.llave+'|'+r.vence).replace(/[^a-zA-Z0-9]/g,'_'); }
+function mesISO(anio, mesNum){ return anio+'-'+String(mesNum).padStart(2,'0')+'-01'; }
 
 async function cargarTodo(){
-  document.getElementById("pg-stamp").textContent = "cargando…";
-  await Promise.all([
-    cargarCola(), cargarArea(), cargarVendedores(), cargarMuro(), cargarBolsa(), cargarGeneraGasta(), cargarEsquemaBonos(),
+  const stampEl = $('pg-stamp'); if(stampEl) stampEl.textContent = 'cargando…';
+
+  const { data: enCurso } = await SB.from('v_indice_renovaciones_v3_visible').select('mes').eq('estado_mes','en_curso').maybeSingle();
+  if(enCurso && enCurso.mes){
+    AÑO_ACTUAL = Number(String(enCurso.mes).slice(0,4));
+    MES_ACTUAL = Number(String(enCurso.mes).slice(5,7));
+  } else {
+    const hoy = new Date(); AÑO_ACTUAL = hoy.getFullYear(); MES_ACTUAL = hoy.getMonth()+1;
+  }
+  if(!MES_SEL) MES_SEL = MES_ACTUAL;
+  const sec = $('secLabel'); if(sec) sec.textContent = 'Renovaciones · Karen · '+AÑO_ACTUAL;
+  const tuAnio = $('tuAnio'); if(tuAnio) tuAnio.textContent = AÑO_ACTUAL;
+
+  const [idxR, añoR, agR, vnrR, grR, bolsaR, escR, cartR] = await Promise.all([
+    SB.from('v_indice_renovaciones_v3_visible').select('mes,vencieron,renovaron,pct_renovado,premium_vencido,premium_con_senal,premium_por_confirmar,estado_mes')
+      .gte('mes', mesISO(AÑO_ACTUAL,1)).lte('mes', mesISO(AÑO_ACTUAL,12)).order('mes',{ascending:true}),
+    fetchPaginado(()=> SB.from('v_renov_ano_visible').select('*').eq('area','KAREN')),
+    SB.from('v_agente_resumen_ano_visible').select('*'),
+    SB.from('v_alerta_vende_no_renueva_visible').select('*'),
+    SB.from('v_alerta_cuenta_grande_visible').select('*').order('dias_restantes',{ascending:true}),
+    SB.from('v_bolsa_persona_mensual').select('*').eq('alias_bos','Karen Suaza').order('mes',{ascending:true}),
+    SB.from('bono_escalera').select('*').eq('area','renovaciones').eq('tipo','anual').eq('activo',true).order('umbral',{ascending:true}),
+    SB.from('v_cartera_estado_v3_visible').select('*'),
   ]);
+
+  const errores = [idxR, añoR].filter(r=>r.error).map(r=>r.error.message);
+  if(errores.length){
+    $('pg-acceso').innerHTML = '<div class="pg-warn-box"><b>No se pudo cargar todo.</b> '+esc(errores.join(' · '))+'</div>';
+  }
+
+  IDX_MESES = idxR.data || [];
+  AÑO_FILAS = añoR.data || [];
+  AGENTES_RESUMEN = agR.data || [];
+  ALERTA_VNR = vnrR.data || [];
+  ALERTA_GRANDES = grR.data || [];
+  BOLSA_FILAS = bolsaR.data || [];
+  ESCALERA = escR.data || [];
+  CARTERA = cartR.data || [];
+
+  nav(); pintarMes(); vend(); muro(); bolsa(); bonos(); area();
+
   const hhmm = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById("pg-stamp").textContent = "datos al " + hhmm;
-  const foot = document.getElementById('pg-foot-stamp'); if(foot) foot.textContent = hhmm;
+  if(stampEl) stampEl.textContent = 'datos al '+hhmm;
+  cargarEstadoDato(hhmm);
 }
 
-/* =====================================================================
-   4) 06 EL ÁREA — índice, alertas, estados de cartera (dirección)
-   ===================================================================== */
-async function cargarArea(){
-  const [idxR, rojoR, rojoCuentasR, vendeR, grandeR, carteraR] = await Promise.all([
-    SB.from('v_indice_renovaciones_v3_visible').select('*').order('mes',{ascending:true}),
-    SB.from('v_alerta_mes_rojo_visible').select('*').maybeSingle(),
-    SB.from('v_alerta_mes_rojo_cuentas_visible').select('*'),
-    SB.from('v_alerta_vende_no_renueva_visible').select('*').order('premium_perdido',{ascending:false}),
-    SB.from('v_alerta_cuenta_grande_visible').select('*').order('premium_activo',{ascending:false}),
-    SB.from('v_cartera_estado_v3_visible').select('area,estado,cuentas,premium').eq('area','KAREN'),
-  ]);
-  if(idxR.error || !idxR.data || !idxR.data.length){
-    document.getElementById('area-indice-card').innerHTML = '<div class="pg-limite" style="color:var(--pg-muted)">Sin datos de dirección disponibles para tu usuario.</div>';
-    return;
-  }
-  pintarIndiceArea(idxR.data);
-  pintarAlertasArea(rojoR.data, rojoCuentasR.data||[], vendeR.data||[], grandeR.data||[]);
-  pintarCarteraArea(carteraR.data||[]);
-}
-
-/* ---- pie de casilla 01 (Mi cola): hora real del dato (foto del motor + BOS), no la hora del reloj ---- */
-async function cargarEstadoDato(){
-  const el = document.getElementById('area-estado-dato'); if(!el) return;
-  const { data, error } = await SB.from('v_renov_estado_dato').select('*').maybeSingle();
-  if(error || !data){ el.innerHTML = ''; return; }
-  const rojo = data.semaforo === 'rojo';
-  el.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+(rojo?'var(--pg-neg)':'var(--pg-pos)')+';margin-right:6px"></span>'+
-    'Datos al minuto '+fmtHora(data.foto_at)+(rojo?' · revisar sincronización':'');
-}
-
-/* ---- onda de tendencia (el número del mes en curso vive ahora en la cabecera de Mi cola) ---- */
-function pintarIndiceArea(idxAll){
-  const cerrados = idxAll.filter(r=>r.estado_mes!=='futuro');
-  const ult12 = cerrados.slice(-12);
-
-  const el = document.getElementById('area-indice-card');
-  el.innerHTML = '<h2>Tendencia de renovación</h2><div class="chart-wrap" style="height:300px"><canvas id="chIndiceArea"></canvas></div>';
-
-  const labels = ult12.map(r=>mesCorto(r.mes));
-  const data = ult12.map(r=>r.pct_renovado===null?null:Number(r.pct_renovado));
-  const tendencia = data.map((v,i)=> i>=data.length-3 ? v : null);
-  const idxActual = ult12.findIndex(r=>r.estado_mes==='en_curso');
-  const gradiente = (ctx) => {
-    const g = ctx.chart.ctx.createLinearGradient(0,0,0,260);
-    g.addColorStop(0,'rgba(45,191,163,.35)'); g.addColorStop(1,'rgba(45,191,163,.02)');
-    return g;
-  };
-  pintarChart('chIndiceArea', {
-    type:'line',
-    data:{ labels, datasets:[
-      { label:'% renovado', data, borderColor:'#2DBFA3', backgroundColor:gradiente, fill:true, tension:.45, borderWidth:4, spanGaps:true, order:1,
-        pointRadius: labels.map((_,i)=> i===idxActual?8:4), pointBackgroundColor:'#2DBFA3', pointBorderColor:'#fff', pointBorderWidth:2 },
-      { label:'Tendencia 3 meses', data: tendencia, borderColor:'#1B2D3A', borderDash:[3,3], borderWidth:2, pointRadius:0, fill:false, tension:0, spanGaps:true, order:0 },
-      { label:'Estándar 70%', data: labels.map(()=>70), borderColor:'#D9A520', borderDash:[6,4], borderWidth:1.6, pointRadius:0, fill:'-2', backgroundColor:'rgba(217,165,32,.16)', tension:0, order:2 },
-    ]},
-    options:{ maintainAspectRatio:false, plugins:{legend:{display:false}},
-      scales:{ x:{ ticks:{ font:{size:11} } }, y:{ min:0, max:80, ticks:{ callback:v=>v+'%' } } } }
-  });
-}
-
-/* ---- alertas ---- */
-function pintarAlertasArea(rojo, rojoCuentas, vende, grande){
-  const enRojo = rojo && rojo.en_rojo;
-  const vendeAlerta = vende.filter(a=>a.en_alerta);
-  const idResumenRojo = enRojo ? ('EN ROJO · '+rojo.pct_renovado+'%') : 'en verde';
-  const idResumenVende = vendeAlerta.length+' agente(s)';
-  const idResumenGrande = grande.length+' cuenta(s)';
-
-  const cuerpoRojo = (rojoCuentas.length
-    ? '<div class="tablewrap"><table class="pg-table"><thead><tr><th>Agente</th><th class="num">Cuentas</th><th class="num">Premium por renovar</th></tr></thead><tbody>'+
-      rojoCuentas.map(c=>'<tr><td>'+esc(c.dueno)+'</td><td class="num">'+c.cuentas+'</td><td class="num">'+fmtUSD(c.premium_por_renovar)+'</td></tr>').join('')+
-      '</tbody></table></div>'
-    : '<div class="pg-limite">Sin cuentas pendientes este mes.</div>');
-
-  const cuerpoVende = (vendeAlerta.length
-    ? '<div class="tablewrap"><table class="pg-table"><thead><tr><th>Agente</th><th class="num">%</th><th class="num">Perdido</th></tr></thead><tbody>'+
-      vendeAlerta.map(a=>'<tr><td>'+esc(a.dueno)+'</td><td class="num" style="color:var(--pg-neg);font-weight:700">'+a.pct_renovado+'%</td><td class="num">'+fmtUSD(a.premium_perdido)+'</td></tr>').join('')+
-      '</tbody></table></div>'
-    : '<div class="pg-limite">Nadie en alerta.</div>');
-
-  const cuerpoGrande = (grande.length
-    ? '<div class="tablewrap"><table class="pg-table"><thead><tr><th>DOT</th><th>Cuenta</th><th>Agente</th><th class="num">Premium</th><th class="num">Días</th></tr></thead><tbody>'+
-      grande.map(g=>{
-        const colorSenal = g.sin_senal ? 'var(--pg-warn)' : 'var(--pg-pos)';
-        return '<tr><td>'+esc(g.dot||g.llave)+'</td><td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+colorSenal+';margin-right:6px"></span>'+esc(g.cuenta_nombre||g.llave)+'</td><td>'+esc(g.dueno_ultima_venta||'—')+'</td><td class="num">'+fmtUSD(g.premium_activo)+'</td><td class="num">'+g.dias_restantes+'</td></tr>';
-      }).join('')+
-      '</tbody></table></div>'
-    : '<div class="pg-limite">Sin cuentas grandes en ese rango.</div>');
-
-  document.getElementById('area-alertas').innerHTML = '<div class="pg-grid-3">'+
-    bloquePlegable('al-rojo', 'Mes en rojo', '<span style="color:'+(enRojo?'var(--pg-neg)':'var(--pg-pos)')+'">'+idResumenRojo+'</span>', cuerpoRojo, false)+
-    bloquePlegable('al-vende', 'Vende pero no renueva', idResumenVende, cuerpoVende, true)+
-    bloquePlegable('al-grande', 'Cuenta grande a 15 días', idResumenGrande, cuerpoGrande, true)+
-  '</div>';
-}
-
-/* ---- cartera: separa activas de canceladas, por área ---- */
-function pintarCarteraArea(cartera){
-  const porEstado = {};
-  cartera.forEach(r=>{ porEstado[r.estado] = r; });
-  const ESTADOS_ORDEN = [
-    { estado:'ACTIVA',            color:'var(--pg-pos)',  destacada:false },
-    { estado:'ACTIVA SIN SENAL',  color:'var(--pg-warn)', destacada:true  },
-    { estado:'RENOVADA',          color:'var(--pg-ink)',  destacada:false },
-    { estado:'VENCIDA',           color:'var(--pg-ink)',  destacada:false },
-  ];
-  function tarjeta(cfg){
-    const r = porEstado[cfg.estado] || { cuentas:0, premium:0 };
-    const premium = Number(r.premium||0);
-    const fondo = cfg.destacada ? '#FBF0DC' : 'var(--pg-bg)';
-    const borde = cfg.destacada ? '#ECD08C' : 'var(--pg-line)';
-    return '<div style="flex:1;min-width:140px;background:'+fondo+';border:1px solid '+borde+';border-radius:14px;padding:14px 16px">'+
-      '<div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--pg-muted)">'+esc(etiqueta(cfg.estado))+'</div>'+
-      '<div style="font-family:var(--pg-font-num);font-size:'+(cfg.destacada?'26px':'22px')+';font-weight:700;color:'+cfg.color+'">'+(r.cuentas||0)+'</div>'+
-      (premium>0 ? '<div style="font-size:11.5px;color:var(--pg-muted);margin-top:2px">'+fmtUSD(premium)+'</div>' : '')+
-    '</div>';
-  }
-  const activaN = porEstado['ACTIVA'] ? porEstado['ACTIVA'].cuentas : 0;
-  const sinSenalN = porEstado['ACTIVA SIN SENAL'] ? porEstado['ACTIVA SIN SENAL'].cuentas : 0;
-  document.getElementById('area-cartera').innerHTML = bloquePlegable('cartera-area',
-    'Estado de la cartera',
-    activaN+' activas · '+sinSenalN+' sin señal',
-    '<div style="display:flex;gap:12px;flex-wrap:wrap">'+ESTADOS_ORDEN.map(tarjeta).join('')+'</div>',
-    false);
-}
-
-/* =====================================================================
-   4b) 01 MI COLA — v_renov_cola_visible + renov_trabajo. Orden fijo
-   (bloque, luego premium desc) — el orden ES la prioridad.
-   ===================================================================== */
-const ESTADOS_TRABAJO = ['pendiente','contactado','cotizando','renovado','perdido','retirado'];
-const COLA_CHIPS = [
-  { key:'pendientes',  label:'Pendientes' },
-  { key:'este_mes',    label:'Este mes' },
-  { key:'contactadas', label:'Contactadas' },
-  { key:'sin_senal',   label:'Sin señal de vida' },
-  { key:'verificadas', label:'Verificadas con Jeff' },
-  { key:'todas',       label:'Todas' },
-];
-let COLA_FILAS = [];
-let COLA_FILTRO_CHIP = 'pendientes';
-let COLA_BUSQUEDA = '';
-let COLA_FICHA_ROW = null;
-let COLA_FICHA_LISTA = [];
-let MES_EN_CURSO = null;
-let MES_VENCIERON = 0;
-function rowId(r){ return 'rf_'+String(r.llave+'|'+r.vence).replace(/[^a-zA-Z0-9]/g,'_'); }
-
-async function cargarCola(){
-  const lista = document.getElementById('cola-lista');
-  const [colaR, idxR] = await Promise.all([
-    fetchPaginado(()=> SB.from('v_renov_cola_visible').select('*').eq('area','KAREN')),
-    SB.from('v_indice_renovaciones_v3_visible').select('mes,vencieron,renovaron,pct_renovado,premium_vencido,premium_con_senal,premium_por_confirmar').eq('estado_mes','en_curso').maybeSingle(),
-  ]);
-  MES_EN_CURSO = idxR.data ? idxR.data.mes : null;
-  MES_VENCIERON = idxR.data ? Number(idxR.data.vencieron||0) : 0;
-  if(colaR.error){ lista.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(colaR.error.message)+'</div>'; pintarCabeceraCola(idxR.data, 0, 0); return; }
-  COLA_FILAS = (colaR.data||[]).slice().sort((a,b)=> (Number(a.bloque)-Number(b.bloque)) || (Number(b.premium_activo||0)-Number(a.premium_activo||0)));
-  pintarCabeceraCola(idxR.data, Number(idxR.data?.premium_con_senal||0), Number(idxR.data?.premium_por_confirmar||0));
-  pintarChipsCola();
-  cablearBuscadorCola();
-  repintarCola();
-  cargarEstadoDato();
-  cargarContadorSemana();
-}
-
-function pintarCabeceraCola(row, premSenal, premConfirmar){
-  const el = document.getElementById('cola-cabecera'); if(!el) return;
-  if(!row){ el.innerHTML = '<div class="pg-limite">Sin datos del mes en curso.</div>'; return; }
-  const vencieron = Number(row.vencieron||0);
-  const renovaron = Number(row.renovaron||0);
-  const pct = row.pct_renovado===null||row.pct_renovado===undefined ? 0 : Number(row.pct_renovado);
-  const metaCuentas = Math.ceil(vencieron*0.70);
-  const faltan = Math.max(0, metaCuentas - renovaron);
-  const dias = diasRestantesMes(row.mes);
-  const color = semaforoColor(pct);
-  el.innerHTML =
-    '<div>'+
-      '<div class="cola-cab-mes"><span class="cola-cab-mes-txt">'+esc(fmtMesLargoMayus(row.mes))+'</span><span class="cola-cab-dias">quedan '+dias+' días</span></div>'+
-      '<div class="cola-cab-entran">Entras a renovar <b>'+vencieron+'</b> cuentas</div>'+
-      '<div class="cola-cab-prem">'+fmtUSD(row.premium_vencido)+' en juego · '+fmtUSD(premSenal||0)+' con señal de vida · '+fmtUSD(premConfirmar||0)+' por confirmar</div>'+
-      '<div class="cola-cab-fila3">'+
-        '<div><div class="l">Meta 70%</div><div class="v">'+metaCuentas+' <span class="pgu">cuentas</span></div></div>'+
-        '<div><div class="l">Renovadas</div><div class="v">'+renovaron+'</div></div>'+
-        '<div class="falta"><div class="l">Faltan</div><div class="v">'+faltan+'</div></div>'+
-      '</div>'+
-    '</div>'+
-    '<div class="cola-cab-ring">'+anilloMes(pct,70)+'<div class="c"><div class="p" style="color:'+color+'">'+pct.toFixed(1)+'%</div><div class="s">meta 70%</div></div></div>';
-}
-
-function pintarChipsCola(){
-  const el = document.getElementById('cola-chips'); if(!el) return;
-  el.innerHTML = COLA_CHIPS.map(c=>'<button type="button" class="cola-chip'+(COLA_FILTRO_CHIP===c.key?' on':'')+'" data-chip="'+c.key+'">'+esc(c.label)+'</button>').join('');
-  el.querySelectorAll('[data-chip]').forEach(b=> b.addEventListener('click', ()=>{
-    COLA_FILTRO_CHIP = b.dataset.chip; pintarChipsCola(); repintarCola();
-  }));
-}
-function cablearBuscadorCola(){
-  const inp = document.getElementById('cola-buscar'); if(!inp) return;
-  inp.value = COLA_BUSQUEDA;
-  inp.oninput = ()=>{ COLA_BUSQUEDA = inp.value; repintarCola(); };
-}
-/* lunes 00:00 de la semana en curso en hora de Medellin (UTC-5 fijo, sin horario
-   de verano) — el domingo cuenta como fin de esa semana, no como inicio de la
-   siguiente. Devuelve el instante UTC equivalente en ISO. */
-function inicioSemanaMedellin(){
-  const bogota = new Date(Date.now() - 5*60*60*1000);
-  const dow = bogota.getUTCDay(); // 0=domingo … 6=sabado, en hora de Bogota
-  const diasDesdeLunes = (dow + 6) % 7;
-  const lunesBogota = Date.UTC(bogota.getUTCFullYear(), bogota.getUTCMonth(), bogota.getUTCDate() - diasDesdeLunes, 0, 0, 0);
-  return new Date(lunesBogota + 5*60*60*1000).toISOString();
-}
-async function cargarContadorSemana(){
-  const el = document.getElementById('cola-semana'); if(!el) return;
-  const desde = inicioSemanaMedellin();
-  const { data } = await SB.from('renov_trabajo').select('llave,vence').gte('trabajada_at', desde);
-  const claves = new Set(COLA_FILAS.map(r=> r.llave+'|'+r.vence));
-  const n = (data||[]).filter(t=> claves.has(t.llave+'|'+t.vence)).length;
-  el.innerHTML = '<b>'+n+'</b> de '+MES_VENCIERON+' trabajadas esta semana';
-}
-
-function filasFiltradasCola(){
-  const q = COLA_BUSQUEDA.trim().toLowerCase();
-  return COLA_FILAS.filter(r=>{
-    if(COLA_FILTRO_CHIP==='pendientes' && (r.estado_trabajo||'pendiente')!=='pendiente') return false;
-    if(COLA_FILTRO_CHIP==='contactadas' && !r.contactado) return false;
-    if(COLA_FILTRO_CHIP==='sin_senal' && !r.sin_senal) return false;
-    if(COLA_FILTRO_CHIP==='verificadas' && !r.verificado_financiera) return false;
-    if(COLA_FILTRO_CHIP==='este_mes' && MES_EN_CURSO && String(r.mes_vence)!==String(MES_EN_CURSO)) return false;
-    if(q){
-      const nombre = (r.cuenta_nombre||r.llave||'').toLowerCase();
-      const dot = (r.dot||'').toLowerCase();
-      if(nombre.indexOf(q)<0 && dot.indexOf(q)<0) return false;
+async function cargarEstadoDato(hhmm){
+  const el = $('pie'); if(!el) return;
+  let extra = '';
+  try{
+    const { data, error } = await SB.from('v_renov_estado_dato').select('*').maybeSingle();
+    if(!error && data){
+      const rojo = data.semaforo === 'rojo';
+      extra = ' · datos al minuto '+fmtHora(data.foto_at)+(rojo?' · revisar sincronización':'');
     }
-    return true;
-  });
+  }catch(e){}
+  el.textContent = 'Datos en vivo · actualizado a las '+hhmm+extra;
 }
 
-function repintarCola(){
-  const filas = filasFiltradasCola();
-  const lista = document.getElementById('cola-lista');
-  lista.innerHTML = filas.length
-    ? '<div class="tablewrap"><table class="cola-tabla"><thead><tr><th></th><th>Cuenta</th><th>Agente</th><th class="num">Premium</th><th>Vence</th><th>Señal</th><th>Jeff</th><th>Contacto</th><th>Estado</th><th class="num">Notas</th></tr></thead><tbody id="cola-tbody">'+
-        filas.map(filaCola).join('')+
-      '</tbody></table></div>'
-    : '<div class="pg-limite">Sin cuentas para este filtro.</div>';
-  cablearFilasCola(filas);
-  const sumaSenal = filas.reduce((s,r)=>s+Number(r.premium_con_senal||0),0);
-  const sumaConfirmar = filas.reduce((s,r)=>s+Number(r.premium_por_confirmar||0),0);
-  document.getElementById('cola-resumen').textContent = fmtUSD(sumaSenal)+' con señal de vida · '+fmtUSD(sumaConfirmar)+' por confirmar · '+filas.length+' cuentas';
-  COLA_FICHA_LISTA = filas;
-  if(COLA_FICHA_ROW){
-    const sigue = filas.some(r=> r.llave===COLA_FICHA_ROW.llave && r.vence===COLA_FICHA_ROW.vence);
-    if(!sigue) cerrarFicha();
-  }
+/* ---------- navegación ---------- */
+const TABS = [['cola','01','Mi cola'],['vend','02','Vendedores'],['muro','03','El muro'],
+  ['bolsa','04','La bolsa'],['bonos','05','Bonos'],['area','06','El área']];
+function nav(){
+  const badges = { muro: ALERTA_GRANDES.length };
+  $('nav').innerHTML = TABS.map(([k,n,t])=>{
+    const b = badges[k]||0;
+    return '<div class="nv'+(TAB===k?' on':'')+'" data-tab="'+k+'"><span class="k">'+n+'</span><span class="t">'+t+'</span>'+(b?'<span class="b">'+b+'</span>':'')+'</div>';
+  }).join('');
+  document.querySelectorAll('#nav .nv').forEach(el=> el.onclick = ()=> setTab(el.dataset.tab));
+  TABS.forEach(([k])=>{ const p = $('p-'+k); if(p) p.classList.toggle('on', k===TAB); });
+}
+function setTab(k){ TAB=k; nav(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+/* ---------- tooltip ---------- */
+function tip(e, html){
+  const t = $('tip'); t.innerHTML = html; t.style.opacity = 1;
+  t.style.left = Math.min(e.clientX+14, innerWidth-250)+'px';
+  t.style.top = (e.clientY-62)+'px';
+}
+function ocultar(){ $('tip').style.opacity = 0; }
+
+/* =====================================================================
+   4) 01 MI COLA — cinta del año, franja del mes, chips, cola
+   ===================================================================== */
+function pctAno(){
+  const cerrados = IDX_MESES.filter(m=>m.estado_mes==='cerrado');
+  const vs = cerrados.reduce((s,m)=>s+Number(m.vencieron||0),0);
+  const rs = cerrados.reduce((s,m)=>s+Number(m.renovaron||0),0);
+  return vs ? 100*rs/vs : 0;
+}
+function pintarMes(){ cinta(); franja(); chips(); cola(); }
+
+function cinta(){
+  const cont = $('months'); cont.innerHTML = '';
+  const max = Math.max(1, ...IDX_MESES.map(x=>Number(x.vencieron||0)));
+  IDX_MESES.forEach(x=>{
+    const mesNum = Number(String(x.mes).slice(5,7));
+    const c = Number(x.vencieron||0), r = Number(x.renovaron||0);
+    const h = 104*(c/max), hr = c ? h*(r/c) : 0;
+    const d = document.createElement('div');
+    d.className = 'mo'+(mesNum===MES_SEL?' on':'')+(mesNum>MES_ACTUAL?' futuro':'');
+    d.innerHTML = '<div class="bar"><div class="seg-f" style="height:0"></div>'+
+      '<div class="seg-r" style="height:0"></div></div>'+
+      '<div class="lbl">'+MESES_CORTOS[mesNum-1]+'</div><div class="num">'+c+'</div>';
+    d.querySelector('.bar').insertAdjacentHTML('beforeend', '<div class="tick" style="bottom:'+(0.7*h)+'px"></div>');
+    d.onclick = ()=>{ MES_SEL=mesNum; CHIP_SEL='todas'; pintarMes(); };
+    d.onmousemove = e=> tip(e, '<span class="tt">'+NOM_MESES[mesNum]+' '+AÑO_ACTUAL+'</span><b>'+c+'</b> cuentas · <b>'+r+'</b> renovadas<br>'+fmtUSD(x.premium_vencido)+' en juego');
+    d.onmouseleave = ocultar;
+    cont.appendChild(d);
+    requestAnimationFrame(()=>{
+      const sf = d.querySelector('.seg-f'), sr = d.querySelector('.seg-r');
+      sf.style.height = (h-hr)+'px'; sr.style.height = hr+'px';
+    });
+  });
+  const tot = IDX_MESES.reduce((s,x)=>s+Number(x.vencieron||0),0);
+  const tp = IDX_MESES.reduce((s,x)=>s+Number(x.premium_vencido||0),0);
+  $('rbSub').innerHTML = '<b style="font-family:var(--f-num)">'+tot+'</b> cuentas renuevan este año · <b style="font-family:var(--f-num)">'+fmtUSD(tp)+'</b> en juego · meses cerrados: <b style="font-family:var(--f-num)">'+pctAno().toFixed(1)+'%</b> renovado';
+}
+
+function franja(){
+  const x = IDX_MESES.find(m=> Number(String(m.mes).slice(5,7))===MES_SEL);
+  if(!x){ return; }
+  $('stMes').textContent = NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL;
+  $('stC').textContent = x.vencieron||0;
+  $('stP').textContent = fmtUSD(x.premium_vencido);
+  $('stS').textContent = fmtUSD(x.premium_con_senal);
+  $('stX').textContent = fmtUSD(x.premium_por_confirmar);
+  $('stM').textContent = Math.ceil(Number(x.vencieron||0)*0.7)+' cuentas';
+  const pct = x.pct_renovado==null ? 0 : Number(x.pct_renovado);
+  const C = 2*Math.PI*52;
+  $('arc').style.strokeDasharray = (C*Math.min(pct,100)/100)+' '+C;
+  $('arcT').textContent = pct.toFixed(0)+'%';
+}
+
+function filasDelMes(){
+  const iso = mesISO(AÑO_ACTUAL, MES_SEL);
+  return AÑO_FILAS.filter(r=> String(r.mes_vence)===iso);
+}
+function filtradas(){
+  let f = filasDelMes();
+  if(CHIP_SEL==='pend') f = f.filter(r=>(r.estado_trabajo||'pendiente')==='pendiente');
+  if(CHIP_SEL==='proc') f = f.filter(r=>['contactado','cotizando'].includes(r.estado_trabajo));
+  if(CHIP_SEL==='sen')  f = f.filter(r=>r.sin_senal);
+  if(CHIP_SEL==='ren')  f = f.filter(r=>r.estado_trabajo==='renovado');
+  if(CHIP_SEL==='urg')  f = f.filter(r=>r.en_ventana);
+  return f.slice().sort((a,b)=> Number(b.premium_activo||0)-Number(a.premium_activo||0));
+}
+function chips(){
+  const f = filasDelMes();
+  const d = [
+    ['todas','Todas', f.length],
+    ['pend','Pendientes', f.filter(r=>(r.estado_trabajo||'pendiente')==='pendiente').length],
+    ['proc','En proceso', f.filter(r=>['contactado','cotizando'].includes(r.estado_trabajo)).length],
+    ['sen','Sin señal de vida', f.filter(r=>r.sin_senal).length],
+    ['ren','Renovadas', f.filter(r=>r.estado_trabajo==='renovado').length],
+    ['urg','Urgente', f.filter(r=>r.en_ventana).length],
+  ];
+  $('chips').innerHTML = d.map(([k,t,n])=> '<button type="button" class="chip'+(CHIP_SEL===k?' on':'')+'" data-chip="'+k+'">'+t+'<span class="n">'+n+'</span></button>').join('');
+  document.querySelectorAll('#chips .chip').forEach(b=> b.onclick = ()=>{ CHIP_SEL = b.dataset.chip; chips(); cola(); });
 }
 
 function filaCola(r){
-  const id = rowId(r);
-  const sel = COLA_FICHA_ROW && COLA_FICHA_ROW.llave===r.llave && COLA_FICHA_ROW.vence===r.vence;
-  const uClase = r.urgencia==='rojo' ? 'rojo' : (r.urgencia==='ambar' ? 'amb' : '');
-  const dotClase = r.urgencia==='rojo' ? 'r' : (r.urgencia==='ambar' ? 'a' : 'g');
-  const veClase = r.urgencia==='rojo' ? 'r' : (r.urgencia==='ambar' ? 'a' : '');
-  const cuentaSub = [ r.dot?('DOT '+esc(r.dot)):null, Number(r.n_polizas)>1?('×'+r.n_polizas+' pólizas'):null, r.otras_fechas?('vence en otras fechas: '+esc(r.otras_fechas)):null ].filter(Boolean).join(' · ');
-  const contactadoDisabled = r.sin_senal && !r.verificado_financiera;
-  const sigClase = r.sin_senal ? 'no' : 'ok';
-  const sigTxt = (r.dias_sin_mov!=null ? r.dias_sin_mov+' d' : '—') + (r.sin_senal ? ' · confirmar con Jeff' : '');
-  const estadoTxt = (r.estado_trabajo||'pendiente'); const estadoCap = estadoTxt.charAt(0).toUpperCase()+estadoTxt.slice(1);
-  return '<tr class="f'+(uClase?' '+uClase:'')+(sel?' sel':'')+'" data-row-id="'+id+'">'+
-      '<td><i class="cola-udot '+dotClase+'"></i></td>'+
-      '<td class="cola-cta">'+esc(r.cuenta_nombre||r.llave)+(cuentaSub?'<small>'+cuentaSub+'</small>':'')+'</td>'+
-      '<td>'+esc(r.agente||'—')+'</td>'+
-      '<td class="num">'+fmtUSD(r.premium_activo)+'</td>'+
-      '<td class="cola-vence'+(veClase?' '+veClase:'')+'"><div class="cola-vence-dias">'+fmtDiasVence(r.dias_para_vencer)+'</div><div class="cola-vence-fecha">'+fmtFecha(r.vence)+'</div></td>'+
-      '<td><span class="cola-sig '+sigClase+'"><i></i>'+sigTxt+'</span></td>'+
-      '<td><span class="chk'+(r.verificado_financiera?' on':'')+'" data-jeff></span></td>'+
-      '<td><span class="chk'+(r.contactado?' on':'')+(contactadoDisabled?' off':'')+'" data-contacto></span></td>'+
-      '<td><span class="cola-pill">'+esc(estadoCap)+'</span></td>'+
-      '<td class="num">'+(r.n_notas||0)+'</td>'+
-    '</tr>';
-}
-
-function cablearFilasCola(filas){
-  const tbody = document.getElementById('cola-tbody'); if(!tbody) return;
-  filas.forEach(r=>{
-    const id = rowId(r);
-    const tr = tbody.querySelector('tr[data-row-id="'+id+'"]'); if(!tr) return;
-    tr.querySelectorAll('td').forEach(td=>{
-      if(td.querySelector('.chk')) return;
-      td.addEventListener('click', ()=> abrirFicha(r, filas));
-    });
-    const chkJeff = tr.querySelector('[data-jeff]');
-    chkJeff.addEventListener('click', async (e)=>{
-      e.stopPropagation();
-      const nuevo = !chkJeff.classList.contains('on');
-      await onChkJeff(r, nuevo, { checked: nuevo });
-      chkJeff.classList.toggle('on', !!r.verificado_financiera);
-      const chkCont = tr.querySelector('[data-contacto]');
-      if(chkCont) chkCont.classList.toggle('off', r.sin_senal && !r.verificado_financiera);
-      if(COLA_FICHA_ROW && COLA_FICHA_ROW.llave===r.llave && COLA_FICHA_ROW.vence===r.vence) pintarFicha(r, filas);
-    });
-    const chkCont = tr.querySelector('[data-contacto]');
-    chkCont.addEventListener('click', async (e)=>{
-      e.stopPropagation();
-      if(chkCont.classList.contains('off')) return;
-      const nuevo = !chkCont.classList.contains('on');
-      await onChkContactado(r, nuevo, { checked: nuevo });
-      chkCont.classList.toggle('on', !!r.contactado);
-      if(COLA_FICHA_ROW && COLA_FICHA_ROW.llave===r.llave && COLA_FICHA_ROW.vence===r.vence) pintarFicha(r, filas);
-    });
-  });
-}
-
-/* ---- ficha lateral: se abre al lado, sin cambiar de página ---- */
-function abrirFicha(row, filasActuales){
-  COLA_FICHA_ROW = row;
-  COLA_FICHA_LISTA = filasActuales;
-  document.getElementById('cola-panel').style.display = 'block';
-  document.querySelectorAll('.cola-tabla tr.f').forEach(tr=>tr.classList.remove('sel'));
-  const trSel = document.querySelector('tr[data-row-id="'+rowId(row)+'"]'); if(trSel) trSel.classList.add('sel');
-  pintarFicha(row, filasActuales);
-}
-function cerrarFicha(){
-  COLA_FICHA_ROW = null;
-  const panel = document.getElementById('cola-panel'); if(panel){ panel.style.display = 'none'; panel.innerHTML=''; }
-  document.querySelectorAll('.cola-tabla tr.f.sel').forEach(tr=>tr.classList.remove('sel'));
-}
-window.cerrarFicha = cerrarFicha;
-window.navegarFicha = function(delta){
-  if(!COLA_FICHA_ROW || !COLA_FICHA_LISTA.length) return;
-  const idx = COLA_FICHA_LISTA.findIndex(r=> r.llave===COLA_FICHA_ROW.llave && r.vence===COLA_FICHA_ROW.vence);
-  const next = COLA_FICHA_LISTA[idx+delta];
-  if(!next) return;
-  abrirFicha(next, COLA_FICHA_LISTA);
-};
-
-function pintarFicha(row, filasActuales){
-  const panel = document.getElementById('cola-panel'); if(!panel) return;
-  const idx = filasActuales.findIndex(r=> r.llave===row.llave && r.vence===row.vence);
-  const puedeAnterior = idx>0;
-  const puedeSiguiente = idx>=0 && idx<filasActuales.length-1;
-  const estadoActual = row.estado_trabajo || 'pendiente';
-  const contactadoDisabled = row.sin_senal && !row.verificado_financiera;
-  panel.innerHTML =
-    '<button type="button" class="ficha-cerrar" onclick="cerrarFicha()">✕</button>'+
-    '<div class="ficha-nav">'+
-      '<button type="button" id="ficha-ant" '+(puedeAnterior?'':'disabled')+'>‹ Anterior</button>'+
-      '<button type="button" id="ficha-sig" '+(puedeSiguiente?'':'disabled')+'>Siguiente ›</button>'+
-    '</div>'+
-    '<div style="font-family:var(--pg-font-title);font-weight:800;font-size:15px;color:var(--pg-ink)">'+esc(row.cuenta_nombre||row.llave)+'</div>'+
-    '<div style="font-size:12px;color:var(--pg-muted);margin-top:2px">'+esc(row.agente||'—')+' · DOT '+esc(row.dot||'—')+'</div>'+
-    (row.otras_fechas ? '<div class="pg-limite" style="margin-top:8px">También tiene pólizas venciendo en '+esc(row.otras_fechas)+'.</div>' : '')+
-    '<div class="ficha-seccion"><h3>Verificación y contacto</h3>'+
-      '<div class="acciones">'+
-        '<button type="button" id="ficha-btn-jeff" class="'+(row.verificado_financiera?'activo':'')+'">Verificado con Jeff</button>'+
-        '<button type="button" id="ficha-btn-contactado" class="'+(row.contactado?'activo':'')+'" '+(contactadoDisabled?'disabled':'')+'>Contactado hoy</button>'+
-      '</div>'+
-      '<select id="ficha-sel-estado" style="margin-top:10px;font-family:var(--pg-font-body);font-size:13px;padding:7px 10px;border-radius:10px;border:1px solid var(--pg-line)">'+
-        ESTADOS_TRABAJO.map(e=>'<option value="'+e+'" '+(estadoActual===e?'selected':'')+'>'+e[0].toUpperCase()+e.slice(1)+'</option>').join('')+
-      '</select>'+
-    '</div>'+
-    '<div class="ficha-seccion"><h3>Pólizas del grupo</h3><div id="ficha-polizas"><div class="pg-skel" style="height:60px"></div></div></div>'+
-    '<div class="ficha-seccion"><h3>Historia de la cuenta</h3><div id="ficha-historia"><div class="pg-skel" style="height:60px"></div></div></div>'+
-    '<div class="ficha-seccion"><h3>Último movimiento</h3><div style="font-size:13px;color:var(--pg-ink)">'+(row.dias_sin_mov!=null ? 'Hace '+row.dias_sin_mov+' días en el BOS' : 'Sin dato')+'</div></div>'+
-    '<div class="ficha-seccion"><h3>Notas</h3><div id="notas_'+rowId(row)+'"><div class="pg-skel" style="height:40px"></div></div>'+
-      '<div class="pg-nota-input"><textarea id="nota-input-'+rowId(row)+'" placeholder="Agregar nota…"></textarea><button type="button" class="btn-guardar-nota">Guardar</button></div>'+
+  const id = rowIdAno(r);
+  const estado = r.estado_trabajo || 'pendiente';
+  const pillInfo = PILL[estado] || PILL.pendiente;
+  const bloq = r.sin_senal && !r.verificado_financiera && estado==='pendiente';
+  const uClase = { rojo:'u-rojo', ambar:'u-ambar', gris:'u-gris' }[r.urgencia] || 'u-gris';
+  const hecha = estado==='renovado' ? ' hecha' : '';
+  const fe = fmtFecha(r.vence).replace(/ de \d{4}$/,'');
+  return '<div class="card '+uClase+hecha+'" data-id="'+id+'">'+
+      '<div><div class="c-nom">'+esc(r.cuenta_nombre||r.llave)+'</div>'+
+        '<div class="c-meta"><span class="mono">DOT '+esc(r.dot||'—')+'</span><span class="dot"></span>'+
+          '<span>'+esc(r.agente||'—')+'</span><span class="dot"></span><span class="mono">vence '+fe+'</span>'+
+          (r.sin_senal?'<span class="sen">Sin señal de vida</span>':'')+'</div>'+
+        '<div class="acciones">'+
+          '<button type="button" class="mini" '+(bloq?'disabled title="Financiera debe verificarla primero"':'')+' data-marcar="contactado">Contactada</button>'+
+          '<button type="button" class="mini" data-marcar="cotizando">Cotizando</button>'+
+          '<button type="button" class="mini" data-marcar="renovado">Renovada</button>'+
+          '<button type="button" class="mini" data-marcar="perdido">Perdida</button>'+
+          (r.sin_senal&&!r.verificado_financiera?'<button type="button" class="mini" data-verificar="1">Verificar con Jeff</button>':'')+
+        '</div></div>'+
+      '<div class="c-prem">'+fmtUSD(r.premium_activo)+'<span class="pz">'+(r.n_polizas||1)+' póliza'+((r.n_polizas||1)>1?'s':'')+'</span></div>'+
+      '<div><span class="pill '+pillInfo[0]+'">'+pillInfo[1]+'</span></div>'+
     '</div>';
+}
+function cola(){
+  const f = filtradas(), tot = filasDelMes();
+  $('colaSub').textContent = tot.length
+    ? NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL+': '+tot.length+' cuenta'+(tot.length===1?'':'s')+' en la cola de este mes.'
+    : NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL+' no tiene cuentas cargadas.';
+  $('cola').innerHTML = f.length ? f.map(filaCola).join('') : '<div class="vacio">No hay cuentas con este filtro.</div>';
+}
+$('cola').addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-marcar],[data-verificar]'); if(!btn) return;
+  const card = e.target.closest('.card'); if(!card) return;
+  const id = card.dataset.id;
+  if(btn.dataset.marcar) marcar(id, btn.dataset.marcar);
+  else verificar(id);
+});
 
-  document.getElementById('ficha-ant').addEventListener('click', ()=> navegarFicha(-1));
-  document.getElementById('ficha-sig').addEventListener('click', ()=> navegarFicha(1));
-  document.getElementById('ficha-btn-jeff').addEventListener('click', async ()=>{
-    await onChkJeff(row, !row.verificado_financiera, { checked: !row.verificado_financiera });
-    const trChk = document.querySelector('tr[data-row-id="'+rowId(row)+'"] [data-jeff]'); if(trChk) trChk.classList.toggle('on', !!row.verificado_financiera);
-    const trCont = document.querySelector('tr[data-row-id="'+rowId(row)+'"] [data-contacto]'); if(trCont) trCont.classList.toggle('off', row.sin_senal && !row.verificado_financiera);
-    pintarFicha(row, filasActuales);
-  });
-  document.getElementById('ficha-btn-contactado').addEventListener('click', async (e)=>{
-    if(e.currentTarget.disabled) return;
-    await onChkContactado(row, !row.contactado, { checked: !row.contactado });
-    const trChk = document.querySelector('tr[data-row-id="'+rowId(row)+'"] [data-contacto]'); if(trChk) trChk.classList.toggle('on', !!row.contactado);
-    pintarFicha(row, filasActuales);
-  });
-  const selEstado = document.getElementById('ficha-sel-estado');
-  let prevValue = selEstado.value;
-  selEstado.addEventListener('change', async ()=>{
-    await onSelEstado(row, selEstado.value, selEstado, prevValue);
-    prevValue = selEstado.value;
-    const trPill = document.querySelector('tr[data-row-id="'+rowId(row)+'"] .cola-pill');
-    if(trPill) trPill.textContent = row.estado_trabajo.charAt(0).toUpperCase()+row.estado_trabajo.slice(1);
-  });
-  const btnGuardar = panel.querySelector('.btn-guardar-nota');
-  if(btnGuardar) btnGuardar.addEventListener('click', ()=> guardarNotaFila(row));
-  cargarNotasFila(row);
-  cargarPolizasFicha(row);
-  cargarHistoriaFicha(row);
-}
-
-async function cargarPolizasFicha(row){
-  const el = document.getElementById('ficha-polizas'); if(!el) return;
-  const esDot = /^\d+$/.test(row.llave);
-  if(!esDot){ el.innerHTML = '<div class="pg-limite">Cuenta sin DOT — detalle de pólizas no disponible.</div>'; return; }
-  const { data, error } = await SB.from('bos_registros').select('policy_num,coverage,mga,carrier,policy_premium,effective_date')
-    .eq('dot', row.llave).eq('categoria','venta').order('effective_date',{ascending:true});
-  if(error || !data || !data.length){ el.innerHTML = '<div class="pg-limite">Sin pólizas encontradas.</div>'; return; }
-  el.innerHTML = '<div class="tablewrap"><table class="pg-table"><thead><tr><th>Número</th><th>Cobertura</th><th>MGA</th><th>Carrier</th><th class="num">Premium</th><th>Vigente desde</th></tr></thead><tbody>'+
-    data.map(p=>'<tr><td>'+esc(p.policy_num||'—')+'</td><td>'+esc(p.coverage||'—')+'</td><td>'+esc(p.mga||'—')+'</td><td>'+esc(p.carrier||'—')+'</td><td class="num">'+fmtUSD(p.policy_premium)+'</td><td>'+fmtFecha(p.effective_date)+'</td></tr>').join('')+
-    '</tbody></table></div>';
-}
-async function cargarHistoriaFicha(row){
-  const el = document.getElementById('ficha-historia'); if(!el) return;
-  const { data, error } = await SB.from('v_renov_historia_cuenta_visible').select('*').eq('llave', row.llave).order('vence',{ascending:false});
-  if(error || !data || !data.length){ el.innerHTML = '<div class="pg-limite">Sin historia previa.</div>'; return; }
-  el.innerHTML = '<div class="tablewrap"><table class="pg-table"><thead><tr><th>Cobertura</th><th>Agente</th><th class="num">Vendido</th><th>Vence</th><th>Estado</th><th>¿Renovó?</th></tr></thead><tbody>'+
-    data.map(h=>'<tr><td>'+esc(h.coverage||'—')+'</td><td>'+esc(h.agente||'—')+'</td><td class="num">'+fmtUSD(h.premium_vendido)+'</td><td>'+fmtFecha(h.vence)+'</td><td>'+esc(etiqueta(h.estado_poliza))+'</td><td>'+(h.renovada? 'Sí — '+esc(h.agente_renovacion||'—') : 'No')+'</td></tr>').join('')+
-    '</tbody></table></div>';
-}
-
-async function cargarNotasFila(row){
-  const { data } = await SB.from('renov_notas').select('*').eq('llave', row.llave).order('created_at',{ascending:false});
-  const notas = data || [];
-  const notasEl = document.getElementById('notas_'+rowId(row)); if(!notasEl) return;
-  notasEl.innerHTML = notas.length
-    ? notas.map(n=>'<div class="pg-nota"><span class="autor">'+esc(n.autor)+'</span><span class="fecha">'+fmtFecha(n.created_at)+'</span><div>'+esc(n.nota)+'</div></div>').join('')
-    : '<div class="pg-limite">Sin notas todavía.</div>';
-}
-async function guardarNotaFila(row){
-  const ta = document.getElementById('nota-input-'+rowId(row));
-  const texto = (ta.value||'').trim();
-  if(!texto) return;
-  const autor = SESION_EMAIL || 'desconocido';
-  const { error } = await SB.from('renov_notas').insert({ llave: row.llave, nota: texto, autor });
-  if(error){ alert('No se pudo guardar la nota: '+error.message); return; }
-  ta.value = '';
-  row.n_notas = Number(row.n_notas||0) + 1;
-  await cargarNotasFila(row);
-}
-
-async function writeTrabajo(row, patch){
-  const payload = Object.assign({ llave: row.llave, vence: row.vence, updated_at: new Date().toISOString(), updated_by: SESION_EMAIL||null }, patch);
+/* ---- escritura en renov_trabajo (mismo candado y motivo obligatorio de siempre) ---- */
+async function escribirTrabajoDB(row, payloadDB){
+  const payload = Object.assign({ llave: row.llave, vence: row.vence, updated_at: new Date().toISOString(), updated_by: SESION_EMAIL||null }, payloadDB);
   const { error } = await SB.from('renov_trabajo').upsert(payload, { onConflict: 'llave,vence' });
   if(error){ alert('No se pudo guardar: '+error.message); return false; }
-  Object.assign(row, patch);
   return true;
 }
-async function onChkJeff(row, checked, chkEl){
-  const patch = checked
-    ? { verificado_financiera:true, verificado_por: SESION_EMAIL||null, verificado_at: new Date().toISOString() }
-    : { verificado_financiera:false, verificado_por:null, verificado_at:null };
-  const ok = await writeTrabajo(row, patch);
-  if(!ok) chkEl.checked = !checked;
-}
-async function onChkContactado(row, checked, chkEl){
-  const hoy = new Date().toISOString().slice(0,10);
-  const patch = checked
-    ? { contactado:true, fecha_contacto:hoy, contacto_por: SESION_EMAIL||null }
-    : { contactado:false, fecha_contacto:null, contacto_por:null };
-  const ok = await writeTrabajo(row, patch);
-  if(!ok) chkEl.checked = !checked;
-}
-async function onSelEstado(row, nuevoEstado, selEl, prevValue){
-  let motivo = null;
-  if(nuevoEstado==='perdido'){
+async function marcar(id, accion){
+  const row = AÑO_FILAS.find(r=>rowIdAno(r)===id); if(!row) return;
+  const estadoActual = row.estado_trabajo || 'pendiente';
+  if(row.sin_senal && !row.verificado_financiera && accion==='contactado' && estadoActual==='pendiente') return;
+  let payloadDB, localPatch;
+  if(accion==='contactado'){
+    const hoy = new Date().toISOString().slice(0,10);
+    payloadDB = { estado:'contactado', contactado:true, fecha_contacto:hoy, contacto_por: SESION_EMAIL||null };
+    localPatch = { estado_trabajo:'contactado', contactado:true, fecha_contacto:hoy, contacto_por: SESION_EMAIL||null };
+  } else if(accion==='perdido'){
     const m = window.prompt('Motivo de la pérdida (obligatorio):');
-    if(m===null){ selEl.value = prevValue; return; }
-    if(!m.trim()){ alert('El motivo es obligatorio para marcar perdido.'); selEl.value = prevValue; return; }
-    motivo = m.trim();
+    if(m===null) return;
+    if(!m.trim()){ alert('El motivo es obligatorio para marcar perdido.'); return; }
+    payloadDB = { estado:'perdido', motivo_perdido: m.trim() };
+    localPatch = { estado_trabajo:'perdido', motivo_perdido: m.trim() };
+  } else {
+    payloadDB = { estado: accion, motivo_perdido: null };
+    localPatch = { estado_trabajo: accion, motivo_perdido: null };
   }
-  const ok = await writeTrabajo(row, { estado: nuevoEstado, motivo_perdido: motivo });
-  if(!ok){ selEl.value = prevValue; return; }
-  row.estado_trabajo = nuevoEstado;
+  const ok = await escribirTrabajoDB(row, payloadDB);
+  if(!ok) return;
+  Object.assign(row, localPatch);
+  chips(); cola();
+  if(accion==='renovado'){
+    const { data } = await SB.from('v_indice_renovaciones_v3_visible').select('mes,vencieron,renovaron,pct_renovado,premium_vencido,premium_con_senal,premium_por_confirmar,estado_mes')
+      .gte('mes', mesISO(AÑO_ACTUAL,1)).lte('mes', mesISO(AÑO_ACTUAL,12)).order('mes',{ascending:true});
+    if(data){ IDX_MESES = data; cinta(); franja(); bonos(); area(); }
+  }
+}
+async function verificar(id){
+  const row = AÑO_FILAS.find(r=>rowIdAno(r)===id); if(!row) return;
+  const payloadDB = { verificado_financiera:true, verificado_por: SESION_EMAIL||null, verificado_at: new Date().toISOString() };
+  const ok = await escribirTrabajoDB(row, payloadDB);
+  if(!ok) return;
+  Object.assign(row, payloadDB);
+  cola();
 }
 
 /* =====================================================================
-   5) 02 VENDEDORES — ficha individual por agente, sin comparar
+   5) 02 VENDEDORES
    ===================================================================== */
-let VEND_RESUMEN = [];
-let VEND_RESUMEN_ROWS = [];
-async function cargarVendedores(){
-  const { data, error } = await SB.from('v_agente_resumen_ano_visible').select('*').order('agente',{ascending:true});
-  VEND_RESUMEN = data || [];
-  const select = document.getElementById('vend-select');
-  const actual = select.value;
-  select.innerHTML = '<option value="">Selecciona un vendedor…</option>' + VEND_RESUMEN.map(a=>'<option value="'+esc(a.agente)+'">'+esc(a.agente)+'</option>').join('');
-  if(VEND_RESUMEN.some(a=>a.agente===actual)) select.value = actual;
-  select.onchange = ()=> seleccionarAgente(select.value || null);
-  pintarListaTodosAgentes(VEND_RESUMEN);
-  if(error){ document.getElementById('vend-ficha').innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
-  if(select.value) await seleccionarAgente(select.value);
-}
-
-window.seleccionarAgente = async function(nombre){
-  const select = document.getElementById('vend-select');
-  if(select && select.value !== (nombre||'')) select.value = nombre||'';
-  const el = document.getElementById('vend-ficha');
-  if(!nombre){ el.innerHTML = '<div class="pg-limite" style="color:var(--pg-muted);font-size:13px">Selecciona un vendedor para ver su ficha.</div>'; return; }
-  el.innerHTML = '<div class="pg-skel" style="height:320px"></div>';
-  const resumen = VEND_RESUMEN.find(a=>a.agente===nombre);
-  const [vsR, prR] = await Promise.all([
-    SB.from('v_agente_vendido_vs_renovado_visible').select('*').eq('agente', nombre).order('mes',{ascending:true}),
-    SB.from('v_agente_por_renovar_visible').select('*').eq('agente', nombre).order('mes_vence',{ascending:true}),
-  ]);
-  pintarFichaVendedor(nombre, resumen, vsR.data||[], prR.data||[]);
-};
-
-/* ---- graficas de Vendedores (mockup v2): SVG puro portado casi literal,
-   Chart.js no puede replicar el relleno de dos curvas + hueco entre ellas. ---- */
-const SVGNS = 'http://www.w3.org/2000/svg';
-function svgNode(t,a){ const e=document.createElementNS(SVGNS,t); for(const k in a) e.setAttribute(k,a[k]); return e; }
-function svgSmooth(pts){
-  let d = 'M'+pts[0][0]+','+pts[0][1];
-  for(let i=0;i<pts.length-1;i++){
-    const x0=pts[i][0], y0=pts[i][1], x1=pts[i+1][0], y1=pts[i+1][1];
-    const cx=(x0+x1)/2;
-    d += ' C'+cx+','+y0+' '+cx+','+y1+' '+x1+','+y1;
-  }
-  return d;
-}
-function svgGrad(svg,id,c,a1,a2){
-  const d=svgNode('defs',{});
-  const g=svgNode('linearGradient',{id:id,x1:0,y1:0,x2:0,y2:1});
-  g.appendChild(svgNode('stop',{offset:0,'stop-color':c,'stop-opacity':a1}));
-  g.appendChild(svgNode('stop',{offset:1,'stop-color':c,'stop-opacity':a2}));
-  d.appendChild(g); svg.appendChild(d);
-}
-function svgAxis(svg,W,H,pad,max,step,labels){
-  for(let v=0; v<=max; v+=step){
-    const y = H-pad.b-(v/max)*(H-pad.t-pad.b);
-    svg.appendChild(svgNode('line',{x1:pad.l,x2:W-pad.r,y1:y,y2:y,stroke:'#EEF2F5'}));
-    const t = svgNode('text',{x:pad.l-10,y:y+4,'text-anchor':'end','font-size':11,fill:'#6B7D89','font-family':'JetBrains Mono'});
-    t.textContent = v; svg.appendChild(t);
-  }
-  labels.forEach((m,i)=>{
-    const x = pad.l + i*(W-pad.l-pad.r)/(labels.length-1||1);
-    const t = svgNode('text',{x:x,y:H-pad.b+20,'text-anchor':'middle','font-size':12,fill:'#6B7D89','font-family':'Inter'});
-    t.textContent = m; svg.appendChild(t);
-  });
-}
-function dibujarHeroSvg(idSvg, filas){
-  const svg = document.getElementById(idSvg); if(!svg) return;
-  svg.innerHTML = '';
-  const n = filas.length; if(!n) return;
-  const labels = filas.map(m=>mesCorto(m.mes));
-  const V = filas.map(m=>Number(m.vendido_n||0));
-  const R = filas.map(m=>Number(m.renovado_n||0));
-  const W=1100, H=400, pad={l:44,r:20,t:24,b:40};
-  const maxVal = Math.max(1, ...V, ...R);
-  const max = Math.ceil(maxVal*1.15/5)*5 || 5;
-  const step = Math.max(1, Math.round(max/3));
-  svgGrad(svg,'gvHero','#229A82',.16,0);
-  svgGrad(svg,'grHero','#5B6BD6',.18,0);
-  svgAxis(svg,W,H,pad,max,step,labels);
-  const X = i=> pad.l + i*(W-pad.l-pad.r)/(n-1||1);
-  const Y = v=> H-pad.b-(v/max)*(H-pad.t-pad.b);
-  const pv = V.map((v,i)=>[X(i),Y(v)]);
-  const pr = R.map((v,i)=>[X(i),Y(v)]);
-  const dUp = svgSmooth(pv);
-  const dDown = svgSmooth(pr.slice().reverse());
-  svg.appendChild(svgNode('path',{d: dUp+' '+dDown.replace(/^M/,'L')+' Z', fill:'#F2D68A', opacity:.32}));
-  svg.appendChild(svgNode('path',{d: dUp+' L'+X(n-1)+','+Y(0)+' L'+X(0)+','+Y(0)+' Z', fill:'url(#gvHero)'}));
-  svg.appendChild(svgNode('path',{d: svgSmooth(pr)+' L'+X(n-1)+','+Y(0)+' L'+X(0)+','+Y(0)+' Z', fill:'url(#grHero)'}));
-  svg.appendChild(svgNode('path',{d: dUp, fill:'none', stroke:'#229A82','stroke-width':3,'stroke-linecap':'round'}));
-  svg.appendChild(svgNode('path',{d: svgSmooth(pr), fill:'none', stroke:'#5B6BD6','stroke-width':3,'stroke-linecap':'round'}));
-  pv.forEach(p=> svg.appendChild(svgNode('circle',{cx:p[0],cy:p[1],r:4.5,fill:'#229A82',stroke:'#fff','stroke-width':2})));
-  pr.forEach(p=> svg.appendChild(svgNode('circle',{cx:p[0],cy:p[1],r:4.5,fill:'#5B6BD6',stroke:'#fff','stroke-width':2})));
-  let idxMaxV = 0; V.forEach((v,i)=>{ if(v>V[idxMaxV]) idxMaxV=i; });
-  const idxActual = n-1;
-  const tv = svgNode('text',{x:X(idxMaxV),y:Y(V[idxMaxV])-14,'text-anchor':'middle','font-size':12,'font-weight':600,fill:'#1B2D3A','font-family':'JetBrains Mono'});
-  tv.textContent = V[idxMaxV]; svg.appendChild(tv);
-  const trTxt = svgNode('text',{x:X(idxActual),y:Y(R[idxActual])-14,'text-anchor':'middle','font-size':12,'font-weight':600,fill:'#1B2D3A','font-family':'JetBrains Mono'});
-  trTxt.textContent = R[idxActual]; svg.appendChild(trTxt);
-  const tip = document.getElementById('svg-tip');
-  svg.onmousemove = (e)=>{
-    if(!tip) return;
-    const rect = svg.getBoundingClientRect();
-    const xRatio = (e.clientX-rect.left)/rect.width*W;
-    const i = Math.max(0, Math.min(n-1, Math.round((xRatio-pad.l)/((W-pad.l-pad.r)/(n-1||1)))));
-    tip.style.display='block';
-    tip.style.left=(e.pageX+12)+'px';
-    tip.style.top=(e.pageY-10)+'px';
-    tip.textContent = labels[i]+' · vendió '+V[i]+' · renovó '+R[i]+' · se fueron '+Math.max(V[i]-R[i],0);
-  };
-  svg.onmouseleave = ()=>{ if(tip) tip.style.display='none'; };
-}
-function dibujarPipeSvg(idSvg, filas){
-  const svg = document.getElementById(idSvg); if(!svg) return;
-  svg.innerHTML = '';
-  const n = filas.length; if(!n) return;
-  const W=520, H=300, pad={l:52,r:14,t:20,b:36};
-  const labels = filas.map(p=>mesCorto(p.mes_vence));
-  const A = filas.map(p=>Number(p.premium_con_senal||0)/1000);
-  const B = filas.map(p=>Number(p.premium_por_confirmar||0)/1000);
-  const totalMax = Math.max(1, ...A.map((a,i)=>a+B[i]));
-  const max = Math.ceil(totalMax*1.15/20)*20 || 20;
-  const step = Math.max(20, Math.round(max/4/20)*20) || 20;
-  svgGrad(svg,'gsPipe','#229A82',.22,.03);
-  svgGrad(svg,'gcPipe','#D9A520',.22,.03);
-  for(let v=0; v<=max; v+=step){
-    const y = H-pad.b-(v/max)*(H-pad.t-pad.b);
-    svg.appendChild(svgNode('line',{x1:pad.l,x2:W-pad.r,y1:y,y2:y,stroke:'#EEF2F5'}));
-    const t = svgNode('text',{x:pad.l-8,y:y+4,'text-anchor':'end','font-size':10,fill:'#6B7D89','font-family':'JetBrains Mono'});
-    t.textContent = '$'+v+'k'; svg.appendChild(t);
-  }
-  labels.forEach((m,i)=>{
-    const x = pad.l+i*(W-pad.l-pad.r)/(n-1||1);
-    const t = svgNode('text',{x,y:H-pad.b+18,'text-anchor':'middle','font-size':11,fill:'#6B7D89','font-family':'Inter'});
-    t.textContent = m; svg.appendChild(t);
-  });
-  const X = i=> pad.l+i*(W-pad.l-pad.r)/(n-1||1);
-  const Y = v=> H-pad.b-(v/max)*(H-pad.t-pad.b);
-  const top = A.map((a,i)=>[X(i),Y(a+B[i])]);
-  const mid = A.map((a,i)=>[X(i),Y(a)]);
-  svg.appendChild(svgNode('path',{d: svgSmooth(top)+' '+svgSmooth(mid.slice().reverse()).replace(/^M/,'L')+' Z', fill:'url(#gcPipe)'}));
-  svg.appendChild(svgNode('path',{d: svgSmooth(mid)+' L'+X(n-1)+','+Y(0)+' L'+X(0)+','+Y(0)+' Z', fill:'url(#gsPipe)'}));
-  svg.appendChild(svgNode('path',{d: svgSmooth(top), fill:'none', stroke:'#D9A520','stroke-width':3}));
-  svg.appendChild(svgNode('path',{d: svgSmooth(mid), fill:'none', stroke:'#229A82','stroke-width':3.5}));
-}
-function dibujarTasaSvg(idSvg, filas){
-  const svg = document.getElementById(idSvg); if(!svg) return;
-  svg.innerHTML = '';
-  const n = filas.length; if(!n) return;
-  const W=520, H=300, pad={l:44,r:14,t:20,b:36}, max=100;
-  const labels = filas.map(m=>mesCorto(m.mes));
-  const PCT = filas.map(m=> m.pct_renovado===null||m.pct_renovado===undefined ? null : Number(m.pct_renovado));
-  svgGrad(svg,'gtTasa','#5B6BD6',.14,0);
-  for(let v=0; v<=100; v+=25){
-    const y = H-pad.b-(v/max)*(H-pad.t-pad.b);
-    svg.appendChild(svgNode('line',{x1:pad.l,x2:W-pad.r,y1:y,y2:y,stroke:'#EEF2F5'}));
-    const t = svgNode('text',{x:pad.l-8,y:y+4,'text-anchor':'end','font-size':10,fill:'#6B7D89','font-family':'JetBrains Mono'});
-    t.textContent = v+'%'; svg.appendChild(t);
-  }
-  labels.forEach((m,i)=>{
-    const x = pad.l+i*(W-pad.l-pad.r)/(n-1||1);
-    const t = svgNode('text',{x,y:H-pad.b+18,'text-anchor':'middle','font-size':11,fill:'#6B7D89','font-family':'Inter'});
-    t.textContent = m; svg.appendChild(t);
-  });
-  const X = i=> pad.l+i*(W-pad.l-pad.r)/(n-1||1);
-  const Y = v=> H-pad.b-(v/max)*(H-pad.t-pad.b);
-  const pts = PCT.map((p,i)=>[X(i), Y(p==null?0:p)]);
-  const pts70 = PCT.map((p,i)=>[X(i), Y(Math.min(p==null?0:p,70))]);
-  svg.appendChild(svgNode('path',{d: svgSmooth(pts70)+' L'+X(n-1)+','+Y(70)+' L'+X(0)+','+Y(70)+' Z', fill:'#F2D68A', opacity:.3}));
-  svg.appendChild(svgNode('path',{d: svgSmooth(pts)+' L'+X(n-1)+','+Y(0)+' L'+X(0)+','+Y(0)+' Z', fill:'url(#gtTasa)'}));
-  svg.appendChild(svgNode('line',{x1:pad.l,x2:W-pad.r,y1:Y(70),y2:Y(70),stroke:'#1B2D3A','stroke-width':2,'stroke-dasharray':'6 6'}));
-  const lb = svgNode('text',{x:W-pad.r,y:Y(70)-8,'text-anchor':'end','font-size':11,'font-weight':600,fill:'#1B2D3A','font-family':'Inter'});
-  lb.textContent = 'estándar 70%'; svg.appendChild(lb);
-  svg.appendChild(svgNode('path',{d: svgSmooth(pts), fill:'none', stroke:'#5B6BD6','stroke-width':2.5,'stroke-linecap':'round'}));
-  pts.forEach((p,i)=>{
-    if(PCT[i]==null) return;
-    const bad = PCT[i]<50;
-    svg.appendChild(svgNode('circle',{cx:p[0],cy:p[1],r:bad?5.5:4,fill:bad?'#D5594F':'#5B6BD6',stroke:'#fff','stroke-width':2}));
-  });
-}
-function rankingTasa(nombre){
-  const ordenados = VEND_RESUMEN.slice().sort((a,b)=> (Number(b.tasa_renovacion)||-1) - (Number(a.tasa_renovacion)||-1));
-  const idx = ordenados.findIndex(a=>a.agente===nombre);
-  return { puesto: idx+1, total: ordenados.length };
-}
-function mejorPeorMes(mensual){
-  const cerrados = mensual.filter(m=>m.estado_mes!=='futuro' && m.pct_renovado!==null);
-  if(!cerrados.length) return { mejor:null, peor:null };
-  let mejor = cerrados[0], peor = cerrados[0];
-  cerrados.forEach(m=>{
-    if(Number(m.pct_renovado) > Number(mejor.pct_renovado)) mejor = m;
-    if(Number(m.pct_renovado) < Number(peor.pct_renovado)) peor = m;
-  });
-  return { mejor, peor };
-}
-
-function pintarFichaVendedor(nombre, r, mensual, porRenovar){
-  if(!r) r = { vendio_n:0, vendio_premium:0, vencio_n:0, vencio_premium:0, renovo_n:0, renovo_premium:0,
-    renovo_el_mismo_n:0, renovo_el_area_n:0, tasa_renovacion:null, por_renovar_ano:0,
-    por_renovar_ano_con_senal:0, por_renovar_ano_por_confirmar:0, por_renovar_mes:0, por_renovar_mes_cuentas:0 };
-  const el = document.getElementById('vend-ficha');
-  const tasa = r.tasa_renovacion===null||r.tasa_renovacion===undefined ? null : Number(r.tasa_renovacion);
-  const { puesto, total } = rankingTasa(nombre);
-  const { mejor, peor } = mejorPeorMes(mensual);
-  const metaAnualR = Math.round(Number(r.vencio_n||0)*0.70);
-  const faltanAnual = Math.max(0, metaAnualR - Number(r.renovo_n||0));
-
-  el.innerHTML =
-    '<div class="pg-card hero">'+
-      '<h2>Vendido contra renovado · últimos 12 meses</h2>'+
-      '<div class="vend-frase">De <b>'+(r.vencio_n||0)+'</b> cuentas que le vencieron, renovó <b>'+(r.renovo_n||0)+'</b>. <span class="gap">Le faltaban <b>'+faltanAnual+'</b> para el estándar.</span></div>'+
-      '<div class="vend-leg"><span><i style="background:#229A82"></i>Vendió (cuentas nuevas)</span><span><i style="background:#5B6BD6"></i>Renovó</span><span><i style="background:#F2D68A"></i>Lo que se fue</span></div>'+
-      '<svg id="chHero" viewBox="0 0 1100 400" width="100%" height="400" style="display:block"></svg>'+
-    '</div>'+
-    '<div class="kpis3">'+
-      '<div class="pg-card k"><div class="l">Vendió</div><div class="v">'+(r.vendio_n||0)+'</div><div class="s">cuentas · <b>'+fmtUSD(r.vendio_premium)+'</b></div></div>'+
-      '<div class="pg-card k"><div class="l">Le vencieron</div><div class="v">'+(r.vencio_n||0)+'</div><div class="s">cuentas · <b>'+fmtUSD(r.vencio_premium)+'</b></div></div>'+
-      '<div class="pg-card k red"><div class="l">Tasa de renovación</div><div class="v">'+(tasa===null?'—':tasa.toFixed(1)+'%')+'</div><div class="s">renovó <b>'+(r.renovo_n||0)+'</b> · le faltaban <b>'+faltanAnual+'</b> para el 70%</div></div>'+
-    '</div>'+
-    '<div class="pg-card" style="padding:18px 22px">'+
-      '<div class="mini">'+
-        '<div><div class="l">Puesto en el área</div><div class="v">'+puesto+' <span class="pgu">de '+total+'</span></div></div>'+
-        '<div><div class="l">Mejor mes</div><div class="v">'+(mejor?esc(mesCorto(mejor.mes)):'—')+' <span class="pgu">'+(mejor?Number(mejor.pct_renovado).toFixed(0)+'%':'')+'</span></div></div>'+
-        '<div><div class="l">Peor mes</div><div class="v">'+(peor?esc(mesCorto(peor.mes)):'—')+' <span class="pgu">'+(peor?Number(peor.pct_renovado).toFixed(0)+'%':'')+'</span></div></div>'+
-        '<div><div class="l">Cerró él mismo / el área</div><div class="v">'+(r.renovo_el_mismo_n||0)+' <span class="pgu">/ '+(r.renovo_el_area_n||0)+'</span></div></div>'+
-      '</div>'+
-    '</div>'+
-    '<div class="pg-grid-2" style="margin-top:18px">'+
-      '<div class="pg-card"><h2>Por renovar, mes a mes</h2><svg id="chPipe" viewBox="0 0 520 300" width="100%" height="300" style="display:block"></svg></div>'+
-      '<div class="pg-card"><h2>Tasa mensual contra el 70%</h2><svg id="chTasa" viewBox="0 0 520 300" width="100%" height="300" style="display:block"></svg></div>'+
-    '</div>'+
-    '<div class="svg-tip" id="svg-tip"></div>';
-
-  const cerrados = mensual.filter(m=>m.estado_mes!=='futuro');
-  const ult12 = cerrados.slice(-12);
-  dibujarHeroSvg('chHero', ult12);
-  dibujarTasaSvg('chTasa', ult12);
-
-  const hoy = mesActualISO();
-  const proximos12 = porRenovar.filter(p=>String(p.mes_vence) >= hoy).slice(0,12);
-  dibujarPipeSvg('chPipe', proximos12);
-}
-
-let VEND_ORDEN = { col:'tasa_renovacion', asc:false };
-function pintarListaTodosAgentes(rows){
-  const el = document.getElementById('vend-lista-todos');
-  if(!rows.length){ el.innerHTML = '<div class="pg-limite">Sin agentes.</div>'; return; }
-  VEND_RESUMEN_ROWS = rows;
-  el.innerHTML = '<div class="tablewrap"><table class="pg-table"><thead><tr>'+
-    '<th data-sort="agente">Agente</th><th data-sort="tasa_renovacion" class="num">Tasa</th><th data-sort="vencio_n" class="num">Le vencieron</th><th data-sort="renovo_n" class="num">Renovó</th><th data-sort="por_renovar_ano" class="num">Por renovar año</th>'+
-  '</tr></thead><tbody id="vend-lista-tbody"></tbody></table></div>';
-  document.querySelectorAll('#vend-lista-todos th[data-sort]').forEach(th=>{
-    th.onclick = ()=>{
-      const col = th.dataset.sort;
-      if(VEND_ORDEN.col===col) VEND_ORDEN.asc = !VEND_ORDEN.asc;
-      else VEND_ORDEN = { col, asc: col==='agente' };
-      repintarListaVend();
-    };
-  });
-  repintarListaVend();
-}
-function repintarListaVend(){
-  const { col, asc } = VEND_ORDEN;
-  const ordenados = VEND_RESUMEN_ROWS.slice().sort((a,b)=>{
-    let va = a[col], vb = b[col];
-    const numCol = col!=='agente';
-    if(numCol){ va = va===null||va===undefined?-1:Number(va); vb = vb===null||vb===undefined?-1:Number(vb); }
-    else { va = (va||'').toLowerCase(); vb = (vb||'').toLowerCase(); }
-    if(va<vb) return asc?-1:1;
-    if(va>vb) return asc?1:-1;
-    return 0;
-  });
-  document.querySelectorAll('#vend-lista-todos th[data-sort]').forEach(th=>{
-    const base = th.textContent.replace(/\s*[▲▼]$/,'');
-    th.textContent = base;
-    if(th.dataset.sort===col) th.innerHTML = esc(base)+'<span class="arrow">'+(asc?'▲':'▼')+'</span>';
-  });
-  const tbody = document.getElementById('vend-lista-tbody'); if(!tbody) return;
-  tbody.innerHTML = ordenados.map((a,i)=>{
-    const tasa = a.tasa_renovacion===null?null:Number(a.tasa_renovacion);
-    const pct = tasa===null?0:Math.max(0,Math.min(100,tasa));
-    return '<tr data-idx="'+i+'" style="cursor:pointer"><td>'+esc(a.agente)+'</td>'+
-      '<td class="num"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">'+
-        '<div style="width:56px;height:5px;background:var(--pg-line);border-radius:999px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+semaforoColor(tasa)+'"></div></div>'+
-        '<span style="color:'+semaforoColor(tasa)+';font-weight:700;min-width:44px;text-align:right">'+(tasa===null?'—':tasa.toFixed(1)+'%')+'</span>'+
-      '</div></td>'+
-      '<td class="num">'+a.vencio_n+'</td><td class="num">'+a.renovo_n+'</td><td class="num">'+fmtUSD(a.por_renovar_ano)+'</td></tr>';
+function vend(){
+  const el = $('vlist');
+  if(!AGENTES_RESUMEN.length){ el.innerHTML = '<div class="vacio">Sin datos de agentes.</div>'; return; }
+  const max = Math.max(1, ...AGENTES_RESUMEN.map(a=>Number(a.vencio_n||0)));
+  const totV = AGENTES_RESUMEN.reduce((s,a)=>s+Number(a.vencio_n||0),0);
+  const totR = AGENTES_RESUMEN.reduce((s,a)=>s+Number(a.renovo_n||0),0);
+  const prom = totV ? 100*totR/totV : 0;
+  const ordenados = AGENTES_RESUMEN.slice().sort((a,b)=> Number(b.vencio_n||0)-Number(a.vencio_n||0));
+  el.innerHTML = ordenados.map(a=>{
+    const v = Number(a.vencio_n||0), r = Number(a.renovo_n||0);
+    const pct = v ? 100*r/v : 0;
+    const cls = pct>=70?'bien':(pct<prom?'bajo':'');
+    return '<div class="vr">'+
+      '<div class="vn">'+esc(a.agente)+'<small>'+r+' de '+v+' renovadas</small></div>'+
+      '<div class="vbars"><div class="vb a" data-w="'+(100*v/max)+'" style="width:0"></div>'+
+        '<div class="vb b" data-w="'+(100*r/max)+'" style="width:0"></div></div>'+
+      '<div class="vnum">'+fmtUSD(a.vencio_premium)+'<br><span class="vpct '+cls+'">'+pct.toFixed(0)+'%</span></div></div>';
   }).join('');
-  tbody.querySelectorAll('tr[data-idx]').forEach(tr=>{
-    tr.addEventListener('click', ()=> seleccionarAgente(ordenados[Number(tr.dataset.idx)].agente));
+  document.querySelectorAll('#vlist .vr').forEach((row,i)=>{
+    const a = ordenados[i];
+    row.onmousemove = e=> tip(e, '<span class="tt">'+esc(a.agente)+'</span>Vencen <b>'+(a.vencio_n||0)+'</b> · renovadas <b>'+(a.renovo_n||0)+'</b><br>'+fmtUSD(a.vencio_premium)+' en premium');
+    row.onmouseleave = ocultar;
   });
+  requestAnimationFrame(()=>document.querySelectorAll('.vb').forEach(b=>b.style.width=b.dataset.w+'%'));
 }
 
 /* =====================================================================
    6) 03 EL MURO
    ===================================================================== */
-async function cargarMuro(){
-  const { data, error } = await SB.from('v_indice_renovaciones_v3_visible').select('*').eq('estado_mes','futuro').order('mes',{ascending:true});
-  const el = document.getElementById('kd-muro');
-  if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
-  const futuros = data || [];
-  if(!futuros.length){ el.innerHTML = '<div class="pg-limite">Sin meses futuros con datos.</div>'; return; }
-  el.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:14px">'+futuros.map(r=>{
-    const id = 'muro-'+String(r.mes).replace(/[^a-zA-Z0-9]/g,'_');
-    return '<div class="muro-tile" data-muro-id="'+id+'" data-mes="'+esc(r.mes)+'">'+
-      '<div style="font-size:12px;color:var(--pg-muted);text-transform:uppercase;font-weight:700">'+esc(fmtMes(r.mes))+'</div>'+
-      '<div style="font-family:var(--pg-font-num);font-size:28px;font-weight:700;color:var(--pg-ink);margin-top:6px">'+fmtUSD(r.premium_vencido)+'</div>'+
-      '<div style="font-size:12px;color:var(--pg-muted)">'+r.vencieron+' cuentas</div>'+
-      '<div class="muro-tile-detalle" id="'+id+'" style="display:none"></div>'+
-    '</div>';
-  }).join('')+
-  '</div>';
-  el.querySelectorAll('.muro-tile').forEach(tile=>{
-    tile.addEventListener('click', ()=> toggleMuroMes(tile.dataset.mes, tile.dataset.muroId));
-  });
-}
-async function toggleMuroMes(mes, id){
-  const det = document.getElementById(id); if(!det) return;
-  const abrir = det.style.display === 'none';
-  det.style.display = abrir ? 'block' : 'none';
-  if(!abrir || det.dataset.cargado) return;
-  det.dataset.cargado = '1';
-  det.innerHTML = '<div class="pg-skel" style="height:60px"></div>';
-  const { data, error } = await fetchPaginado(()=> SB.from('v_renov_grupo_visible').select('cuenta_nombre,agente,premium_activo')
-    .eq('mes_vence', mes).eq('area','KAREN').order('premium_activo',{ascending:false}));
-  if(error){ det.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
-  const filas = data || [];
-  det.innerHTML = filas.length
-    ? '<div class="tablewrap" style="text-align:left"><table class="pg-table"><thead><tr><th>Cuenta</th><th>Agente</th><th class="num">Premium</th></tr></thead><tbody>'+
-        filas.map(r=>'<tr><td>'+esc(r.cuenta_nombre||'—')+'</td><td>'+esc(r.agente||'—')+'</td><td class="num">'+fmtUSD(r.premium_activo)+'</td></tr>').join('')+
-      '</tbody></table></div>'
-    : '<div class="pg-limite">Sin cuentas.</div>';
-}
+function muro(){
+  const elG = $('grandes');
+  elG.innerHTML = ALERTA_GRANDES.length ? ALERTA_GRANDES.map(g=>{
+    const d = Number(g.dias_restantes||0);
+    const cls = d<7?'r':d<31?'a':'g';
+    return '<div class="al"><div><div class="n">'+esc(g.cuenta_nombre||'—')+'</div>'+
+      '<div class="m">'+esc(g.dueno_ultima_venta||'—')+' · '+(g.n_polizas||1)+' póliza'+((g.n_polizas||1)>1?'s':'')+(g.sin_senal?' · <span style="color:#8A6A14;font-weight:600">sin señal de vida</span>':'')+'</div></div>'+
+      '<div><div class="p">'+fmtUSD(g.premium_activo)+'</div><span class="dch '+cls+'">'+d+' días</span></div></div>';
+  }).join('') : '<div class="vacio">Sin cuentas grandes por vencer.</div>';
 
-/* =====================================================================
-   7) 04 LA BOLSA — fórmula sin cambios (25% área / 75% agencia)
-   ===================================================================== */
-async function cargarBolsa(){
-  const el = document.getElementById("c-bolsa");
-  const { data, error } = await SB.from('v_bolsa_persona_mensual').select('*').order('mes',{ascending:true});
-  if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
-  const rowsRaw = data || [];
-  if(!rowsRaw.length){ el.innerHTML = '<div class="pg-limite">Sin bolsa de renovaciones asignada todavía.</div>'; return; }
-  const porMes = {};
-  rowsRaw.forEach(r=>{
-    const k = String(r.mes);
-    if(!porMes[k]) porMes[k] = { mes:r.mes, cuenta_en_firme:false, bolsa_persona:0, bolsa_persona_potencial:0 };
-    const g = porMes[k];
-    g.bolsa_persona += Number(r.bolsa_persona||0);
-    g.bolsa_persona_potencial += Number(r.bolsa_persona_potencial||0);
-    if(r.cuenta_en_firme) g.cuenta_en_firme = true;
-  });
-  const rows = Object.values(porMes).sort((a,b)=> String(a.mes) < String(b.mes) ? -1 : (String(a.mes) > String(b.mes) ? 1 : 0));
-  const mesHoy = mesActualISO();
-  const cerrados = rows.filter(r=>String(r.mes)!==mesHoy);
-  const ultimo = cerrados.length ? cerrados[cerrados.length-1] : rows[rows.length-1];
-
-  el.innerHTML =
-    '<div style="text-align:center;padding:6px 0 14px">'+
-      '<div style="font-family:var(--pg-font-num);font-size:34px;font-weight:700;color:var(--pg-ink)">'+fmtUSD2(ultimo.bolsa_persona)+'</div>'+
-      '<div style="font-size:12px;color:var(--pg-muted);margin-top:2px">'+esc(fmtMes(ultimo.mes))+(ultimo.cuenta_en_firme?'':' · línea base')+'</div>'+
-    '</div>'+
-    '<div class="chart-wrap" style="height:200px"><canvas id="chBolsa"></canvas></div>';
-
-  const labels = rows.map(r=>fmtMes(r.mes));
-  pintarChart('chBolsa', {
-    type:'line',
-    data:{ labels, datasets:[
-      { label:'Cobrado', data: rows.map(r=>r.bolsa_persona), borderWidth:2.6, tension:.4, fill:true, borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.14)', pointRadius:2 },
-      { label:'Referencia del estándar', data: rows.map(r=>r.bolsa_persona_potencial), borderDash:[5,4], borderWidth:1.8, tension:.4, pointRadius:0, fill:false, borderColor:'#D9A520' }
-    ] },
-    options:{ maintainAspectRatio:false, plugins:{ legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}} }, scales:{ y:{ beginAtZero:true, ticks:{ callback:(v)=>fmtUSD(v) } } } }
-  });
-}
-async function cargarGeneraGasta(){
-  const el = document.getElementById("c-genera");
-  const { data, error } = await SB.from('v_direccion_renovaciones').select('*').order('mes',{ascending:false}).limit(1).maybeSingle();
-  if(error){ el.innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
-  if(!data){ el.innerHTML = '<div class="pg-limite">Sin datos todavía este período.</div>'; return; }
-  el.innerHTML =
-    '<div class="gv-kpis">'+
-      '<div class="gv-kpi"><div class="lbl">Genera</div><div class="val">'+fmtUSD(data.genera)+'</div></div>'+
-      '<div class="gv-kpi"><div class="lbl">Gasta</div><div class="val">'+fmtUSD(data.gasta)+'</div></div>'+
-      '<div class="gv-kpi"><div class="lbl">Diferencia</div><div class="val">'+fmtUSD(data.utilidad_sin_variable)+'</div></div>'+
-    '</div>'+
-    '<div class="pg-limite">No es utilidad firme — el variable de la dirección está en firma.</div>';
-}
-
-/* =====================================================================
-   8) 05 BONOS — solo G1 (ingreso apilado) y G3 (anillo anual). G2 (bono
-   mensual) se elimina de la pantalla; bono_escalera.tipo='mensual' queda
-   activo=false en base (conservado, apagado).
-   ===================================================================== */
-const MEDICION_NOTA = '<div class="pg-limite" style="margin-top:10px;border-top:1px solid var(--pg-line);padding-top:8px">Medición, no liquidación — ningún pago se dispara desde esta pantalla.</div>';
-function escalonActual(valor, tramosAsc){
-  let actual = null, siguiente = null;
-  for(const t of tramosAsc){ if(valor >= Number(t.umbral)) actual = t; else { siguiente = t; break; } }
-  return { actual, siguiente };
-}
-function round2(n){ return Math.round(Number(n||0)*100)/100; }
-
-async function cargarEsquemaBonos(){
-  const [idxR, bolsaR, ingresoR, escaleraR, participacionR] = await Promise.all([
-    SB.from('v_indice_renovaciones_v3_visible').select('mes,estado_mes,vencieron,renovaron,pct_renovado').order('mes',{ascending:true}),
-    SB.from('v_bolsa_persona_mensual').select('mes,alias_bos,bolsa_persona,cuenta_en_firme,miembros').order('mes',{ascending:true}),
-    SB.rpc('f_ingreso_mensual_lider', { p_alias: 'Karen Suaza' }),
-    SB.from('bono_escalera').select('*').eq('area','renovaciones').eq('activo', true).order('tipo').order('orden'),
-    SB.from('bono_participacion').select('*').eq('area','renovaciones'),
-  ]);
-  const anio = String(new Date().getFullYear());
-  const cerrados = (idxR.data||[]).filter(r=>r.estado_mes!=='futuro' && String(r.mes).slice(0,4)===anio);
-  const vencieron = cerrados.reduce((s,r)=>s+Number(r.vencieron||0),0);
-  const renovaron = cerrados.reduce((s,r)=>s+Number(r.renovaron||0),0);
-  const tasaAnual = vencieron>0 ? (100*renovaron/vencieron) : null;
-  pintarBonos(bolsaR.data||[], ingresoR.data||[], escaleraR.data||[], participacionR.data||[], tasaAnual);
-}
-
-function pintarBonos(bolsaRows, ingresoRows, escaleraRows, participacionRows, tasaAnual){
-  const el = document.getElementById('kd-esquema');
-  if(!ingresoRows.length){ el.innerHTML = '<div class="pg-card"><div class="pg-limite">Sin datos de premium renovado todavía.</div></div>'; return; }
-  const karen = bolsaRows.filter(r=>r.alias_bos==='Karen Suaza');
-  const escaleraAnual = escaleraRows.filter(t=>t.tipo==='anual').sort((a,b)=>Number(a.umbral)-Number(b.umbral));
-  const participacionMensual = participacionRows.filter(p=>p.tipo==='bono_mensual');
-  const mesHoy = mesActualISO();
-  const filaHoyBolsa = karen.find(r=>String(r.mes)===mesHoy) || karen[karen.length-1];
-  const miembrosHoy = filaHoyBolsa ? Number(filaHoyBolsa.miembros||1) : 1;
-  const pctDirectora = (participacionMensual.find(p=>Number(p.personas)===miembrosHoy) || {pct_directora:100}).pct_directora;
-
-  const g1Labels = ingresoRows.map(r=>fmtMes(r.mes));
-  const g1Bolsa = ingresoRows.map(r=>{ const k = karen.find(x=>String(x.mes)===String(r.mes)); return k ? Number(k.bolsa_persona||0) : 0; });
-  const g1Premium = ingresoRows.map(r=>Number(r.ingreso_premium_pct||0));
-  const g1Fees = ingresoRows.map(r=>Number(r.ingreso_fees_pct||0));
-  const pctPremium = ingresoRows[ingresoRows.length-1]?.pct_personal_premium ?? '—';
-  const pctFees = ingresoRows[ingresoRows.length-1]?.pct_personal_fees ?? '—';
-
-  const { actual: g3Actual, siguiente: g3Siguiente } = escalonActual(tasaAnual ?? 0, escaleraAnual);
-  const bonoAnualFull = g3Actual ? Number(g3Actual.bono_usd) : 0;
-  const metaAnillo = g3Siguiente ? Number(g3Siguiente.umbral) : (g3Actual ? Number(g3Actual.umbral) : (escaleraAnual[0]?Number(escaleraAnual[0].umbral):100));
-  const ringPct = Math.max(0, Math.min(100, 100*(tasaAnual??0)/metaAnillo));
-
-  el.innerHTML = '<div class="pg-grid-2">'+
-    '<div class="pg-card"><h2>Ingreso apilado</h2>'+
-      '<div class="chart-wrap" style="height:220px"><canvas id="kd-g1"></canvas></div>'+
-      '<div class="pg-limite">Bolsa liquidada (sólida) + '+pctPremium+'% del premium renovado y '+pctFees+'% de los fees (punteado, medido).</div>'+
-      MEDICION_NOTA+
-    '</div>'+
-    '<div class="pg-card"><h2>Bono anual</h2>'+
-      '<div class="ring-wrap" style="height:170px"><canvas id="kd-g3"></canvas><div class="ring-center" id="kd-g3-center"></div></div>'+
-      '<div style="margin-top:8px;display:flex;flex-direction:column;gap:2px">'+
-        escaleraAnual.map(t=>{
-          const alcanzado = (tasaAnual??0) >= Number(t.umbral);
-          return '<div style="font-size:11.5px;color:'+(alcanzado?'var(--pg-pos)':'var(--pg-muted)')+';display:flex;justify-content:space-between"><span>'+(alcanzado?'✓ ':'· ')+t.umbral+'%</span><span>'+fmtUSD2(t.bono_usd)+'</span></div>';
-        }).join('')+
+  const elV = $('vnr');
+  if(!ALERTA_VNR.length){ elV.innerHTML = '<div class="vacio">Sin datos de vendedores.</div>'; return; }
+  const promArea = Number(ALERTA_VNR[0].promedio_area||0);
+  const estandar = Number(ALERTA_VNR[0].estandar_pct||70);
+  const ordenados = ALERTA_VNR.slice().sort((a,b)=> Number(a.pct_renovado||0)-Number(b.pct_renovado||0));
+  elV.innerHTML = ordenados.map(v=>{
+    const pct = Number(v.pct_renovado||0);
+    const col = pct>=estandar?'#229A82':(v.en_alerta?'#D5594F':'#D9A520');
+    return '<div class="barrow">'+
+      '<div style="font-size:13px;font-weight:600;color:var(--ink)">'+esc(v.dueno)+'</div>'+
+      '<div class="track">'+
+        '<div class="fillb" data-w="'+pct+'" style="width:0;background:'+col+'"></div>'+
+        '<div class="mk prom" style="left:'+promArea+'%"></div>'+
+        '<div class="mk est" style="left:'+estandar+'%"></div>'+
       '</div>'+
-      MEDICION_NOTA+
-    '</div>'+
-  '</div>';
-
-  pintarChart('kd-g1', {
-    type:'line',
-    data:{ labels: g1Labels, datasets:[
-      { label:'Bolsa (liquidada)', data: g1Bolsa, stack:'ing', borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.35)', fill:true, tension:.4, pointRadius:1, borderWidth:2 },
-      { label:'% premium (medido)', data: g1Premium, stack:'ing', borderColor:'#D9A520', backgroundColor:'rgba(217,165,32,.20)', borderDash:[5,4], fill:true, tension:.4, pointRadius:0, borderWidth:1.6 },
-      { label:'% fees (medido)', data: g1Fees, stack:'ing', borderColor:'#8a6412', backgroundColor:'rgba(138,100,18,.16)', borderDash:[5,4], fill:true, tension:.4, pointRadius:0, borderWidth:1.6 },
-    ]},
-    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:10}}}}, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>fmtUSD(v) } } } }
+      '<div style="text-align:right"><span class="vpct '+(pct>=estandar?'bien':(v.en_alerta?'':'bajo'))+'" style="'+(v.en_alerta?'background:#FAE7E5;color:#A63F36':'')+'">'+pct.toFixed(1)+'%</span></div></div>';
+  }).join('') +
+  '<div style="padding:10px 24px 0;font-size:11.5px;color:var(--muted)">'+
+    '<span style="display:inline-block;width:2px;height:11px;background:#8FA3B0;vertical-align:-1px;margin-right:6px"></span>Promedio del área '+promArea.toFixed(1)+'%'+
+    '&nbsp;&nbsp;<span style="display:inline-block;width:2px;height:11px;background:#D9A520;vertical-align:-1px;margin-right:6px"></span>Estándar '+estandar+'%</div>';
+  document.querySelectorAll('#vnr .barrow').forEach((row,i)=>{
+    const v = ordenados[i];
+    row.onmousemove = e=> tip(e, '<span class="tt">'+esc(v.dueno)+'</span>Renovó <b>'+(v.renovaron||0)+'</b> de <b>'+(v.vencieron||0)+'</b><br>Premium perdido: '+fmtUSD(v.premium_perdido));
+    row.onmouseleave = ocultar;
   });
-  pintarChart('kd-g3', {
-    type:'doughnut',
-    data:{ labels:['Avance','Resto'], datasets:[{ data:[ringPct, Math.max(0,100-ringPct)], backgroundColor:[semaforoColor(tasaAnual),'#E7EDF2'], borderWidth:0 }] },
-    options:{ cutout:'72%', plugins:{legend:{display:false},tooltip:{enabled:false}} }
-  });
-  document.getElementById('kd-g3-center').innerHTML =
-    '<div class="rc-val" style="font-size:20px">'+(tasaAnual==null?'—':tasaAnual.toFixed(1)+'%')+'</div>'+
-    '<div class="rc-lbl">de '+metaAnillo+'% para '+(g3Siguiente?fmtUSD2(g3Siguiente.bono_usd):fmtUSD2(bonoAnualFull))+'</div>';
+  requestAnimationFrame(()=>document.querySelectorAll('.fillb').forEach(b=>b.style.width=b.dataset.w+'%'));
 }
 
 /* =====================================================================
-   9) ARRANQUE
+   7) 04 LA BOLSA
+   ===================================================================== */
+function bolsa(){
+  if(!BOLSA_FILAS.length){ $('bolsaKpis').innerHTML=''; $('svgBolsa').innerHTML=''; return; }
+  const filas = BOLSA_FILAS.slice().sort((a,b)=> String(a.mes) < String(b.mes) ? -1 : (String(a.mes) > String(b.mes) ? 1 : 0));
+  const tot = filas.reduce((s,b)=>s+Number(b.bolsa_persona||0),0);
+  const ren = filas.reduce((s,b)=>s+Number(b.renovaciones||0),0);
+  const fee = filas.reduce((s,b)=>s+Number(b.renovaciones_con_fee||0),0);
+  const mej = filas.reduce((a,b)=> Number(b.bolsa_persona||0)>Number(a.bolsa_persona||0)?b:a);
+  const esteMes = filas.find(b=>String(b.mes)===mesISO(AÑO_ACTUAL, MES_ACTUAL));
+  $('bolsaKpis').innerHTML =
+   '<div class="kp oscuro"><div class="k">Acumulado del año</div><div class="v">'+fmtUSD2(tot)+'</div>'+
+     '<div class="d">'+filas.length+' mes'+(filas.length===1?'':'es')+' de bolsa</div></div>'+
+   '<div class="kp"><div class="k">Este mes (en firme)</div><div class="v">'+(esteMes?fmtUSD2(esteMes.bolsa_persona):'—')+'</div>'+
+     '<div class="d">'+NOM_MESES[MES_ACTUAL].toLowerCase()+', aún abierto</div></div>'+
+   '<div class="kp"><div class="k">Renovaciones con fee</div><div class="v">'+(ren?(100*fee/ren).toFixed(1)+'%':'—')+'</div>'+
+     '<div class="d">'+fee+' de '+ren+' en el año</div></div>'+
+   '<div class="kp"><div class="k">Tu mejor mes</div><div class="v" style="font-size:28px">'+fmtUSD2(mej.bolsa_persona)+'</div>'+
+     '<div class="d">'+mesCorto(mej.mes)+'</div></div>';
+  dibujarSvgBolsa(filas);
+}
+function dibujarSvgBolsa(filas){
+  const W=820,H=260,ML=52,MR=44,MT=18,MB=32, iw=W-ML-MR, ih=H-MT-MB;
+  const max = Math.max(1, ...filas.map(b=>Number(b.bolsa_persona||0)))*1.1;
+  const bw = iw/filas.length, bar = bw*.5;
+  let s='';
+  [0,.25,.5,.75,1].forEach(f=>{
+    const y = MT+ih-ih*f;
+    s += '<line class="gl" x1="'+ML+'" y1="'+y+'" x2="'+(W-MR)+'" y2="'+y+'"/>'+
+         '<text class="axn" x="'+(ML-8)+'" y="'+(y+4)+'" text-anchor="end">$'+Math.round(max*f)+'</text>';
+  });
+  filas.forEach((b,i)=>{
+    const x = ML+bw*i+(bw-bar)/2, h = ih*Number(b.bolsa_persona||0)/max, y = MT+ih-h;
+    s += '<g><rect x="'+(ML+bw*i)+'" y="'+MT+'" width="'+bw+'" height="'+ih+'" fill="transparent" data-idx="'+i+'"/>'+
+      '<rect x="'+x+'" y="'+y+'" width="'+bar+'" height="'+h+'" rx="4" fill="#229A82"/>'+
+      '<text class="ax" x="'+(x+bar/2)+'" y="'+(H-10)+'" text-anchor="middle">'+mesCorto(b.mes)+'</text></g>';
+  });
+  const pts = filas.map((b,i)=>[ML+bw*i+bw/2, MT+ih-ih*Number(b.pct_cobertura_fee||0)/100]);
+  s += '<polyline points="'+pts.map(p=>p.join(',')).join(' ')+'" fill="none" stroke="#D9A520" stroke-width="2.5" stroke-linejoin="round"/>';
+  pts.forEach(p=>{ s += '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4.5" fill="#fff" stroke="#D9A520" stroke-width="2.5"/>'; });
+  [0,50,100].forEach(v=>{ const y=MT+ih-ih*v/100; s+='<text class="axn" x="'+(W-MR+8)+'" y="'+(y+4)+'" fill="#8A6A14">'+v+'%</text>'; });
+  $('svgBolsa').innerHTML = s;
+  $('svgBolsa').querySelectorAll('rect[data-idx]').forEach(rect=>{
+    const b = filas[Number(rect.dataset.idx)];
+    rect.onmousemove = e=> tip(e, '<span class="tt">'+mesCorto(b.mes)+'</span>Bolsa <b>'+fmtUSD2(b.bolsa_persona)+'</b><br><b>'+(b.renovaciones_con_fee||0)+'</b> de <b>'+(b.renovaciones||0)+'</b> renovaciones con fee (<b>'+Number(b.pct_cobertura_fee||0).toFixed(1)+'%</b>)');
+    rect.onmouseleave = ocultar;
+  });
+}
+
+/* =====================================================================
+   8) 05 BONOS — la escalera del año (bono_escalera, area=renovaciones)
+   ===================================================================== */
+function bonos(){
+  const p = pctAno();
+  const sig = ESCALERA.find(e=> Number(e.umbral) > p);
+  $('bonoSub').innerHTML = 'Vas en <b style="font-family:var(--f-num);color:var(--ink)">'+p.toFixed(1)+'%</b> sobre los meses cerrados.'+
+    (sig ? ' Te faltan <b style="font-family:var(--f-num);color:#8A6A14">'+(Number(sig.umbral)-p).toFixed(1)+' puntos</b> para el escalón de '+sig.umbral+'%.' : ' Ya pasaste el último escalón.');
+  $('escalera').innerHTML = ESCALERA.map(e=>{
+    const ok = p >= Number(e.umbral);
+    const es = sig && Number(sig.umbral)===Number(e.umbral);
+    return '<div class="pel '+(ok?'logrado':es?'siguiente':'futuro')+'">'+
+      '<div><div class="u">'+e.umbral+'%</div>'+
+        (ok?'<span class="badge ok">Logrado</span>':es?'<span class="badge next">Vas por este</span>':'')+'</div>'+
+      '<div><div style="font-weight:600;font-size:13.5px;color:var(--ink)">Renovar el '+e.umbral+'% del año</div>'+
+        '<div class="d">'+(e.notas?esc(e.notas):'&nbsp;')+'</div></div>'+
+      '<div class="b">$'+Number(e.bono_usd).toLocaleString('en-US')+'<small>COP '+Number(e.bono_cop).toLocaleString('es-CO')+'</small></div></div>';
+  }).join('');
+}
+
+/* =====================================================================
+   9) 06 EL ÁREA
+   ===================================================================== */
+function area(){
+  const act = CARTERA.find(x=>x.estado==='ACTIVA') || {cuentas:0,premium:0};
+  const sen = CARTERA.find(x=>x.estado==='ACTIVA SIN SENAL') || {cuentas:0,premium:0};
+  const totP = CARTERA.reduce((s,x)=>s+Number(x.premium||0),0);
+  const tot = IDX_MESES.reduce((s,m)=>s+Number(m.vencieron||0),0);
+  const tr = IDX_MESES.reduce((s,m)=>s+Number(m.renovaron||0),0);
+  const tp = IDX_MESES.reduce((s,m)=>s+Number(m.premium_vencido||0),0);
+  $('areaKpis').innerHTML =
+   '<div class="kp oscuro"><div class="k">Cartera viva</div><div class="v">'+(Number(act.cuentas||0)+Number(sen.cuentas||0))+'</div>'+
+     '<div class="d">'+fmtUSD(totP)+' en premium</div></div>'+
+   '<div class="kp"><div class="k">Sin señal de vida</div><div class="v">'+(sen.cuentas||0)+'</div>'+
+     '<div class="d">'+fmtUSD(sen.premium)+' · las confirma Financiera</div></div>'+
+   '<div class="kp"><div class="k">Renuevan este año</div><div class="v">'+tot+'</div>'+
+     '<div class="d">'+fmtUSD(tp)+' en juego</div></div>'+
+   '<div class="kp"><div class="k">Renovadas del año</div><div class="v">'+tr+'</div>'+
+     '<div class="d">'+pctAno().toFixed(1)+'% en meses cerrados</div></div>';
+  const max = Math.max(1, ...CARTERA.map(x=>Number(x.cuentas||0)));
+  const ordenados = ESTADOS_CARTERA_ORDEN.map(e=>CARTERA.find(x=>x.estado===e)).filter(Boolean);
+  $('estados').innerHTML = ordenados.map(x=>{
+    const col = ESTADOS_CARTERA_COLOR[x.estado]||'#8FA3B0';
+    return '<div class="er"><div class="l"><i style="background:'+col+'"></i>'+esc(etiqueta(x.estado))+'</div>'+
+      '<div class="t"><i data-w="'+(100*Number(x.cuentas||0)/max)+'" style="width:0;background:'+col+'"></i></div>'+
+      '<div class="n">'+(x.cuentas||0)+'<small>'+(x.premium?fmtUSD(x.premium):'—')+'</small></div></div>';
+  }).join('');
+  requestAnimationFrame(()=>document.querySelectorAll('.er .t i').forEach(b=>b.style.width=b.dataset.w+'%'));
+}
+
+/* =====================================================================
+   10) REPORTE IMPRIMIBLE — mes y año, con @media print
+   ===================================================================== */
+function imprimir(alc){
+  const esAno = alc==='ano';
+  const filas = esAno ? AÑO_FILAS : filasDelMes();
+  const tit = esAno ? ('Año '+AÑO_ACTUAL) : (NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL);
+  let cc, rr, pp;
+  if(esAno){
+    cc = IDX_MESES.reduce((s,x)=>s+Number(x.vencieron||0),0);
+    rr = IDX_MESES.reduce((s,x)=>s+Number(x.renovaron||0),0);
+    pp = IDX_MESES.reduce((s,x)=>s+Number(x.premium_vencido||0),0);
+  } else {
+    const x = IDX_MESES.find(m=>Number(String(m.mes).slice(5,7))===MES_SEL) || {vencieron:0,renovaron:0,premium_vencido:0};
+    cc = Number(x.vencieron||0); rr = Number(x.renovaron||0); pp = Number(x.premium_vencido||0);
+  }
+  const pct = cc ? (100*rr/cc) : 0;
+  const filasOrdenadas = filas.slice().sort((a,b)=> Number(b.premium_activo||0)-Number(a.premium_activo||0));
+  $('reporte').innerHTML =
+   '<div class="rp-h"><h1>Reporte de renovaciones — '+esc(tit)+'</h1>'+
+     '<div class="m">Karen Suaza · Área de Renovaciones · ProtectGo Services · '+
+       'Generado el '+new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'})+'</div></div>'+
+   '<div class="rp-k">'+
+     '<div><div class="k">Entraron a renovar</div><div class="v">'+cc+'</div></div>'+
+     '<div><div class="k">Renovadas</div><div class="v">'+rr+'</div></div>'+
+     '<div><div class="k">% renovado</div><div class="v">'+pct.toFixed(1)+'%</div></div>'+
+     '<div><div class="k">Meta 70%</div><div class="v">'+Math.ceil(cc*.7)+'</div></div>'+
+     '<div><div class="k">Premium en juego</div><div class="v">'+fmtUSD(pp)+'</div></div></div>'+
+   '<table><thead><tr><th>Cuenta</th><th>DOT</th><th>Vendedor</th><th>Vence</th>'+
+     '<th style="text-align:right">Premium</th><th>Estado final</th></tr></thead><tbody>'+
+   filasOrdenadas.map(c=>{
+     const pillInfo = PILL[c.estado_trabajo||'pendiente']||PILL.pendiente;
+     return '<tr><td>'+esc(c.cuenta_nombre||c.llave)+'</td><td class="n">'+esc(c.dot||'—')+'</td>'+
+       '<td>'+esc(c.agente||'—')+'</td><td class="n">'+fmtFecha(c.vence)+'</td><td class="n">'+fmtUSD(c.premium_activo)+'</td><td>'+esc(pillInfo[1])+'</td></tr>';
+   }).join('')+
+   '</tbody></table>'+
+   '<div class="rp-f"><div>Karen Suaza — Renovaciones</div><div>Visto bueno — Dirección</div></div>';
+  window.print();
+}
+$('btn-imprimir-mes').addEventListener('click', ()=> imprimir('mes'));
+$('btn-imprimir-ano').addEventListener('click', ()=> imprimir('ano'));
+
+/* =====================================================================
+   11) ARRANQUE
    ===================================================================== */
 (async function init() {
   if (_IS_RECOVERY) { mostrarSetPassword(); return; }
@@ -1659,7 +1070,7 @@ function pintarBonos(bolsaRows, ingresoRows, escaleraRows, participacionRows, ta
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=23; // Dos cambios quirurgicos sobre v22: (1) la cabecera del mes lee premium_con_senal/premium_por_confirmar directo de v_indice_renovaciones_v3_visible en vez de sumarlos de la cola (la cola excluye cuentas ya renovadas, asi que la suma quedaba corta); (2) el contador "trabajadas esta semana" pasa de una ventana rodante de 7 dias a la semana calendario (lunes 00:00 hora de Medellin, domingo como cierre).
+var PGV_VERSION=24; // Rediseno completo sobre la maqueta karen_completa_A aprobada por Andres, replicada pixel a pixel: navegador de 6 casillas, cinta del año clicable con franja oscura del mes (premium de la vista, nunca sumado de la cola), Mi cola sobre v_renov_ano_visible (año completo, chip Urgente=en_ventana, meses cerrados si se pueden marcar), Vendedores con barras pareadas, El muro con marcas de promedio/estandar de la propia vista, La bolsa y Bonos (escalera bono_escalera) en SVG a mano, El area con los totales del año, y reporte imprimible de mes/año. Se cae el sistema anterior de Chart.js, anillos y ficha lateral con notas — no estan en la maqueta aprobada.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

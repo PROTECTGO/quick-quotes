@@ -438,10 +438,13 @@ function pintarEsqueletoCompleto(){
     <section class="pg-tabsection" id="tab-vendedores">
       <div class="pg-card">
         <div class="pg-vendedor-pick">
-          <select id="vend-area"><option value="">Todas las áreas</option></select>
           <select id="vend-select"><option value="">Selecciona un vendedor…</option></select>
         </div>
         <div id="vend-ficha"><div class="pg-limite" style="color:var(--pg-muted);font-size:13px">Selecciona un vendedor para ver su ficha.</div></div>
+      </div>
+      <div class="pg-card">
+        <h2>Todos los agentes</h2>
+        <div id="vend-lista-todos"><div class="pg-skel" style="height:120px"></div></div>
       </div>
     </section>
 
@@ -484,7 +487,7 @@ async function cargarTodo(){
    ===================================================================== */
 async function cargarArea(){
   const [idxR, rojoR, rojoCuentasR, vendeR, grandeR, carteraR] = await Promise.all([
-    SB.from('v_indice_renovaciones_mensual_visible').select('*').order('mes',{ascending:true}),
+    SB.from('v_indice_renovaciones_v3_visible').select('*').order('mes',{ascending:true}),
     SB.from('v_alerta_mes_rojo_visible').select('*').maybeSingle(),
     SB.from('v_alerta_mes_rojo_cuentas_visible').select('*'),
     SB.from('v_alerta_vende_no_renueva_visible').select('*').order('premium_perdido',{ascending:false}),
@@ -608,178 +611,265 @@ function pintarCarteraArea(cartera){
     false);
 }
 
-/* ---- renovaciones del mes: por cuenta (v_cartera_activa), navegación de mes ---- */
+/* ---- renovaciones del mes: v_renov_grupo_visible + renov_trabajo, navegación de mes ---- */
 let MES_RENOV_ACTUAL = mesActualISO();
+let RENOV_FILAS = [];
+const ESTADOS_TRABAJO = ['pendiente','contactado','cotizando','renovado','perdido','retirado'];
 window.renovMesCambiar = function(delta){
   MES_RENOV_ACTUAL = sumarMeses(MES_RENOV_ACTUAL, delta);
   cargarRenovacionesDelMes(MES_RENOV_ACTUAL);
 };
+function rowId(r){ return 'rf_'+String(r.llave+'|'+r.vence).replace(/[^a-zA-Z0-9]/g,'_'); }
+
 async function cargarRenovacionesDelMes(mesIso){
-  const desde = mesIso, hasta = sumarMeses(mesIso, 1);
-  const { data, error } = await SB.from('v_cartera_activa_visible')
-    .select('llave,estado,subestado,premium_activo,vence_est,dueno_ultima_venta,inicio_termino')
-    .eq('estado','ACTIVA').eq('area','KAREN').gte('vence_est', desde).lt('vence_est', hasta)
-    .order('premium_activo',{ascending:false});
+  const { data, error } = await SB.from('v_renov_grupo_visible').select('*')
+    .eq('mes_vence', mesIso).order('premium_activo',{ascending:false});
   const contEl = document.getElementById('area-renovaciones-mes');
   if(error){ contEl.innerHTML = '<div class="pg-card"><div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div></div>'; return; }
-  const filas = data || [];
-  const totalPremium = filas.reduce((s,r)=>s+Number(r.premium_activo||0),0);
+  RENOV_FILAS = data || [];
+  const sumaSenal = RENOV_FILAS.reduce((s,r)=>s+Number(r.premium_con_senal||0),0);
+  const sumaConfirmar = RENOV_FILAS.reduce((s,r)=>s+Number(r.premium_por_confirmar||0),0);
   const nav = '<div style="display:flex;align-items:center;gap:8px" onclick="event.stopPropagation()">'+
     '<button type="button" class="pg-toggle-link" onclick="renovMesCambiar(-1)">‹</button>'+
     '<button type="button" class="pg-toggle-link" onclick="renovMesCambiar(1)">›</button>'+
   '</div>';
-  const cuerpo = filas.length
-    ? filas.map(filaCuentaMes).join('')
-    : '<div class="pg-limite">Sin cuentas por renovar este mes.</div>';
   const tituloConNav = esc(fmtMes(mesIso))+' '+nav;
-  contEl.innerHTML = bloquePlegable('renov-mes-'+mesIso, tituloConNav,
-    filas.length+' cuentas, '+fmtUSD(totalPremium)+' en juego', cuerpo, true);
+  const resumen = fmtUSD(sumaSenal)+' con señal de vida · '+fmtUSD(sumaConfirmar)+' por confirmar · '+RENOV_FILAS.length+' cuentas';
+  const cuerpo = RENOV_FILAS.length
+    ? '<div class="tablewrap"><table class="pg-table renov-tabla"><thead><tr><th></th><th>DOT</th><th>Cuenta</th><th>Agente</th><th class="num">Premium</th><th>Vence</th><th>Señal</th><th>Jeff</th><th>Contactado</th><th>Estado</th><th>Notas</th></tr></thead><tbody id="renov-tbody">'+
+        RENOV_FILAS.map(filaRenov).join('')+
+      '</tbody></table></div>'
+    : '<div class="pg-limite">Sin cuentas por renovar este mes.</div>';
+  contEl.innerHTML = bloquePlegable('renov-mes-'+mesIso, tituloConNav, resumen, cuerpo, true);
+  if(RENOV_FILAS.length) cablearFilasRenov();
 }
-function filaCuentaMes(r){
-  const id = 'cta-'+r.llave.replace(/[^a-zA-Z0-9]/g,'_');
-  return '<div class="cuenta-fila" data-cuenta-id="'+id+'">'+
-    '<div class="cuenta-fila-header" onclick="toggleCuenta(\''+id+'\',\''+esc(r.llave)+'\')">'+
-      '<span class="cuenta-fila-chevron">▸</span>'+
-      '<div style="flex:1;min-width:0"><b>'+esc(r.llave)+'</b><div style="font-size:11.5px;color:var(--pg-muted)">'+esc(r.dueno_ultima_venta||'sin agente')+'</div></div>'+
-      '<div class="pg-pill '+(r.subestado==='LIMPIA'?'ok':'warn')+'">'+esc(r.subestado||'—')+'</div>'+
-      '<div style="font-family:var(--pg-font-num);font-weight:700;min-width:90px;text-align:right">'+fmtUSD(r.premium_activo)+'</div>'+
-    '</div>'+
-    '<div class="cuenta-fila-detalle" id="detalle-'+id+'"></div>'+
-  '</div>';
+
+function filaRenov(r){
+  const id = rowId(r);
+  const colorSenal = r.sin_senal ? 'var(--pg-warn)' : 'var(--pg-pos)';
+  const senalHtml = r.sin_senal
+    ? '<span style="font-size:11px;color:var(--pg-warn);font-weight:700">'+(r.dias_sin_mov!=null?r.dias_sin_mov+'d · ':'')+'confirmar con Jeff antes de trabajarla</span>'
+    : '<span style="font-size:11px;color:var(--pg-muted)">'+(r.dias_sin_mov!=null?r.dias_sin_mov+'d':'')+'</span>';
+  const premiumHtml = fmtUSD(r.premium_activo) + (Number(r.n_polizas)>1 ? ' <span style="font-size:10px;color:var(--pg-muted);font-weight:700">×'+r.n_polizas+'</span>' : '');
+  return '<tr class="renov-row" data-row-id="'+id+'">'+
+      '<td class="renov-chevron" style="cursor:pointer;color:var(--pg-muted)">▸</td>'+
+      '<td>'+esc(r.dot||'—')+'</td>'+
+      '<td class="renov-toggle" style="cursor:pointer"><b>'+esc(r.cuenta_nombre||r.llave)+'</b></td>'+
+      '<td>'+esc(r.agente||'—')+'</td>'+
+      '<td class="num">'+premiumHtml+'</td>'+
+      '<td>'+fmtFecha(r.vence)+'</td>'+
+      '<td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+colorSenal+';margin-right:5px"></span>'+senalHtml+'</td>'+
+      '<td><input type="checkbox" class="chk-jeff" '+(r.verificado_financiera?'checked':'')+'></td>'+
+      '<td><input type="checkbox" class="chk-contactado" '+(r.contactado?'checked':'')+'></td>'+
+      '<td><select class="sel-estado">'+ESTADOS_TRABAJO.map(e=>'<option value="'+e+'" '+((r.estado_trabajo||'pendiente')===e?'selected':'')+'>'+e[0].toUpperCase()+e.slice(1)+'</option>').join('')+'</select></td>'+
+      '<td class="num renov-toggle" style="cursor:pointer"><span class="pg-pill muted">'+(r.n_notas||0)+'</span></td>'+
+    '</tr>'+
+    '<tr class="renov-detail" id="det-'+id+'" style="display:none"><td colspan="10"><div class="renov-detail-inner"></div></td></tr>';
 }
-window.toggleCuenta = async function(id, llave){
-  const wrap = document.querySelector('[data-cuenta-id="'+id+'"]');
-  const abrir = !wrap.classList.contains('abierta');
-  wrap.classList.toggle('abierta', abrir);
-  if(!abrir) return;
-  const det = document.getElementById('detalle-'+id);
-  if(det.dataset.cargado) return;
-  det.dataset.cargado = '1';
-  det.innerHTML = '<div class="pg-skel" style="height:80px"></div>';
-  const esDot = /^\d+$/.test(llave);
-  const [polR, notasR, retR] = await Promise.all([
-    esDot ? SB.from('bos_registros').select('transaction_type,coverage,policy_premium,effective_date,fecha_mes').eq('dot', llave).eq('categoria','venta').order('effective_date',{ascending:true}) : Promise.resolve({data:[]}),
-    SB.from('renov_notas').select('*').eq('llave', llave).order('created_at',{ascending:false}),
-    esDot ? SB.from('retencion_asignaciones').select('id,estado').eq('dot', llave).limit(1).maybeSingle() : Promise.resolve({data:null}),
-  ]);
-  const polizas = polR.data || [];
-  const notas = notasR.data || [];
-  const retFila = retR.data || null;
-  const estadoActual = retFila ? retFila.estado : 'pendiente';
 
-  const polizasHtml = esDot
-    ? (polizas.length
-        ? '<div class="pg-toggle-link" style="margin:10px 0 6px;cursor:default;color:var(--pg-ink)">Pólizas</div><div class="tablewrap"><table class="pg-table"><thead><tr><th>Tipo</th><th>Cobertura</th><th class="num">Premium</th><th>Fecha</th></tr></thead><tbody>'+
-          polizas.map(p=>'<tr><td>'+esc(p.transaction_type||'—')+'</td><td>'+esc(p.coverage||'—')+'</td><td class="num">'+fmtUSD(p.policy_premium)+'</td><td>'+fmtFecha(p.effective_date||p.fecha_mes)+'</td></tr>').join('')+
-          '</tbody></table></div>'
-        : '<div class="pg-limite">Sin pólizas encontradas.</div>')
-    : '<div class="pg-limite">Cuenta sin DOT — detalle de pólizas no disponible.</div>';
+function cablearFilasRenov(){
+  const tbody = document.getElementById('renov-tbody'); if(!tbody) return;
+  RENOV_FILAS.forEach(r=>{
+    const id = rowId(r);
+    const tr = tbody.querySelector('tr[data-row-id="'+id+'"]'); if(!tr) return;
+    const det = document.getElementById('det-'+id);
+    const inner = det.querySelector('.renov-detail-inner');
+    const chevron = tr.querySelector('.renov-chevron');
+    tr.querySelectorAll('.renov-chevron, .renov-toggle').forEach(td=>
+      td.addEventListener('click', ()=> toggleDetalleFila(r, det, inner, chevron)));
+    const chkJeff = tr.querySelector('.chk-jeff');
+    chkJeff.addEventListener('click', e=> e.stopPropagation());
+    chkJeff.addEventListener('change', ()=> onChkJeff(r, chkJeff.checked, chkJeff));
+    const chkCont = tr.querySelector('.chk-contactado');
+    chkCont.addEventListener('click', e=> e.stopPropagation());
+    chkCont.addEventListener('change', ()=> onChkContactado(r, chkCont.checked, chkCont));
+    const selEstado = tr.querySelector('.sel-estado');
+    selEstado.addEventListener('click', e=> e.stopPropagation());
+    let prevValue = selEstado.value;
+    selEstado.addEventListener('change', async ()=>{ await onSelEstado(r, selEstado.value, selEstado, prevValue); prevValue = selEstado.value; });
+  });
+}
 
-  const botonesHtml = esDot
-    ? '<div class="acciones" style="margin-top:10px" id="botones-'+id+'">'+
-        ['contactado','cotizando','renovado','perdido','retirado'].map(e=>
-          '<button type="button" class="'+(estadoActual===e?'activo':'')+(e==='perdido'?' perdido-btn':'')+(e==='retirado'?' retirado-btn':'')+'" onclick="marcarEstadoCuenta(\''+llave+'\',\''+e+'\',\''+id+'\')">'+e[0].toUpperCase()+e.slice(1)+'</button>'
-        ).join('')+
-      '</div>'
-    : '<div class="pg-limite">Sin DOT — no se puede rastrear estado todavía.</div>';
-
-  const notasHtml = notas.length
+function toggleDetalleFila(row, detEl, innerEl, chevronEl){
+  const abrir = detEl.style.display === 'none';
+  detEl.style.display = abrir ? '' : 'none';
+  if(chevronEl) chevronEl.textContent = abrir ? '▾' : '▸';
+  if(abrir && !innerEl.dataset.cargado){ innerEl.dataset.cargado='1'; renderDetalleFila(row, innerEl); }
+}
+function renderDetalleFila(row, innerEl){
+  let html = '';
+  if(row.otras_fechas){
+    html += '<div class="pg-limite" style="margin-bottom:10px">También tiene pólizas venciendo en '+esc(row.otras_fechas)+'.</div>';
+  }
+  const notasId = 'notas_'+rowId(row);
+  html += '<div class="pg-toggle-link" style="cursor:default;color:var(--pg-ink)">Notas</div><div id="'+notasId+'"><div class="pg-skel" style="height:40px"></div></div>'+
+    '<div class="pg-nota-input"><textarea id="nota-input-'+rowId(row)+'" placeholder="Agregar nota…"></textarea><button type="button" class="btn-guardar-nota">Guardar</button></div>';
+  innerEl.innerHTML = html;
+  const btnGuardar = innerEl.querySelector('.btn-guardar-nota');
+  if(btnGuardar) btnGuardar.addEventListener('click', ()=> guardarNotaFila(row));
+  cargarNotasFila(row);
+}
+async function cargarNotasFila(row){
+  const { data } = await SB.from('renov_notas').select('*').eq('llave', row.llave).order('created_at',{ascending:false});
+  const notas = data || [];
+  const notasEl = document.getElementById('notas_'+rowId(row)); if(!notasEl) return;
+  notasEl.innerHTML = notas.length
     ? notas.map(n=>'<div class="pg-nota"><span class="autor">'+esc(n.autor)+'</span><span class="fecha">'+fmtFecha(n.created_at)+'</span><div>'+esc(n.nota)+'</div></div>').join('')
     : '<div class="pg-limite">Sin notas todavía.</div>';
-
-  det.innerHTML = polizasHtml + botonesHtml +
-    '<div style="margin-top:14px"><div class="pg-toggle-link" style="cursor:default;color:var(--pg-ink)">Notas</div><div id="notas-'+id+'">'+notasHtml+'</div>'+
-    '<div class="pg-nota-input"><textarea id="nota-input-'+id+'" placeholder="Agregar nota…"></textarea><button type="button" onclick="guardarNota(\''+llave+'\',\''+id+'\')">Guardar</button></div></div>';
-};
-window.guardarNota = async function(llave, id){
-  const ta = document.getElementById('nota-input-'+id);
+}
+async function guardarNotaFila(row){
+  const ta = document.getElementById('nota-input-'+rowId(row));
   const texto = (ta.value||'').trim();
   if(!texto) return;
   const autor = SESION_EMAIL || 'desconocido';
-  const { error } = await SB.from('renov_notas').insert({ llave, nota: texto, autor });
+  const { error } = await SB.from('renov_notas').insert({ llave: row.llave, nota: texto, autor });
   if(error){ alert('No se pudo guardar la nota: '+error.message); return; }
   ta.value = '';
-  const { data } = await SB.from('renov_notas').select('*').eq('llave', llave).order('created_at',{ascending:false});
-  const notasEl = document.getElementById('notas-'+id);
-  notasEl.innerHTML = (data||[]).map(n=>'<div class="pg-nota"><span class="autor">'+esc(n.autor)+'</span><span class="fecha">'+fmtFecha(n.created_at)+'</span><div>'+esc(n.nota)+'</div></div>').join('');
-};
-window.marcarEstadoCuenta = async function(llave, estado, id){
-  let motivo = null;
-  if(estado==='perdido'){
-    motivo = window.prompt('Motivo de la pérdida (obligatorio):');
-    if(motivo===null) return;
-    if(!motivo.trim()){ alert('El motivo es obligatorio para marcar perdido.'); return; }
-  }
-  const { data: existente } = await SB.from('retencion_asignaciones').select('id').eq('dot', llave).limit(1).maybeSingle();
-  let error;
-  if(existente){
-    ({ error } = await SB.from('retencion_asignaciones').update({ estado, motivo_perdido: estado==='perdido'?motivo.trim():null }).eq('id', existente.id));
-  } else {
-    ({ error } = await SB.from('retencion_asignaciones').insert({ dot: llave, estado, motivo_perdido: estado==='perdido'?motivo.trim():null }));
-  }
-  if(error){ alert('No se pudo actualizar: '+error.message); return; }
-  document.querySelectorAll('#botones-'+id+' button').forEach(b=>b.classList.remove('activo'));
-  const btn = [...document.querySelectorAll('#botones-'+id+' button')].find(b=>b.textContent.toLowerCase()===estado);
-  if(btn) btn.classList.add('activo');
-};
-
-/* =====================================================================
-   5) 02 VENDEDORES — ficha individual, sin comparar
-   ===================================================================== */
-let VEND_TOTALES = [], VEND_MENSUAL = [];
-async function cargarVendedores(){
-  const [totalesR, mensualR, carteraR] = await Promise.all([
-    SB.rpc('f_efectividad_agente_renovar', { p_meses: 12, p_anio_actual: false }),
-    SB.from('v_efectividad_agente_mensual_visible').select('*').order('mes',{ascending:true}),
-    SB.from('v_cartera_activa_visible').select('area,dueno_ultima_venta,estado').limit(5000),
-  ]);
-  VEND_TOTALES = totalesR.data || [];
-  VEND_MENSUAL = mensualR.data || [];
-  const areasSet = new Set((carteraR.data||[]).map(r=>r.area).filter(Boolean));
-  const areaSel = document.getElementById('vend-area');
-  areaSel.innerHTML = '<option value="">Todas las áreas</option>' + Array.from(areasSet).sort().map(a=>'<option value="'+esc(a)+'">'+esc(a)+'</option>').join('');
-  const nombres = VEND_TOTALES.slice().sort((a,b)=>a.dueno.localeCompare(b.dueno));
-  const select = document.getElementById('vend-select');
-  function repintarOpciones(){
-    const areaFiltro = areaSel.value;
-    const activos = areaFiltro
-      ? new Set((carteraR.data||[]).filter(r=>r.area===areaFiltro).map(r=>r.dueno_ultima_venta))
-      : null;
-    const lista = activos ? nombres.filter(a=>activos.has(a.dueno)) : nombres;
-    const actual = select.value;
-    select.innerHTML = '<option value="">Selecciona un vendedor…</option>' + lista.map(a=>'<option value="'+esc(a.dueno)+'">'+esc(a.dueno)+'</option>').join('');
-    if(lista.some(a=>a.dueno===actual)) select.value = actual;
-  }
-  repintarOpciones();
-  areaSel.onchange = repintarOpciones;
-  select.onchange = ()=> pintarFichaVendedor(select.value || null, carteraR.data||[]);
+  row.n_notas = Number(row.n_notas||0) + 1;
+  await cargarNotasFila(row);
 }
 
-async function pintarFichaVendedor(nombre, cartera){
+async function writeTrabajo(row, patch){
+  const payload = Object.assign({ llave: row.llave, vence: row.vence, updated_at: new Date().toISOString(), updated_by: SESION_EMAIL||null }, patch);
+  const { error } = await SB.from('renov_trabajo').upsert(payload, { onConflict: 'llave,vence' });
+  if(error){ alert('No se pudo guardar: '+error.message); return false; }
+  Object.assign(row, patch);
+  return true;
+}
+async function onChkJeff(row, checked, chkEl){
+  const patch = checked
+    ? { verificado_financiera:true, verificado_por: SESION_EMAIL||null, verificado_at: new Date().toISOString() }
+    : { verificado_financiera:false, verificado_por:null, verificado_at:null };
+  const ok = await writeTrabajo(row, patch);
+  if(!ok) chkEl.checked = !checked;
+}
+async function onChkContactado(row, checked, chkEl){
+  const hoy = new Date().toISOString().slice(0,10);
+  const patch = checked
+    ? { contactado:true, fecha_contacto:hoy, contacto_por: SESION_EMAIL||null }
+    : { contactado:false, fecha_contacto:null, contacto_por:null };
+  const ok = await writeTrabajo(row, patch);
+  if(!ok) chkEl.checked = !checked;
+}
+async function onSelEstado(row, nuevoEstado, selEl, prevValue){
+  let motivo = null;
+  if(nuevoEstado==='perdido'){
+    const m = window.prompt('Motivo de la pérdida (obligatorio):');
+    if(m===null){ selEl.value = prevValue; return; }
+    if(!m.trim()){ alert('El motivo es obligatorio para marcar perdido.'); selEl.value = prevValue; return; }
+    motivo = m.trim();
+  }
+  const ok = await writeTrabajo(row, { estado: nuevoEstado, motivo_perdido: motivo });
+  if(!ok){ selEl.value = prevValue; return; }
+  row.estado_trabajo = nuevoEstado;
+}
+
+/* =====================================================================
+   5) 02 VENDEDORES — ficha individual por agente, sin comparar
+   ===================================================================== */
+let VEND_RESUMEN = [];
+async function cargarVendedores(){
+  const { data, error } = await SB.from('v_agente_resumen_ano_visible').select('*').order('agente',{ascending:true});
+  VEND_RESUMEN = data || [];
+  const select = document.getElementById('vend-select');
+  const actual = select.value;
+  select.innerHTML = '<option value="">Selecciona un vendedor…</option>' + VEND_RESUMEN.map(a=>'<option value="'+esc(a.agente)+'">'+esc(a.agente)+'</option>').join('');
+  if(VEND_RESUMEN.some(a=>a.agente===actual)) select.value = actual;
+  select.onchange = ()=> seleccionarAgente(select.value || null);
+  pintarListaTodosAgentes(VEND_RESUMEN);
+  if(error){ document.getElementById('vend-ficha').innerHTML = '<div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div>'; return; }
+  if(select.value) await seleccionarAgente(select.value);
+}
+
+window.seleccionarAgente = async function(nombre){
+  const select = document.getElementById('vend-select');
+  if(select && select.value !== (nombre||'')) select.value = nombre||'';
   const el = document.getElementById('vend-ficha');
   if(!nombre){ el.innerHTML = '<div class="pg-limite" style="color:var(--pg-muted);font-size:13px">Selecciona un vendedor para ver su ficha.</div>'; return; }
-  const totales = VEND_TOTALES.find(a=>a.dueno===nombre) || { vencieron:0, renovaron:0, pct_renovado:0, premium_perdido:0, ventas_nuevas_ano:0 };
-  const activas = cartera.filter(r=>r.dueno_ultima_venta===nombre && r.estado==='ACTIVA').length;
-  const serie = VEND_MENSUAL.filter(r=>r.dueno===nombre);
+  el.innerHTML = '<div class="pg-skel" style="height:320px"></div>';
+  const resumen = VEND_RESUMEN.find(a=>a.agente===nombre);
+  const [vsR, prR] = await Promise.all([
+    SB.from('v_agente_vendido_vs_renovado_visible').select('*').eq('agente', nombre).order('mes',{ascending:true}),
+    SB.from('v_agente_por_renovar_visible').select('*').eq('agente', nombre).order('mes_vence',{ascending:true}),
+  ]);
+  pintarFichaVendedor(nombre, resumen, vsR.data||[], prR.data||[]);
+};
+
+function fichaBox(titulo, valorPrincipal, sub, colorValor){
+  return '<div style="background:var(--pg-bg);border:1px solid var(--pg-line);border-radius:14px;padding:14px 16px">'+
+    '<div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--pg-muted)">'+esc(titulo)+'</div>'+
+    '<div style="font-family:var(--pg-font-num);font-size:20px;font-weight:700;color:'+(colorValor||'var(--pg-ink)')+'">'+valorPrincipal+'</div>'+
+    (sub ? '<div style="font-size:11.5px;color:var(--pg-muted);margin-top:3px">'+sub+'</div>' : '')+
+  '</div>';
+}
+
+function pintarFichaVendedor(nombre, r, mensual, porRenovar){
+  if(!r) r = { vendio_n:0, vendio_premium:0, vencio_n:0, vencio_premium:0, renovo_n:0, renovo_premium:0,
+    renovo_el_mismo_n:0, renovo_el_area_n:0, tasa_renovacion:null, por_renovar_ano:0,
+    por_renovar_ano_con_senal:0, por_renovar_ano_por_confirmar:0, por_renovar_mes:0, por_renovar_mes_cuentas:0 };
+  const el = document.getElementById('vend-ficha');
+  const tasa = r.tasa_renovacion===null||r.tasa_renovacion===undefined ? null : Number(r.tasa_renovacion);
 
   el.innerHTML =
-    '<div class="gv-kpis" style="margin-bottom:16px">'+
-      '<div class="gv-kpi"><div class="lbl">Cuentas activas</div><div class="val">'+activas+'</div></div>'+
-      '<div class="gv-kpi"><div class="lbl">Vencidas (12m)</div><div class="val">'+totales.vencieron+'</div></div>'+
-      '<div class="gv-kpi"><div class="lbl">% contra 70</div><div class="val" style="color:'+semaforoColor(Number(totales.pct_renovado))+'">'+totales.pct_renovado+'%</div></div>'+
-      '<div class="gv-kpi"><div class="lbl">Premium perdido</div><div class="val">'+fmtUSD(totales.premium_perdido)+'</div></div>'+
+    '<div class="pg-grid-3" style="margin-bottom:16px">'+
+      fichaBox('Vendió', r.vendio_n+' cuentas', fmtUSD(r.vendio_premium))+
+      fichaBox('Le vencieron', r.vencio_n+' cuentas', fmtUSD(r.vencio_premium))+
+      fichaBox('Renovó', r.renovo_n+' cuentas', fmtUSD(r.renovo_premium)+'<br>renovó el mismo '+r.renovo_el_mismo_n+' · renovó el área '+r.renovo_el_area_n)+
+      fichaBox('Tasa de renovación', (tasa===null?'—':tasa.toFixed(1)+'%'), null, semaforoColor(tasa))+
+      fichaBox('Por renovar resto del año', fmtUSD(r.por_renovar_ano), 'con señal '+fmtUSD(r.por_renovar_ano_con_senal)+' · por confirmar '+fmtUSD(r.por_renovar_ano_por_confirmar))+
+      fichaBox('Por renovar este mes', fmtUSD(r.por_renovar_mes), r.por_renovar_mes_cuentas+' cuentas')+
     '</div>'+
-    '<div class="chart-wrap" style="height:200px"><canvas id="chVendSolo"></canvas></div>'+
-    (Number(totales.pct_renovado) < 70 ? '<div class="pg-warn-box" style="margin-top:12px">Por debajo del estándar (70%) — últimos 12 meses.</div>' : '<div class="pg-limite">Sobre el estándar (70%) — últimos 12 meses.</div>')+
-    '<div class="pg-limite" style="margin-top:6px">Ventas nuevas '+new Date().getFullYear()+': '+totales.ventas_nuevas_ano+'.</div>';
+    '<div class="pg-grid-3">'+
+      '<div class="chart-wrap" style="height:190px"><canvas id="chVendRenov"></canvas></div>'+
+      '<div class="chart-wrap" style="height:190px"><canvas id="chPorRenovar"></canvas></div>'+
+      '<div class="chart-wrap" style="height:190px"><canvas id="chTasaMensual"></canvas></div>'+
+    '</div>';
 
-  pintarChart('chVendSolo', {
+  const cerrados = mensual.filter(m=>m.estado_mes!=='futuro');
+  const ult12 = cerrados.slice(-12);
+  const labelsUlt12 = ult12.map(m=>mesCorto(m.mes));
+
+  pintarChart('chVendRenov', {
     type:'line',
-    data:{ labels: serie.map(r=>fmtMes(r.mes)), datasets:[
-      { label:'% renovado', data: serie.map(r=>Number(r.pct_renovado||0)), borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.16)', fill:true, tension:.4, pointRadius:2 },
-      { label:'Estándar 70%', data: serie.map(()=>70), borderColor:'#D9A520', borderDash:[6,4], pointRadius:0, fill:false, tension:0 }
+    data:{ labels: labelsUlt12, datasets:[
+      { label:'Vendido', data: ult12.map(m=>Number(m.vendido_premium||0)), borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.18)', fill:true, tension:.45, pointRadius:0, borderWidth:2.4 },
+      { label:'Renovado', data: ult12.map(m=>Number(m.renovado_premium||0)), borderColor:'#1B2D3A', backgroundColor:'rgba(27,45,58,.10)', fill:true, tension:.45, pointRadius:0, borderWidth:2.4 },
+    ]},
+    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:10}}}}, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>fmtUSD(v) } } } }
+  });
+
+  const hoy = mesActualISO();
+  const proximos12 = porRenovar.filter(p=>String(p.mes_vence) >= hoy).slice(0,12);
+  pintarChart('chPorRenovar', {
+    type:'line',
+    data:{ labels: proximos12.map(p=>mesCorto(p.mes_vence)), datasets:[
+      { label:'Con señal', data: proximos12.map(p=>Number(p.premium_con_senal||0)), borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.30)', fill:true, tension:.45, pointRadius:0, borderWidth:2, stack:'pr' },
+      { label:'Por confirmar', data: proximos12.map(p=>Number(p.premium_por_confirmar||0)), borderColor:'#D9A520', backgroundColor:'rgba(217,165,32,.30)', fill:true, tension:.45, pointRadius:0, borderWidth:2, stack:'pr' },
+    ]},
+    options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:10}}}}, scales:{ y:{ beginAtZero:true, stacked:true, ticks:{ callback:v=>fmtUSD(v) } } } }
+  });
+
+  pintarChart('chTasaMensual', {
+    type:'line',
+    data:{ labels: labelsUlt12, datasets:[
+      { label:'% renovado', data: ult12.map(m=>m.pct_renovado===null?null:Number(m.pct_renovado)), borderColor:'#2DBFA3', backgroundColor:'rgba(45,191,163,.16)', fill:true, tension:.45, spanGaps:true, borderWidth:2.4,
+        pointRadius: 3, pointBackgroundColor: ult12.map(m=> m.pct_renovado!==null && Number(m.pct_renovado)<50 ? '#D5594F' : '#2DBFA3') },
+      { label:'Estándar 70%', data: labelsUlt12.map(()=>70), borderColor:'#D9A520', borderDash:[6,4], borderWidth:1.6, pointRadius:0, fill:false, tension:0 },
     ]},
     options:{ maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:10}}}}, scales:{ y:{ min:0, max:100, ticks:{ callback:v=>v+'%' } } } }
+  });
+}
+
+function pintarListaTodosAgentes(rows){
+  const el = document.getElementById('vend-lista-todos');
+  if(!rows.length){ el.innerHTML = '<div class="pg-limite">Sin agentes.</div>'; return; }
+  const ordenados = rows.slice().sort((a,b)=> (Number(b.tasa_renovacion)||-1) - (Number(a.tasa_renovacion)||-1));
+  el.innerHTML = '<div class="tablewrap"><table class="pg-table"><thead><tr><th>Agente</th><th class="num">Tasa</th><th class="num">Le vencieron</th><th class="num">Renovó</th><th class="num">Por renovar año</th></tr></thead><tbody id="vend-lista-tbody">'+
+    ordenados.map((a,i)=>'<tr data-idx="'+i+'" style="cursor:pointer"><td>'+esc(a.agente)+'</td><td class="num" style="color:'+semaforoColor(a.tasa_renovacion===null?null:Number(a.tasa_renovacion))+';font-weight:700">'+(a.tasa_renovacion===null?'—':Number(a.tasa_renovacion).toFixed(1)+'%')+'</td><td class="num">'+a.vencio_n+'</td><td class="num">'+a.renovo_n+'</td><td class="num">'+fmtUSD(a.por_renovar_ano)+'</td></tr>').join('')+
+  '</tbody></table></div>';
+  const tbody = document.getElementById('vend-lista-tbody');
+  tbody.querySelectorAll('tr[data-idx]').forEach(tr=>{
+    tr.addEventListener('click', ()=> seleccionarAgente(ordenados[Number(tr.dataset.idx)].agente));
   });
 }
 
@@ -960,7 +1050,7 @@ function pintarBonos(bolsaRows, ingresoRows, escaleraRows, participacionRows, ta
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=14; // Pie de página en lenguaje humano: "Datos en vivo · actualizado a las HH:MM", sin IDs ni nombres de paquetes/roles; mensaje de acceso denegado simplificado
+var PGV_VERSION=15; // Karen v3: casilla 01 y 02 sobre el nuevo backend (v_renov_grupo_visible, v_indice_renovaciones_v3_visible, v_agente_resumen_ano_visible, v_agente_vendido_vs_renovado_visible, v_agente_por_renovar_visible, renov_trabajo)
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

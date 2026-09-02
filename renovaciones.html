@@ -481,6 +481,7 @@ async function fetchPaginado(queryFactory, batchSize){
 let RECOVERY_MODE = false;
 const _IS_RECOVERY = /(?:^|[#&])type=recovery(?:&|$)/.test(window.location.hash || "");
 let SESION_EMAIL = '';
+let SESION_UID = '';
 
 function mostrarSetPassword() {
   RECOVERY_MODE = true;
@@ -529,6 +530,7 @@ async function mostrarApp() {
   document.getElementById("pg-app").style.display = "block";
   const { data: { session } } = await SB.auth.getSession();
   SESION_EMAIL = (session && session.user && session.user.email) || '';
+  SESION_UID = (session && session.user && session.user.id) || '';
   await verificarAccesoYcargar();
 }
 document.getElementById("pg-login-btn").addEventListener("click", async () => {
@@ -801,7 +803,7 @@ $('cola').addEventListener('click', (e)=>{
 
 /* ---- escritura en renov_trabajo (mismo candado y motivo obligatorio de siempre) ---- */
 async function escribirTrabajoDB(row, payloadDB){
-  const payload = Object.assign({ llave: row.llave, vence: row.vence, updated_at: new Date().toISOString(), updated_by: SESION_EMAIL||null }, payloadDB);
+  const payload = Object.assign({ llave: row.llave, vence: row.vence, updated_at: new Date().toISOString(), updated_by: SESION_UID||null }, payloadDB);
   const { error } = await SB.from('renov_trabajo').upsert(payload, { onConflict: 'llave,vence' });
   if(error){ alert('No se pudo guardar: '+error.message); return false; }
   return true;
@@ -1071,7 +1073,7 @@ $('btn-imprimir-ano').addEventListener('click', ()=> imprimir('ano'));
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=25; // Fix visual: el boton flotante "Volver al portal" (fixed, top:14 left:14) quedaba encima del wordmark GABI de la barra superior. Se le da padding-left a .top para que la marca arranque despues del boton, con una media query que lo quita en pantallas angostas.
+var PGV_VERSION=26; // Hotfix urgente: renov_trabajo.updated_by es uuid y el payload de escribirTrabajoDB() le mandaba SESION_EMAIL (el correo), asi que CUALQUIER marcado fallaba con "invalid input syntax for type uuid". Se agrega SESION_UID (session.user.id) y updated_by ahora manda eso. contacto_por y verificado_por no se tocan: esas dos columnas si son text y el correo va bien ahi.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

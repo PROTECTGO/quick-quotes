@@ -107,6 +107,10 @@ tr.roster-retirado td { color:var(--pg-muted); }
 .roster-agregar-caja input[type=text] { font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--pg-line); min-width:240px; flex:1; }
 .roster-agregar-caja select { font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--pg-line); background:#fff; }
 .roster-agregar-caja .roster-err { width:100%; margin-top:0; }
+
+/* ---- fechas por corregir en el BOS (financiera/direccion) ---- */
+.ajustes-tabla td { vertical-align:top; }
+.ajustes-tabla .ajuste-btn-corregido { white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -198,6 +202,19 @@ tr.roster-retirado td { color:var(--pg-muted); }
           </table>
         </div>
         <div class="pg-limite">Esto no se edita aquí: se corrige en el Google Sheet del BOS y la fila sale sola de esta lista.</div>
+      </div>
+      <div class="pg-card" id="ajustes-card" style="display:none">
+        <h2>Fechas por corregir en el BOS</h2>
+        <div class="cq-resumen" id="ajustes-resumen">Cargando…</div>
+        <div class="tablewrap">
+          <table class="pg-table ajustes-tabla" id="ajustes-tabla">
+            <thead><tr>
+              <th>Cuenta</th><th>DOT</th><th>Agente</th><th>Fecha BOS</th><th>Fecha real</th><th>Motivo</th><th>Corregido por</th><th></th>
+            </tr></thead>
+            <tbody id="ajustes-tbody"><tr><td colspan="8"><div class="pg-skel" style="height:80px"></div></td></tr></tbody>
+          </table>
+        </div>
+        <div class="pg-limite">Al confirmar, el ajuste no se borra — solo sale de esta bandeja.</div>
       </div>
       <div class="pg-card" id="roster-card" style="display:none">
         <h2>Roster de vendedores</h2>
@@ -310,6 +327,7 @@ document.getElementById("pg-login-btn").addEventListener("click", async () => {
 });
 document.getElementById("pg-btn-refresh").addEventListener("click", async ()=>{
   await cargarCuarentena();
+  await cargarAjustesSiCorresponde();
   await cargarRosterSiCorresponde();
 });
 document.getElementById("pg-btn-logout").addEventListener("click", async () => {
@@ -341,6 +359,7 @@ async function verificarAccesoYcargar(){
   accesoEl.innerHTML = "";
   shellEl.style.display = "block";
   await cargarCuarentena();
+  await cargarAjustesSiCorresponde();
   await cargarRosterSiCorresponde();
 }
 
@@ -607,7 +626,86 @@ async function guardarNuevoRoster(){
 }
 
 /* =====================================================================
-   5) ARRANQUE
+   5) FECHAS POR CORREGIR EN EL BOS — v_ajustes_pendientes_bos (bos_corregido
+   = false, ya trae cuenta_nombre/dot/agente). Mismo candado de front que el
+   roster: solo director/socio/financiera, aunque la RLS de renov_ajustes
+   tambien deje pasar areas de venta que puedan leerla/escribirla. Nada se
+   borra: "Ya lo corregí" solo marca bos_corregido=true y la fila sale sola
+   de esta bandeja (la vista ya no la trae).
+   ===================================================================== */
+let AJUSTES_FILAS = [];
+function ajusteSlug(r){ return 'aj_' + String(r.llave+'|'+r.vence_original).replace(/[^a-zA-Z0-9]/g,'_'); }
+
+async function cargarAjustesSiCorresponde(){
+  const card = document.getElementById('ajustes-card');
+  let autorizado = false;
+  try{
+    const hoy = new Date().toISOString().slice(0,10);
+    const { data, error } = await SB.from('gabi_accesos').select('rol,activo,vigencia_desde').eq('activo', true).lte('vigencia_desde', hoy);
+    if(error) throw error;
+    autorizado = (data||[]).some(r=> ['director','socio','financiera'].includes(r.rol));
+  }catch(e){ autorizado = false; }
+  if(!autorizado){ card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  await cargarAjustes();
+}
+
+async function cargarAjustes(){
+  const tbody = document.getElementById('ajustes-tbody');
+  const { data, error } = await SB.from('v_ajustes_pendientes_bos').select('*').order('ajustado_at',{ascending:false});
+  if(error){ tbody.innerHTML = '<tr><td colspan="8"><div class="pg-warn-box">No se pudo cargar: '+esc(error.message)+'</div></td></tr>'; return; }
+  AJUSTES_FILAS = data || [];
+  repintarAjustes();
+}
+
+function filaAjuste(r){
+  return '<tr data-llave="'+esc(r.llave)+'" data-vence-original="'+esc(r.vence_original)+'">'+
+    '<td>'+esc(r.cuenta_nombre||'—')+'</td>'+
+    '<td>'+esc(r.dot||'—')+'</td>'+
+    '<td>'+esc(r.agente||'—')+'</td>'+
+    '<td>'+fmtFecha(r.vence_original)+'</td>'+
+    '<td>'+fmtFecha(r.vence_corregido)+'</td>'+
+    '<td>'+esc(r.motivo||'—')+'</td>'+
+    '<td>'+esc(r.ajustado_por||'—')+'</td>'+
+    '<td><button type="button" class="roster-btn ajuste-btn-corregido">Ya lo corregí en el BOS</button><div class="roster-err" id="err_'+ajusteSlug(r)+'"></div></td>'+
+  '</tr>';
+}
+
+function repintarAjustes(){
+  const tbody = document.getElementById('ajustes-tbody');
+  tbody.innerHTML = AJUSTES_FILAS.length
+    ? AJUSTES_FILAS.map(filaAjuste).join('')
+    : '<tr><td colspan="8"><div class="pg-limite">Sin ajustes pendientes de corregir en el BOS.</div></td></tr>';
+  document.getElementById('ajustes-resumen').innerHTML = '<b>'+AJUSTES_FILAS.length+'</b> ajuste'+(AJUSTES_FILAS.length===1?'':'s')+' pendiente'+(AJUSTES_FILAS.length===1?'':'s')+' de corregir en el BOS';
+  cablearAjustes();
+}
+
+function cablearAjustes(){
+  document.querySelectorAll('#ajustes-tbody .ajuste-btn-corregido').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const tr = btn.closest('tr');
+      const llave = tr.dataset.llave, venceOriginal = tr.dataset.venceOriginal;
+      const fila = AJUSTES_FILAS.find(r=> r.llave===llave && String(r.vence_original)===venceOriginal);
+      const errEl = fila ? document.getElementById('err_'+ajusteSlug(fila)) : null;
+      if(errEl) errEl.textContent = '';
+      btn.disabled = true;
+      const { error } = await SB.from('renov_ajustes').update({
+        bos_corregido: true,
+        bos_corregido_at: new Date().toISOString(),
+        bos_corregido_por: SESION_EMAIL||null,
+      }).eq('llave', llave).eq('vence_original', venceOriginal);
+      if(error){
+        if(errEl) errEl.textContent = 'No se pudo guardar: '+error.message;
+        btn.disabled = false;
+        return;
+      }
+      await cargarAjustes();
+    });
+  });
+}
+
+/* =====================================================================
+   6) ARRANQUE
    ===================================================================== */
 (async function init() {
   if (_IS_RECOVERY) { mostrarSetPassword(); return; }
@@ -621,7 +719,7 @@ async function guardarNuevoRoster(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="cuarentena.html";
-var PGV_VERSION=2; // Se agrega el bloque "Roster de vendedores" (public.roster_agentes): lista ACTIVO/RETIRADO ordenada, selectores de estado y area (KAREN/RETENCION) por fila con guardado inline, formulario para agregar, y advertencia de que el nombre debe calzar exacto con SELLER del BOS. Visible solo para rol director/socio/financiera (gabi_accesos), aunque areas de venta puedan seguir viendo la tabla de cuarentena.
+var PGV_VERSION=3; // Se agrega el bloque "Fechas por corregir en el BOS" (v_ajustes_pendientes_bos): tabla de ajustes de fecha hechos desde renovaciones.html que Financiera todavia no ha llevado al Google Sheet del BOS, con boton "Ya lo corregí en el BOS" que marca bos_corregido=true (nada se borra, la fila solo sale de la bandeja). Mismo candado de front que el roster: rol director/socio/financiera.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

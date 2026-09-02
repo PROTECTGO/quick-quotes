@@ -151,6 +151,31 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
 .sen:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--ambar)}
 .vacio{background:#fff;border:1px dashed var(--line);border-radius:13px;padding:34px;text-align:center;color:var(--muted);font-size:13.5px}
 
+/* ------- ficha de cuenta (se abre al hacer clic en una tarjeta de la cola) ------- */
+.ficha{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--mint);border-radius:13px;padding:18px 20px;margin:-4px 0 9px;box-shadow:0 1px 3px rgba(27,45,58,.05)}
+.fi-bloque{padding-top:16px;margin-top:16px;border-top:1px solid var(--line)}
+.fi-bloque:first-child{padding-top:0;margin-top:0;border-top:none}
+.fi-tit{font-family:var(--f-tit);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.fi-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.fi-chip{font-size:12px;font-weight:600;padding:6px 13px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:all .15s}
+.fi-chip:hover{border-color:var(--mint);color:var(--mint-deep)}
+.fi-chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.fi-chip.on.perdido{background:var(--rojo);border-color:var(--rojo)}
+.ficha textarea{width:100%;font-family:var(--f-body);font-size:13px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);resize:vertical;min-height:58px;box-sizing:border-box}
+.fi-req{color:var(--rojo);font-size:11.5px;margin-top:5px}
+.fi-guardar{margin-top:10px}
+.fi-notas{margin-top:14px;display:flex;flex-direction:column;gap:9px;max-height:220px;overflow-y:auto}
+.fi-nota{font-size:12.5px;color:var(--txt);border-top:1px solid var(--line);padding-top:8px}
+.fi-nota:first-child{border-top:none;padding-top:0}
+.fi-nota-meta{font-size:11px;color:var(--muted);margin-bottom:2px}
+.fi-fecha-link{font-size:12.5px;font-weight:600;color:var(--mint-deep);cursor:pointer}
+.fi-fecha-link:hover{text-decoration:underline}
+.fi-fecha-form{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.fi-fecha-form label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin:10px 0 5px}
+.fi-fecha-form label:first-child{margin-top:0}
+.fi-fecha-form input[type=date]{font-family:var(--f-body);font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid var(--line)}
+.fi-aviso{background:#FBF1D8;color:#8A6A14;border-radius:10px;padding:10px 13px;font-size:12.5px;font-weight:600;margin:12px 0}
+
 /* ------- vendedores ------- */
 .vr{display:grid;grid-template-columns:180px 1fr 132px;gap:16px;align-items:center;padding:11px 24px;border-bottom:1px solid var(--line);transition:background .14s}
 .vr:last-child{border-bottom:none}
@@ -433,6 +458,15 @@ function esc(s){ return (s===null||s===undefined) ? '' : String(s).replace(/[&<>
 function fmtUSD(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US',{maximumFractionDigits:0}); }
 function fmtUSD2(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtFecha(s){ if(!s) return '—'; try{ const d=new Date(s+'T12:00:00'); return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return String(s); } }
+function fmtFechaHora(s){
+  if(!s) return '—';
+  try{
+    let iso = String(s).trim().replace(' ', 'T').replace(/([+-]\d{2})$/, '$1:00');
+    const d = new Date(iso);
+    if(isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short'})+' · '+d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){ return '—'; }
+}
 const MESES_CORTOS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 function mesCorto(s){ if(!s) return '—'; try{ const d=new Date(String(s)+'T12:00:00'); return MESES_CORTOS[d.getMonth()]; }catch(e){ return String(s); } }
 /* diccionario: la base guarda sin acentos a propósito, la pantalla traduce siempre */
@@ -580,7 +614,7 @@ async function verificarAccesoYcargar(){
 const NOM_MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const PILL = {
   pendiente:['p-pend','Pendiente'], contactado:['p-cont','Contactada'], cotizando:['p-cot','Cotizando'],
-  renovado:['p-ren','Renovada'], perdido:['p-per','Perdida'], retirado:['p-per','Retirada'],
+  renovado:['p-ren','Renovada'], perdido:['p-per','Perdida'], retirado:['p-per','Cancelada / Retirada'],
 };
 const ESTADOS_CARTERA_ORDEN = ['ACTIVA','ACTIVA SIN SENAL','RENOVADA','VENCIDA'];
 const ESTADOS_CARTERA_COLOR = {'ACTIVA':'#229A82','ACTIVA SIN SENAL':'#D9A520','RENOVADA':'#5B6BD6','VENCIDA':'#C9D4DC'};
@@ -792,13 +826,37 @@ function cola(){
     ? NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL+': '+tot.length+' cuenta'+(tot.length===1?'':'s')+' en la cola de este mes.'
     : NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL+' no tiene cuentas cargadas.';
   $('cola').innerHTML = f.length ? f.map(filaCola).join('') : '<div class="vacio">No hay cuentas con este filtro.</div>';
+  if(FICHA_ABIERTA){
+    const card = document.querySelector('.card[data-id="'+FICHA_ABIERTA+'"]');
+    const row = card ? AÑO_FILAS.find(r=>rowIdAno(r)===FICHA_ABIERTA) : null;
+    if(card && row){
+      card.insertAdjacentHTML('afterend', fichaHtml(row));
+      cablearFicha(row);
+      cargarNotasFicha(row);
+    } else {
+      FICHA_ABIERTA = null;
+    }
+  }
 }
 $('cola').addEventListener('click', (e)=>{
-  const btn = e.target.closest('[data-marcar],[data-verificar]'); if(!btn) return;
-  const card = e.target.closest('.card'); if(!card) return;
-  const id = card.dataset.id;
-  if(btn.dataset.marcar) marcar(id, btn.dataset.marcar);
-  else verificar(id);
+  const accionBtn = e.target.closest('[data-marcar],[data-verificar]');
+  if(accionBtn){
+    const card = e.target.closest('.card'); if(!card) return;
+    const id = card.dataset.id;
+    if(accionBtn.dataset.marcar) marcar(id, accionBtn.dataset.marcar);
+    else verificar(id);
+    return;
+  }
+  const chip = e.target.closest('[data-ficha-estado]');
+  if(chip){ seleccionarEstadoFicha(chip.dataset.fichaEstado); return; }
+  if(e.target.closest('[data-ficha-toggle-fecha]')){ toggleFechaForm(); return; }
+  const btnGuardar = e.target.closest('[data-ficha-guardar]');
+  if(btnGuardar){ const f = e.target.closest('.ficha'); if(f) guardarFicha(f.dataset.id); return; }
+  const btnGuardarFecha = e.target.closest('[data-ficha-guardar-fecha]');
+  if(btnGuardarFecha){ const f = e.target.closest('.ficha'); if(f) guardarAjusteFecha(f.dataset.id); return; }
+  if(e.target.closest('.ficha')) return;
+  const card = e.target.closest('.card');
+  if(card) toggleFicha(card.dataset.id);
 });
 
 /* ---- escritura en renov_trabajo (mismo candado y motivo obligatorio de siempre) ---- */
@@ -844,6 +902,168 @@ async function verificar(id){
   if(!ok) return;
   Object.assign(row, payloadDB);
   cola();
+}
+
+/* =====================================================================
+   4b) FICHA DE LA CUENTA — se abre al hacer clic en una tarjeta de la cola.
+   Cuatro bloques: Estado, Por qué (motivo/nota), Corregir fecha, y el
+   aviso a Financiera (automático: cae solo en v_ajustes_pendientes_bos,
+   nada que construir aquí).
+   ===================================================================== */
+const ESTADOS_FICHA = ['pendiente','contactado','cotizando','renovado','perdido','retirado'];
+let FICHA_ABIERTA = null;
+let FICHA_ESTADO_SEL = null;
+function estadoLabel(e){ return (PILL[e]||PILL.pendiente)[1]; }
+
+function fichaHtml(row){
+  const id = rowIdAno(row);
+  return '<div class="ficha" id="ficha_'+id+'" data-id="'+id+'">'+
+    '<div class="fi-bloque"><div class="fi-tit">Estado</div>'+
+      '<div class="fi-chips" id="fichips_'+id+'">'+ESTADOS_FICHA.map(e=>{
+        const on = e===FICHA_ESTADO_SEL;
+        const perdidoCls = on && (e==='perdido'||e==='retirado') ? ' perdido' : '';
+        return '<span class="fi-chip'+(on?' on'+perdidoCls:'')+'" data-ficha-estado="'+e+'">'+esc(estadoLabel(e))+'</span>';
+      }).join('')+'</div>'+
+    '</div>'+
+    '<div class="fi-bloque"><div class="fi-tit">Por qué</div>'+
+      '<textarea id="fimotivo_'+id+'" placeholder="Motivo del cambio, o una nota suelta…"></textarea>'+
+      '<div class="fi-req" id="fireq_'+id+'" style="display:none">Obligatorio para Perdida o Cancelada / Retirada.</div>'+
+      '<button type="button" class="mini fi-guardar" id="figuardar_'+id+'" data-ficha-guardar>Guardar</button>'+
+      '<div class="fi-notas" id="finotas_'+id+'"><div class="pg-limite">Cargando notas…</div></div>'+
+    '</div>'+
+    '<div class="fi-bloque">'+
+      '<span class="fi-fecha-link" data-ficha-toggle-fecha>La fecha no es esa</span>'+
+      '<div class="fi-fecha-form" id="fifecha_'+id+'" style="display:none">'+
+        '<label>Fecha correcta de renovación</label>'+
+        '<input type="date" id="fifechanueva_'+id+'">'+
+        '<label>Motivo (mínimo 5 caracteres)</label>'+
+        '<textarea id="fifechamotivo_'+id+'" placeholder="Por qué cambia la fecha…"></textarea>'+
+        '<div class="fi-aviso" id="fiaviso_'+id+'" style="display:none"></div>'+
+        '<button type="button" class="mini fi-guardar" id="figuardarfecha_'+id+'" data-ficha-guardar-fecha disabled>Guardar fecha</button>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+
+function toggleFicha(id){
+  if(FICHA_ABIERTA===id){
+    const existing = $('ficha_'+id); if(existing) existing.remove();
+    FICHA_ABIERTA = null;
+    return;
+  }
+  document.querySelectorAll('.ficha').forEach(f=>f.remove());
+  const row = AÑO_FILAS.find(r=>rowIdAno(r)===id); if(!row) return;
+  const card = document.querySelector('.card[data-id="'+id+'"]'); if(!card) return;
+  FICHA_ABIERTA = id;
+  FICHA_ESTADO_SEL = row.estado_trabajo || 'pendiente';
+  card.insertAdjacentHTML('afterend', fichaHtml(row));
+  cablearFicha(row);
+  cargarNotasFicha(row);
+}
+
+function seleccionarEstadoFicha(estado){
+  if(!FICHA_ABIERTA) return;
+  FICHA_ESTADO_SEL = estado;
+  document.querySelectorAll('#fichips_'+FICHA_ABIERTA+' .fi-chip').forEach(c=>{
+    const on = c.dataset.fichaEstado===estado;
+    c.classList.toggle('on', on);
+    c.classList.toggle('perdido', on && (estado==='perdido'||estado==='retirado'));
+  });
+  actualizarBotonGuardarFicha(FICHA_ABIERTA);
+}
+
+function actualizarBotonGuardarFicha(id){
+  const btn = $('figuardar_'+id), req = $('fireq_'+id), campo = $('fimotivo_'+id);
+  if(!btn || !campo) return;
+  const motivo = (campo.value||'').trim();
+  const necesitaMotivo = FICHA_ESTADO_SEL==='perdido' || FICHA_ESTADO_SEL==='retirado';
+  req.style.display = necesitaMotivo ? 'block' : 'none';
+  btn.disabled = necesitaMotivo && !motivo;
+}
+
+function toggleFechaForm(){
+  if(!FICHA_ABIERTA) return;
+  const el = $('fifecha_'+FICHA_ABIERTA); if(!el) return;
+  el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+
+function cablearFicha(row){
+  const id = rowIdAno(row);
+  const campoMotivo = $('fimotivo_'+id);
+  if(campoMotivo) campoMotivo.addEventListener('input', ()=> actualizarBotonGuardarFicha(id));
+  actualizarBotonGuardarFicha(id);
+
+  const fechaInput = $('fifechanueva_'+id), fechaMotivo = $('fifechamotivo_'+id);
+  if(!fechaInput || !fechaMotivo) return;
+  const actualizarFecha = ()=>{
+    const val = fechaInput.value;
+    const motivoOk = (fechaMotivo.value||'').trim().length>=5;
+    const aviso = $('fiaviso_'+id);
+    if(val){
+      const d = new Date(val+'T12:00:00');
+      aviso.style.display = 'block';
+      aviso.textContent = 'La cuenta se mueve a '+NOM_MESES[d.getMonth()+1]+' '+d.getFullYear()+'. Financiera queda avisada para corregirlo en el BOS.';
+    } else {
+      aviso.style.display = 'none';
+    }
+    $('figuardarfecha_'+id).disabled = !(val && motivoOk);
+  };
+  fechaInput.addEventListener('change', actualizarFecha);
+  fechaMotivo.addEventListener('input', actualizarFecha);
+}
+
+async function cargarNotasFicha(row){
+  const id = rowIdAno(row);
+  const el = $('finotas_'+id); if(!el) return;
+  const { data, error } = await SB.from('renov_notas').select('*').eq('llave', row.llave).order('created_at',{ascending:false});
+  if(!$('finotas_'+id)) return;
+  if(error){ el.innerHTML = '<div class="pg-limite">No se pudieron cargar las notas.</div>'; return; }
+  const notas = data || [];
+  el.innerHTML = notas.length
+    ? notas.map(n=> '<div class="fi-nota"><div class="fi-nota-meta">'+esc(n.autor)+' · '+fmtFechaHora(n.created_at)+'</div>'+esc(n.nota)+'</div>').join('')
+    : '<div class="pg-limite">Sin notas todavía.</div>';
+}
+
+async function guardarFicha(id){
+  const row = AÑO_FILAS.find(r=>rowIdAno(r)===id); if(!row) return;
+  const campoMotivo = $('fimotivo_'+id);
+  const motivo = (campoMotivo.value||'').trim();
+  const esPerdidoORetirado = FICHA_ESTADO_SEL==='perdido' || FICHA_ESTADO_SEL==='retirado';
+  if(esPerdidoORetirado && !motivo){ actualizarBotonGuardarFicha(id); return; }
+  const btn = $('figuardar_'+id); btn.disabled = true;
+  const payloadDB = { estado: FICHA_ESTADO_SEL, motivo_perdido: esPerdidoORetirado ? motivo : null };
+  const ok = await escribirTrabajoDB(row, payloadDB);
+  if(!ok){ btn.disabled = false; return; }
+  Object.assign(row, { estado_trabajo: FICHA_ESTADO_SEL, motivo_perdido: payloadDB.motivo_perdido });
+  if(motivo && !esPerdidoORetirado){
+    const { error } = await SB.from('renov_notas').insert({ llave: row.llave, nota: motivo, autor: SESION_EMAIL||'', autor_user_id: SESION_UID||null });
+    if(error) alert('El estado se guardó, pero la nota no se pudo guardar: '+error.message);
+  }
+  chips(); cola();
+  if(FICHA_ESTADO_SEL==='renovado'){
+    const { data } = await SB.from('v_indice_renovaciones_v3_visible').select('mes,vencieron,renovaron,pct_renovado,premium_vencido,premium_con_senal,premium_por_confirmar,estado_mes')
+      .gte('mes', mesISO(AÑO_ACTUAL,1)).lte('mes', mesISO(AÑO_ACTUAL,12)).order('mes',{ascending:true});
+    if(data){ IDX_MESES = data; cinta(); franja(); bonos(); area(); }
+  }
+}
+
+async function guardarAjusteFecha(id){
+  const row = AÑO_FILAS.find(r=>rowIdAno(r)===id); if(!row) return;
+  const fechaNueva = $('fifechanueva_'+id).value;
+  const motivo = ($('fifechamotivo_'+id).value||'').trim();
+  if(!fechaNueva || motivo.length<5) return;
+  const btn = $('figuardarfecha_'+id); btn.disabled = true;
+  const payload = {
+    llave: row.llave,
+    vence_original: row.vence,
+    vence_corregido: fechaNueva,
+    motivo: motivo,
+    ajustado_por: SESION_EMAIL||null,
+    ajustado_user_id: SESION_UID||null,
+  };
+  const { error } = await SB.from('renov_ajustes').upsert(payload, { onConflict: 'llave,vence_original' });
+  if(error){ alert('No se pudo guardar el ajuste de fecha: '+error.message); btn.disabled = false; return; }
+  await cargarTodo();
 }
 
 /* =====================================================================
@@ -1073,7 +1293,7 @@ $('btn-imprimir-ano').addEventListener('click', ()=> imprimir('ano'));
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=26; // Hotfix urgente: renov_trabajo.updated_by es uuid y el payload de escribirTrabajoDB() le mandaba SESION_EMAIL (el correo), asi que CUALQUIER marcado fallaba con "invalid input syntax for type uuid". Se agrega SESION_UID (session.user.id) y updated_by ahora manda eso. contacto_por y verificado_por no se tocan: esas dos columnas si son text y el correo va bien ahi.
+var PGV_VERSION=27; // Ficha de cuenta: se abre al hacer clic en una tarjeta de la cola (acordeon, no modal). Cuatro bloques: Estado (los mismos de siempre, "retirado" ahora se lee "Cancelada / Retirada"), Por que (motivo obligatorio a renov_trabajo.motivo_perdido en Perdida/Cancelada-Retirada, opcional como nota suelta a renov_notas en cualquier otro estado, con historial de notas), Corregir fecha de renovacion (inserta en renov_ajustes con ajustado_user_id=SESION_UID -- mismo bug de uuid que se acaba de arreglar, aviso claro antes de guardar), y el aviso a Financiera que es automatico (v_ajustes_pendientes_bos). Nada se borra.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

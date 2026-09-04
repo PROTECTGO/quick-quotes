@@ -1,5 +1,5 @@
 /* ============================================================================
- * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.4
+ * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.5
  * ----------------------------------------------------------------------------
  * Archivo COMPARTIDO Y DE ALTO ALCANCE. Se carga en el <head> de 13 páginas
  * SIN defer/async:
@@ -76,7 +76,7 @@
 
   /* Si el archivo se cargó dos veces, no volvemos a definir nada. */
   if (window.PG_NOVEDADES_VERSION) { return; }
-  window.PG_NOVEDADES_VERSION = '4.4';
+  window.PG_NOVEDADES_VERSION = '4.5';
 
   /* --------------------------------------------------------------------- */
   /* Constantes                                                            */
@@ -88,7 +88,7 @@
   var MS_VENTANA_ENTRADA = 30000; // llamadas dentro de los primeros 30 s = "acaba de entrar"
   var MS_RESUSCRIBIR   = 8000;    // espera antes de reintentar la suscripción caída
   var MS_TRANSICION    = 260;     // salida de una pantalla antes de pintar la siguiente
-  var SEG_MINIMO       = 15;      // D2: piso de lectura por pantalla
+  var SEG_MINIMO       = 3;       // piso de lectura por pantalla (Andrés bajó el default a 5 s)
   var SEG_POR_DEFECTO  = 90;      // si la novedad no trae segundos_lectura
 
   var URL_MURO = 'https://protectgo.github.io/quick-quotes/index.html#muro=';
@@ -1163,11 +1163,23 @@
         : Math.max(SEG_MINIMO, Math.round(totalConfig / (pantallas.length || 1)));
     }
 
+    /* El tiempo es POR PANTALLA, no repartido entre todas (Andrés, 4-sep):
+       cada novedad manda con su propio segundos_lectura, así un comunicado
+       largo puede durar lo que se le ponga aunque salga junto a otros de 5 s.
+       Si la fila no trae valor propio, cae al de Ajustes. */
     function segundosDe(i) {
       var p = pantallas[i];
       if (!p || !bloquea) { return 0; }
       var todasInfo = p.filas.every(function (n) { return n.bloqueante === false; });
-      return todasInfo ? 0 : SEG_PANTALLA;
+      if (todasInfo) { return 0; }
+      var propio = 0;
+      p.filas.forEach(function (n) {
+        if (n.bloqueante === false) { return; }
+        var s = parseInt(n.segundos_lectura, 10);
+        if (isFinite(s) && s > propio) { propio = s; }   // en un lote manda el mayor de la pantalla
+      });
+      if (propio > 0) { return Math.max(SEG_MINIMO, propio); }
+      return SEG_PANTALLA;
     }
 
     function tragaEscape(ev) {
@@ -2189,7 +2201,7 @@
     esperar();
   };
 
-  console.log('[pg-novedades] v4.4 activo — tema configurable + lotes + reacciones');
+  console.log('[pg-novedades] v4.5 activo — tema configurable + lotes + reacciones');
 })();
 
 /* ============================================================================

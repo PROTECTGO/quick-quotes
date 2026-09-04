@@ -1,5 +1,5 @@
 /* ============================================================================
- * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.1
+ * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.2
  * ----------------------------------------------------------------------------
  * Archivo COMPARTIDO Y DE ALTO ALCANCE. Se carga en el <head> de 13 páginas
  * SIN defer/async:
@@ -76,7 +76,7 @@
 
   /* Si el archivo se cargó dos veces, no volvemos a definir nada. */
   if (window.PG_NOVEDADES_VERSION) { return; }
-  window.PG_NOVEDADES_VERSION = '4.1';
+  window.PG_NOVEDADES_VERSION = '4.2';
 
   /* --------------------------------------------------------------------- */
   /* Constantes                                                            */
@@ -214,8 +214,12 @@
       + '-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;'
       + 'font-variant-ligatures:none;text-shadow:none;}'
       + '.pgnov-ov *{text-shadow:none;}'
+      /* overflow-y:auto + safe center: si el contenido no cabe, se puede bajar
+         y NO se corta el titulo por arriba (que es lo que pasaba con margin:auto
+         dentro de un contenedor con overflow:hidden). */
       + '.pgnov-slide{position:relative;flex:1;min-height:0;width:100%;max-width:1180px;'
-      + 'margin:0 auto;display:flex;flex-direction:column;'
+      + 'margin:0 auto;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;'
+      + 'justify-content:flex-start;justify-content:safe center;'
       + 'padding:clamp(var(--s3),3vh,var(--s4)) clamp(var(--s3),4vw,var(--s5));'
       + 'box-sizing:border-box;opacity:1;transform:translateY(0);'
       + 'transition:opacity .26s ease,transform .26s ease;}'
@@ -247,7 +251,8 @@
       + 'justify-content:center;text-align:center;padding:6px 0;}'
       + '.pgnov-body::-webkit-scrollbar{width:8px;}'
       + '.pgnov-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:99px;}'
-      + '.pgnov-in{width:100%;max-width:980px;margin:auto;display:flex;flex-direction:column;'
+      + '.pgnov-in{width:100%;max-width:980px;margin:0 auto;flex:0 0 auto;'
+      + 'display:flex;flex-direction:column;'
       + 'align-items:center;gap:clamp(var(--s2),2.2vh,var(--s3));}'
       /* --- NIVEL 3 de la jerarquía: chrome (badge, sub, pie, meta) --- */
       + '.pgnov-badge{display:inline-flex;align-items:center;gap:var(--s1);font-family:var(--f-tit);'
@@ -277,9 +282,14 @@
       + 'line-height:1.5;max-width:var(--medida);}'
       + '.pgnov-meta{font-family:var(--f-num);font-size:11px;color:rgba(255,255,255,.55);'
       + 'letter-spacing:.06em;text-transform:uppercase;font-variant-numeric:tabular-nums;}'
+      /* La foto respeta su proporcion: nunca se estira al ancho del marco.
+         Antes era width:100% + object-fit:cover, y una foto cuadrada de persona
+         quedaba recortada en un primer plano de la cara (caso Karen, 4-sep). */
       + '.pgnov-foto{border-radius:14px;overflow:hidden;background:rgba(255,255,255,.05);'
-      + 'border:1px solid rgba(255,255,255,.12);max-width:100%;width:100%;}'
-      + '.pgnov-foto img{display:block;width:100%;max-height:min(430px,32vh);object-fit:cover;}'
+      + 'border:1px solid rgba(255,255,255,.12);max-width:100%;width:auto;margin:0 auto;'
+      + 'display:flex;align-items:center;justify-content:center;}'
+      + '.pgnov-foto img{display:block;width:auto;max-width:100%;'
+      + 'max-height:min(380px,30vh);object-fit:contain;}'
 
       /* ---------- Enseñanza del mes — bloque opcional, cualquier tipo ---------- */
       + '.pgnov-ens{width:100%;max-width:640px;box-sizing:border-box;text-align:left;'
@@ -2170,7 +2180,7 @@
     esperar();
   };
 
-  console.log('[pg-novedades] v4.1 activo — tema configurable + lotes + reacciones');
+  console.log('[pg-novedades] v4.2 activo — tema configurable + lotes + reacciones');
 })();
 
 /* ============================================================================

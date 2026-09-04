@@ -72,6 +72,16 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 .pg-warn-box{background:#FBF3E2;border:1px solid #EAD09A;border-radius:12px;padding:13px 17px;color:#8a6a1d;font-size:13px;margin-bottom:14px;line-height:1.55}
 .pg-ok-box{background:#E3F4EF;border:1px solid #A8DBC9;border-radius:12px;padding:13px 17px;color:#1c6e50;font-size:13px;line-height:1.55}
 
+.pg-login-wrap{max-width:380px;margin:80px auto;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:18px;padding:32px;text-align:center;box-shadow:0 1px 3px rgba(27,45,58,.06)}
+.pg-login-wrap h2{font-family:var(--pg-font-title);color:var(--pg-ink);margin:8px 0 6px}
+.pg-login-wrap p{color:var(--pg-muted);font-size:13px;margin:0 0 18px}
+.pg-login-wrap input{width:100%;padding:11px 13px;margin-bottom:10px;border:1px solid var(--pg-line);border-radius:10px;font-family:var(--pg-font-body);font-size:14px}
+.pg-login-wrap .pg-logo{width:44px;height:44px;border-radius:11px;background:var(--pg-mint);display:flex;align-items:center;justify-content:center;font-family:var(--pg-font-title);font-weight:800;color:var(--pg-ink)}
+.pg-btn{background:var(--pg-ink);color:#fff;border:none;border-radius:10px;padding:11px 20px;font-family:var(--pg-font-body);font-weight:700;font-size:13.5px;cursor:pointer;width:100%}
+.pg-btn.mint{background:var(--pg-mint);color:var(--pg-ink)}
+.pg-login-err{color:var(--pg-neg);font-size:12.5px;margin-top:10px;min-height:16px}
+.pg-logout{cursor:pointer;text-decoration:underline}
+
 /* ---- FRANJA OSCURA (estilo Karen) ---- */
 .fr{background:var(--pg-ink);border-radius:18px;padding:24px 26px;margin-bottom:20px;color:#fff;display:flex;gap:26px;align-items:center;flex-wrap:wrap}
 .fr .fr-nums{display:flex;gap:30px;flex-wrap:wrap;flex:1;min-width:320px}
@@ -942,7 +952,7 @@ boot();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-brahian.html";
-var PGV_VERSION=3; // v3 — graficas perezosas por pestana (se crean al abrir la pestana, nunca escondidas), sin resize manual ni listener de window.resize, body con overflow-y:scroll, y guardas de chartArea en los cuatro plugins de dibujo. Arregla el titileo y las seis graficas que salian en blanco.
+var PGV_VERSION=4; // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana (se crean al abrir la pestana, nunca escondidas), sin resize manual ni listener de window.resize, body con overflow-y:scroll, y guardas de chartArea en los cuatro plugins de dibujo. Arregla el titileo y las seis graficas que salian en blanco.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

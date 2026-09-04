@@ -7,7 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>if(!window.Chart){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"><\/script>');}</script>
 <script src="ver-como-helper.js"></script>
 <style>
 :root{
@@ -851,6 +852,20 @@ document.querySelectorAll('.pg-side a').forEach(a=>a.onclick=()=>{
 
 
 /* ===================== SESIÓN ===================== */
+/* Chart.js viene de CDN: puede llegar tarde o no llegar. Se espera hasta 10s y,
+   si no llega, se dice claro en pantalla en vez de reventar con "Chart is not defined". */
+function esperarChart(){
+  return new Promise((ok, no) => {
+    if (window.Chart) return ok();
+    let t = 0;
+    const i = setInterval(() => {
+      if (window.Chart) { clearInterval(i); ok(); }
+      else if ((t += 200) >= 10000) { clearInterval(i);
+        no(new Error('No cargaron las librerías de gráficas. Recarga la página; si sigue igual, puede ser la red de la oficina bloqueando el CDN.')); }
+    }, 200);
+  });
+}
+
 function renderLogin(){
   document.getElementById('root-outer').innerHTML =
     '<div class="pg-login-wrap">'
@@ -885,6 +900,7 @@ async function renderShell(session){
   if (salir) salir.addEventListener('click', () => SB.auth.signOut());
   YA_PINTADO = true;
   try {
+    await esperarChart();
     render(await cargarDatos(SB));
   } catch (e) {
     console.error(e);

@@ -121,6 +121,44 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 .pg-toggle{display:inline-flex;border:1px solid var(--pg-line);border-radius:999px;overflow:hidden;background:#fff}
 .pg-toggle button{border:none;background:#fff;color:var(--pg-muted);font-family:var(--pg-font-body);font-weight:700;font-size:12.5px;padding:9px 18px;cursor:pointer}
 .pg-toggle button.on{background:var(--pg-ink);color:#fff}
+
+/* ---- BITÁCORA (pestaña 5) ---- */
+.bt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+.bt-grid label{display:flex;flex-direction:column;gap:6px;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pg-muted)}
+.bt-grid .bt-wide{grid-column:1/-1}
+.bt-grid textarea,.bt-grid input,.bt-grid select.pg-sel{font-family:var(--pg-font-body);font-size:14px;font-weight:500;color:var(--pg-txt);padding:11px 13px;border:1px solid var(--pg-line);border-radius:12px;background:#fff;min-width:0;width:100%;text-transform:none;letter-spacing:0}
+.bt-grid select.pg-sel{font-weight:700;color:var(--pg-ink)}
+.bt-grid textarea{min-height:78px;resize:vertical;line-height:1.5}
+.bt-grid textarea:focus,.bt-grid input:focus,.bt-grid select:focus{outline:2px solid var(--pg-mint-soft);border-color:var(--pg-mint)}
+.bt-grid input.falta{border-color:var(--pg-neg);background:#FFF7F6}
+.bt-acc{grid-column:1/-1;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bt-acc .pg-btn{width:auto;padding:12px 22px}
+.bt-err{font-size:12.5px;color:var(--pg-neg);font-weight:600}
+.bt-ok{font-size:12.5px;color:var(--pg-mint-deep);font-weight:600}
+.bt-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin:4px 0 12px}
+.bt-head h2{font-family:var(--pg-font-title);font-size:17px;font-weight:700;color:var(--pg-ink);margin:0}
+.bt-head .pg-sub{margin-top:4px}
+.bt-item{background:#fff;border:1px solid var(--pg-line);border-left:4px solid #C9D4DC;border-radius:13px;padding:15px 18px;margin-bottom:9px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:start;transition:transform .16s,box-shadow .16s}
+.bt-item:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(27,45,58,.08)}
+.bt-item.vencido{border-left-color:var(--pg-neg)}
+.bt-item.semana{border-left-color:var(--pg-warn)}
+.bt-item.abierto{border-left-color:var(--pg-azul)}
+.bt-item.hecho{opacity:.62;background:#FAFCFB}
+.bt-nom{font-family:var(--pg-font-title);font-weight:700;font-size:15px;color:var(--pg-ink);letter-spacing:-.1px}
+.bt-meta{font-size:11.5px;color:var(--pg-muted);margin-top:3px;font-family:var(--pg-font-num)}
+.bt-nota{font-size:13.5px;color:var(--pg-txt);margin-top:8px;line-height:1.5;white-space:pre-wrap}
+.bt-comp{font-size:13.5px;font-weight:700;color:var(--pg-ink);margin-top:9px;padding-top:9px;border-top:1px dashed var(--pg-line)}
+.bt-comp .k{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--pg-muted);margin-right:8px}
+.bt-item.hecho .bt-comp{text-decoration:line-through;color:var(--pg-muted)}
+.bt-right{display:flex;flex-direction:column;align-items:flex-end;gap:9px;white-space:nowrap}
+.bt-fecha{font-family:var(--pg-font-num);font-size:12.5px;font-weight:600;color:var(--pg-ink)}
+.bt-pill{font-size:11px;font-weight:700;padding:5px 11px;border-radius:999px}
+.bt-pill.p-abierto{background:#E6E9FA;color:#3E4CB0}.bt-pill.p-semana{background:#FBF1D8;color:#8A6A14}
+.bt-pill.p-vencido{background:#FAE7E5;color:#A63F36}.bt-pill.p-hecho{background:var(--pg-mint-soft);color:#186F5D}.bt-pill.p-nota{background:#EEF1F4;color:#5A6B78}
+.bt-chk{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--pg-muted);cursor:pointer;user-select:none}
+.bt-chk input{width:16px;height:16px;accent-color:var(--pg-mint-deep);cursor:pointer;margin:0}
+.bt-vacio{background:#fff;border:1px dashed var(--pg-line);border-radius:13px;padding:34px;text-align:center;color:var(--pg-muted);font-size:13.5px}
+@media (max-width:900px){.bt-grid{grid-template-columns:1fr}.bt-item{grid-template-columns:1fr}.bt-right{flex-direction:row;align-items:center}}
 </style>
 <script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
 </head>
@@ -137,6 +175,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
   <a data-go="meta"><span class="ico">◎</span> Meta del mes</a>
   <a data-go="patrones"><span class="ico">▲</span> Patrones y alertas</a>
   <a data-go="persona"><span class="ico">●</span> Persona por persona</a>
+  <a data-go="bitacora"><span class="ico">✎</span> Bitácora</a>
   <a data-go="consolidado"><span class="ico">▤</span> Consolidado del año</a>
   <div class="pg-foot"><span id="ftuser">Brahian Toro</span><br>Líder comercial<br><span id="ftfecha"></span><br><span class="pg-logout" id="btnLogout" style="cursor:pointer;text-decoration:underline">Cerrar sesión</span></div>
  </aside>
@@ -344,6 +383,30 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
     </div>
   </section>
 
+  <!-- ============ BITÁCORA ============ -->
+  <section class="pg-section" id="s-bitacora">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Bitácora</div>
+      <h1>La libreta del equipo</h1>
+      <div class="pg-sub">Qué hablaste con cada quien, qué quedó acordado y cuándo lo revisas. Se anota después de la conversación, no antes. Nada se borra: lo cumplido se marca y queda tachado.</div>
+    </div>
+
+    <div class="pg-card">
+      <div class="pg-eyebrow" style="margin-bottom:12px">Anotar una conversación</div>
+      <div class="bt-grid">
+        <label>Con quién<select class="pg-sel" id="btPersona"></select></label>
+        <label>Revisar el<input type="date" id="btFecha"></label>
+        <label class="bt-wide">Qué hablamos<textarea id="btNota" placeholder="Dos o tres líneas, en tus palabras. Lo que pasó, no lo que planeas."></textarea></label>
+        <label class="bt-wide">Qué quedó acordado<input id="btComp" placeholder="Un compromiso concreto. Si son dos, son dos entradas. (Puede ir vacío si solo es una nota.)"></label>
+        <div class="bt-acc"><button class="pg-btn mint" id="btGuardar" type="button">Guardar en la bitácora</button><span class="bt-err" id="btErr"></span></div>
+      </div>
+    </div>
+
+    <div class="bt-head"><div><h2>Compromisos y conversaciones</h2><div class="pg-sub" id="btSub"></div></div></div>
+    <div class="chips" id="btChips"></div>
+    <div id="btLista"></div>
+  </section>
+
   <!-- ============ CONSOLIDADO ============ -->
   <section class="pg-section" id="s-consolidado">
     <div class="pg-top">
@@ -515,7 +578,7 @@ const pctRitmo = MES.deberia>0 ? MES.mc/MES.deberia*100 : 0;
 const verdes=A.filter(a=>a.sem==='verde').length, rojos=A.filter(a=>a.sem==='rojo').length, sinv=A.filter(a=>a.sem==='sin').length;
 
 /* ===== RESUMEN ===== */
-document.getElementById('ftfecha').textContent="Datos al 3 de septiembre de 2026";
+document.getElementById('ftfecha').textContent = 'Datos al ' + new Date().toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
 document.getElementById('r-mes').textContent=usd(MES.mc);
 document.getElementById('r-mes-s').textContent=MES.ven+" ventas · "+MES.activos+" de "+M.personas+" con venta";
 document.getElementById('r-deb').textContent=usd(MES.deberia);
@@ -875,6 +938,111 @@ document.querySelectorAll('.pg-side a[data-go]').forEach(a=>a.onclick=()=>{
 
 
 
+/* ============================================================
+   BITÁCORA · pestaña 5 — public.equipo_bitacora
+   Estructura: claude/ESTRUCTURA_TABLERO_BRAHIAN_VISUAL_v2.md §9.
+   Una tabla, sin vistas. Se agrega y se marca; no se edita ni se borra:
+   la columna 'hecho' es lo único que acepta UPDATE (permiso por columna).
+   Sin gráficas: NO entra en GRAF/LISTO.
+   ============================================================ */
+function bitacora(D){
+  const $ = id => document.getElementById(id);
+  const hoyISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+  const domingoISO = () => { const d = new Date(); d.setDate(d.getDate() + (7 - d.getDay()) % 7);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+  const nom = t => String(t||'').replace(/\s*\(.*\)\s*$/, '');
+  const fmt = f => { if(!f) return ''; const p = String(f).slice(0,10).split('-'); return Number(p[2]) + ' ' + ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][Number(p[1])-1]; };
+  const esc = t => String(t==null?'':t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  let ENT = [], CHIP = 'abiertos', CARGANDO = true;
+
+  const selB = $('btPersona');
+  selB.innerHTML = D.agentes.map(a => '<option value="' + esc(a.n) + '">' + esc(nom(a.n)) + '</option>').join('');
+  const selP = document.getElementById('selPersona');
+  const link = document.querySelector('.pg-side a[data-go="bitacora"]');
+  if (link) link.addEventListener('click', () => { if (selP && selP.value) selB.value = selP.value; cargar(); });
+
+  const estado = e => {
+    if (!e.compromiso) return 'nota';
+    if (e.hecho) return 'hecho';
+    const f = String(e.fecha_revision).slice(0,10);
+    if (f < hoyISO()) return 'vencido';
+    if (f <= domingoISO()) return 'semana';
+    return 'abierto';
+  };
+  const PILL = { nota:['p-nota','Solo nota'], hecho:['p-hecho','Cumplido'], vencido:['p-vencido','Vencido'], semana:['p-semana','Esta semana'], abierto:['p-abierto','Abierto'] };
+  const ORD = { vencido:0, semana:1, abierto:2, nota:3, hecho:4 };
+
+  async function cargar(){
+    const r = await SB.from('equipo_bitacora').select('*').order('creado_en', { ascending:false });
+    CARGANDO = false;
+    if (r.error) { $('btSub').textContent = 'No pude leer la bitácora: ' + r.error.message;
+      $('btLista').innerHTML = '<div class="bt-vacio">No pude leer la bitácora. Recarga la página; si sigue igual, avísale a Andrés.</div>'; return; }
+    ENT = r.data || [];
+    pinta();
+  }
+
+  function pinta(){
+    if (CARGANDO) { $('btLista').innerHTML = '<div class="bt-vacio">Cargando…</div>'; return; }
+    const abiertos = ENT.filter(e => e.compromiso && !e.hecho);
+    const venc = abiertos.filter(e => String(e.fecha_revision).slice(0,10) < hoyISO());
+    const cuenta = { abiertos: abiertos.length, vencidos: venc.length, todo: ENT.length };
+    $('btSub').textContent = abiertos.length
+      ? abiertos.length + ' compromiso' + (abiertos.length===1?'':'s') + ' abierto' + (abiertos.length===1?'':'s') + (venc.length ? ' · ' + venc.length + ' vencido' + (venc.length===1?'':'s') + ' sin marcar' : '') + '.'
+      : (ENT.length ? 'Sin compromisos abiertos.' : 'Todavía no hay nada anotado.');
+    $('btChips').innerHTML = [['abiertos','Abiertos'],['vencidos','Vencidos'],['todo','Todo']]
+      .map(([k,t]) => '<button type="button" class="chip' + (CHIP===k?' on':'') + '" data-chip="' + k + '">' + t + ' <span style="opacity:.75">' + cuenta[k] + '</span></button>').join('');
+    document.querySelectorAll('#btChips .chip').forEach(b => b.onclick = () => { CHIP = b.dataset.chip; pinta(); });
+    let f = ENT.slice();
+    if (CHIP === 'abiertos') f = abiertos; else if (CHIP === 'vencidos') f = venc;
+    f.sort((a,b) => (ORD[estado(a)] - ORD[estado(b)]) || (String(a.fecha_revision||a.creado_en) < String(b.fecha_revision||b.creado_en) ? -1 : 1));
+    $('btLista').innerHTML = f.length ? f.map(e => {
+      const st = estado(e), p = PILL[st];
+      return '<div class="bt-item ' + st + '" data-id="' + e.id + '">'
+        + '<div><div class="bt-nom">' + esc(nom(e.persona)) + '</div>'
+        + '<div class="bt-meta">' + fmt(e.creado_en) + '</div>'
+        + '<div class="bt-nota">' + esc(e.nota) + '</div>'
+        + (e.compromiso ? '<div class="bt-comp"><span class="k">Acordado</span>' + esc(e.compromiso) + '</div>' : '')
+        + '</div><div class="bt-right">'
+        + (e.compromiso ? '<div class="bt-fecha">revisar el ' + fmt(e.fecha_revision) + '</div>' : '')
+        + '<span class="bt-pill ' + p[0] + '">' + p[1] + '</span>'
+        + (e.compromiso ? '<label class="bt-chk"><input type="checkbox" data-hecho="' + e.id + '"' + (e.hecho?' checked':'') + '> Cumplido</label>' : '')
+        + '</div></div>';
+    }).join('') : '<div class="bt-vacio">' + (!ENT.length ? 'Todavía no hay nada anotado. La primera conversación de la semana va arriba.'
+        : (CHIP==='vencidos' ? 'Nada vencido. Así debería verse siempre.'
+        : 'Sin compromisos abiertos. Anota el próximo arriba.')) + '</div>';
+    document.querySelectorAll('#btLista input[data-hecho]').forEach(c => c.onchange = async () => {
+      const id = Number(c.dataset.hecho), v = c.checked;
+      c.disabled = true;
+      const r = await SB.from('equipo_bitacora').update({ hecho: v }).eq('id', id);
+      c.disabled = false;
+      if (r.error) { c.checked = !v; $('btErr').className = 'bt-err'; $('btErr').textContent = 'No pude guardar la marca: ' + r.error.message; return; }
+      const e = ENT.find(x => x.id === id); if (e) e.hecho = v;
+      pinta();
+    });
+  }
+
+  $('btGuardar').onclick = async () => {
+    const nota = $('btNota').value.trim(), comp = $('btComp').value.trim(), fecha = $('btFecha').value;
+    const err = $('btErr'); err.className = 'bt-err'; $('btFecha').classList.remove('falta');
+    if (!nota) { err.textContent = 'Escribe qué hablaron: es lo único obligatorio.'; return; }
+    if (comp && !fecha) { err.textContent = 'Sin fecha, el compromiso no existe. Pon cuándo lo revisas.'; $('btFecha').classList.add('falta'); return; }
+    const btn = $('btGuardar'); btn.disabled = true; err.textContent = 'Guardando…';
+    const r = await SB.from('equipo_bitacora')
+      .insert({ persona: selB.value, nota: nota, compromiso: comp || null, fecha_revision: comp ? fecha : null })
+      .select().single();
+    btn.disabled = false;
+    if (r.error) { err.textContent = 'No pude guardar: ' + r.error.message; return; }
+    ENT.unshift(r.data);
+    $('btNota').value = ''; $('btComp').value = ''; $('btFecha').value = '';
+    err.className = 'bt-ok'; err.textContent = 'Anotado.';
+    CHIP = comp ? 'abiertos' : 'todo'; pinta();
+  };
+
+  pinta();
+  cargar();
+}
+
 /* ===================== SESIÓN ===================== */
 /* Chart.js viene de CDN: puede llegar tarde o no llegar. Se espera hasta 10s y,
    si no llega, se dice claro en pantalla en vez de reventar con "Chart is not defined". */
@@ -925,7 +1093,7 @@ async function renderShell(session){
   YA_PINTADO = true;
   try {
     await esperarChart();
-    render(await cargarDatos(SB));
+    const D = await cargarDatos(SB); render(D); bitacora(D);
   } catch (e) {
     console.error(e);
     const main = document.querySelector('.pg-main');
@@ -952,7 +1120,7 @@ boot();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-brahian.html";
-var PGV_VERSION=4; // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana (se crean al abrir la pestana, nunca escondidas), sin resize manual ni listener de window.resize, body con overflow-y:scroll, y guardas de chartArea en los cuatro plugins de dibujo. Arregla el titileo y las seis graficas que salian en blanco.
+var PGV_VERSION=5; // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

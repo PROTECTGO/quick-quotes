@@ -473,7 +473,6 @@ const nom = n => n.replace(/\s*\([^)]*\)\s*$/,'').trim();
 const nivC = v => v.indexOf('Meta plena')===0 ? 'Meta plena' : v.replace(' en operación','');
 Chart.defaults.font.family="Inter, Arial, sans-serif"; Chart.defaults.font.size=11.5;
 Chart.defaults.color=MUTED; Chart.defaults.plugins.legend.display=false;
-Chart.defaults.resizeDelay=120;
 function grad(ctx,color,a1,a2){const g=ctx.createLinearGradient(0,0,0,300);g.addColorStop(0,color+a1);g.addColorStop(1,color+a2);return g;}
 const AXIS={grid:{color:LINE,drawTicks:false},border:{display:false},ticks:{padding:8}};
 const AXIS_X={grid:{display:false},border:{display:false},ticks:{padding:6}};
@@ -488,7 +487,7 @@ function ring(el,pct,color){
   return new Chart(el,{type:'doughnut',
     data:{datasets:[{data:[shown,100-shown],backgroundColor:[color,'rgba(255,255,255,.14)'],borderWidth:0,cutout:'74%'}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{enabled:false}},animation:{duration:600}},
-    plugins:[{id:'ctr',afterDraw(c){const {ctx,chartArea:{left,right,top,bottom}}=c;ctx.save();
+    plugins:[{id:'ctr',afterDraw(c){if(!c.chartArea)return;const {ctx,chartArea:{left,right,top,bottom}}=c;ctx.save();
       ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.font='700 26px "JetBrains Mono", monospace';
       ctx.fillText(Math.round(pct)+"%",(left+right)/2,(top+bottom)/2);ctx.restore();}}]});
@@ -723,7 +722,7 @@ document.getElementById('alertas').innerHTML=ALERTAS.map(al=>{
    +'<div><div class="a-v">'+usd(al.v)+'</div><div class="a-n">'+al.u+'</div></div></div>';
 }).join('')||'<div class="pg-ok-box">Ninguna alerta este mes.</div>';
 
-const NAMES={id:'names',afterDatasetsDraw(c){const m=c.getDatasetMeta(0);const ctx=c.ctx;ctx.save();
+const NAMES={id:'names',afterDatasetsDraw(c){if(!c.chartArea)return;const m=c.getDatasetMeta(0);const ctx=c.ctx;ctx.save();
   ctx.font='600 10.5px Inter, Arial';ctx.fillStyle=INK;ctx.textAlign='center';
   const put=[];
   m.data.map((p,i)=>({p,d:c.data.datasets[0].data[i]})).sort((a,b)=>a.p.x-b.p.x).forEach(({p,d})=>{
@@ -731,7 +730,7 @@ const NAMES={id:'names',afterDatasetsDraw(c){const m=c.getDatasetMeta(0);const c
     while(put.some(q=>Math.abs(q.x-p.x)<52 && Math.abs(q.y-y)<12) && tries<4){ y = tries%2===0 ? p.y+21 : y-13; tries++; }
     put.push({x:p.x,y});ctx.fillText(d.nn, p.x, y);});
   ctx.restore();}};
-const QUAD={id:'quad',beforeDatasetsDraw(c){const {ctx,chartArea:a,scales}=c;const yM=scales.y.getPixelForValue(50);
+const QUAD={id:'quad',beforeDatasetsDraw(c){if(!c.chartArea||!c.scales.y)return;const {ctx,chartArea:a,scales}=c;const yM=scales.y.getPixelForValue(50);
   ctx.save();ctx.fillStyle='rgba(213,89,79,.05)';ctx.fillRect((a.left+a.right)/2,yM,a.right-(a.left+a.right)/2,a.bottom-yM);
   ctx.strokeStyle=LINE;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(a.left,yM);ctx.lineTo(a.right,yM);ctx.stroke();
   ctx.setLineDash([]);ctx.fillStyle='#C08E88';ctx.font='700 10.5px Inter, Arial';ctx.textAlign='right';
@@ -748,7 +747,7 @@ new Chart(document.getElementById('chScatter'),{type:'bubble',
     plugins:{tooltip:{...TIP,callbacks:{label:c=>c.raw.full+" · "+usd(c.raw.x)+" · "+c.raw.y+"% con fee · "+usd(c.raw.f)+" de fee"}}}},
   plugins:[QUAD,NAMES]});
 
-const EL={id:'est',afterDatasetsDraw(c){const {ctx,chartArea:a,scales}=c;const x=scales.x.getPixelForValue(EST);
+const EL={id:'est',afterDatasetsDraw(c){if(!c.chartArea||!c.scales.x)return;const {ctx,chartArea:a,scales}=c;const x=scales.x.getPixelForValue(EST);
   if(x>a.right||x<a.left)return;ctx.save();ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.setLineDash([5,4]);
   ctx.beginPath();ctx.moveTo(x,a.top);ctx.lineTo(x,a.bottom);ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle=INK;ctx.font='700 10.5px Inter, Arial';ctx.textAlign='left';

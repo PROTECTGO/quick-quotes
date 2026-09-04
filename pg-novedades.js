@@ -1,5 +1,5 @@
 /* ============================================================================
- * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.2
+ * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.3
  * ----------------------------------------------------------------------------
  * Archivo COMPARTIDO Y DE ALTO ALCANCE. Se carga en el <head> de 13 páginas
  * SIN defer/async:
@@ -76,7 +76,7 @@
 
   /* Si el archivo se cargó dos veces, no volvemos a definir nada. */
   if (window.PG_NOVEDADES_VERSION) { return; }
-  window.PG_NOVEDADES_VERSION = '4.2';
+  window.PG_NOVEDADES_VERSION = '4.3';
 
   /* --------------------------------------------------------------------- */
   /* Constantes                                                            */
@@ -285,11 +285,14 @@
       /* La foto respeta su proporcion: nunca se estira al ancho del marco.
          Antes era width:100% + object-fit:cover, y una foto cuadrada de persona
          quedaba recortada en un primer plano de la cara (caso Karen, 4-sep). */
-      + '.pgnov-foto{border-radius:14px;overflow:hidden;background:rgba(255,255,255,.05);'
-      + 'border:1px solid rgba(255,255,255,.12);max-width:100%;width:auto;margin:0 auto;'
-      + 'display:flex;align-items:center;justify-content:center;}'
-      + '.pgnov-foto img{display:block;width:auto;max-width:100%;'
-      + 'max-height:min(380px,30vh);object-fit:contain;}'
+      /* El contenedor conserva ancho definido (100%) y la imagen se centra dentro
+         SIN estirarse. Ojo: si el contenedor va con width:auto y la imagen con
+         max-width:100%, se referencian en circulo y ambos colapsan a 0. */
+      + '.pgnov-foto{border-radius:14px;background:transparent;border:0;'
+      + 'width:100%;max-width:100%;text-align:center;line-height:0;}'
+      + '.pgnov-foto img{display:inline-block;width:auto;height:auto;max-width:100%;'
+      + 'max-height:min(380px,30vh);object-fit:contain;border-radius:14px;'
+      + 'background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);}'
 
       /* ---------- Enseñanza del mes — bloque opcional, cualquier tipo ---------- */
       + '.pgnov-ens{width:100%;max-width:640px;box-sizing:border-box;text-align:left;'
@@ -416,7 +419,7 @@
       + 'max-width:var(--medida);}'
       + '.pgnov-marco .pgnov-meta{color:var(--muted);}'
       + '.pgnov-marco .pgnov-pie{color:var(--muted);}'
-      + '.pgnov-marco .pgnov-foto{background:var(--bg);border:1px solid var(--line);}'
+      + '.pgnov-marco .pgnov-foto img{background:var(--bg);border:1px solid var(--line);}'
       + '.pgnov-marco .pgnov-ens{background:#FFFBF0;border-color:#ECD08C;border-left-color:var(--ambar);}'
       + '.pgnov-marco .pgnov-ens-badge{background:#FBF1D8;color:#8A6A14;}'
       + '.pgnov-marco .pgnov-ens-texto{color:var(--txt);}'
@@ -567,7 +570,7 @@
       + '.claro .pgnov-mos-cue{color:var(--muted);}'
       + '.claro .pgnov-mos-foto{box-shadow:0 0 0 8px rgba(45,191,163,.12);}'
       + '.claro .pgnov-mos-ini{box-shadow:0 0 0 8px rgba(45,191,163,.12);border-color:#fff;}'
-      + '.claro .pgnov-foto{background:var(--bg);border:1px solid var(--line);}'
+      + '.claro .pgnov-foto img{background:var(--bg);border:1px solid var(--line);}'
       + '.claro .pgnov-fel-foto{border-color:rgba(45,191,163,.55);'
       + 'box-shadow:0 0 0 10px rgba(45,191,163,.12),0 14px 34px rgba(27,45,58,.16);}'
       /* el aviso claro: panel blanco con borde superior ámbar de 6 px */
@@ -2180,7 +2183,7 @@
     esperar();
   };
 
-  console.log('[pg-novedades] v4.2 activo — tema configurable + lotes + reacciones');
+  console.log('[pg-novedades] v4.3 activo — tema configurable + lotes + reacciones');
 })();
 
 /* ============================================================================

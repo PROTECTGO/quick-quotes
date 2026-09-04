@@ -19,7 +19,7 @@
   --pg-font-body:"Inter",Arial,Helvetica,sans-serif; --pg-font-num:"JetBrains Mono","Courier New",monospace;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--pg-bg)}
+body{margin:0;background:var(--pg-bg);overflow-y:scroll}
 .pg-app{background:var(--pg-bg);color:var(--pg-txt);font-family:var(--pg-font-body);min-height:100vh;display:flex}
 .pg-side{width:262px;background:var(--pg-ink);color:#fff;padding:62px 18px 28px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
 .pg-side .pg-brand{display:flex;align-items:center;gap:12px;margin-bottom:10px}
@@ -473,6 +473,7 @@ const nom = n => n.replace(/\s*\([^)]*\)\s*$/,'').trim();
 const nivC = v => v.indexOf('Meta plena')===0 ? 'Meta plena' : v.replace(' en operación','');
 Chart.defaults.font.family="Inter, Arial, sans-serif"; Chart.defaults.font.size=11.5;
 Chart.defaults.color=MUTED; Chart.defaults.plugins.legend.display=false;
+Chart.defaults.resizeDelay=120;
 function grad(ctx,color,a1,a2){const g=ctx.createLinearGradient(0,0,0,300);g.addColorStop(0,color+a1);g.addColorStop(1,color+a2);return g;}
 const AXIS={grid:{color:LINE,drawTicks:false},border:{display:false},ticks:{padding:8}};
 const AXIS_X={grid:{display:false},border:{display:false},ticks:{padding:6}};
@@ -650,12 +651,16 @@ document.querySelectorAll('#chips-meta .chip').forEach(c=>c.onclick=()=>{
 document.querySelectorAll('#tg-vista button').forEach(bt=>bt.onclick=()=>{
   document.querySelectorAll('#tg-vista button').forEach(x=>x.classList.remove('on'));
   bt.classList.add('on'); vistaMeta=bt.dataset.v; pintaMeta();});
+/* Las gráficas de una pestaña cerrada NO se crean: Chart.js no puede medir un canvas
+   escondido, nace en cero y al intentar arreglarlo después entra en bucle de redimensionado.
+   Cada pestaña arma las suyas la primera vez que se abre, y nunca más. */
+const GRAF={}, LISTO={};
 const falta=A.map(a=>({n:nom(a.n),f:Math.max(0,a.min-a.s4)})).sort((a,b)=>b.f-a.f);
-new Chart(document.getElementById('chFalta'),{type:'bar',
+GRAF.meta=()=>{ new Chart(document.getElementById('chFalta'),{type:'bar',
   data:{labels:falta.map(a=>a.n),datasets:[{data:falta.map(a=>a.f),backgroundColor:falta.map(a=>a.f>50000?ROJO:(a.f>25000?AMBAR:MINT)),borderRadius:6,barPercentage:.75}]},
   options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
     scales:{x:{...AXIS,ticks:{...AXIS.ticks,callback:moneyTick},beginAtZero:true},y:AXIS_CAT},
-    plugins:{tooltip:{...TIP,callbacks:{label:c=>c.parsed.x===0?"Ya está en su piso":"Le faltan "+usd(c.parsed.x)}}}}});
+    plugins:{tooltip:{...TIP,callbacks:{label:c=>c.parsed.x===0?"Ya está en su piso":"Le faltan "+usd(c.parsed.x)}}}}}); };
 
 
 /* ===== CAMADA · cómo van los nuevos ===== */
@@ -734,6 +739,7 @@ const QUAD={id:'quad',beforeDatasetsDraw(c){const {ctx,chartArea:a,scales}=c;con
 const pts=A.filter(a=>a.ven[iA]>0).map(a=>{const pc=Math.round((1-a.sf[iA]/a.ven[iA])*100);
   const p=nom(a.n).split(' ');return {x:a.mc[iA],y:pc,r:8,nn:p[0]+' '+(p[1]||'').charAt(0)+'.',
           c:pc<=33?ROJO:(pc<=60?AMBAR:MINT),full:nom(a.n),f:a.fees[iA]};});
+GRAF.patrones=()=>{
 new Chart(document.getElementById('chScatter'),{type:'bubble',
   data:{datasets:[{data:pts,backgroundColor:pts.map(p=>p.c+'CC'),borderColor:pts.map(p=>p.c),borderWidth:2}]},
   options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:18}},
@@ -754,6 +760,7 @@ new Chart(document.getElementById('chEstandar'),{type:'bar',
     scales:{x:{...AXIS,ticks:{...AXIS.ticks,callback:tk([EST*1.3,...fe.map(a=>a.fees[iA])])},beginAtZero:true,suggestedMax:EST*1.3},y:AXIS_CAT},
     plugins:{tooltip:{...TIP,callbacks:{label:c=>usd(c.parsed.x)+" de fee · estándar "+usd(EST)}}}},
   plugins:[EL]});
+};
 
 /* ===== PERSONA ===== */
 const sel=document.getElementById('selPersona');
@@ -813,8 +820,9 @@ function pintaPersona(nombre){
     +'<tr style="background:#F7FAFB"><td><b>Año</b></td><td class="num">'+usd(vA)+'</td><td class="num">'+usd(fA)+'</td><td class="num">'+venA+'</td><td class="num'+(sfA>0?' neg':'')+'">'+sfA+'</td><td class="num '+(uA<0?'neg':'pos')+'">'+usdS(uA)+'</td><td></td></tr>'
     +(a.m.ven?'<tr><td><b>'+MES.nombre.slice(0,3)+'</b> <span class="pg-pill muted">en curso</span></td><td class="num">'+usd(a.m.mc)+'</td><td class="num">'+usd(a.m.fees)+'</td><td class="num">'+a.m.ven+'</td><td class="num'+(a.m.sf>0?' neg':'')+'">'+a.m.sf+'</td><td class="num"></td><td>'+chipMes(a)+'</td></tr>':'');
 }
-sel.onchange=()=>{ pintaPersona(sel.value); requestAnimationFrame(()=>remedir(document.getElementById('s-persona'))); };
-pintaPersona(ordS4[0].n);sel.value=ordS4[0].n;
+sel.onchange=()=>pintaPersona(sel.value);
+sel.value=ordS4[0].n;
+GRAF.persona=()=>pintaPersona(sel.value);
 
 /* ===== CONSOLIDADO ===== */
 const cons=A.map(a=>({n:nom(a.n),niv:nivC(a.niv),v:sum(a.mc),f:sum(a.fees),p:sum(a.ven),s:sum(a.sf),u:sum(a.util)}))
@@ -831,33 +839,26 @@ document.getElementById('tb-cons').innerHTML=cons.map(c=>
 document.getElementById('tf-cons').innerHTML=
  '<tr style="background:#F7FAFB"><td><b>Equipo</b></td><td class="mini">'+M.personas+' personas</td><td class="num">'+usd(volAno)+'</td><td class="num">'+usd(feeAno)+'</td><td class="num">'+(feeAno/volAno*100).toFixed(1)+'%</td><td class="num">'+venAno+'</td><td class="num neg">'+sfAno+'</td><td class="num pos">'+usdS(utilAno)+'</td></tr>';
 const rep=cons.filter(c=>c.v>0);
-new Chart(document.getElementById('chReparto'),{type:'bar',
+GRAF.consolidado=()=>{ new Chart(document.getElementById('chReparto'),{type:'bar',
   data:{labels:rep.map(c=>c.n),datasets:[{data:rep.map(c=>c.v),backgroundColor:rep.map((c,i)=>i===0?MINTD:(i<3?MINT:'#9FDCCE')),borderRadius:6,barPercentage:.75}]},
   options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
     scales:{x:{...AXIS,ticks:{...AXIS.ticks,callback:moneyTick},beginAtZero:true},y:AXIS_CAT},
-    plugins:{tooltip:{...TIP,callbacks:{label:c=>usd(c.parsed.x)+" · "+(c.parsed.x/volAno*100).toFixed(1)+"% del año"}}}}});
+    plugins:{tooltip:{...TIP,callbacks:{label:c=>usd(c.parsed.x)+" · "+(c.parsed.x/volAno*100).toFixed(1)+"% del año"}}}}}); };
 
 /* ===== NAV ===== */
-/* Chart.js no puede medir un canvas escondido: los que se crean con su pestaña cerrada
-   nacen de tamaño cero. Al abrir una pestaña se les pide que se vuelvan a medir. */
-function remedir(sec){
-  if(!window.Chart) return;
-  sec.querySelectorAll('canvas').forEach(cv=>{ const c = Chart.getChart(cv); if(c) c.resize(); });
-}
 document.querySelectorAll('.pg-side a[data-go]').forEach(a=>a.onclick=()=>{
   document.querySelectorAll('.pg-side a[data-go]').forEach(x=>x.classList.remove('on'));
   a.classList.add('on');
   document.querySelectorAll('.pg-section').forEach(s=>s.classList.remove('on'));
-  const sec = document.getElementById('s-'+a.dataset.go);
-  sec.classList.add('on');
-  requestAnimationFrame(()=>{
-    /* el anillo de persona nace de tamaño cero si su pestaña estaba cerrada:
-       ahí no basta con remedir, hay que volver a dibujarlo con la pestaña abierta */
-    if (a.dataset.go === 'persona' && sel && sel.value) pintaPersona(sel.value);
-    else remedir(sec);
-  });
-  window.scrollTo(0,0);});
-window.addEventListener('resize', ()=>{ const s=document.querySelector('.pg-section.on'); if(s) remedir(s); });
+  document.getElementById('s-'+a.dataset.go).classList.add('on');
+  window.scrollTo(0,0);
+  const t=a.dataset.go;
+  if(GRAF[t] && !LISTO[t]){ LISTO[t]=1;
+    /* dos cuadros: el primero aplica el cambio de display, el segundo ya mide bien */
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ try{ GRAF[t](); }catch(e){ console.error(e); } }));
+  }
+});
+
 
 
 }

@@ -1,5 +1,5 @@
 /* ============================================================================
- * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.3
+ * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.4
  * ----------------------------------------------------------------------------
  * Archivo COMPARTIDO Y DE ALTO ALCANCE. Se carga en el <head> de 13 páginas
  * SIN defer/async:
@@ -76,7 +76,7 @@
 
   /* Si el archivo se cargó dos veces, no volvemos a definir nada. */
   if (window.PG_NOVEDADES_VERSION) { return; }
-  window.PG_NOVEDADES_VERSION = '4.3';
+  window.PG_NOVEDADES_VERSION = '4.4';
 
   /* --------------------------------------------------------------------- */
   /* Constantes                                                            */
@@ -1277,7 +1277,10 @@
       var caja = nodo('div', claseCaja);
       var img = document.createElement('img');
       img.alt = n.pie_foto || n.titulo || '';
-      img.loading = 'lazy';
+      /* eager: el overlay bloquea la pantalla y la foto ES el contenido. Con 'lazy',
+         si el contenedor arranca colapsado el navegador nunca dispara la carga. */
+      img.loading = 'eager';
+      img.decoding = 'async';
       img.onerror = function () {
         /* Foto rota: se retira la caja y, en felicitación, el nombre crece. */
         if (caja.parentNode) { caja.parentNode.removeChild(caja); }
@@ -1296,7 +1299,10 @@
         var caja = nodo('div', claseFoto);
         var img = document.createElement('img');
         img.alt = n.titulo || '';
-        img.loading = 'lazy';
+        /* eager: el overlay bloquea la pantalla y la foto ES el contenido. Con 'lazy',
+         si el contenedor arranca colapsado el navegador nunca dispara la carga. */
+      img.loading = 'eager';
+      img.decoding = 'async';
         img.onerror = function () {
           var ini = nodo('div', claseIni, iniciales(n.titulo));
           ini.setAttribute('aria-label', n.titulo || '');
@@ -2183,7 +2189,7 @@
     esperar();
   };
 
-  console.log('[pg-novedades] v4.3 activo — tema configurable + lotes + reacciones');
+  console.log('[pg-novedades] v4.4 activo — tema configurable + lotes + reacciones');
 })();
 
 /* ============================================================================

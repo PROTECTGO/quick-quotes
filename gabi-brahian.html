@@ -3,427 +3,865 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GABI · Vista de Brahian Toro</title>
+<title>GABI · Equipo comercial · Brahian Toro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://gabi-liquidez.vercel.app/gabi-personas-shared.js"></script>
-<script src="ver-como-helper.js"></script>
-<script src="asesor-oportunidad-shared.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="ver-como-helper.js"></script>
 <style>
-:root {
+:root{
   --pg-ink:#1B2D3A; --pg-ink-2:#162630; --pg-mint:#2DBFA3; --pg-mint-soft:#C4E8DF; --pg-mint-deep:#229A82;
   --pg-bg:#F4F7FA; --pg-card:#FFFFFF; --pg-line:#E7EDF2; --pg-txt:#28323B; --pg-muted:#6B7D89;
-  --pg-pos:#1F9D6B; --pg-neg:#D5594F; --pg-warn:#D9A520;
+  --pg-pos:#1F9D6B; --pg-neg:#D5594F; --pg-warn:#D9A520; --pg-azul:#5B6BD6;
   --pg-font-gabi:"Fraunces",Georgia,serif; --pg-font-title:"Montserrat","Arial Black",sans-serif;
   --pg-font-body:"Inter",Arial,Helvetica,sans-serif; --pg-font-num:"JetBrains Mono","Courier New",monospace;
 }
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--pg-bg); }
-.pg-app { background: var(--pg-bg); color: var(--pg-txt); font-family: var(--pg-font-body); min-height: 100vh; display:flex; }
-.pg-side { width: 262px; background: var(--pg-ink); color: #fff; padding: 28px 18px; flex-shrink: 0; position: sticky; top:0; height:100vh; overflow-y:auto; }
-.pg-side .pg-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.pg-side .pg-brand .pg-logo { width: 40px; height: 40px; border-radius:10px; background:var(--pg-mint); display:flex;align-items:center;justify-content:center; font-family:var(--pg-font-title); font-weight:800; color:var(--pg-ink); }
-.pg-side .pg-brand .pg-wordmark { font-family: var(--pg-font-gabi); font-style: italic; font-weight: 800; font-size: 24px; color: var(--pg-mint); letter-spacing: -0.5px; }
-.pg-side .pg-tagline { font-size: 11.5px; color:#8da0ad; margin: -2px 0 22px 52px; letter-spacing:.03em;}
-.pg-side a { display: flex; align-items: center; gap: 13px; padding: 12px 15px; border-radius: 11px; color: #b9c6d0; font-size: 14px; font-weight: 600; text-decoration: none; margin-bottom: 4px; transition: background .15s; cursor:pointer; }
-.pg-side a .ico { width:20px; text-align:center; }
-.pg-side a.on, .pg-side a:hover { background: rgba(45,191,163,.15); color: #fff; }
-.pg-side a.on { box-shadow: inset 3px 0 0 var(--pg-mint); }
-.pg-side .pg-foot { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.12); font-size: 11.5px; color: #8da0ad; }
-.pg-side .pg-logout { cursor:pointer; text-decoration:underline; }
-.pg-main { flex: 1; padding: 32px 38px 60px; max-width: 1240px; }
-.pg-top { margin-bottom: 22px; }
-.pg-top h1 { font-family: var(--pg-font-title); font-size: 26px; font-weight: 800; color: var(--pg-ink); margin: 0; }
-.pg-top .pg-sub { color: var(--pg-muted); font-size: 14px; margin-top: 5px; max-width:760px; }
-.pg-eyebrow { font-family: var(--pg-font-body); font-size: 11.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--pg-mint-deep); margin-bottom: 6px; }
-.pg-kpis { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
-.pg-kpi { flex: 1; min-width: 175px; background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 16px; padding: 16px 18px; position: relative; overflow: hidden; box-shadow: 0 1px 3px rgba(27,45,58,.04); }
-.pg-kpi::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--pg-mint); }
-.pg-kpi .lbl { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--pg-muted); }
-.pg-kpi .val { font-family: var(--pg-font-num); font-size: 25px; font-weight: 600; color: var(--pg-ink); margin: 7px 0 3px; font-variant-numeric: tabular-nums; }
-.pg-kpi .val.neg { color: var(--pg-neg); } .pg-kpi .val.pos { color: var(--pg-pos); }
-.pg-kpi .sub { font-size: 11.5px; color: var(--pg-muted); }
-.pg-card { background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 18px; padding: 22px; margin-bottom:20px; box-shadow: 0 1px 3px rgba(27,45,58,.04); }
-.pg-card h2 { font-family: var(--pg-font-title); font-size: 17.5px; font-weight: 800; color: var(--pg-ink); margin: 0 0 4px; }
-.pg-card .pg-purpose { color: var(--pg-muted); font-size: 13px; margin: 0 0 14px; }
-.pg-table { width: 100%; border-collapse: collapse; }
-.pg-table th { text-align: left; font-size: 11px; color: var(--pg-muted); text-transform: uppercase; letter-spacing: .04em; padding: 9px 8px; border-bottom: 2px solid var(--pg-ink); font-weight: 700; }
-.pg-table td { padding: 10px 8px; font-size: 13px; color: #3a4751; border-bottom: 1px solid var(--pg-line); vertical-align: middle; }
-.pg-table tr:hover td { background: #FAFCFD; }
-.pg-table td.num { font-family: var(--pg-font-num); font-variant-numeric: tabular-nums; color: var(--pg-ink); font-weight: 600; }
-.pg-table td.num.neg { color: var(--pg-neg); } .pg-table td.num.pos { color: var(--pg-pos); }
-.pg-pill { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space:nowrap;}
-.pg-pill.ok   { background: #E3F4EF; color: var(--pg-pos); }
-.pg-pill.due  { background: #FCEEEC; color: var(--pg-neg); }
-.pg-pill.warn { background: #FBF3E2; color: var(--pg-warn); }
-.pg-pill.muted{ background:#EEF2F5; color:var(--pg-muted); }
-.pg-warn-box   { background: #FBF3E2; border: 1px solid #EAD09A; border-radius: 12px; padding: 13px 17px; color: #8a6a1d; font-size:13px; margin-bottom:14px; }
-.pg-danger-box { background: #FCEEEC; border: 1px solid #F0C2BD; border-radius: 12px; padding: 13px 17px; color: #9c3d35; font-size:13px; margin-bottom: 14px;}
-.pg-headline { display:flex; align-items:flex-start; gap:14px; margin-bottom: 18px; }
-.pg-semaforo { width:20px; height:20px; border-radius:50%; flex-shrink:0; margin-top:4px; box-shadow: 0 0 0 5px rgba(0,0,0,.04); }
-.pg-semaforo.green { background: var(--pg-pos); } .pg-semaforo.amber { background: var(--pg-warn); } .pg-semaforo.red { background: var(--pg-neg); }
-.pg-headline-text { font-family: var(--pg-font-title); font-size: 21px; font-weight:800; color: var(--pg-ink); line-height:1.3; margin:0;}
-.pg-headline-sub { color: var(--pg-muted); font-size:13px; margin-top:5px; }
-.pg-section { display:none; } .pg-section.on { display:block; }
-.pg-grid-2 { display:grid; grid-template-columns: 1.25fr 1fr; gap: 20px; }
-@media (max-width: 980px) { .pg-grid-2 { grid-template-columns: 1fr; } }
-.pg-chart-wrap { position:relative; height: 260px; }
-.pg-chart-wrap.tall { height: 340px; }
-.pg-rank { display:flex; justify-content:space-between; align-items:center; padding:10px 4px; border-bottom:1px solid var(--pg-line); gap:10px; }
-.pg-rank:last-child { border-bottom:none; }
-.pg-rank .rk-name { font-weight:700; color:var(--pg-ink); font-size:13.5px; }
-.pg-rank .rk-badge { font-family: var(--pg-font-num); font-size: 11.5px; color: var(--pg-mint-deep); font-weight:700; text-align:right; }
-.pg-loading { color: var(--pg-muted); font-size:13px; font-family: var(--pg-font-num); padding: 20px 0; }
-.pg-footnote { font-size: 11.5px; color: var(--pg-muted); margin-top: 26px; border-top:1px solid var(--pg-line); padding-top:14px; line-height:1.6; }
-.pg-login-wrap { max-width:380px; margin:80px auto; background:var(--pg-card); border:1px solid var(--pg-line); border-radius:18px; padding:32px; text-align:center; box-shadow:0 1px 3px rgba(27,45,58,.06); }
-.pg-login-wrap h2 { font-family:var(--pg-font-title); color:var(--pg-ink); margin:8px 0 6px; }
-.pg-login-wrap p { color:var(--pg-muted); font-size:13px; margin:0 0 18px; }
-.pg-login-wrap input { width:100%; padding:11px 13px; margin-bottom:10px; border:1px solid var(--pg-line); border-radius:10px; font-family:var(--pg-font-body); font-size:14px; }
-.pg-login-wrap .pg-logo { width:44px; height:44px; border-radius:11px; background:var(--pg-mint); display:flex; align-items:center; justify-content:center; font-family:var(--pg-font-title); font-weight:800; color:var(--pg-ink); }
-.pg-btn { background: var(--pg-ink); color:#fff; border:none; border-radius: 10px; padding: 11px 20px; font-family: var(--pg-font-body); font-weight:700; font-size: 13.5px; cursor:pointer; width:100%; }
-.pg-btn.mint { background: var(--pg-mint); color: var(--pg-ink); }
-.pg-login-err { color:var(--pg-neg); font-size:12.5px; margin-top:10px; min-height:16px; }
-.pg-negado { max-width:420px; margin:80px auto; text-align:center; color:var(--pg-muted); }
-.vpc-cli { border-bottom:1px solid var(--pg-line); padding:9px 4px; font-size:12.5px; }
-.vpc-cli-top b { color:var(--pg-ink); }
-.vpc-dim { color:var(--pg-muted); }
-.vpc-badge { background:var(--pg-mint-soft); color:var(--pg-ink-2); border-radius:999px; padding:2px 9px; font-size:10.5px; font-weight:700; margin-left:6px; }
-.vpc-cli-mid { color:var(--pg-muted); margin:3px 0; }
-.vpc-cli-bot i { color:var(--pg-muted); }
-.vpc-toggle { cursor:pointer; color:var(--pg-mint-deep); font-weight:700; font-size:11.5px; }
-/* --- ronda Personas: piezas compartidas con gabi-personas-shared.js --- */
-.pg-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-.pg-toggle { display:inline-flex; border:1px solid var(--pg-line); border-radius:999px; overflow:hidden; }
-.pg-toggle button { border:none; background:#fff; color:var(--pg-muted); font-family:var(--pg-font-body); font-weight:700; font-size:12.5px; padding:8px 16px; cursor:pointer; }
-.pg-toggle button.on { background:var(--pg-ink); color:#fff; }
-select.pg-sel { font-family:var(--pg-font-body); font-size:13px; padding:8px 12px; border:1px solid var(--pg-line); border-radius:999px; background:#fff; color:var(--pg-ink); font-weight:600; }
-.pg-ok-box { background:#E3F4EF; border:1px solid #A8DBC9; border-radius:12px; padding:13px 17px; color:#1c6e50; font-size:13px; }
-.pg-ok-box b { color:var(--pg-pos); }
-.pg-empty { color:var(--pg-muted); font-size:13px; padding:14px 0; font-style:italic; }
-.pg-flagrow { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:14px 16px; border-radius:14px; border:1px solid var(--pg-line); background:#FAFCFD; margin-bottom:12px; }
-.pg-flagrow .fl { font-weight:700; color:var(--pg-ink); font-size:14px; }
-.pg-flagrow .fc { color:var(--pg-muted); font-size:12.5px; margin-top:3px; }
-.pg-flagrow .fv { font-family:var(--pg-font-num); font-size:21px; font-weight:700; color:var(--pg-neg); text-align:right; white-space:nowrap; }
-.pg-flagrow .fn { font-size:11.5px; color:var(--pg-muted); text-align:right; }
-.pg-flagrow.sev-alta { border-left:5px solid var(--pg-neg); }
-.pg-flagrow.sev-media { border-left:5px solid var(--pg-warn); }
-.pg-flagrow.sev-baja { border-left:5px solid var(--pg-muted); }
+*{box-sizing:border-box}
+body{margin:0;background:var(--pg-bg)}
+.pg-app{background:var(--pg-bg);color:var(--pg-txt);font-family:var(--pg-font-body);min-height:100vh;display:flex}
+.pg-side{width:262px;background:var(--pg-ink);color:#fff;padding:62px 18px 28px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.pg-side .pg-brand{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.pg-side .pg-logo{width:40px;height:40px;border-radius:10px;background:var(--pg-mint);display:flex;align-items:center;justify-content:center;font-family:var(--pg-font-title);font-weight:800;color:var(--pg-ink)}
+.pg-side .pg-wordmark{font-family:var(--pg-font-gabi);font-style:italic;font-weight:800;font-size:24px;color:var(--pg-mint);letter-spacing:-.5px}
+.pg-side .pg-tagline{font-size:11.5px;color:#8da0ad;margin:-2px 0 22px 52px;letter-spacing:.03em}
+.pg-side a{display:flex;align-items:center;gap:13px;padding:12px 15px;border-radius:11px;color:#b9c6d0;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:4px;transition:background .15s;cursor:pointer}
+.pg-side a .ico{width:20px;text-align:center}
+.pg-side a.on,.pg-side a:hover{background:rgba(45,191,163,.15);color:#fff}
+.pg-side a.on{box-shadow:inset 3px 0 0 var(--pg-mint)}
+.pg-side .pg-foot{margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.12);font-size:11.5px;color:#8da0ad;line-height:1.6}
+.pg-main{flex:1;padding:32px 38px 60px;max-width:1240px}
+.pg-top{margin-bottom:22px}
+.pg-top h1{font-family:var(--pg-font-title);font-size:26px;font-weight:800;color:var(--pg-ink);margin:0}
+.pg-top .pg-sub{color:var(--pg-muted);font-size:14px;margin-top:5px;max-width:820px;line-height:1.55}
+.pg-eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--pg-mint-deep);margin-bottom:6px}
+.pg-kpis{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.pg-kpi{flex:1;min-width:175px;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:16px;padding:16px 18px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(27,45,58,.04)}
+.pg-kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--pg-mint)}
+.pg-kpi.w::before{background:var(--pg-warn)} .pg-kpi.r::before{background:var(--pg-neg)} .pg-kpi.a::before{background:var(--pg-azul)}
+.pg-kpi .lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted)}
+.pg-kpi .val{font-family:var(--pg-font-num);font-size:25px;font-weight:600;color:var(--pg-ink);margin:7px 0 3px;font-variant-numeric:tabular-nums}
+.pg-kpi .val.neg{color:var(--pg-neg)} .pg-kpi .val.pos{color:var(--pg-pos)}
+.pg-kpi .sub{font-size:11.5px;color:var(--pg-muted);line-height:1.45}
+.pg-card{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:18px;padding:22px;margin-bottom:20px;box-shadow:0 1px 3px rgba(27,45,58,.04)}
+.pg-card h2{font-family:var(--pg-font-title);font-size:17.5px;font-weight:800;color:var(--pg-ink);margin:0 0 4px}
+.pg-card .pg-purpose{color:var(--pg-muted);font-size:13px;margin:0 0 14px;line-height:1.5}
+.pg-table{width:100%;border-collapse:collapse}
+.pg-table th{text-align:left;font-size:11px;color:var(--pg-muted);text-transform:uppercase;letter-spacing:.04em;padding:9px 8px;border-bottom:2px solid var(--pg-ink);font-weight:700}
+.pg-table td{padding:10px 8px;font-size:13px;color:#3a4751;border-bottom:1px solid var(--pg-line);vertical-align:middle}
+.pg-table tr:hover td{background:#FAFCFD}
+.pg-table td.num{font-family:var(--pg-font-num);font-variant-numeric:tabular-nums;color:var(--pg-ink);font-weight:600;text-align:right}
+.pg-table th.num{text-align:right}
+.pg-table td.num.neg{color:var(--pg-neg)} .pg-table td.num.pos{color:var(--pg-pos)}
+.pg-pill{display:inline-block;padding:4px 11px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+.pg-pill.ok{background:#E3F4EF;color:var(--pg-pos)} .pg-pill.due{background:#FCEEEC;color:var(--pg-neg)}
+.pg-pill.warn{background:#FBF3E2;color:#8a6a1d} .pg-pill.muted{background:#EEF2F5;color:var(--pg-muted)}
+.pg-headline{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+.pg-semaforo{width:20px;height:20px;border-radius:50%;flex-shrink:0;margin-top:4px;box-shadow:0 0 0 5px rgba(0,0,0,.04)}
+.pg-semaforo.green{background:var(--pg-pos)} .pg-semaforo.amber{background:var(--pg-warn)} .pg-semaforo.red{background:var(--pg-neg)}
+.pg-headline-text{font-family:var(--pg-font-title);font-size:21px;font-weight:800;color:var(--pg-ink);line-height:1.3;margin:0}
+.pg-headline-sub{color:var(--pg-muted);font-size:13px;margin-top:5px;line-height:1.5}
+.pg-section{display:none} .pg-section.on{display:block}
+.pg-grid-2{display:grid;grid-template-columns:1.25fr 1fr;gap:20px}
+.pg-grid-11{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:980px){.pg-grid-2,.pg-grid-11{grid-template-columns:1fr}}
+.pg-chart-wrap{position:relative;height:260px} .pg-chart-wrap.tall{height:320px} .pg-chart-wrap.short{height:200px}
+.pg-footnote{font-size:11.5px;color:var(--pg-muted);margin-top:26px;border-top:1px solid var(--pg-line);padding-top:14px;line-height:1.6}
+select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;border:1px solid var(--pg-line);border-radius:999px;background:#fff;color:var(--pg-ink);font-weight:700;min-width:260px}
+.pg-warn-box{background:#FBF3E2;border:1px solid #EAD09A;border-radius:12px;padding:13px 17px;color:#8a6a1d;font-size:13px;margin-bottom:14px;line-height:1.55}
+.pg-ok-box{background:#E3F4EF;border:1px solid #A8DBC9;border-radius:12px;padding:13px 17px;color:#1c6e50;font-size:13px;line-height:1.55}
+
+/* ---- FRANJA OSCURA (estilo Karen) ---- */
+.fr{background:var(--pg-ink);border-radius:18px;padding:24px 26px;margin-bottom:20px;color:#fff;display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+.fr .fr-nums{display:flex;gap:30px;flex-wrap:wrap;flex:1;min-width:320px}
+.fr .fr-n .l{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8da0ad;margin-bottom:6px}
+.fr .fr-n .v{font-family:var(--pg-font-num);font-size:27px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;line-height:1}
+.fr .fr-n .v.mint{color:var(--pg-mint)} .fr .fr-n .v.warn{color:#F0C55A} .fr .fr-n .v.red{color:#F08A80}
+.fr .fr-n .s{font-size:11.5px;color:#8da0ad;margin-top:5px}
+.fr .fr-ring{width:150px;text-align:center;flex-shrink:0}
+.fr .fr-ring .cap{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8da0ad;margin-top:8px}
+
+/* ---- barra meta ---- */
+.mt-bar{position:relative;height:9px;border-radius:999px;background:#EDF1F5;overflow:visible;min-width:120px;margin-top:5px}
+.mt-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;display:block}
+.mt-bar u{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--pg-ink);opacity:.55}
+.mt-sub{font-size:11px;color:var(--pg-muted);margin-top:4px;font-family:var(--pg-font-num)}
+
+/* ---- alertas / patrones ---- */
+.al{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:16px 18px;border-radius:14px;border:1px solid var(--pg-line);background:#FAFCFD;margin-bottom:12px}
+.al .a-l{font-weight:800;color:var(--pg-ink);font-size:14.5px;font-family:var(--pg-font-title)}
+.al .a-tag{display:inline-block;margin-left:9px;padding:3px 10px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.03em}
+.al .a-c{color:var(--pg-muted);font-size:13px;margin-top:6px;line-height:1.5;max-width:640px}
+.al .a-do{color:var(--pg-ink);font-size:12.5px;margin-top:8px;font-weight:600}
+.al .a-v{font-family:var(--pg-font-num);font-size:22px;font-weight:700;text-align:right;white-space:nowrap}
+.al .a-n{font-size:11px;color:var(--pg-muted);text-align:right;margin-top:3px}
+.al.sev-alta{border-left:5px solid var(--pg-neg)} .al.sev-alta .a-v{color:var(--pg-neg)}
+.al.sev-media{border-left:5px solid var(--pg-warn)} .al.sev-media .a-v{color:#8a6a1d}
+.tag-nofee{background:#FCEEEC;color:#9c3d35} .tag-caida{background:#FBF3E2;color:#8a6a1d} .tag-mixto{background:#EDEFFB;color:#3f4bab}
+
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chip{border:1px solid var(--pg-line);background:#fff;color:var(--pg-muted);border-radius:999px;padding:8px 15px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--pg-font-body)}
+.chip.on{background:var(--pg-ink);color:#fff;border-color:var(--pg-ink)}
+.pnum{font-family:var(--pg-font-num);font-variant-numeric:tabular-nums}
+.leg{display:flex;gap:18px;flex-wrap:wrap;font-size:11.5px;color:var(--pg-muted);margin-top:12px}
+.leg b{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.mini{font-size:11.5px;color:var(--pg-muted);font-family:var(--pg-font-num)}
+.pg-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pg-toggle{display:inline-flex;border:1px solid var(--pg-line);border-radius:999px;overflow:hidden;background:#fff}
+.pg-toggle button{border:none;background:#fff;color:var(--pg-muted);font-family:var(--pg-font-body);font-weight:700;font-size:12.5px;padding:9px 18px;cursor:pointer}
+.pg-toggle button.on{background:var(--pg-ink);color:#fff}
 </style>
-<!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
 <script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
 </head>
 <body>
 <a href="index.html" id="pgVolver" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
 <div id="root-outer"></div>
 
+<template id="tpl-app">
+<div class="pg-app">
+ <aside class="pg-side">
+  <div class="pg-brand"><div class="pg-logo">G</div><div class="pg-wordmark">gabi</div></div>
+  <div class="pg-tagline">EQUIPO COMERCIAL</div>
+  <a data-go="resumen" class="on"><span class="ico">◆</span> El equipo hoy</a>
+  <a data-go="meta"><span class="ico">◎</span> Meta del mes</a>
+  <a data-go="patrones"><span class="ico">▲</span> Patrones y alertas</a>
+  <a data-go="persona"><span class="ico">●</span> Persona por persona</a>
+  <a data-go="consolidado"><span class="ico">▤</span> Consolidado del año</a>
+  <div class="pg-foot"><span id="ftuser">Brahian Toro</span><br>Líder comercial<br><span id="ftfecha"></span><br><span class="pg-logout" id="btnLogout" style="cursor:pointer;text-decoration:underline">Cerrar sesión</span></div>
+ </aside>
+ <main class="pg-main">
+
+  <!-- ============ RESUMEN ============ -->
+  <section class="pg-section on" id="s-resumen">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Dirección comercial</div>
+      <h1>El equipo hoy</h1>
+      <div class="pg-sub">Todo lo que ves aquí es <b>venta nueva del equipo</b>: el premium y los fees de las pólizas que tu gente cerró. Es la parte que se mueve con lo que ustedes hacen esta semana. El estándar de la casa es <b>$70.000 por cabeza al mes</b>; el piso, del que no podemos bajar, es <b>$58.000</b>.</div>
+    </div>
+
+    <div class="fr">
+      <div class="fr-nums">
+        <div class="fr-n"><div class="l">Lo que va del mes</div><div class="v mint" id="r-mes">—</div><div class="s" id="r-mes-s"></div></div>
+        <div class="fr-n"><div class="l">Debería llevar a hoy</div><div class="v" id="r-deb">—</div><div class="s" id="r-deb-s"></div></div>
+        <div class="fr-n"><div class="l">Fee del mes</div><div class="v warn" id="r-fmes">—</div><div class="s" id="r-fmes-s"></div></div>
+        <div class="fr-n"><div class="l">A este paso cierra en</div><div class="v" id="r-proy">—</div><div class="s" id="r-proy-s"></div></div>
+      </div>
+      <div class="fr-ring">
+        <div style="position:relative;height:130px"><canvas id="ringEquipo"></canvas></div>
+        <div class="cap" id="ring-cap">del ritmo de hoy</div>
+      </div>
+    </div>
+    <div class="pg-kpis" style="margin-bottom:20px">
+      <div class="pg-kpi"><div class="lbl">Agosto · último mes cerrado</div><div class="val" id="r-vol">—</div><div class="sub" id="r-vol-s"></div></div>
+      <div class="pg-kpi"><div class="lbl">Utilidad del equipo · agosto</div><div class="val pos" id="r-util">—</div><div class="sub" id="r-util-s"></div></div>
+      <div class="pg-kpi a"><div class="lbl">Tu ingreso de agosto</div><div class="val" id="r-ing">—</div><div class="sub" id="r-ing-s"></div></div>
+      <div class="pg-kpi w"><div class="lbl">Ritmo · últimas 4 semanas</div><div class="val" id="r-s4">—</div><div class="sub" id="r-s4-s"></div></div>
+    </div>
+
+    <div class="pg-headline">
+      <div class="pg-semaforo red" id="hl-sem"></div>
+      <div><p class="pg-headline-text" id="hl-txt">—</p><div class="pg-headline-sub" id="hl-sub"></div></div>
+    </div>
+
+    <div class="pg-kpis">
+      <div class="pg-kpi"><div class="lbl">Utilidad del año</div><div class="val pos" id="k-util">—</div><div class="sub">Lo que le quedó a la agencia después de pagar comisión y costo del equipo.</div></div>
+      <div class="pg-kpi a"><div class="lbl">Tu ingreso del año</div><div class="val" id="k-ing">—</div><div class="sub">Tu comisión de líder, mes a mes, sumada.</div></div>
+      <div class="pg-kpi w"><div class="lbl">Volumen del año</div><div class="val" id="k-vol">—</div><div class="sub" id="k-vol-s"></div></div>
+      <div class="pg-kpi r"><div class="lbl">Fee sobre lo vendido</div><div class="val" id="k-fee">—</div><div class="sub">De cada $100 que vende el equipo, esto entra por fee. Aquí está la palanca.</div></div>
+    </div>
+
+    <div class="pg-grid-2">
+      <div class="pg-card">
+        <h2>Volumen del equipo, mes a mes</h2>
+        <p class="pg-purpose">La onda es lo que el equipo vendió. La línea roja punteada es <b>el piso del equipo de hoy</b> y la azul el norte, con las personas que hay ahora. Cuando la onda va por debajo de la roja, el mes no se paga solo.</p>
+        <div class="pg-chart-wrap tall"><canvas id="chVol"></canvas></div>
+        <div class="leg"><span><b style="background:#2DBFA3"></b>Volumen vendido</span><span><b style="background:#D5594F"></b>Piso de hoy</span><span><b style="background:#5B6BD6"></b>Norte de hoy</span></div>
+      </div>
+      <div class="pg-card">
+        <h2>Utilidad del equipo</h2>
+        <p class="pg-purpose">Lo que quedó cada mes después de pagar comisión y costo de las personas. Junio fue el mes que casi no dejó nada.</p>
+        <div class="pg-chart-wrap tall"><canvas id="chUtil"></canvas></div>
+      </div>
+    </div>
+
+    <div class="pg-grid-2">
+      <div class="pg-card">
+        <h2>Tu ingreso, mes a mes</h2>
+        <p class="pg-purpose">Tu comisión de líder sube cuando sube la generación del equipo. Es la misma onda con otra escala: tu plata es el reflejo del equipo.</p>
+        <div class="pg-chart-wrap"><canvas id="chIng"></canvas></div>
+      </div>
+      <div class="pg-card">
+        <h2>Dónde está la palanca</h2>
+        <p class="pg-purpose">Las barras verdes son el fee cobrado en el mes. La línea ámbar es qué porcentaje del volumen fue fee.</p>
+        <div class="pg-chart-wrap"><canvas id="chFee"></canvas></div>
+        <div class="pg-warn-box" style="margin-top:14px;margin-bottom:0" id="palanca"></div>
+      </div>
+    </div>
+
+    <div class="pg-card">
+      <h2>El mes, persona por persona</h2>
+      <p class="pg-purpose">Lo que lleva cada quien <b>en el mes en curso</b>, contra su piso. La marca vertical oscura es dónde debería ir hoy para cerrar el mes en el piso. Se pone en cero solo el día 1 de cada mes.</p>
+      <table class="pg-table"><thead><tr><th>Persona</th><th>Nivel</th><th class="num">Del mes</th><th class="num">Fee</th><th class="num">Ventas</th><th class="num">Sin fee</th><th style="width:190px">Contra su piso</th><th class="num">Cierra en</th><th>Estado</th></tr></thead><tbody id="tb-mes"></tbody><tfoot id="tf-mes"></tfoot></table>
+    </div>
+    <div class="pg-card">
+      <h2>Quién viene sosteniendo el ritmo</h2>
+      <p class="pg-purpose">Últimas 4 semanas —la ventana móvil que no depende del corte de mes—, contra el piso de cada quien.</p>
+      <table class="pg-table"><thead><tr><th>Persona</th><th>Nivel</th><th class="num">Últimas 4 sem</th><th style="width:200px">Contra su piso</th><th>Estado</th></tr></thead><tbody id="tb-top"></tbody></table>
+    </div>
+
+    <div class="pg-footnote" id="fn1"></div>
+  </section>
+
+  <!-- ============ META ============ -->
+  <section class="pg-section" id="s-meta">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Meta del mes</div>
+      <h1>El norte y el piso</h1>
+      <div class="pg-sub">La meta de la casa son <b>$70.000 por persona al mes</b>. El <b>piso son $58.000</b>: por debajo de ese promedio la operación no se sostiene. Quien viene entrando arranca en <b>$29.000</b> mientras hace curva —el reloj le cuenta desde su primera venta, no desde que firmó— y sube a 75% en el mes 4 y a meta plena en el mes 7. Quien ya trae experiencia va con meta plena desde el primer mes.</div>
+    </div>
+    <div class="pg-kpis">
+      <div class="pg-kpi r"><div class="lbl">Piso del equipo · mes</div><div class="val" id="m-min">—</div><div class="sub" id="m-min-s"></div></div>
+      <div class="pg-kpi"><div class="lbl">Si todos hacen el norte</div><div class="val" id="m-norte">—</div><div class="sub" id="m-norte-s"></div></div>
+      <div class="pg-kpi w"><div class="lbl">Ritmo real · últimas 4 sem</div><div class="val" id="m-ritmo">—</div><div class="sub" id="m-ritmo-s"></div></div>
+      <div class="pg-kpi a"><div class="lbl">En el norte</div><div class="val" id="m-verdes">—</div><div class="sub" id="m-verdes-s"></div></div>
+    </div>
+    <div class="pg-card">
+      <h2>Persona por persona</h2>
+      <p class="pg-purpose" id="meta-purpose"></p>
+      <div class="pg-actions" style="margin-bottom:14px">
+        <div class="pg-toggle" id="tg-vista">
+          <button class="on" data-v="mes">Mes en curso</button>
+          <button data-v="s4">Últimas 4 semanas</button>
+        </div>
+        <span class="mini" id="tg-nota"></span>
+      </div>
+      <div class="chips" id="chips-meta">
+        <button class="chip on" data-f="todos">Todos</button>
+        <button class="chip" data-f="rojo">Bajo el piso</button>
+        <button class="chip" data-f="verde">En el norte</button>
+        <button class="chip" data-f="camada">En curva</button>
+        <button class="chip" data-f="sin">Sin venta</button>
+      </div>
+      <table class="pg-table"><thead id="th-meta"></thead><tbody id="tb-meta"></tbody></table>
+      <div class="pg-ok-box" style="margin-top:16px">La idea no es que todos lleguen a $70.000 mañana. La idea es que el <b>promedio del equipo se consolide en $58.000</b> y de ahí subamos. Con las personas de hoy, eso son <b id="ok-min">—</b> al mes.</div>
+    </div>
+    <div class="pg-card">
+      <h2>Cómo van los nuevos</h2>
+      <p class="pg-purpose">La camada arrancó capacitación en mayo; junio y julio fueron meses piloto de operación. <b>El reloj real empieza cuando hacen su primera venta</b> — agosto para casi todas, julio para Valeria. Por eso no se miden con el promedio de seis meses: se miden desde su primer mes en firme, con un piso de arranque de $29.000 mientras hacen curva.</p>
+      <table class="pg-table"><thead><tr><th>Persona</th><th>Dónde va</th><th class="num">1ª venta</th><th class="num">Su piso hoy</th><th class="num">Últimas 4 sem</th><th style="width:180px">Contra su piso</th><th>Estado</th></tr></thead><tbody id="tb-camada"></tbody></table>
+      <div class="pg-ok-box" style="margin-top:16px" id="camada-box"></div>
+    </div>
+    <div class="pg-card">
+      <h2>Cuánto falta para el piso</h2>
+      <p class="pg-purpose">Lo que le falta a cada quien para llegar a su piso del mes. Esto es la lista de trabajo de la semana.</p>
+      <div class="pg-chart-wrap" style="height:520px"><canvas id="chFalta"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ============ PATRONES ============ -->
+  <section class="pg-section" id="s-patrones">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Patrones y alertas</div>
+      <h1>Qué está pasando con cada quien</h1>
+      <div class="pg-sub">Esta pestaña no mira cuánto vendió cada uno: mira <b>cómo</b> lo está haciendo. Tres patrones: quien vende y no cobra fee, quien venía en un ritmo y lo perdió, y quien mueve volumen pero deja el fee sobre la mesa.</div>
+    </div>
+    <div class="pg-kpis">
+      <div class="pg-kpi r"><div class="lbl">Dejado sobre la mesa · agosto</div><div class="val neg" id="p-mesa">—</div><div class="sub" id="p-mesa-s"></div></div>
+      <div class="pg-kpi w"><div class="lbl">Ventas sin fee · agosto</div><div class="val" id="p-sinfee">—</div><div class="sub" id="p-sinfee-s"></div></div>
+      <div class="pg-kpi a"><div class="lbl">Cumplen el estándar</div><div class="val" id="p-est">—</div><div class="sub">El estándar de la casa es <b>$1.500 de fee al mes</b> por asesor.</div></div>
+      <div class="pg-kpi"><div class="lbl">Sobre la mesa · en el año</div><div class="val neg" id="p-ano">—</div><div class="sub" id="p-ano-s"></div></div>
+    </div>
+    <div class="pg-danger-box" id="p-titular" style="background:#FCEEEC;border:1px solid #F0C2BD;border-radius:12px;padding:15px 18px;color:#9c3d35;font-size:13.5px;margin-bottom:20px;line-height:1.6"></div>
+    <div class="pg-card">
+      <h2>Alertas del mes</h2>
+      <p class="pg-purpose">Ordenadas por la plata que está en juego. Cada una trae qué hacer.</p>
+      <div id="alertas"></div>
+    </div>
+    <div class="pg-card">
+      <h2>Vende mucho, cobra poco</h2>
+      <p class="pg-purpose">Cada punto es una persona en agosto. A la derecha, quien más volumen movió; arriba, quien mejor cobró el fee. Quien queda <b>abajo a la derecha</b> es el patrón que hay que trabajar: vende premium y no cobra.</p>
+      <div class="pg-chart-wrap tall"><canvas id="chScatter"></canvas></div>
+    </div>
+    <div class="pg-card">
+      <h2>Fee cobrado contra el estándar de la casa</h2>
+      <p class="pg-purpose">La barra es el fee que cobró cada quien en agosto. La línea oscura es el estándar: $1.500 al mes.</p>
+      <div class="pg-chart-wrap" style="height:440px"><canvas id="chEstandar"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ============ PERSONA ============ -->
+  <section class="pg-section" id="s-persona">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Persona por persona</div>
+      <h1>Rendimiento e histórico</h1>
+      <div class="pg-sub">Escoge a alguien del equipo y mira su año completo: lo que vendió mes a mes contra su piso, y lo que cobró de fee. El anillo es dónde va en las últimas 4 semanas contra su piso.</div>
+    </div>
+    <div style="margin-bottom:20px"><select class="pg-sel" id="selPersona"></select></div>
+
+    <div class="fr">
+      <div class="fr-nums">
+        <div class="fr-n"><div class="l">Últimas 4 semanas</div><div class="v" id="pp-s4">—</div><div class="s" id="pp-s4-s"></div></div>
+        <div class="fr-n"><div class="l">Su piso del mes</div><div class="v" id="pp-min">—</div><div class="s">Norte: <span id="pp-norte" class="pnum"></span></div></div>
+        <div class="fr-n"><div class="l">Promedio del año</div><div class="v" id="pp-prom">—</div><div class="s" id="pp-prom-s"></div></div>
+        <div class="fr-n"><div class="l">Fee del año</div><div class="v mint" id="pp-fee">—</div><div class="s" id="pp-fee-s"></div></div>
+      </div>
+      <div class="fr-ring">
+        <div style="position:relative;height:130px"><canvas id="ringPersona"></canvas></div>
+        <div class="cap">de su piso</div>
+      </div>
+    </div>
+    <div class="pg-card" style="padding:16px 22px">
+      <div class="pg-eyebrow" style="margin-bottom:4px">El mes en curso</div>
+      <div style="font-size:14px;color:var(--pg-txt);line-height:1.55" id="pp-mes">—</div>
+    </div>
+
+    <div class="pg-card" id="pp-box"></div>
+
+    <div class="pg-card">
+      <h2>Lo que vendió, mes a mes</h2>
+      <p class="pg-purpose">La onda verde es su volumen. La línea roja punteada es su piso; la azul, su norte.</p>
+      <div class="pg-chart-wrap tall"><canvas id="chP1"></canvas></div>
+    </div>
+    <div class="pg-card">
+      <h2>Lo que cobró de fee, mes a mes</h2>
+      <p class="pg-purpose">La onda ámbar es el fee que entró por sus ventas. La línea oscura es el estándar de la casa: $1.500 al mes. Si vende y la onda va por debajo de la línea, ahí está la conversación.</p>
+      <div class="pg-chart-wrap tall"><canvas id="chP2"></canvas></div>
+    </div>
+    <div class="pg-card">
+      <h2>Su año en números</h2>
+      <table class="pg-table"><thead><tr><th>Mes</th><th class="num">Volumen</th><th class="num">Fee</th><th class="num">Ventas</th><th class="num">Sin fee</th><th class="num">Utilidad</th><th>Contra su piso</th></tr></thead><tbody id="tb-pers"></tbody></table>
+    </div>
+  </section>
+
+  <!-- ============ CONSOLIDADO ============ -->
+  <section class="pg-section" id="s-consolidado">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Consolidado del año</div>
+      <h1>Todo el equipo, 2026</h1>
+      <div class="pg-sub">El acumulado de los meses cerrados del año, persona por persona. Lo que vendió, lo que cobró de fee, cuántas ventas y qué utilidad dejó.</div>
+    </div>
+    <div class="pg-kpis">
+      <div class="pg-kpi"><div class="lbl">Volumen del año</div><div class="val" id="c-vol">—</div><div class="sub" id="c-vol-s"></div></div>
+      <div class="pg-kpi w"><div class="lbl">Fee del año</div><div class="val" id="c-fee">—</div><div class="sub" id="c-fee-s"></div></div>
+      <div class="pg-kpi a"><div class="lbl">Ventas del año</div><div class="val" id="c-pol">—</div><div class="sub" id="c-pol-s"></div></div>
+      <div class="pg-kpi"><div class="lbl">Utilidad del año</div><div class="val pos" id="c-util">—</div><div class="sub">Después de comisión y costo del equipo.</div></div>
+    </div>
+    <div class="pg-card">
+      <h2>Consolidado por persona</h2>
+      <p class="pg-purpose">Ordenado por volumen del año.</p>
+      <table class="pg-table"><thead><tr><th>Persona</th><th>Nivel</th><th class="num">Volumen año</th><th class="num">Fee año</th><th class="num">% fee</th><th class="num">Ventas</th><th class="num">Sin fee</th><th class="num">Utilidad</th></tr></thead><tbody id="tb-cons"></tbody><tfoot id="tf-cons"></tfoot></table>
+    </div>
+    <div class="pg-card">
+      <h2>Cómo se reparte el volumen</h2>
+      <p class="pg-purpose">Qué parte del año puso cada quien. Si una sola persona pesa demasiado, el equipo está apoyado en una pierna.</p>
+      <div class="pg-chart-wrap" style="height:460px"><canvas id="chReparto"></canvas></div>
+    </div>
+  </section>
+
+ </main>
+</div>
+
+</template>
+
 <script>
 /* ============================================================
-GABI · Vista de Brahian Toro (líder comercial) — Fase 1 Tramo C
-Fuente única: Supabase GABI (hivpqsepwsfmafamxkzy). NADA hardcodeado salvo
-la lista de nombres del equipo (agentes.lider_id = Brahian) — se refresca
-en vivo al cargar contra la tabla agentes, con este arreglo como respaldo
-si esa consulta falla por RLS.
-Acceso: RLS ya deja pasar a brahian.toro@protectgoservices.com (candado
-paquete_incentivos_bos_registros aplicado 12-ago). Esta pantalla filtra a
-SOLO su equipo aunque el permiso técnico sea de agencia completa.
-============================================================ */
+   GABI · Equipo comercial (Brahian Toro) — v2
+   Rediseño 4-sep-2026. Estructura: claude/ESTRUCTURA_TABLERO_BRAHIAN_VISUAL_v2.md
+
+   Cinco pestañas: El equipo hoy · Meta del mes · Patrones y alertas ·
+   Persona por persona · Consolidado del año.
+
+   Todo sale de vistas con puerta (_visible). Nada hardcodeado: el equipo son las
+   personas con equipo_ventas_nuevas = true en nomina_personas.
+
+   Dos relojes, cada uno donde corresponde:
+     · fecha de venta (registration_date) -> TODO este tablero
+     · mes de efectividad (fecha_mes)     -> comisiones y liquidación (no se usa aquí)
+   No mezclarlos: fue el bug que dejaba a un agente en $0 sin haber dejado de vender.
+   ============================================================ */
 const SB_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
 const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpdnBxc2Vwd3NmbWFmYW14a3p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTIxNjUsImV4cCI6MjA5MTk2ODE2NX0.pPe1qtWJhnx8Ffo4bvuwVF-tVrkPSmO63Kl7pKWQYqM";
 const SB = window.supabase.createClient(SB_URL, SB_ANON);
+window.sb = SB;
 if (window.gabiVerComoInit) gabiVerComoInit(SB);
 
-const EQUIPO_RESPALDO = ["Carolina Sepulveda","Daniela Arbelaez","Dayanna Jaramillo","Juan Baquero",
-  "Luis Miguel Ascanio","Maria Alejandra Garcia","Mau Ramirez","Samuel Pulgarin","Sandra Bolivar",
-  "Simon Restrepo","Valentina Londoño","Valeria Valencia","Veronica Montoya","Victor Amaro",
-  "Andrea Perez","Andres Alzate","Andres Torrealba","Dana Berrocal","Dayan Atehortua",
-  "Evelyn Arboleda","Javier Jimenez","Jorge Escobar","Juan Jaramillo","Michel Gallego","Paola Bustos","Xiomara Arango"];
-let EQUIPO = EQUIPO_RESPALDO.slice();
+/* ============================================================================
+   gabi-brahian v2 · render + carga de datos
+   - render(D): pinta las 5 pestañas a partir del objeto D (forma documentada abajo)
+   - cargarDatos(sb): arma D leyendo las vistas _visible con el cliente supabase ya logueado
+   ============================================================================ */
+const MESN = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const MESL = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const N = v => Number(v||0);
+const ym = d => String(d).slice(0,7);
+const lbl = d => MESN[Number(String(d).slice(5,7))-1];
 
-const esc = (s) => (s===null||s===undefined) ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmtUSD = (n) => (n===null||n===undefined||isNaN(n)) ? "—" : "$" + Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
-const fmtUSD0 = (n) => (n===null||n===undefined||isNaN(n)) ? "—" : "$" + Number(n).toLocaleString("en-US",{maximumFractionDigits:0});
-const fmtPct = (n,d=1) => (n===null||n===undefined||isNaN(n)) ? "—" : Number(n).toFixed(d) + "%";
-const enEquipo = (nombre) => EQUIPO.some(n => n.trim().toLowerCase() === String(nombre||'').trim().toLowerCase());
-function loadingHTML(){ return '<div class="pg-loading">Cargando datos en vivo de Supabase…</div>'; }
-function errHTML(view, e){ return '<div class="pg-warn-box"><b>' + esc(view) + ' no cargó.</b> ' + esc((e && e.message) || 'Sin detalle.') + '</div>'; }
-function semaforoDot(color) { return '<div class="pg-semaforo ' + color + '"></div>'; }
+async function cargarDatos(sb){
+  const [rMeta, rSerie, rEq, rUtil] = await Promise.all([
+    sb.from('v_meta_por_agente_visible').select('*').eq('equipo', true),
+    sb.from('v_brahian_serie_agente_visible').select('*'),
+    sb.from('v_brahian_equipo_mes_visible').select('*').order('mes'),
+    sb.from('v_brahian_utilidad_mes_visible').select('*').order('mes'),
+  ]);
+  for (const r of [rMeta, rSerie, rEq, rUtil]) if (r.error) throw new Error(r.error.message);
+  const meta = rMeta.data, serie = rSerie.data, eqm = rEq.data, utm = rUtil.data;
+  if (!meta.length) throw new Error('Sin filas en v_meta_por_agente_visible: revisar paquete del usuario.');
 
-function renderShell(session){
-  const email = session.user.email;
-  document.getElementById('root-outer').innerHTML = `
-    <div class="pg-app">
-      <nav class="pg-side">
-        <div class="pg-brand"><div class="pg-logo">PG</div><span class="pg-wordmark">GABI</span></div>
-        <div class="pg-tagline">Brahian Toro · líder comercial</div>
-        <a data-tab="resumen" class="on"><span class="ico">◎</span> Resumen del equipo</a>
-        <a data-tab="ventas"><span class="ico">◆</span> Ventas por cliente</a>
-        <a data-tab="oportunidad"><span class="ico">↗</span> Lo que dejan de ganar</a>
-        <a data-tab="fees"><span class="ico">≈</span> Fees y captura (guía)</a>
-        <a data-tab="constancia"><span class="ico">▮</span> Constancia y patrones</a>
-        <a data-tab="utilidad"><span class="ico">$</span> Rendimiento del equipo</a>
-        <a data-tab="alertas"><span class="ico">!</span> Alertas</a>
-        <div class="pg-foot">${esc(email)}<br><span class="pg-logout" id="btnLogout">Cerrar sesión</span></div>
-      </nav>
-      <main class="pg-main" id="root"></main>
-    </div>`;
-  document.getElementById('btnLogout').addEventListener('click', () => SB.auth.signOut());
-  document.querySelectorAll('.pg-side a[data-tab]').forEach(a => {
-    a.addEventListener('click', () => {
-      document.querySelectorAll('.pg-side a[data-tab]').forEach(x=>x.classList.remove('on'));
-      a.classList.add('on');
-      showTab(a.dataset.tab);
-    });
+  // meses cerrados: los últimos 8 que no están en curso
+  const cerrados = eqm.filter(m=>!m.en_curso).map(m=>ym(m.mes)).slice(-8);
+  const idx = Object.fromEntries(cerrados.map((m,i)=>[m,i]));
+  const enCurso = eqm.find(m=>m.en_curso) || null;
+  const M0 = meta[0];
+
+  // utilidad por persona-mes (vista contable, abierta a authenticated)
+  const nombres = meta.map(a=>a.nombre_nomina).filter(Boolean);
+  const rU = await sb.from('v_utilidad_por_persona_v2').select('nombre,mes,utilidad_360_total')
+                     .in('nombre', nombres).gte('mes', cerrados[0]+'-01');
+  const utilPP = {};
+  (rU.data||[]).forEach(u=>{ const k=ym(u.mes); if(k in idx){ (utilPP[u.nombre] ||= Array(8).fill(0))[idx[k]] += N(u.utilidad_360_total); } });
+
+  const semMap = s => s==='verde'?'verde':(s==='ambar'?'ambar':(s==='rojo'?'rojo':'sin'));
+  const agentes = meta.map(a=>{
+    const s = serie.filter(x=>x.agente===a.agente);
+    const arr = () => Array(8).fill(0);
+    const mc=arr(), fees=arr(), ven=arr(), sf=arr();
+    s.forEach(x=>{ const k=ym(x.mes); if(k in idx){ mc[idx[k]]=N(x.mc); fees[idx[k]]=N(x.fees); ven[idx[k]]=N(x.ventas); sf[idx[k]]=N(x.sin_fee); } });
+    return {
+      n:a.agente, niv:a.nivel_rampa, cam:!!a.camada, mop:a.meses_en_operacion,
+      min:N(a.meta_min_mes), norte:N(a.meta_norte_mes), s4:N(a.mc_ultimas_4sem), prom:N(a.mc_promedio_mes),
+      sem:semMap(a.semaforo), mc, fees, ven, sf, util: utilPP[a.nombre_nomina] || arr(),
+      m:{ mc:N(a.mc_mes_actual), fees:N(a.fees_mes_actual), ven:N(a.ventas_mes_actual), sf:N(a.ventas_sin_fee_mes_actual),
+          pct:N(a.pct_del_minimo_mes), sem: a.semaforo_mes==='arranque del mes' ? 'sin' : semMap(a.semaforo_mes),
+          deberia:N(a.ritmo_piso_a_la_fecha), proy:N(a.proyeccion_cierre_mes) }
+    };
   });
-  cargarEquipoYArrancar();
+
+  const utilByMes = Object.fromEntries(utm.map(u=>[ym(u.mes), u]));
+  const equipo = cerrados.map(k=>{
+    const e = eqm.find(x=>ym(x.mes)===k) || {};
+    const u = utilByMes[k] || {};
+    return { mes:k, mc:N(e.mc), fees:N(e.fees), ven:N(e.ventas), sf:N(e.sin_fee), activos:N(e.activos),
+             med:N(e.mediana_fee), util:N(u.utilidad_equipo) };
+  });
+  const brahian = cerrados.map(k=>{ const u=utilByMes[k]||{}; return { mes:k, override:N(u.comision_lider), gen_equipo:N(u.generacion_equipo), util_rol:N(u.utilidad_rol_lider), per:N(u.personas_equipo) }; });
+
+  const minE = agentes.reduce((s,a)=>s+a.min,0), norteE = agentes.reduce((s,a)=>s+a.norte,0), ritmo = agentes.reduce((s,a)=>s+a.s4,0);
+  const hh=N(M0.habiles_corridos), hm=N(M0.habiles_del_mes);
+  const mesMc = agentes.reduce((s,a)=>s+a.m.mc,0);
+  const mes = { nombre: MESL[Number(ym(M0.mes_en_curso).slice(5,7))-1],
+    mc:mesMc, fees:agentes.reduce((s,a)=>s+a.m.fees,0), ven:agentes.reduce((s,a)=>s+a.m.ven,0),
+    sf:agentes.reduce((s,a)=>s+a.m.sf,0), activos:agentes.filter(a=>a.m.ven>0).length,
+    deberia:Math.round(minE*hh/hm), deberia_norte:Math.round(norteE*hh/hm),
+    proy: hh>0 ? Math.round(mesMc*hm/hh) : 0, hab_hoy:hh, hab_mes:hm, pct_mes:N(M0.pct_mes_transcurrido) };
+
+  return { meses:cerrados.map(lbl), equipo, mes, agentes, brahian,
+    meta:{ min_equipo:minE, norte_equipo:norteE, ritmo, min_cabeza:N(M0.minimo_plena_mes), norte_cabeza:N(M0.norte_plena_mes),
+           personas:agentes.length, prom_cabeza:Math.round(ritmo/agentes.length),
+           camada:agentes.filter(a=>a.cam).length, min_camada:Math.round(N(M0.minimo_plena_mes)*0.5), norte_camada:Math.round(N(M0.norte_plena_mes)*0.5) },
+    estandar_fee:1500, mediana_fee: equipo.length ? equipo[equipo.length-1].med : 0 };
 }
 
-async function cargarEquipoYArrancar(){
-  try {
-    const { data, error } = await SB.from('agentes').select('id,nombre,lider_id').limit(5000);
-    if (!error && data && data.length) {
-      const brahianRow = data.find(a => String(a.nombre||'').trim().toLowerCase() === 'brahian toro');
-      if (brahianRow) {
-        const idBrahian = brahianRow.id;
-        const equipo = data.filter(a => a.lider_id === idBrahian).map(a => a.nombre);
-        if (equipo.length) EQUIPO = equipo;
-      }
-    }
-  } catch(e) { /* usa EQUIPO_RESPALDO */ }
-  showTab('resumen');
+function render(D){
+const ML = D.meses;
+const INK="#1B2D3A", MINT="#2DBFA3", MINTD="#229A82", AZUL="#5B6BD6", AMBAR="#D9A520", ROJO="#D5594F", MUTED="#6B7D89", LINE="#E7EDF2";
+const usd = n => "$" + Math.round(Math.abs(n)).toLocaleString("en-US");
+const usdS = n => (n<0?"-":"") + usd(n);
+const k = n => "$" + Math.round(n/1000) + "K";
+const sum = a => a.reduce((s,x)=>s+x,0);
+const nom = n => n.replace(/\s*\([^)]*\)\s*$/,'').trim();
+const nivC = v => v.indexOf('Meta plena')===0 ? 'Meta plena' : v.replace(' en operación','');
+Chart.defaults.font.family="Inter, Arial, sans-serif"; Chart.defaults.font.size=11.5;
+Chart.defaults.color=MUTED; Chart.defaults.plugins.legend.display=false;
+function grad(ctx,color,a1,a2){const g=ctx.createLinearGradient(0,0,0,300);g.addColorStop(0,color+a1);g.addColorStop(1,color+a2);return g;}
+const AXIS={grid:{color:LINE,drawTicks:false},border:{display:false},ticks:{padding:8}};
+const AXIS_X={grid:{display:false},border:{display:false},ticks:{padding:6}};
+const AXIS_CAT={grid:{display:false},border:{display:false},ticks:{autoSkip:false,font:{size:11}}};
+function moneyTick(v){return v===0?"0":(Math.abs(v)>=10000?k(v):usdS(v));}
+function tk(vals){const mx=Math.max(...vals.map(x=>Math.abs(Number(x)||0)));
+  return mx>=20000 ? (v=>v===0?"0":k(v)) : (v=>v===0?"0":usdS(v));}
+const TIP={backgroundColor:INK,padding:11,cornerRadius:9,titleFont:{weight:'700',size:12.5},bodyFont:{size:12.5},displayColors:false};
+
+function ring(el,pct,color){
+  const shown=Math.max(0,Math.min(100,pct));
+  return new Chart(el,{type:'doughnut',
+    data:{datasets:[{data:[shown,100-shown],backgroundColor:[color,'rgba(255,255,255,.14)'],borderWidth:0,cutout:'74%'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{enabled:false}},animation:{duration:600}},
+    plugins:[{id:'ctr',afterDraw(c){const {ctx,chartArea:{left,right,top,bottom}}=c;ctx.save();
+      ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.font='700 26px "JetBrains Mono", monospace';
+      ctx.fillText(Math.round(pct)+"%",(left+right)/2,(top+bottom)/2);ctx.restore();}}]});
 }
 
-let CACHE = {};
-async function fetchOnce(view, cols, filterFn){
-  if (CACHE[view]) return CACHE[view];
-  let q = SB.from(view).select(cols).limit(5000);
-  if (filterFn) q = filterFn(q);
-  const { data, error } = await q;
-  if (error) { CACHE[view] = { error }; return CACHE[view]; }
-  CACHE[view] = { data: data || [] };
-  return CACHE[view];
-}
+/* ===== agregados ===== */
+const E=D.equipo, B=D.brahian, M=D.meta, A=D.agentes, EST=D.estandar_fee;
+const ago=E[E.length-1], agoB=B[B.length-1];
+const volAno=sum(E.map(m=>m.mc)), feeAno=sum(E.map(m=>m.fees)), venAno=sum(E.map(m=>m.ven)), sfAno=sum(E.map(m=>m.sf));
+const utilAno=sum(E.map(m=>m.util)), ingAno=sum(B.map(m=>m.override));
+const mesaAgo=ago.sf*ago.med, mesaAno=sum(E.map(m=>m.sf*m.med));
+const pctPiso=M.ritmo/M.min_equipo*100;
+const MES=D.mes;
+const pctRitmo = MES.deberia>0 ? MES.mc/MES.deberia*100 : 0;
+const verdes=A.filter(a=>a.sem==='verde').length, rojos=A.filter(a=>a.sem==='rojo').length, sinv=A.filter(a=>a.sem==='sin').length;
 
-async function showTab(tab){
+/* ===== RESUMEN ===== */
+document.getElementById('ftfecha').textContent="Datos al 3 de septiembre de 2026";
+document.getElementById('r-mes').textContent=usd(MES.mc);
+document.getElementById('r-mes-s').textContent=MES.ven+" ventas · "+MES.activos+" de "+M.personas+" con venta";
+document.getElementById('r-deb').textContent=usd(MES.deberia);
+document.getElementById('r-deb-s').textContent="Día "+MES.hab_hoy+" de "+MES.hab_mes+" hábiles · el mes va en el "+MES.pct_mes+"%";
+document.getElementById('r-fmes').textContent=usd(MES.fees);
+document.getElementById('r-fmes-s').textContent=MES.sf+" de "+MES.ven+" ventas sin fee";
+document.getElementById('r-proy').textContent=usd(MES.proy);
+document.getElementById('r-proy-s').textContent="Piso del mes: "+usd(M.min_equipo);
+ring(document.getElementById('ringEquipo'),pctRitmo,pctRitmo>=100?MINT:(pctRitmo>=70?"#F0C55A":"#F08A80"));
+document.getElementById('r-vol').textContent=usd(ago.mc);
+document.getElementById('r-vol-s').textContent=ago.ven+" ventas · "+ago.activos+" personas vendiendo";
+document.getElementById('r-util').textContent=usd(ago.util);
+document.getElementById('r-util-s').textContent="Julio: "+usd(E[E.length-2].util);
+document.getElementById('r-ing').textContent=usd(agoB.override);
+document.getElementById('r-ing-s').textContent="Del año: "+usd(ingAno);
+document.getElementById('r-s4').textContent=usd(M.ritmo);
+document.getElementById('r-s4-s').textContent=usd(M.prom_cabeza)+" por cabeza · "+Math.round(pctPiso)+"% del piso del equipo";
+document.getElementById('hl-txt').textContent= MES.nombre+" va en el "+Math.round(pctRitmo)+"% del ritmo que necesita.";
+document.getElementById('hl-sub').innerHTML="El equipo lleva <b>"+usd(MES.mc)+"</b> en "+MES.ven+" ventas y a esta altura del mes debería llevar <b>"+usd(MES.deberia)+"</b> para cerrar en el piso ("+usd(M.min_equipo)+"). A este paso cierra en <b>"+usd(MES.proy)+"</b>. En las últimas 4 semanas el equipo sumó "+usd(M.ritmo)+" — "+usd(M.prom_cabeza)+" por cabeza.";
+document.getElementById('k-util').textContent=usd(utilAno);
+document.getElementById('k-ing').textContent=usd(ingAno);
+document.getElementById('k-vol').textContent=usd(volAno);
+document.getElementById('k-vol-s').textContent=venAno+" ventas nuevas en ocho meses";
+document.getElementById('k-fee').textContent=(feeAno/volAno*100).toFixed(1)+"%";
+document.getElementById('palanca').innerHTML="El equipo vende bien y cobra poco. El fee está entre <b>2,2% y 4,0%</b> del volumen. Subirlo un punto no exige vender una póliza más: exige cobrarla.";
+document.getElementById('fn1').innerHTML="Volumen = premium + fee de las ventas nuevas del equipo. Utilidad = lo que generó el equipo menos la comisión pagada y el costo de las personas. Las gráficas muestran los meses cerrados; septiembre va aparte porque todavía está corriendo. El piso y el norte de cada mes se calculan sobre las personas que había en el equipo ese mes; quien está en curva va al 75% mientras la hace.";
+
+const pisoS=ML.map(()=>M.min_equipo), norteS=ML.map(()=>M.norte_equipo);
+new Chart(document.getElementById('chVol'),{type:'line',
+  data:{labels:ML,datasets:[
+    {label:'Volumen',data:E.map(m=>m.mc),borderColor:MINTD,backgroundColor:c=>grad(c.chart.ctx,MINT,'A6','08'),fill:true,tension:.42,borderWidth:3,pointRadius:4,pointBackgroundColor:'#fff',pointBorderColor:MINTD,pointBorderWidth:2},
+    {label:'Piso de hoy',data:pisoS,borderColor:ROJO,borderDash:[6,4],borderWidth:2,pointRadius:0,fill:false,tension:.2},
+    {label:'Norte de hoy',data:norteS,borderColor:AZUL,borderDash:[2,3],borderWidth:1.5,pointRadius:0,fill:false,tension:.2}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{y:{...AXIS,ticks:{...AXIS.ticks,callback:tk(norteS)},beginAtZero:true},x:AXIS_X},
+    plugins:{tooltip:{...TIP,callbacks:{label:c=>c.dataset.label+": "+usdS(c.parsed.y)}}}}});
+
+new Chart(document.getElementById('chUtil'),{type:'bar',
+  data:{labels:ML,datasets:[{data:E.map(m=>m.util),backgroundColor:E.map(m=>m.util>=30000?MINT:(m.util>=15000?"#8FD8C6":AMBAR)),borderRadius:7,barPercentage:.62}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{y:{...AXIS,ticks:{...AXIS.ticks,callback:tk(E.map(m=>m.util))},beginAtZero:true},x:AXIS_X},
+    plugins:{tooltip:{...TIP,callbacks:{label:c=>"Utilidad: "+usdS(c.parsed.y)}}}}});
+
+new Chart(document.getElementById('chIng'),{type:'line',
+  data:{labels:ML,datasets:[{data:B.map(m=>m.override),borderColor:AZUL,backgroundColor:c=>grad(c.chart.ctx,AZUL,'55','06'),fill:true,tension:.42,borderWidth:3,pointRadius:4,pointBackgroundColor:'#fff',pointBorderColor:AZUL,pointBorderWidth:2}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{y:{...AXIS,ticks:{...AXIS.ticks,callback:tk(B.map(m=>m.override))},beginAtZero:true},x:AXIS_X},
+    plugins:{tooltip:{...TIP,callbacks:{label:c=>"Tu comisión: "+usdS(c.parsed.y)}}}}});
+
+new Chart(document.getElementById('chFee'),{
+  data:{labels:ML,datasets:[
+    {type:'bar',data:E.map(m=>m.fees),backgroundColor:MINT,borderRadius:6,barPercentage:.6,yAxisID:'y'},
+    {type:'line',data:E.map(m=>+(m.fees/m.mc*100).toFixed(1)),borderColor:AMBAR,borderWidth:3,tension:.4,pointRadius:3.5,pointBackgroundColor:'#fff',pointBorderColor:AMBAR,pointBorderWidth:2,fill:false,yAxisID:'y1'}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{y:{...AXIS,ticks:{...AXIS.ticks,callback:tk(E.map(m=>m.fees))},beginAtZero:true},
+      y1:{position:'right',grid:{display:false},border:{display:false},beginAtZero:true,max:6,ticks:{callback:v=>v+"%"}},x:AXIS_X},
+    plugins:{tooltip:{...TIP,callbacks:{label:c=>c.datasetIndex===0?"Fee: "+usd(c.parsed.y):"Fue el "+c.parsed.y+"% del volumen"}}}}});
+
+document.getElementById('hl-sem').className='pg-semaforo '+(pctRitmo>=100?'green':(pctRitmo>=70?'amber':'red'));
+
+/* ===== helpers de fila ===== */
+function barra(a){
+  const norte=a.norte||1, pct=Math.max(0,Math.min(100,a.s4/norte*100)), marca=a.min/norte*100;
+  const col=a.sem==='verde'?MINT:(a.s4>=a.min?AMBAR:(a.s4>0?ROJO:LINE));
+  return '<div class="mt-bar"><i style="width:'+pct.toFixed(1)+'%;background:'+col+'"></i><u style="left:'+marca.toFixed(1)+'%"></u></div><div class="mt-sub">'+Math.round(a.s4/a.min*100)+'% del piso</div>';
+}
+function barraMes(a){
+  const piso=a.min||1, pct=Math.max(0,Math.min(100,a.m.mc/piso*100));
+  const marca=Math.min(100, a.m.deberia/piso*100);
+  const col = a.m.sem==='verde'?MINT:(a.m.sem==='ambar'?AMBAR:(a.m.mc>0?ROJO:LINE));
+  return '<div class="mt-bar"><i style="width:'+pct.toFixed(1)+'%;background:'+col+'"></i><u style="left:'+marca.toFixed(1)+'%"></u></div>'
+       + '<div class="mt-sub">'+(a.m.mc>0 ? Math.round(a.m.mc/piso*100)+'% del piso · hoy toca '+Math.round(marca)+'%'
+                                          : 'hoy toca '+usd(a.m.deberia))+'</div>';
+}
+function chipMes(a){
+  if(a.m.sem==='verde') return '<span class="pg-pill ok">Sobre el ritmo</span>';
+  if(a.m.sem==='ambar') return '<span class="pg-pill warn">En el ritmo</span>';
+  if(a.m.mc>0)          return '<span class="pg-pill due">Bajo el ritmo</span>';
+  return '<span class="pg-pill muted">Sin venta este mes</span>';
+}
+function chipEstado(a){
+  if(a.sem==='verde') return '<span class="pg-pill ok">Llegó al norte</span>';
+  if(a.s4>=a.min) return '<span class="pg-pill warn">En el piso</span>';
+  if(a.s4>0) return '<span class="pg-pill due">Bajo el piso</span>';
+  return '<span class="pg-pill muted">Sin venta 4 sem</span>';
+}
+const ordS4=[...A].sort((a,b)=>b.s4-a.s4);
+const ordMes=[...A].sort((a,b)=>b.m.mc-a.m.mc || b.s4-a.s4);
+document.getElementById('tb-top').innerHTML=ordS4.slice(0,6).map(a=>
+ '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+usd(a.s4)+'</td><td>'+barra(a)+'</td><td>'+chipEstado(a)+'</td></tr>').join('');
+document.getElementById('tb-mes').innerHTML=ordMes.map(a=>
+ '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+usd(a.m.mc)+'</td>'
+ +'<td class="num">'+usd(a.m.fees)+'</td><td class="num">'+a.m.ven+'</td>'
+ +'<td class="num'+(a.m.sf>0?' neg':'')+'">'+a.m.sf+'</td><td>'+barraMes(a)+'</td>'
+ +'<td class="num">'+(a.m.mc>0?usd(a.m.proy):'—')+'</td><td>'+chipMes(a)+'</td></tr>').join('');
+document.getElementById('tf-mes').innerHTML=
+ '<tr style="background:#F7FAFB"><td><b>Equipo</b></td><td class="mini">'+M.personas+' personas</td>'
+ +'<td class="num">'+usd(MES.mc)+'</td><td class="num">'+usd(MES.fees)+'</td><td class="num">'+MES.ven+'</td>'
+ +'<td class="num neg">'+MES.sf+'</td><td class="mini">debería llevar '+usd(MES.deberia)+'</td>'
+ +'<td class="num">'+usd(MES.proy)+'</td><td class="mini">piso '+usd(M.min_equipo)+'</td></tr>';
+
+/* ===== META ===== */
+document.getElementById('m-min').textContent=usd(M.min_equipo);
+document.getElementById('m-min-s').textContent="$"+M.min_cabeza.toLocaleString("en-US")+" por cabeza · "+M.personas+" personas";
+document.getElementById('m-norte').textContent=usd(M.norte_equipo);
+document.getElementById('m-norte-s').textContent="$"+M.norte_cabeza.toLocaleString("en-US")+" por cabeza";
+document.getElementById('m-ritmo').textContent=usd(MES.mc);
+document.getElementById('m-ritmo-s').textContent="Debería llevar "+usd(MES.deberia)+" · "+Math.round(pctRitmo)+"% del ritmo";
+document.getElementById('m-verdes').textContent=verdes+" de "+M.personas;
+document.getElementById('m-verdes-s').textContent=rojos+" bajo el piso · "+sinv+" sin venta";
+document.getElementById('ok-min').textContent=usd(M.min_equipo);
+let vistaMeta='mes', filtroMeta='todos';
+const TH_MES='<tr><th>Persona</th><th>Nivel</th><th class="num">Piso</th><th class="num">Del mes</th><th class="num">Fee</th><th class="num">Ventas</th><th style="width:190px">Contra su piso</th><th class="num">Cierra en</th><th>Estado</th></tr>';
+const TH_S4 ='<tr><th>Persona</th><th>Nivel</th><th class="num">Piso</th><th class="num">Norte</th><th class="num">Últimas 4 sem</th><th style="width:190px">Avance</th><th class="num">Promedio</th><th>Estado</th></tr>';
+function pintaMeta(){
+  const f=filtroMeta, esMes = vistaMeta==='mes';
+  let l = esMes ? ordMes : ordS4;
+  if(f==='rojo')  l=l.filter(a=> esMes ? (a.m.sem==='rojo') : a.sem==='rojo');
+  if(f==='verde') l=l.filter(a=> esMes ? (a.m.sem==='verde') : a.sem==='verde');
+  if(f==='camada')l=l.filter(a=>a.cam);
+  if(f==='sin')   l=l.filter(a=> esMes ? a.m.mc===0 : a.sem==='sin');
+  document.getElementById('th-meta').innerHTML = esMes ? TH_MES : TH_S4;
+  document.getElementById('meta-purpose').innerHTML = esMes
+   ? 'Lo que lleva cada quien <b>en el mes en curso</b>. La barra llega hasta su piso y la marca vertical oscura es dónde debería ir hoy para cerrarlo. Se pone en cero solo el día 1 de cada mes.'
+   : 'Ventana móvil de 28 días, que no depende del corte de mes. La barra llega hasta el norte de cada quien y la marca vertical oscura es su piso.';
+  document.getElementById('tg-nota').textContent = esMes
+   ? MES.nombre+' · día '+MES.hab_hoy+' de '+MES.hab_mes+' hábiles ('+MES.pct_mes+'% del mes)'
+   : 'Del '+'último mes y medio de ventas, sin corte de mes';
+  document.getElementById('tb-meta').innerHTML = l.map(a=> esMes
+   ? '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+usd(a.min)+'</td>'
+     +'<td class="num">'+usd(a.m.mc)+'</td><td class="num">'+usd(a.m.fees)+'</td><td class="num">'+a.m.ven+'</td>'
+     +'<td>'+barraMes(a)+'</td><td class="num">'+(a.m.mc>0?usd(a.m.proy):'—')+'</td><td>'+chipMes(a)+'</td></tr>'
+   : '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+usd(a.min)+'</td>'
+     +'<td class="num">'+usd(a.norte)+'</td><td class="num">'+usd(a.s4)+'</td><td>'+barra(a)+'</td>'
+     +'<td class="num">'+usd(a.prom)+'</td><td>'+chipEstado(a)+'</td></tr>').join('')
+   ||'<tr><td colspan="9" class="mini" style="padding:18px 8px">Nadie en este grupo.</td></tr>';
+}
+pintaMeta();
+document.querySelectorAll('#chips-meta .chip').forEach(c=>c.onclick=()=>{
+  document.querySelectorAll('#chips-meta .chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); filtroMeta=c.dataset.f; pintaMeta();});
+document.querySelectorAll('#tg-vista button').forEach(bt=>bt.onclick=()=>{
+  document.querySelectorAll('#tg-vista button').forEach(x=>x.classList.remove('on'));
+  bt.classList.add('on'); vistaMeta=bt.dataset.v; pintaMeta();});
+const falta=A.map(a=>({n:nom(a.n),f:Math.max(0,a.min-a.s4)})).sort((a,b)=>b.f-a.f);
+new Chart(document.getElementById('chFalta'),{type:'bar',
+  data:{labels:falta.map(a=>a.n),datasets:[{data:falta.map(a=>a.f),backgroundColor:falta.map(a=>a.f>50000?ROJO:(a.f>25000?AMBAR:MINT)),borderRadius:6,barPercentage:.75}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    scales:{x:{...AXIS,ticks:{...AXIS.ticks,callback:moneyTick},beginAtZero:true},y:AXIS_CAT},
+    plugins:{tooltip:{...TIP,callbacks:{label:c=>c.parsed.x===0?"Ya está en su piso":"Le faltan "+usd(c.parsed.x)}}}}});
+
+
+/* ===== CAMADA · cómo van los nuevos ===== */
+const CAM=A.filter(a=>a.cam).sort((a,b)=>b.s4-a.s4);
+const PRIMERA=(a)=>{const i=a.mc.findIndex(v=>v>0);return i<0?'—':ML[i];};
+document.getElementById('tb-camada').innerHTML=CAM.map(a=>{
+  const p1=PRIMERA(a);
+  return '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+p1+'</td>'
+   +'<td class="num">'+usd(a.min)+'</td><td class="num">'+usd(a.s4)+'</td><td>'+barra(a)+'</td><td>'+chipEstado(a)+'</td></tr>';
+}).join('');
+const camArr=CAM.filter(a=>a.s4>0), camLleg=CAM.filter(a=>a.s4>=a.min).length;
+document.getElementById('camada-box').innerHTML=
+ '<b>'+camLleg+' de '+CAM.length+' ya están sobre su piso de arranque en su primer o segundo mes en firme.</b> '
+ +'Las cinco cumplieron el hito de la primera venta, que es el estándar de entrada. Lo que falta ahora no es volumen: es fee — entre las cinco cobraron '
+ + usd(sum(CAM.map(a=>sum(a.fees)))) + ' sobre ' + usd(sum(CAM.map(a=>sum(a.mc)))) + ' vendidos.';
+
+/* ===== PATRONES ===== */
+const iA = E.length-1, MED = ago.med;
+function detecta(a){
+  const v=a.ven[iA], f=a.fees[iA], s=a.sf[iA], mc=a.mc[iA];
+  const conVenta=a.mc.filter((x,i)=>a.ven[i]>0);
+  const promMes=conVenta.length?Math.round(sum(conVenta)/conVenta.length):0;
+  const prev=a.mc[iA-1], prevV=a.ven[iA-1];
+  const out=[];
+  if(v>=3 && s/v>=0.66)
+    out.push({n:a.n,p:'VENDE_SIN_COBRAR',v:s*MED,u:'en fee',
+      t:v+' ventas en agosto y '+s+' salieron sin fee. Vendió '+usd(mc)+' y entraron '+usd(f)+' de fee.'});
+  if(!a.cam && prevV>0 && v>0 && mc < prev*0.5 && prev>=15000)
+    out.push({n:a.n,p:'CAIDA_DE_RITMO',v:prev-mc,u:'en volumen',
+      t:'Venía de '+usd(prev)+' en julio y bajó a '+usd(mc)+'. Su promedio de los meses que vendió es '+usd(promMes)+'.'});
+  if(v>0 && f<EST && mc>=15000 && s/v<0.66)
+    out.push({n:a.n,p:'VENDE_MAS_COBRA_MENOS',v:EST-f,u:'contra el estándar',
+      t:'Movió '+usd(mc)+' en '+v+' ventas y cobró '+usd(f)+' de fee. El estándar de la casa son '+usd(EST)+'.'});
+  if(!a.cam && v===0 && prevV>0)
+    out.push({n:a.n,p:'SE_APAGO',v:prev,u:'dejó de entrar',
+      t:'No registró ventas en agosto. En julio había hecho '+usd(prev)+' en '+prevV+' ventas.'});
+  return out;
+}
+const TAGS={
+ VENDE_SIN_COBRAR:{t:'Vende y no cobra',c:'tag-nofee',s:'alta',do:'Sentarse con esta persona a mirar por qué las ventas salen sin fee. Es el patrón que más plata cuesta.'},
+ CAIDA_DE_RITMO:{t:'Perdió el ritmo',c:'tag-caida',s:'media',do:'Revisar la agenda de la semana. La caída casi siempre es de pipeline, no de capacidad.'},
+ VENDE_MAS_COBRA_MENOS:{t:'Volumen sin fee',c:'tag-mixto',s:'media',do:'Mueve pólizas pero deja el fee sobre la mesa. Acordar el fee mínimo por póliza.'},
+ SE_APAGO:{t:'Se apagó',c:'tag-caida',s:'alta',do:'Venía vendiendo y paró. Primera conversación de la semana.'}
+};
+const PRIO={VENDE_SIN_COBRAR:0,SE_APAGO:1,CAIDA_DE_RITMO:2,VENDE_MAS_COBRA_MENOS:3};
+const ALERTAS=A.flatMap(detecta).sort((x,y)=>PRIO[x.p]-PRIO[y.p] || y.v-x.v);
+const cumplen=A.filter(a=>a.fees[iA]>=EST).length, vendieron=A.filter(a=>a.ven[iA]>0).length;
+document.getElementById('p-mesa').textContent=usd(mesaAgo);
+document.getElementById('p-mesa-s').textContent=ago.sf+" ventas sin fee × "+usd(MED)+", el fee típico del mes.";
+document.getElementById('p-sinfee').textContent=ago.sf+" de "+ago.ven;
+document.getElementById('p-sinfee-s').textContent=Math.round(ago.sf/ago.ven*100)+"% de las ventas del mes salieron sin un peso de fee.";
+document.getElementById('p-est').textContent=cumplen+" de "+vendieron;
+document.getElementById('p-ano').textContent=usd(mesaAno);
+document.getElementById('p-ano-s').textContent=sfAno+" ventas sin fee en ocho meses. El equipo cobró "+usd(feeAno)+".";
+document.getElementById('p-titular').innerHTML="<b>En el año el equipo dejó sobre la mesa "+usd(mesaAno)+" de fee — más de lo que cobró ("+usd(feeAno)+").</b> No es que falte vender: de las "+venAno+" ventas del año, "+sfAno+" salieron sin fee. Cobrar el fee en la mitad de esas ventas vale más que sumar dos personas al equipo.";
+document.getElementById('alertas').innerHTML=ALERTAS.map(al=>{
+  const t=TAGS[al.p];
+  return '<div class="al sev-'+t.s+'"><div><div class="a-l">'+al.n+'<span class="a-tag '+t.c+'">'+t.t+'</span></div>'
+   +'<div class="a-c">'+al.t+'</div><div class="a-do">→ '+t.do+'</div></div>'
+   +'<div><div class="a-v">'+usd(al.v)+'</div><div class="a-n">'+al.u+'</div></div></div>';
+}).join('')||'<div class="pg-ok-box">Ninguna alerta este mes.</div>';
+
+const NAMES={id:'names',afterDatasetsDraw(c){const m=c.getDatasetMeta(0);const ctx=c.ctx;ctx.save();
+  ctx.font='600 10.5px Inter, Arial';ctx.fillStyle=INK;ctx.textAlign='center';
+  const put=[];
+  m.data.map((p,i)=>({p,d:c.data.datasets[0].data[i]})).sort((a,b)=>a.p.x-b.p.x).forEach(({p,d})=>{
+    let y=p.y-13, tries=0;
+    while(put.some(q=>Math.abs(q.x-p.x)<52 && Math.abs(q.y-y)<12) && tries<4){ y = tries%2===0 ? p.y+21 : y-13; tries++; }
+    put.push({x:p.x,y});ctx.fillText(d.nn, p.x, y);});
+  ctx.restore();}};
+const QUAD={id:'quad',beforeDatasetsDraw(c){const {ctx,chartArea:a,scales}=c;const yM=scales.y.getPixelForValue(50);
+  ctx.save();ctx.fillStyle='rgba(213,89,79,.05)';ctx.fillRect((a.left+a.right)/2,yM,a.right-(a.left+a.right)/2,a.bottom-yM);
+  ctx.strokeStyle=LINE;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(a.left,yM);ctx.lineTo(a.right,yM);ctx.stroke();
+  ctx.setLineDash([]);ctx.fillStyle='#C08E88';ctx.font='700 10.5px Inter, Arial';ctx.textAlign='right';
+  ctx.fillText('VENDE Y NO COBRA', a.right-10, yM+16);ctx.restore();}};
+const pts=A.filter(a=>a.ven[iA]>0).map(a=>{const pc=Math.round((1-a.sf[iA]/a.ven[iA])*100);
+  const p=nom(a.n).split(' ');return {x:a.mc[iA],y:pc,r:8,nn:p[0]+' '+(p[1]||'').charAt(0)+'.',
+          c:pc<=33?ROJO:(pc<=60?AMBAR:MINT),full:nom(a.n),f:a.fees[iA]};});
+new Chart(document.getElementById('chScatter'),{type:'bubble',
+  data:{datasets:[{data:pts,backgroundColor:pts.map(p=>p.c+'CC'),borderColor:pts.map(p=>p.c),borderWidth:2}]},
+  options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:18}},
+    scales:{x:{...AXIS,title:{display:true,text:'Volumen vendido en agosto',color:MUTED,font:{size:11.5,weight:'700'}},ticks:{...AXIS.ticks,callback:moneyTick},beginAtZero:true},
+      y:{...AXIS,title:{display:true,text:'% de ventas CON fee',color:MUTED,font:{size:11.5,weight:'700'}},min:-5,max:110,ticks:{callback:v=>v+"%"}}},
+    plugins:{tooltip:{...TIP,callbacks:{label:c=>c.raw.full+" · "+usd(c.raw.x)+" · "+c.raw.y+"% con fee · "+usd(c.raw.f)+" de fee"}}}},
+  plugins:[QUAD,NAMES]});
+
+const EL={id:'est',afterDatasetsDraw(c){const {ctx,chartArea:a,scales}=c;const x=scales.x.getPixelForValue(EST);
+  if(x>a.right||x<a.left)return;ctx.save();ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.setLineDash([5,4]);
+  ctx.beginPath();ctx.moveTo(x,a.top);ctx.lineTo(x,a.bottom);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=INK;ctx.font='700 10.5px Inter, Arial';ctx.textAlign='left';
+  ctx.fillText('Estándar $1.500',x+6,a.top+12);ctx.restore();}};
+const fe=A.filter(a=>a.ven[iA]>0).sort((a,b)=>b.fees[iA]-a.fees[iA]);
+new Chart(document.getElementById('chEstandar'),{type:'bar',
+  data:{labels:fe.map(a=>nom(a.n)),datasets:[{data:fe.map(a=>a.fees[iA]),backgroundColor:fe.map(a=>a.fees[iA]>=EST?MINT:(a.fees[iA]>=EST/2?AMBAR:ROJO)),borderRadius:6,barPercentage:.75}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    scales:{x:{...AXIS,ticks:{...AXIS.ticks,callback:tk([EST*1.3,...fe.map(a=>a.fees[iA])])},beginAtZero:true,suggestedMax:EST*1.3},y:AXIS_CAT},
+    plugins:{tooltip:{...TIP,callbacks:{label:c=>usd(c.parsed.x)+" de fee · estándar "+usd(EST)}}}},
+  plugins:[EL]});
+
+/* ===== PERSONA ===== */
+const sel=document.getElementById('selPersona');
+sel.innerHTML=[...A].sort((a,b)=>nom(a.n).localeCompare(nom(b.n))).map(a=>'<option value="'+a.n+'">'+nom(a.n)+'</option>').join('');
+let cP1=null,cP2=null,cRing=null;
+function pintaPersona(nombre){
+  const a=A.find(x=>x.n===nombre);
+  const vA=sum(a.mc), fA=sum(a.fees), venA=sum(a.ven), sfA=sum(a.sf), uA=sum(a.util);
+  const pct=a.min?a.s4/a.min*100:0;
+  document.getElementById('pp-s4').textContent=usd(a.s4);
+  document.getElementById('pp-s4').className='v '+(pct>=100?'mint':(pct>=80?'warn':'red'));
+  document.getElementById('pp-s4-s').textContent=a.niv;
+  document.getElementById('pp-min').textContent=usd(a.min);
+  document.getElementById('pp-norte').textContent=usd(a.norte);
+  document.getElementById('pp-prom').textContent=usd(a.prom);
+  document.getElementById('pp-prom-s').textContent="Mejor mes: "+usd(Math.max(0,...a.mc));
+  document.getElementById('pp-fee').textContent=usd(fA);
+  document.getElementById('pp-fee-s').textContent=vA>0?(fA/vA*100).toFixed(1)+"% de lo que vendió · "+sfA+" de "+venA+" ventas sin fee":"sin ventas registradas";
+  document.getElementById('pp-mes').innerHTML = a.m.mc>0
+    ? '<b>'+usd(a.m.mc)+'</b> en '+a.m.ven+' venta'+(a.m.ven===1?'':'s')+' · '+usd(a.m.fees)+' de fee · a este paso cierra en <b>'+usd(a.m.proy)+'</b>'
+    : 'Sin ventas registradas en '+MES.nombre+'. A esta altura del mes debería llevar '+usd(a.m.deberia)+'.';
+  if(cRing)cRing.destroy();
+  cRing=ring(document.getElementById('ringPersona'),pct,pct>=100?MINT:(pct>=80?"#F0C55A":"#F08A80"));
+  const mine=ALERTAS.filter(x=>x.n===a.n);
+  const box=document.getElementById('pp-box');
+  if(mine.length){
+    box.innerHTML=mine.map(al=>{const t=TAGS[al.p];
+      return '<div class="al sev-'+t.s+'" style="margin-bottom:10px"><div><div class="a-l">'+t.t+'</div><div class="a-c">'+al.t+'</div><div class="a-do">→ '+t.do+'</div></div><div><div class="a-v">'+usd(al.v)+'</div><div class="a-n">'+al.u+'</div></div></div>';}).join('');
+  } else if(a.sem==='verde'){
+    box.innerHTML='<div class="pg-ok-box" style="margin:0">Está por encima de su norte en las últimas 4 semanas. Vale la pena mirar qué está haciendo distinto y pasarlo al resto.</div>';
+  } else if(a.s4===0){
+    box.innerHTML='<div class="pg-warn-box" style="margin:0">Sin venta registrada en las últimas 4 semanas. Si viene entrando, todavía está en curva; si no, es la primera conversación de la semana.</div>';
+  } else {
+    box.innerHTML='<div class="pg-warn-box" style="margin:0">Va en el <b>'+Math.round(pct)+'%</b> de su piso. Le faltan <b>'+usd(Math.max(0,a.min-a.s4))+'</b> para llegar.</div>';
+  }
+  if(cP1)cP1.destroy();
+  cP1=new Chart(document.getElementById('chP1'),{type:'line',
+    data:{labels:ML,datasets:[
+      {label:'Volumen',data:a.mc,borderColor:MINTD,backgroundColor:c=>grad(c.chart.ctx,MINT,'A6','08'),fill:true,tension:.42,borderWidth:3,pointRadius:4,pointBackgroundColor:'#fff',pointBorderColor:MINTD,pointBorderWidth:2},
+      {label:'Su piso',data:ML.map(()=>a.min),borderColor:ROJO,borderDash:[6,4],borderWidth:2,pointRadius:0,fill:false},
+      {label:'Su norte',data:ML.map(()=>a.norte),borderColor:AZUL,borderDash:[2,3],borderWidth:1.5,pointRadius:0,fill:false}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{...AXIS,ticks:{...AXIS.ticks,callback:tk([a.norte,...a.mc])},beginAtZero:true},x:AXIS_X},
+      plugins:{tooltip:{...TIP,callbacks:{label:c=>c.dataset.label+": "+usdS(c.parsed.y)}}}}});
+  if(cP2)cP2.destroy();
+  cP2=new Chart(document.getElementById('chP2'),{type:'line',
+    data:{labels:ML,datasets:[
+      {label:'Fee',data:a.fees,borderColor:AMBAR,backgroundColor:c=>grad(c.chart.ctx,AMBAR,'66','06'),fill:true,tension:.42,borderWidth:3,pointRadius:4,pointBackgroundColor:'#fff',pointBorderColor:AMBAR,pointBorderWidth:2},
+      {label:'Estándar de la casa',data:ML.map(()=>EST),borderColor:INK,borderDash:[5,4],borderWidth:2,pointRadius:0,fill:false}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{...AXIS,ticks:{...AXIS.ticks,callback:tk([EST,...a.fees])},beginAtZero:true,suggestedMax:EST*1.2},x:AXIS_X},
+      plugins:{tooltip:{...TIP,callbacks:{label:c=>c.dataset.label+": "+usdS(c.parsed.y)}}}}});
+  document.getElementById('tb-pers').innerHTML=ML.map((m,i)=>{
+    const v=a.mc[i],f=a.fees[i],n=a.ven[i],s=a.sf[i],u=a.util[i]||0;
+    const est=v>=a.norte?'<span class="pg-pill ok">Norte</span>':(v>=a.min?'<span class="pg-pill warn">Piso</span>':(v>0?'<span class="pg-pill due">Bajo</span>':'<span class="pg-pill muted">—</span>'));
+    return '<tr><td><b>'+m+'</b></td><td class="num">'+usdS(v)+'</td><td class="num">'+usdS(f)+'</td><td class="num">'+n+'</td><td class="num'+(s>0?' neg':'')+'">'+s+'</td><td class="num '+(u<0?'neg':'pos')+'">'+usdS(u)+'</td><td>'+est+'</td></tr>';}).join('')
+    +'<tr style="background:#F7FAFB"><td><b>Año</b></td><td class="num">'+usd(vA)+'</td><td class="num">'+usd(fA)+'</td><td class="num">'+venA+'</td><td class="num'+(sfA>0?' neg':'')+'">'+sfA+'</td><td class="num '+(uA<0?'neg':'pos')+'">'+usdS(uA)+'</td><td></td></tr>'
+    +(a.m.ven?'<tr><td><b>'+MES.nombre.slice(0,3)+'</b> <span class="pg-pill muted">en curso</span></td><td class="num">'+usd(a.m.mc)+'</td><td class="num">'+usd(a.m.fees)+'</td><td class="num">'+a.m.ven+'</td><td class="num'+(a.m.sf>0?' neg':'')+'">'+a.m.sf+'</td><td class="num"></td><td>'+chipMes(a)+'</td></tr>':'');
+}
+sel.onchange=()=>pintaPersona(sel.value);
+pintaPersona(ordS4[0].n);sel.value=ordS4[0].n;
+
+/* ===== CONSOLIDADO ===== */
+const cons=A.map(a=>({n:nom(a.n),niv:nivC(a.niv),v:sum(a.mc),f:sum(a.fees),p:sum(a.ven),s:sum(a.sf),u:sum(a.util)}))
+  .map(c=>({...c,pct:c.v>0?c.f/c.v*100:0})).sort((x,y)=>y.v-x.v);
+document.getElementById('c-vol').textContent=usd(volAno);
+document.getElementById('c-vol-s').textContent="Mejor mes: "+usd(Math.max(...E.map(m=>m.mc)))+" en febrero";
+document.getElementById('c-fee').textContent=usd(feeAno);
+document.getElementById('c-fee-s').textContent=(feeAno/volAno*100).toFixed(1)+"% del volumen del año";
+document.getElementById('c-pol').textContent=venAno;
+document.getElementById('c-pol-s').textContent=sfAno+" salieron sin fee";
+document.getElementById('c-util').textContent=usd(utilAno);
+document.getElementById('tb-cons').innerHTML=cons.map(c=>
+ '<tr><td><b>'+c.n+'</b></td><td class="mini">'+c.niv+'</td><td class="num">'+usd(c.v)+'</td><td class="num">'+usd(c.f)+'</td><td class="num">'+c.pct.toFixed(1)+'%</td><td class="num">'+c.p+'</td><td class="num'+(c.s>0?' neg':'')+'">'+c.s+'</td><td class="num '+(c.u<0?'neg':'pos')+'">'+usdS(c.u)+'</td></tr>').join('');
+document.getElementById('tf-cons').innerHTML=
+ '<tr style="background:#F7FAFB"><td><b>Equipo</b></td><td class="mini">'+M.personas+' personas</td><td class="num">'+usd(volAno)+'</td><td class="num">'+usd(feeAno)+'</td><td class="num">'+(feeAno/volAno*100).toFixed(1)+'%</td><td class="num">'+venAno+'</td><td class="num neg">'+sfAno+'</td><td class="num pos">'+usdS(utilAno)+'</td></tr>';
+const rep=cons.filter(c=>c.v>0);
+new Chart(document.getElementById('chReparto'),{type:'bar',
+  data:{labels:rep.map(c=>c.n),datasets:[{data:rep.map(c=>c.v),backgroundColor:rep.map((c,i)=>i===0?MINTD:(i<3?MINT:'#9FDCCE')),borderRadius:6,barPercentage:.75}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    scales:{x:{...AXIS,ticks:{...AXIS.ticks,callback:moneyTick},beginAtZero:true},y:AXIS_CAT},
+    plugins:{tooltip:{...TIP,callbacks:{label:c=>usd(c.parsed.x)+" · "+(c.parsed.x/volAno*100).toFixed(1)+"% del año"}}}}});
+
+/* ===== NAV ===== */
+document.querySelectorAll('.pg-side a').forEach(a=>a.onclick=()=>{
+  document.querySelectorAll('.pg-side a').forEach(x=>x.classList.remove('on'));
+  a.classList.add('on');
   document.querySelectorAll('.pg-section').forEach(s=>s.classList.remove('on'));
-  const root = document.getElementById('root');
-  if (tab === 'resumen') return renderResumen(root);
-  if (tab === 'ventas') return renderVentas(root);
-  if (tab === 'oportunidad') return renderOportunidadEquipo(root);
-  if (tab === 'fees') return renderFees(root);
-  if (tab === 'constancia') return renderConstancia(root);
-  if (tab === 'utilidad') return renderUtilidadEquipo(root);
-  if (tab === 'alertas') return renderAlertas(root);
+  document.getElementById('s-'+a.dataset.go).classList.add('on');
+  window.scrollTo(0,0);});
+
+
 }
 
-/* ===================== 1. RESUMEN DEL EQUIPO ===================== */
-async function renderResumen(root){
-  root.innerHTML = `<div class="pg-top"><div class="pg-eyebrow">Tu equipo</div><h1>Resumen del equipo</h1>
-    <div class="pg-sub">Solo lo que le pasa a tu equipo. Ves rendimiento y multiplicador por persona; no ves costos de nómina en dólares, liquidez ni retiro de socios.</div></div>
-    <div id="resumenBody">${loadingHTML()}</div>`;
-  const [piloto, estandar, patrones] = await Promise.all([
-    fetchOnce('v_semaforo_piloto','mes,ventas,ventas_con_fee,fee_x_venta_equipo,meta_fee_x_venta,pct_ventas_con_fee,meta_pct_ventas_con_fee,alarma_activa,estado'),
-    fetchOnce('v_estandar_agencia','agente,mes,ventas,total_fees_cobrados_mes,piso_mensual,le_falta_para_el_piso,pct_avance_piso,semaforo_piso'),
-    fetchOnce('v_patrones_agente','agente,mes,ventas,ventas_prev,patron')
-  ]);
-  const body = document.getElementById('resumenBody');
-  if (piloto.error) { body.innerHTML = errHTML('v_semaforo_piloto', piloto.error); return; }
-  const p = (piloto.data||[])[0];
-  const alarma = p ? p.alarma_activa : false;
-  const estandarEquipo = (estandar.data||[]).filter(e => enEquipo(e.agente));
-  const ultimoMes = estandarEquipo.length ? estandarEquipo.reduce((m,e)=> e.mes > m ? e.mes : m, estandarEquipo[0].mes) : null;
-  const estandarMesActual = estandarEquipo.filter(e => e.mes === ultimoMes);
-  const cumplen = estandarMesActual.filter(e => e.semaforo_piso === 'verde').length;
-  const patronesEquipo = (patrones.data||[]).filter(p => enEquipo(p.agente));
-  const caidaRitmo = patronesEquipo.filter(x => x.patron === 'CAIDA_DE_RITMO');
-  body.innerHTML = `
-    <div class="pg-headline">
-      ${semaforoDot(alarma ? 'red' : 'green')}
-      <div><p class="pg-headline-text">${alarma ? `Alarma del piso activa: el fee por venta del equipo va en ${fmtUSD(p.fee_x_venta_equipo)}, por debajo de la meta de ${fmtUSD0(p.meta_fee_x_venta)}.` : 'El equipo va dentro de la meta del piso.'}</p>
-      <div class="pg-headline-sub">${p ? fmtPct(p.pct_ventas_con_fee) : '—'} de las ventas del mes ya tienen fee (meta ${p ? fmtPct(p.meta_pct_ventas_con_fee) : '—'}).</div></div>
-    </div>
-    <div class="pg-kpis">
-      <div class="pg-kpi"><div class="lbl">Ventas del mes (equipo)</div><div class="val">${p ? p.ventas : '—'}</div><div class="sub">${p ? p.ventas_con_fee : '—'} con fee cobrado</div></div>
-      <div class="pg-kpi"><div class="lbl">Estándar $1,500 cumplido</div><div class="val ${cumplen < estandarMesActual.length/2 ? 'neg':''}">${cumplen}/${estandarMesActual.length}</div><div class="sub">agentes con venta este mes</div></div>
-      <div class="pg-kpi"><div class="lbl">Caída de ritmo</div><div class="val ${caidaRitmo.length ? 'neg':''}">${caidaRitmo.length}</div><div class="sub">agente(s) cayeron a menos de la mitad</div></div>
-    </div>
-    <div class="pg-card">
-      <h2>Estándar $1,500 — tu equipo, mes en curso</h2>
-      <p class="pg-purpose">Cobrado vs el piso, ordenado de quien está más lejos a quien ya lo superó.</p>
-      <table class="pg-table"><thead><tr><th>Agente</th><th>Ventas</th><th>Cobrado</th><th>Le falta</th><th>% avance</th><th>Semáforo</th></tr></thead>
-      <tbody>${estandarMesActual.sort((a,b)=>a.pct_avance_piso-b.pct_avance_piso).map(e => `<tr>
-        <td>${esc(e.agente)}</td><td class="num">${e.ventas}</td>
-        <td class="num pos">${fmtUSD(e.total_fees_cobrados_mes)}</td>
-        <td class="num">${fmtUSD(e.le_falta_para_el_piso)}</td>
-        <td class="num">${fmtPct(e.pct_avance_piso,0)}</td>
-        <td>${e.semaforo_piso==='verde'?'<span class="pg-pill ok">cumple</span>':e.semaforo_piso==='amarillo'?'<span class="pg-pill warn">cerca</span>':'<span class="pg-pill due">lejos</span>'}</td>
-      </tr>`).join('') || '<tr><td colspan="6">Sin ventas del equipo este mes todavía.</td></tr>'}</tbody></table>
-    </div>
-    <div class="pg-footnote">Equipo: ${EQUIPO.length} personas (activas + inactivas con histórico). Fuente: v_semaforo_piloto, v_estandar_agencia, v_patrones_agente — filtradas a tu equipo en esta pantalla.</div>`;
-}
 
-/* ===================== 2. VENTAS POR CLIENTE ===================== */
-async function renderVentas(root){
-  root.innerHTML = `<div class="pg-top"><div class="pg-eyebrow">Ventas por cliente</div><h1>Tu equipo — ventas por cliente</h1>
-    <div class="pg-sub">1 venta = 1 cliente cerrado (el paquete completo: GL + Liability + Cargo), no 1 póliza suelta. El detalle de coberturas está un clic adentro.</div></div>
-    <div id="ventasBody">${loadingHTML()}</div>`;
-  const r = await fetchOnce('v_ventas_por_cliente','seller,cliente_key,insured,dba,sales_year,sales_month,polizas,coberturas_txt,policy_nums_txt,premium_paquete,fee_agencia_paquete,tiene_fee,cargos_carrier_paquete');
-  const body = document.getElementById('ventasBody');
-  if (r.error) { body.innerHTML = errHTML('v_ventas_por_cliente', r.error); return; }
-  const rows = (r.data||[]).filter(x => enEquipo(x.seller));
-  const porAgente = {};
-  rows.forEach(x => {
-    const k = x.seller || '(sin vendedor)';
-    if (!porAgente[k]) porAgente[k] = { agente:k, clientes:0, con_fee:0, fee_total:0, detalle:[] };
-    porAgente[k].clientes++;
-    if (x.tiene_fee) porAgente[k].con_fee++;
-    porAgente[k].fee_total += Number(x.fee_agencia_paquete||0);
-    porAgente[k].detalle.push(x);
-  });
-  const lista = Object.values(porAgente).sort((a,b)=>b.clientes-a.clientes);
-  body.innerHTML = `
-    <div class="pg-card">
-      <h2>Clientes cerrados por agente (todo el histórico disponible)</h2>
-      <table class="pg-table"><thead><tr><th>Agente</th><th>Clientes</th><th>Con fee</th><th>Tasa de cobro</th><th>Fee de agencia total</th><th></th></tr></thead>
-      <tbody>${lista.map((a,i) => `<tr>
-        <td>${esc(a.agente)}</td><td class="num">${a.clientes}</td><td class="num">${a.con_fee}</td>
-        <td class="num">${fmtPct(a.clientes ? a.con_fee/a.clientes*100 : 0,0)}</td>
-        <td class="num pos">${fmtUSD(a.fee_total)}</td>
-        <td><span class="vpc-toggle" data-i="${i}">ver clientes →</span></td>
-      </tr><tr id="det${i}" style="display:none"><td colspan="6">${a.detalle.slice().sort((x,y)=>Number(y.polizas||0)-Number(x.polizas||0)).map(x => `
-        <div class="vpc-cli"><div class="vpc-cli-top"><b>${esc(x.insured||x.cliente_key)}</b>${x.dba?` <span class="vpc-dim">(${esc(x.dba)})</span>`:''}<span class="vpc-badge">${x.polizas||0} cobertura(s)</span></div>
-        <div class="vpc-cli-mid">${esc(x.coberturas_txt||'—')}</div>
-        <div class="vpc-cli-bot">fee del paquete <b>${fmtUSD(x.fee_agencia_paquete)}</b> · premium ${fmtUSD(x.premium_paquete)} · pólizas: ${esc(x.policy_nums_txt||'—')} · cargos del carrier ${fmtUSD(x.cargos_carrier_paquete)} <i>(no son ingreso de la agencia)</i></div></div>`).join('') || 'Sin clientes.'}</td></tr>`).join('') || '<tr><td colspan="6">Sin datos del equipo.</td></tr>'}</tbody></table>
-    </div>
-    <div class="pg-footnote">Fuente: v_ventas_por_cliente (.limit(5000)). Fee visible = seller_fees (fee de agencia); los cargos del carrier (policy_fees) nunca cuentan como ingreso.</div>`;
-  body.querySelectorAll('.vpc-toggle').forEach(el => el.addEventListener('click', () => {
-    const row = document.getElementById('det' + el.dataset.i);
-    row.style.display = row.style.display === 'none' ? '' : 'none';
-  }));
-}
 
-/* ===================== 2b. LO QUE DEJAN DE GANAR (coaching) =====================
-   Módulo compartido con gabi-asesor.html (asesor-oportunidad-shared.js), en
-   modo equipo: SÍ ve nombres de su equipo (es su herramienta de coaching),
-   NUNCA cifras de nómina — la comisión de oportunidad que se muestra ya fue
-   decidida por Andrés como el número correcto a mostrar aquí; lo que se
-   omite es el costo/nómina que la empresa paga (esa es la línea que separa
-   "rendimiento y función" del resto de esta pantalla). Mismo tono de
-   oportunidad, nunca de castigo. */
-async function renderOportunidadEquipo(root){
-  root.innerHTML = `<div class="pg-top"><div class="pg-eyebrow">Tu equipo</div><h1>Lo que dejan de ganar</h1>
-    <div class="pg-sub">Tu herramienta de coaching: cuánta comisión queda por capturar por no cobrar el fee típico, y cuánto premium le falta a cada quien para subir de escalón. Quien más aparece aquí suele ser quien más vende — no es una lista de bajo desempeño.</div></div>
-    <div id="oportunidadMount"></div>`;
-  const mount = document.getElementById('oportunidadMount');
-  try {
-    await GabiOportunidad.render(mount, SB, { nombres: EQUIPO, modoEquipo: true, tituloSufijo: 'equipo de Brahian Toro' });
-  } catch(e) {
-    mount.innerHTML = errHTML('Lo que dejan de ganar (asesor-oportunidad-shared.js)', e);
-  }
-}
 
-/* ===================== 3. FEES Y CAPTURA (GUÍA) ===================== */
-async function renderFees(root){
-  root.innerHTML = `<div class="pg-top"><div class="pg-eyebrow">Fees y captura — GUÍA, no policía</div><h1>¿Cómo va cobrando tu equipo?</h1>
-    <div class="pg-sub">El fee es contextual: depende de la complejidad de la póliza, no del premium. La referencia por canal es una guía de "así se suele cobrar", no una regla dura — la única vara dura es el estándar de $1,500/mes.</div></div>
-    <div id="feesBody">${loadingHTML()}</div>`;
-  const [fj, guia, ref] = await Promise.all([
-    fetchOnce('v_desempeno_fee_justo','agente,mes,ventas,tasa_cobro_pct,captura_vs_tipico,oportunidad_perdida'),
-    fetchOnce('v_fee_guia_asesor','agente,mes,ventas_mes,total_fees_cobrados_mes,promedio_fee_por_venta,mediana_fee_por_venta,sector,referencia_canal,referencia_canal_texto'),
-    fetchOnce('v_fee_referencia_canal_actual','sector,fee_referencia,etiqueta')
-  ]);
-  const body = document.getElementById('feesBody');
-  if (fj.error) { body.innerHTML = errHTML('v_desempeno_fee_justo', fj.error); return; }
-  const fjEquipo = {};
-  (fj.data||[]).filter(x => enEquipo(x.agente)).forEach(x => {
-    if (!fjEquipo[x.agente] || x.mes > fjEquipo[x.agente].mes) fjEquipo[x.agente] = x;
-  });
-  const filas = Object.values(fjEquipo).sort((a,b)=>(b.tasa_cobro_pct||0)-(a.tasa_cobro_pct||0));
-  body.innerHTML = `
-    <div class="pg-card">
-      <h2>Tasa de cobro por agente (mes más reciente con venta)</h2>
-      <p class="pg-purpose">De cada 10 ventas, en cuántas se logró cobrar un fee. Captura vs típico: 1.0 = cobra lo esperado para ese tipo de póliza.</p>
-      <table class="pg-table"><thead><tr><th>Agente</th><th>Mes</th><th>Ventas</th><th>Tasa de cobro</th><th>Captura vs típico</th></tr></thead>
-      <tbody>${filas.map(f => `<tr><td>${esc(f.agente)}</td><td>${esc(f.mes)}</td><td class="num">${f.ventas}</td>
-        <td class="num">${fmtPct(f.tasa_cobro_pct,0)}</td>
-        <td>${f.captura_vs_tipico===null||f.captura_vs_tipico===undefined ? '<span class="pg-pill muted">sin cobros</span>' : Number(f.captura_vs_tipico)>=1 ? `<span class="pg-pill ok">${Number(f.captura_vs_tipico).toFixed(2)}x típico</span>` : `<span class="pg-pill warn">${Number(f.captura_vs_tipico).toFixed(2)}x típico</span>`}</td>
-      </tr>`).join('') || '<tr><td colspan="5">Sin datos.</td></tr>'}</tbody></table>
-    </div>
-    ${ref.data && ref.data.length ? `<div class="pg-card"><h2>Referencia de fee por canal (guía, no ley)</h2>
-      <p class="pg-purpose">"Un servicio así se cobra alrededor de esto" — no marca ventas individuales como falta.</p>
-      <table class="pg-table"><thead><tr><th>Canal</th><th>Referencia</th></tr></thead>
-      <tbody>${ref.data.map(r => `<tr><td>${esc(r.etiqueta||r.sector)}</td><td class="num">${fmtUSD0(r.fee_referencia)}</td></tr>`).join('')}</tbody></table></div>` : ''}
-    <div class="pg-footnote">Fuente: v_desempeno_fee_justo, v_fee_guia_asesor, v_fee_referencia_canal_actual. Solo seller_fees — nunca policy_fees.</div>`;
-}
-
-/* ===================== 4. CONSTANCIA Y PATRONES ===================== */
-async function renderConstancia(root){
-  root.innerHTML = `<div class="pg-top"><div class="pg-eyebrow">Constancia y patrones</div><h1>¿Quién es constante y quién no?</h1>
-    <div class="pg-sub">Racha del estándar $1,500 y el perfil de venta de cada agente de tu equipo.</div></div>
-    <div id="constBody">${loadingHTML()}</div>`;
-  const sector = await fetchOnce('v_sector_resumen_paquete','sector,sales_year,sales_month,paquetes,filas_bos,fee_agencia_total,premium_total');
-  const body = document.getElementById('constBody');
-  body.innerHTML = `
-    <div class="pg-card">
-      <h2>Paquetes por sector (agencia — contexto)</h2>
-      <p class="pg-purpose">Referencia de dónde está vendiendo la agencia; tu equipo aporta parte de este total.</p>
-      <table class="pg-table"><thead><tr><th>Sector</th><th>Paquetes</th><th>Fee de agencia</th><th>Premium</th></tr></thead>
-      <tbody>${(sector.error ? [] : (sector.data||[])).slice(0,15).map(s => `<tr><td>${esc(s.sector||'sin clasificar')}</td><td class="num">${s.paquetes}</td><td class="num pos">${fmtUSD0(s.fee_agencia_total)}</td><td class="num">${fmtUSD0(s.premium_total)}</td></tr>`).join('') || (sector.error ? errHTML('v_sector_resumen_paquete', sector.error) : '<tr><td colspan="4">Sin datos.</td></tr>')}</tbody></table>
-    </div>
-    <div class="pg-footnote">TODO: v_patrones_agente ya se usa en Resumen y Alertas; una vista de "racha del estándar por persona" (v_estandar_1500 histórica) queda pendiente de exponer aquí en detalle — hoy Resumen ya trae el mes en curso.</div>`;
-}
-
-/* ===================== 5b. UTILIDAD DEL EQUIPO =====================
-   Fuente compartida con GABI 360 (dirección) vía gabi-personas-shared.js —
-   mismas vistas, mismo código de render, mismos arreglos (cero barras,
-   área en vez de línea punteada redundante, toggle mensual/prom3/acum,
-   dropdown de áreas real, conteo de personas correcto). Alcance: SOLO el
-   equipo de Brahian (EQUIPO, ya resuelto contra agentes.lider_id). */
-async function renderUtilidadEquipo(root){
-  root.innerHTML = `<div class="pg-top"><div class="pg-eyebrow">Tu equipo</div><h1>Rendimiento del equipo</h1>
-    <div class="pg-sub">Qué tan rentable es cada persona a tu cargo para la agencia — multiplicador y rendimiento por función, la misma señal que usa dirección, sin mostrar cifras de nómina.</div></div>
-    <div id="utilEquipoMount"></div>`;
-  const mount = document.getElementById('utilEquipoMount');
-  try {
-    await GabiPersonas.renderUtilidad(mount, SB, { scopeNombres: EQUIPO, tituloSufijo: 'equipo de Brahian Toro', modo: 'rendimiento' });
-  } catch(e) {
-    mount.innerHTML = errHTML('Rendimiento del equipo (gabi-personas-shared.js)', e);
-  }
-}
-
-/* ===================== 5. ALERTAS ===================== */
-async function renderAlertas(root){
-  root.innerHTML = `<div class="pg-top"><div class="pg-eyebrow">Alertas</div><h1>Qué necesita seguimiento hoy</h1>
-    <div class="pg-sub">Patrones de tu equipo — caída de ritmo, vende sin cobrar, vende más y cobra menos, más prometido que cobrado. Excluye alias de equipo (Retention Team) y a cualquier líder/socio.</div></div>
-    <div id="alertasMount"></div>`;
-  const mount = document.getElementById('alertasMount');
-  try {
-    await GabiPersonas.renderPatrones(mount, SB, { scopeNombres: EQUIPO, tituloSufijo: 'equipo de Brahian Toro' });
-  } catch(e) {
-    mount.innerHTML = errHTML('Patrones de alerta (gabi-personas-shared.js)', e);
-  }
-  const foot = document.createElement('div');
-  foot.className = 'pg-footnote';
-  foot.textContent = 'Fuente: v_patrones_agente_v2, filtrada a tu equipo. Candado de acceso ya aplicado (paquete_incentivos_bos_registros) — esta pantalla nunca muestra caja, retiros ni nómina del resto de la agencia.';
-  mount.appendChild(foot);
-}
-
-/* ===================== LOGIN GATE ===================== */
+/* ===================== SESIÓN ===================== */
 function renderLogin(){
-  document.getElementById('root-outer').innerHTML = `
-    <div class="pg-login-wrap">
-      <div class="pg-logo" style="margin:0 auto 10px;">PG</div>
-      <h2>Acceso · Brahian Toro</h2>
-      <p>Inicia sesión con tu cuenta de Protect GO para ver el desempeño de tu equipo.</p>
-      <form id="loginForm">
-        <input type="email" id="loginEmail" placeholder="brahian.toro@protectgoservices.com" required>
-        <input type="password" id="loginPass" placeholder="Contraseña" required>
-        <button class="pg-btn mint" type="submit" style="margin-top:6px;">Entrar</button>
-      </form>
-      <div class="pg-login-err" id="loginErr"></div>
-    </div>`;
+  document.getElementById('root-outer').innerHTML =
+    '<div class="pg-login-wrap">'
+    + '<div class="pg-logo" style="margin:0 auto 10px;">G</div>'
+    + '<h2>Equipo comercial</h2>'
+    + '<p>Inicia sesión con tu cuenta de Protect GO.</p>'
+    + '<form id="loginForm">'
+    + '<input type="email" id="loginEmail" placeholder="brahian.toro@protectgoservices.com" required>'
+    + '<input type="password" id="loginPass" placeholder="Contraseña" required>'
+    + '<button class="pg-btn mint" type="submit" style="margin-top:6px;">Entrar</button>'
+    + '</form><div class="pg-login-err" id="loginErr"></div></div>';
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
@@ -435,13 +873,36 @@ function renderLogin(){
   });
 }
 
+let YA_PINTADO = false;
+async function renderShell(session){
+  if (YA_PINTADO) return;
+  const outer = document.getElementById('root-outer');
+  outer.innerHTML = '';
+  outer.appendChild(document.getElementById('tpl-app').content.cloneNode(true));
+  const u = document.getElementById('ftuser');
+  if (u) u.textContent = session.user.email;
+  const salir = document.getElementById('btnLogout');
+  if (salir) salir.addEventListener('click', () => SB.auth.signOut());
+  YA_PINTADO = true;
+  try {
+    render(await cargarDatos(SB));
+  } catch (e) {
+    console.error(e);
+    const main = document.querySelector('.pg-main');
+    if (main) main.innerHTML = '<div class="pg-top"><h1>No pude cargar el tablero</h1>'
+      + '<div class="pg-sub">' + String(e.message || e).replace(/[<>&]/g,'') + '</div></div>'
+      + '<div class="pg-warn-box">Si dice que no hay filas, es un tema de permisos de la cuenta. '
+      + 'Si dice otra cosa, avísale a Andrés con este mensaje.</div>';
+  }
+}
+
 async function boot(){
   const { data: { session } } = await SB.auth.getSession();
   if (!session) renderLogin(); else renderShell(session);
 }
-SB.auth.onAuthStateChange((_event, session) => {
-  CACHE = {};
-  if (session) renderShell(session); else renderLogin();
+SB.auth.onAuthStateChange((_e, session) => {
+  if (session) { renderShell(session); }
+  else { YA_PINTADO = false; renderLogin(); }
 });
 boot();
 </script>

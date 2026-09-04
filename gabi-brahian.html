@@ -850,7 +850,12 @@ document.querySelectorAll('.pg-side a[data-go]').forEach(a=>a.onclick=()=>{
   document.querySelectorAll('.pg-section').forEach(s=>s.classList.remove('on'));
   const sec = document.getElementById('s-'+a.dataset.go);
   sec.classList.add('on');
-  requestAnimationFrame(()=>remedir(sec));
+  requestAnimationFrame(()=>{
+    /* el anillo de persona nace de tamaño cero si su pestaña estaba cerrada:
+       ahí no basta con remedir, hay que volver a dibujarlo con la pestaña abierta */
+    if (a.dataset.go === 'persona' && sel && sel.value) pintaPersona(sel.value);
+    else remedir(sec);
+  });
   window.scrollTo(0,0);});
 window.addEventListener('resize', ()=>{ const s=document.querySelector('.pg-section.on'); if(s) remedir(s); });
 

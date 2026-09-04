@@ -813,7 +813,7 @@ function pintaPersona(nombre){
     +'<tr style="background:#F7FAFB"><td><b>Año</b></td><td class="num">'+usd(vA)+'</td><td class="num">'+usd(fA)+'</td><td class="num">'+venA+'</td><td class="num'+(sfA>0?' neg':'')+'">'+sfA+'</td><td class="num '+(uA<0?'neg':'pos')+'">'+usdS(uA)+'</td><td></td></tr>'
     +(a.m.ven?'<tr><td><b>'+MES.nombre.slice(0,3)+'</b> <span class="pg-pill muted">en curso</span></td><td class="num">'+usd(a.m.mc)+'</td><td class="num">'+usd(a.m.fees)+'</td><td class="num">'+a.m.ven+'</td><td class="num'+(a.m.sf>0?' neg':'')+'">'+a.m.sf+'</td><td class="num"></td><td>'+chipMes(a)+'</td></tr>':'');
 }
-sel.onchange=()=>pintaPersona(sel.value);
+sel.onchange=()=>{ pintaPersona(sel.value); requestAnimationFrame(()=>remedir(document.getElementById('s-persona'))); };
 pintaPersona(ordS4[0].n);sel.value=ordS4[0].n;
 
 /* ===== CONSOLIDADO ===== */
@@ -838,12 +838,21 @@ new Chart(document.getElementById('chReparto'),{type:'bar',
     plugins:{tooltip:{...TIP,callbacks:{label:c=>usd(c.parsed.x)+" · "+(c.parsed.x/volAno*100).toFixed(1)+"% del año"}}}}});
 
 /* ===== NAV ===== */
-document.querySelectorAll('.pg-side a').forEach(a=>a.onclick=()=>{
-  document.querySelectorAll('.pg-side a').forEach(x=>x.classList.remove('on'));
+/* Chart.js no puede medir un canvas escondido: los que se crean con su pestaña cerrada
+   nacen de tamaño cero. Al abrir una pestaña se les pide que se vuelvan a medir. */
+function remedir(sec){
+  if(!window.Chart) return;
+  sec.querySelectorAll('canvas').forEach(cv=>{ const c = Chart.getChart(cv); if(c) c.resize(); });
+}
+document.querySelectorAll('.pg-side a[data-go]').forEach(a=>a.onclick=()=>{
+  document.querySelectorAll('.pg-side a[data-go]').forEach(x=>x.classList.remove('on'));
   a.classList.add('on');
   document.querySelectorAll('.pg-section').forEach(s=>s.classList.remove('on'));
-  document.getElementById('s-'+a.dataset.go).classList.add('on');
+  const sec = document.getElementById('s-'+a.dataset.go);
+  sec.classList.add('on');
+  requestAnimationFrame(()=>remedir(sec));
   window.scrollTo(0,0);});
+window.addEventListener('resize', ()=>{ const s=document.querySelector('.pg-section.on'); if(s) remedir(s); });
 
 
 }

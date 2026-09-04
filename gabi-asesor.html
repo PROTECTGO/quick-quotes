@@ -145,6 +145,8 @@ body { margin: 0; background: var(--pg-bg); }
 .pg-login-card button:hover { background:var(--pg-mint-dark); }
 .pg-login-msg { font-size:12.5px; color:var(--pg-neg); margin-top:10px; min-height:16px; }
 </style>
+<!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
+<script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
 </head>
 <body>
 <a href="index.html" id="pgVolver" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
@@ -1134,6 +1136,7 @@ SB.auth.onAuthStateChange((event) => { if (event === "PASSWORD_RECOVERY") mostra
   if (session && !RECOVERY_MODE) { await mostrarApp(); }
 })();
 </script>
+<script>window.addEventListener('DOMContentLoaded',function(){ if(window.pgNovedadesAuto) pgNovedadesAuto('general'); });</script>
 </body>
 </html>
 <!-- TODO: cablear agentes.auth_user_id para cada asesor (Juan Baquero y demás) al crearles login en el portal/GABI -->

@@ -72,6 +72,8 @@
 
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
 <script defer src="https://protectgo.github.io/quick-quotes/pg-auth.js"></script>
+<!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
+<script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
 </head>
 <body>
 <div class="topbar">
@@ -351,7 +353,7 @@ async function loadHistorial(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="mapa-puestos.html";
-var PGV_VERSION=3; // Vista Maestra Ronda 1: banner "ver como" (ver-como-helper.js)
+var PGV_VERSION=4; // Vista Maestra Ronda 1: banner "ver como" (ver-como-helper.js)
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
@@ -382,5 +384,6 @@ else setTimeout(pgvCheck,400);
 setInterval(pgvCheck,600000);
 })();
 </script>
+<script>window.addEventListener('DOMContentLoaded',function(){ if(window.pgNovedadesAuto) pgNovedadesAuto('general'); });</script>
 </body>
 </html>

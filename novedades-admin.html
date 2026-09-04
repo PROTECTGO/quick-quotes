@@ -5,765 +5,357 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ProtectGo · Novedades (Admin)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,800&family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+  /* =====================================================================
+     ESTÁNDAR VISUAL PROTECTGO (tokens + clases .pg-*) · panel Novedades v11
+     ===================================================================== */
   :root{
-    --pg-ink:#1B2D3A; --pg-ink-2:#162630; --pg-mint:#2DBFA3; --pg-mint-soft:#C4E8DF; --pg-mint-deep:#229A82;
-    --pg-bg:#F4F7FA; --pg-card:#FFFFFF; --pg-line:#E7EDF2; --pg-txt:#28323B; --pg-muted:#6B7D89;
-    --pg-pos:#1F9D6B; --pg-neg:#D5594F; --pg-warn:#D9A520;
-    --tipo-felicitacion:#00C864; --tipo-novedad:#229A82; --tipo-aviso:#FFB400; --tipo-recordatorio:#8da0ad;
+    --pg-ink:#1B2D3A;--pg-ink-2:#152430;--pg-mint:#2DBFA3;--pg-mint-soft:#C4E8DF;--pg-mint-deep:#229A82;
+    --pg-bg:#F4F7FA;--pg-card:#FFFFFF;--pg-line:#E7EDF2;--pg-txt:#28323B;--pg-muted:#6B7D89;
+    --pg-pos:#1F9D6B;--pg-neg:#D5594F;--pg-warn:#D9A520;
+    /* set corto del estándar v27 */
+    --ink:#1B2D3A;--ink2:#152430;--mint:#2DBFA3;--mint-deep:#229A82;--mint-soft:#C4E8DF;
+    --bg:#F4F7FA;--card:#FFF;--line:#E7EDF2;--txt:#28323B;--muted:#6B7D89;
+    --renov:#229A82;--falta:#5B6BD6;--ambar:#D9A520;--rojo:#D5594F;
+    --f-tit:'Montserrat',system-ui,sans-serif;--f-body:'Inter',system-ui,sans-serif;
+    --f-num:'JetBrains Mono',ui-monospace,monospace;--f-gabi:'Fraunces',Georgia,serif;
+    --tipo-felicitacion:#2DBFA3;--tipo-novedad:#229A82;--tipo-aviso:#D9A520;--tipo-recordatorio:#8da0ad;
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--pg-bg);
-    color:var(--pg-txt);
-    font-family:'Inter',Arial,Helvetica,sans-serif;
-    min-height:100vh;
-  }
-  h1,h2,h3{font-family:'Montserrat',Arial,Helvetica,sans-serif;margin:0 0 4px 0;color:var(--pg-ink);}
-  .mono{font-family:'JetBrains Mono',monospace;}
-  button{font-family:inherit;cursor:pointer;}
-  input,textarea,select{font-family:inherit;}
-  .hidden{display:none !important;}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:var(--f-body);min-height:100vh;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:var(--f-tit);margin:0;color:var(--ink)}
+  h1{font-size:24px;font-weight:800;letter-spacing:-.3px}
+  button{font-family:inherit;cursor:pointer}
+  input,textarea,select{font-family:inherit}
+  .hidden{display:none !important}
+  .mono{font-family:var(--f-num)}
 
-  /* ---------- Top bar ---------- */
-  .topbar{
-    background:var(--pg-ink);
-    color:#fff;
-    padding:14px 26px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    box-shadow:0 2px 10px rgba(0,0,0,.18);
-  }
-  .topbar .brand{
-    font-family:'Montserrat',Arial,Helvetica,sans-serif;
-    font-weight:800;
-    font-size:17px;
-    letter-spacing:.2px;
-  }
-  .topbar .brand span{color:var(--pg-mint);}
-  .topbar .session{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    font-size:13px;
-    color:#c9d6dd;
-  }
-  .topbar .session b{color:#fff;font-weight:600;}
-  .btn-logout{
-    background:transparent;
-    border:1px solid #3c5a68;
-    color:#fff;
-    padding:7px 14px;
-    border-radius:8px;
-    font-size:13px;
-    font-weight:600;
-    transition:.15s;
-  }
-  .btn-logout:hover{background:#243c48;}
+  /* ---------- shell ---------- */
+  .wrap{max-width:1300px;margin:0 auto;padding:0 28px 70px}
+  .pgtop{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:22px 0 14px;flex-wrap:wrap}
+  .pgbrand{display:flex;align-items:baseline;gap:10px}
+  .pgbrand .gabi{font-family:var(--f-gabi);font-style:italic;font-weight:800;font-size:27px;color:var(--ink);letter-spacing:-.5px}
+  .pgbrand .sep{width:1px;height:20px;background:var(--line);margin:0 3px;align-self:center}
+  .pgbrand .sec{font-family:var(--f-tit);font-weight:700;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .acts{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .sello{font-family:var(--f-num);font-size:11px;color:var(--muted)}
+  .pgb{font-family:var(--f-body);font-weight:600;font-size:12.5px;padding:9px 15px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--txt);cursor:pointer;transition:all .16s}
+  .pgb:hover{border-color:var(--mint);color:var(--mint-deep);transform:translateY(-1px)}
+  .pgb.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .pgb.pri:hover{background:var(--ink2);color:#fff}
+  .pgb.peligro{border-color:#F0CDC9;color:var(--rojo)}
+  .pgb.peligro:hover{background:#FBEAE8;border-color:var(--rojo);color:var(--rojo)}
+  .pgb:disabled{opacity:.5;cursor:default;transform:none}
+  .pgb:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
 
-  /* ---------- Generic layout ---------- */
-  .wrap{
-    max-width:1180px;
-    margin:0 auto;
-    padding:26px 20px 60px;
-  }
-  .card{
-    background:var(--pg-card);
-    border:1px solid var(--pg-line);
-    border-radius:16px;
-    padding:22px;
-    box-shadow:0 2px 14px rgba(27,45,58,.05);
-  }
+  /* ---------- pestañas numeradas ---------- */
+  .nav{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:22px;overflow-x:auto}
+  .nv{display:flex;align-items:baseline;gap:8px;padding:12px 16px 13px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .16s;border-radius:9px 9px 0 0;background:transparent;border-left:0;border-right:0;border-top:0}
+  .nv:hover{background:#fff}
+  .nv .k{font-family:var(--f-num);font-size:11px;font-weight:700;color:#B6C2CB}
+  .nv .t{font-family:var(--f-tit);font-weight:700;font-size:13.5px;color:var(--muted)}
+  .nv.on{border-bottom-color:var(--mint-deep);background:#fff}
+  .nv.on .t{color:var(--ink)}
+  .nv.on .k{color:var(--mint-deep)}
+  .pane{display:none}
+  .pane.on{display:block}
 
-  /* ---------- Tabs ---------- */
-  .tabs{
-    display:flex;
-    gap:6px;
-    margin-bottom:20px;
-    border-bottom:1px solid var(--pg-line);
-  }
-  .tab-btn{
-    background:transparent;
-    border:none;
-    border-bottom:3px solid transparent;
-    padding:12px 18px;
-    font-weight:700;
-    font-family:'Montserrat',Arial,Helvetica,sans-serif;
-    font-size:14px;
-    color:var(--pg-muted);
-    transition:.15s;
-  }
-  .tab-btn:hover{color:var(--pg-ink);}
-  .tab-btn.active{
-    color:var(--pg-ink);
-    border-bottom-color:var(--pg-mint);
-  }
-  .tab-panel{display:none;}
-  .tab-panel.active{display:block;}
+  .pg-eyebrow{font-family:var(--f-tit);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mint-deep);margin-bottom:6px}
+  .pg-sub{color:var(--muted);font-size:13px;margin:4px 0 18px;max-width:760px;line-height:1.5}
 
-  /* ---------- Login / Restricted ---------- */
-  .center-screen{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-  }
-  .auth-card{
-    background:var(--pg-card);
-    border:1px solid var(--pg-line);
-    border-radius:18px;
-    padding:36px 34px;
-    width:100%;
-    max-width:380px;
-    box-shadow:0 8px 30px rgba(27,45,58,.10);
-    text-align:center;
-  }
-  .auth-card .logo-mark{
-    width:52px;height:52px;border-radius:14px;
-    background:linear-gradient(135deg,var(--pg-mint),var(--pg-mint-deep));
-    margin:0 auto 16px;
-    display:flex;align-items:center;justify-content:center;
-    color:#fff;font-size:24px;font-weight:800;
-  }
-  .auth-card h1{font-size:19px;margin-bottom:4px;}
-  .auth-card p.sub{color:var(--pg-muted);font-size:13px;margin:0 0 22px 0;}
-  .field{text-align:left;margin-bottom:14px;}
-  .field label{display:block;font-size:12px;font-weight:600;color:var(--pg-muted);margin-bottom:5px;}
-  .field input{
-    width:100%;
-    padding:10px 12px;
-    border:1px solid var(--pg-line);
-    border-radius:9px;
-    font-size:14px;
-    color:var(--pg-txt);
-    background:#fbfcfd;
-  }
-  .field input:focus{outline:none;border-color:var(--pg-mint);background:#fff;}
-  .btn-primary{
-    width:100%;
-    background:var(--pg-mint);
-    color:#fff;
-    border:none;
-    padding:11px 14px;
-    border-radius:9px;
-    font-weight:700;
-    font-size:14px;
-    margin-top:6px;
-    transition:.15s;
-  }
-  .btn-primary:hover{background:var(--pg-mint-deep);}
-  .btn-primary:disabled{opacity:.6;cursor:default;}
-  .auth-error{
-    background:#FBEAE8;
-    color:var(--pg-neg);
-    border:1px solid #f3cfcb;
-    border-radius:8px;
-    padding:9px 11px;
-    font-size:12.5px;
-    margin-bottom:14px;
-    text-align:left;
-  }
-  .restricted-icon{
-    width:56px;height:56px;border-radius:50%;
-    background:#FBEAE8;color:var(--pg-neg);
-    display:flex;align-items:center;justify-content:center;
-    font-size:26px;margin:0 auto 16px;
-  }
-  .restricted-email{
-    font-family:'JetBrains Mono',monospace;
-    font-size:13px;
-    background:#F4F7FA;
-    border:1px solid var(--pg-line);
-    border-radius:8px;
-    padding:8px 10px;
-    margin:14px 0 20px;
-    word-break:break-all;
-  }
-  .link-back{
-    display:inline-block;
-    margin-top:14px;
-    font-size:13px;
-    color:var(--pg-muted);
-    text-decoration:none;
-  }
-  .link-back:hover{color:var(--pg-ink);text-decoration:underline;}
+  /* ---------- paneles ---------- */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 3px rgba(27,45,58,.05);margin-bottom:16px}
+  .ph{padding:19px 24px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap}
+  .pt{font-family:var(--f-tit);font-weight:800;font-size:15.5px;color:var(--ink)}
+  .ps{font-size:12px;color:var(--muted);margin-top:3px;max-width:640px;line-height:1.5}
+  .pb{padding:14px 24px 20px}
 
-  /* ---------- Publicar tab ---------- */
-  .publicar-grid{
-    display:grid;
-    grid-template-columns:1.1fr .9fr;
-    gap:22px;
-    align-items:start;
-  }
-  @media (max-width:860px){
-    .publicar-grid{grid-template-columns:1fr;}
-  }
-  .field-label{
-    font-size:12.5px;
-    font-weight:700;
-    color:var(--pg-ink);
-    margin:0 0 8px 0;
-    display:block;
-  }
-  .tipo-grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:10px;
-    margin-bottom:20px;
-  }
-  .tipo-btn{
-    border:2px solid var(--pg-line);
-    background:#fff;
-    border-radius:13px;
-    padding:14px 10px;
-    text-align:center;
-    font-weight:700;
-    font-size:13.5px;
-    color:var(--pg-txt);
-    transition:.15s;
-  }
-  .tipo-btn .emoji{display:block;font-size:22px;margin-bottom:6px;}
-  .tipo-btn:hover{border-color:var(--tipo-color,var(--pg-mint));}
-  .tipo-btn.selected{
-    border-color:var(--tipo-color);
-    background:var(--tipo-bg);
-    color:var(--tipo-color);
-  }
-  .form-row{margin-bottom:18px;}
-  .form-row input[type=text],
-  .form-row textarea{
-    width:100%;
-    padding:11px 12px;
-    border:1px solid var(--pg-line);
-    border-radius:10px;
-    font-size:14px;
-    color:var(--pg-txt);
-    background:#fbfcfd;
-    resize:vertical;
-  }
-  .form-row textarea{min-height:140px;line-height:1.5;}
-  .form-row input:focus,.form-row textarea:focus{outline:none;border-color:var(--pg-mint);background:#fff;}
+  /* ---------- campos ---------- */
+  .field{margin-bottom:13px}
+  .field label{display:block;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-family:var(--f-body);font-size:13.5px;color:var(--txt);background:#FAFCFD;outline:none}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--mint);background:#fff}
+  .field input[type=number],.field input.mono{font-family:var(--f-num)}
+  .field textarea{min-height:120px;line-height:1.5;resize:vertical}
+  .field .nota{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.4}
+  .field.malo input,.field.malo select{border-color:var(--rojo);background:#FDF5F4}
+  .dos{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .cnt{font-family:var(--f-num);font-size:10.5px;color:var(--muted);float:right;font-weight:600}
 
-  .dropzone{
-    border:2px dashed var(--pg-line);
-    border-radius:13px;
-    padding:22px 14px;
-    text-align:center;
-    color:var(--pg-muted);
-    font-size:13px;
-    cursor:pointer;
-    transition:.15s;
-    background:#fbfcfd;
-  }
-  .dropzone.drag{
-    border-color:var(--pg-mint);
-    background:var(--pg-mint-soft);
-    color:var(--pg-ink);
-  }
-  .dropzone .dz-icon{font-size:26px;display:block;margin-bottom:6px;}
-  .foto-preview-wrap{margin-top:12px;}
-  .foto-preview-wrap img{
-    max-width:100%;
-    max-height:160px;
-    border-radius:10px;
-    border:1px solid var(--pg-line);
-    display:block;
-  }
-  .foto-status{font-size:12.5px;margin-top:8px;}
-  .foto-status.err{color:var(--pg-neg);}
-  .foto-status.ok{color:var(--pg-pos);}
-  .foto-status.busy{color:var(--pg-muted);}
+  /* ---------- interruptor ---------- */
+  .sw{display:flex;align-items:center;gap:10px;margin-top:9px;background:transparent;border:0;padding:0;text-align:left;width:100%}
+  .sw i{width:40px;height:22px;border-radius:999px;background:#C9D4DC;position:relative;flex-shrink:0;display:block;transition:background .16s}
+  .sw i::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .16s}
+  .sw[aria-checked="true"] i{background:var(--mint-deep)}
+  .sw[aria-checked="true"] i::after{left:21px}
+  .sw span{font-size:13px;font-weight:600;color:var(--ink)}
+  .sw small{font-size:11px;color:var(--muted);font-weight:400;display:block}
+  .sw:focus-visible{outline:2px solid var(--mint);outline-offset:3px;border-radius:9px}
 
-  .btn-publicar{
-    width:100%;
-    background:var(--pg-ink);
-    color:#fff;
-    border:none;
-    padding:13px 16px;
-    border-radius:11px;
-    font-weight:700;
-    font-size:14.5px;
-    margin-top:6px;
-    transition:.15s;
-  }
-  .btn-publicar:hover{background:var(--pg-ink-2);}
-  .btn-publicar:disabled{opacity:.55;cursor:default;}
+  /* ---------- segmentado ---------- */
+  .segs{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:#fff}
+  .segs button{border:0;background:transparent;font-family:var(--f-body);font-size:12.5px;font-weight:600;color:var(--muted);padding:8px 16px}
+  .segs button.on{background:var(--mint-deep);color:#fff}
 
-  /* Preview: maqueta a escala de la pantalla completa (SPEC-pantallas.md).
-     Todas las clases nuevas van prefijadas pv- para no chocar jamás con las
-     clases reales pgnov-* del lector (pg-novedades.js). */
-  .preview-label{
-    font-size:11.5px;
-    font-weight:700;
-    letter-spacing:.4px;
-    text-transform:uppercase;
-    color:var(--pg-muted);
-    margin-bottom:10px;
-  }
-  .pv-wrap{position:sticky;top:20px;}
-  .pv-frame{
-    width:100%;
-    aspect-ratio:16/10;
-    border-radius:14px;
-    overflow:hidden;
-    background:#06202A;
-    box-shadow:0 10px 30px rgba(27,45,58,.18);
-    position:relative;
-  }
-  /* Caja de referencia 1400x875 (misma proporción 16/10 que .pv-frame).
-     Se escala por JS (transform:scale) para caber en el ancho disponible;
-     así la tipografía nunca se duplica en dos hojas de estilo distintas. */
-  .pv-scale{
-    width:1400px;
-    height:875px;
-    transform-origin:top left;
-  }
-  .pv-ov{
-    width:100%;
-    height:100%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-family:'Inter',Arial,Helvetica,sans-serif;
-    position:relative;
-  }
-  .pv-slide{
-    max-width:1180px;
-    width:100%;
-    margin:0 auto;
-    height:100%;
-    display:flex;
-    flex-direction:column;
-    padding:26px 56px;
-    position:relative;
-  }
-  .pv-top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    flex-shrink:0;
-  }
-  .pv-kicker{
-    font-size:14px;
-    font-weight:700;
-    letter-spacing:.04em;
-    color:#A8D4CF;
-  }
-  .pv-prog{display:flex;align-items:center;gap:10px;}
-  .pv-dots{display:flex;align-items:center;gap:5px;}
-  .pv-dots i{
-    display:block;
-    width:10px;height:10px;
-    border-radius:99px;
-    background:rgba(255,255,255,.22);
-  }
-  .pv-dots i.done{background:rgba(255,255,255,.5);}
-  .pv-dots i.on{width:26px;background:var(--pv-acento,#229A82);}
-  .pv-count{font-size:13px;color:#9DBAC4;font-weight:600;}
-  .pv-body{
-    flex:1;
-    min-height:0;
-    overflow-y:auto;
-    display:flex;
-    align-items:center;
-  }
-  .pv-content{width:100%;text-align:center;margin:0 auto;}
-  .pv-badge{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    font-size:15px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:.12em;
-    color:var(--pv-acento,#229A82);
-    margin-bottom:18px;
-    padding:7px 16px;
-    border-radius:99px;
-    background:rgba(255,255,255,.06);
-  }
-  .pv-foto{
-    display:block;
-    margin:0 auto 22px;
-    border-radius:22px;
-    object-fit:cover;
-  }
-  .pv-titulo{
-    font-family:'Montserrat',Arial,Helvetica,sans-serif;
-    font-weight:800;
-    line-height:1.06;
-    color:#E8F1F3;
-    margin:0 0 16px 0;
-    font-size:50px;
-  }
-  .pv-cuerpo{
-    font-size:23px;
-    line-height:1.62;
-    color:#E8F1F3;
-    white-space:pre-wrap;
-    word-wrap:break-word;
-    max-width:52ch;
-    margin:0 auto;
-  }
-  .pv-pie{
-    margin-top:18px;
-    font-size:18px;
-    color:#9DBAC4;
-    font-style:italic;
-  }
-  .pv-bot{flex-shrink:0;padding-top:18px;}
-  .pv-bar{
-    height:6px;
-    border-radius:99px;
-    background:rgba(255,255,255,.14);
-    overflow:hidden;
-    margin:0 0 18px;
-  }
-  .pv-bar i{display:block;height:100%;width:38%;background:var(--pv-acento,#229A82);}
-  .pv-btn{
-    display:block;
-    width:min(420px,100%);
-    margin:0 auto;
-    padding:16px;
-    border-radius:12px;
-    border:none;
-    font-family:'Inter',Arial,Helvetica,sans-serif;
-    font-weight:700;
-    font-size:16px;
-    background:rgba(255,255,255,.14);
-    color:#9DBAC4;
-    cursor:default;
-  }
+  /* ---------- chips ---------- */
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center}
+  .chip{font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:all .15s;font-family:var(--f-body)}
+  .chip:hover{border-color:var(--mint);color:var(--mint-deep)}
+  .chip.on{background:var(--mint-deep);border-color:var(--mint-deep);color:#fff}
+  .chip .n{font-family:var(--f-num);font-weight:700;margin-left:6px;opacity:.85}
+  .badge-area{font-family:var(--f-num);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mint-deep);background:var(--mint-soft);border-radius:6px;padding:2px 7px}
+  .badge-bloq{font-family:var(--f-num);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:6px;padding:2px 7px;background:#EEF2F4;color:var(--muted)}
+  .badge-bloq.si{background:#FBF1D8;color:#8A6A14}
 
-  /* Traje por categoría — valores tomados de SPEC-pantallas.md */
-  .pv-t-felicitacion{--pv-acento:#00C864;background:radial-gradient(120% 90% at 50% 0%, #0E3B3A 0%, #06202A 62%);}
-  .pv-t-felicitacion .pv-titulo{font-size:74px;}
-  .pv-t-felicitacion.pv-sin-foto .pv-titulo{font-size:96px;}
-  .pv-t-felicitacion .pv-cuerpo{font-size:27px;max-width:none;}
-  .pv-t-felicitacion .pv-foto{height:403px;width:auto;max-width:100%;border:1px solid rgba(0,200,100,.35);}
+  /* ---------- tipos ---------- */
+  .tipo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+  .tipo-btn{border:2px solid var(--line);background:#fff;border-radius:13px;padding:13px 8px;text-align:center;font-family:var(--f-tit);font-weight:700;font-size:13px;color:var(--txt);transition:.15s}
+  .tipo-btn .emoji{display:block;font-size:20px;margin-bottom:6px}
+  .tipo-btn:hover{border-color:var(--mint)}
+  .tipo-btn.on{border-color:var(--tipo-color);background:var(--tipo-bg);color:var(--tipo-color)}
 
-  .pv-t-aviso{--pv-acento:#FFB400;background:linear-gradient(180deg,#0D3040 0%,#06202A 100%);}
-  .pv-t-aviso .pv-slide{border-top:10px solid #FFB400;}
-  .pv-t-aviso .pv-content{border:2px solid rgba(255,180,0,.55);border-radius:20px;padding:26px;}
-  .pv-t-aviso .pv-titulo{font-size:52px;}
-  .pv-t-aviso .pv-cuerpo{font-size:25px;max-width:none;}
-  .pv-t-aviso .pv-foto{max-height:298px;height:auto;}
+  /* ---------- personas: chips + buscador ---------- */
+  .pchip-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid var(--line);border-radius:9px;padding:5px 8px;background:#FAFCFD;min-height:38px;min-width:0}
+  .pchip{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--mint);border-radius:999px;padding:3px 10px 3px 3px;max-width:100%;min-width:0}
+  .av{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--mint-deep);color:#fff;font-family:var(--f-tit);font-weight:800;font-size:9.5px;display:flex;align-items:center;justify-content:center}
+  .av img{width:100%;height:100%;object-fit:cover;display:block}
+  .pchip .nm{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap}
+  .pchip .em{font-family:var(--f-num);font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .pchip .x{font-family:var(--f-body);font-size:13px;color:var(--muted);cursor:pointer;padding:0 2px;flex-shrink:0;background:transparent;border:0}
+  .pchip .x:hover{color:var(--rojo)}
+  .pchip-wrap input{border:0;background:transparent;flex:1;min-width:120px;font-family:var(--f-body);font-size:12.5px;outline:none;padding:4px 2px}
+  .busca-wrap{position:relative}
+  .sugs{position:absolute;z-index:60;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 12px 34px rgba(27,45,58,.16);max-height:260px;overflow-y:auto;padding:5px}
+  .sug{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;cursor:pointer;background:transparent;border:0;width:100%;text-align:left}
+  .sug:hover,.sug.sel{background:#F1F8F6}
+  .sug .nm{font-size:13px;font-weight:600;color:var(--ink)}
+  .sug .em{font-family:var(--f-num);font-size:10.5px;color:var(--muted)}
+  .sug .col{min-width:0;display:flex;flex-direction:column}
+  .sug-vacio{padding:10px;font-size:12.5px;color:var(--muted)}
 
-  .pv-t-novedad{--pv-acento:#229A82;background:linear-gradient(180deg,#0D3040 0%,#06202A 100%);}
-  .pv-t-novedad .pv-titulo{font-size:50px;}
-  .pv-t-novedad .pv-foto{max-height:298px;height:auto;}
+  /* ---------- ronda ---------- */
+  .ronda-two{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:start}
+  .col-pegada{position:sticky;top:14px}
+  @media(max-width:1100px){.col-pegada{position:static}}
+  .pers-row{display:grid;grid-template-columns:36px 1fr 26px;gap:12px;padding:14px 0;border-top:1px solid var(--line);min-width:0}
+  .pers-row:first-child{border-top:none;padding-top:0}
+  .pers-row .num{font-family:var(--f-num);font-size:12px;font-weight:700;color:var(--mint-deep);padding-top:26px}
+  .pers-row .quitar{background:transparent;border:0;color:var(--muted);font-size:16px;padding:0;line-height:1;align-self:start;margin-top:24px}
+  .pers-row .quitar:hover{color:var(--rojo)}
+  .pers-row.malo .pchip-wrap,.pers-row.malo input{border-color:var(--rojo)}
+  .add-row{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .add-row .lim{font-size:11.5px;color:var(--muted)}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+  .vig{font-size:12px;color:var(--muted);margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+  .vig b{font-family:var(--f-num);color:var(--ink)}
+  .pub-row{display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+  .pub-row .pgb{font-size:13.5px;padding:11px 18px}
+  .pub-row .n{font-family:var(--f-num)}
+  .pg-warn-box{background:#FBF0DC;border:1px solid #ECD08C;border-radius:12px;padding:13px 17px;color:#6b4e0c;font-size:12.5px;line-height:1.55;margin:12px 0 0;display:flex;align-items:center;gap:10px}
+  .pg-warn-box::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--ambar);flex-shrink:0}
+  .pg-warn-box b{color:#8A6A14}
+  .pg-err-box{background:#FBEAE8;border:1px solid #F0CDC9;border-radius:12px;padding:12px 16px;color:var(--rojo);font-size:12.5px;line-height:1.55;margin:12px 0 0;font-weight:600}
 
-  .pv-t-recordatorio{--pv-acento:#8DA0AD;background:linear-gradient(180deg,#0B2A36 0%,#06202A 100%);}
-  .pv-t-recordatorio .pv-titulo{font-size:44px;}
-  .pv-t-recordatorio .pv-cuerpo{color:#9DBAC4;font-size:22px;}
-  .pv-t-recordatorio .pv-foto{max-height:298px;height:auto;}
+  /* ---------- vista previa del overlay ---------- */
+  .prev-outer{position:relative;overflow:hidden;border-radius:12px;border:1px solid var(--line);background:var(--bg)}
+  .prev-inner{width:1100px;transform-origin:top left;position:absolute;top:0;left:0}
+  .prev-inner .pgnov-ov{min-height:0}
+  .prev-inner .pgnov-slide{min-height:0}
+  .prev-nota{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5}
+  .prev-nota b{font-family:var(--f-num);color:var(--ink)}
 
-  .pv-ens{
-    width:100%;
-    box-sizing:border-box;
-    text-align:left;
-    border-radius:16px;
-    border:1px solid rgba(255,180,0,.32);
-    border-left:4px solid #FFB400;
-    background:rgba(6,32,42,.34);
-    padding:20px 24px;
-    margin:22px auto 0;
-    max-width:52ch;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-  }
-  .pv-ens-badge{
-    align-self:flex-start;
-    font-size:12px;
-    font-weight:800;
-    letter-spacing:.12em;
-    text-transform:uppercase;
-    padding:5px 12px;
-    border-radius:99px;
-    background:#A8D4CF;
-    color:#06202A;
-  }
-  .pv-ens-texto{margin:0;line-height:1.6;color:#DCEFE7;font-size:19px;}
-  .pv-ens-acento{color:#FFCB57;font-weight:800;}
+  .pgnov-ov{position:relative;background:var(--ink);font-family:var(--f-body);color:#E8F1F3;overflow:hidden}
+  .pgnov-ov.t-felicitacion{background:radial-gradient(120% 90% at 50% 0%,rgba(45,191,163,.24) 0%,rgba(45,191,163,0) 62%),var(--ink)}
+  .pgnov-ov.t-aviso{background:linear-gradient(180deg,#233A4A 0%,var(--ink) 100%)}
+  .pgnov-ov.t-novedad,.pgnov-ov.t-recordatorio{background:linear-gradient(180deg,#233A4A 0%,var(--ink) 100%)}
+  .pgnov-slide{position:relative;width:100%;max-width:1180px;margin:0 auto;display:flex;flex-direction:column;padding:26px 46px 30px}
+  .pgnov-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:16px}
+  .pgnov-kicker{font-family:var(--f-tit);font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.72)}
+  .pgnov-dots{display:inline-flex;align-items:center;gap:6px}
+  .pgnov-dots i{display:block;width:10px;height:10px;border-radius:99px;background:rgba(255,255,255,.22)}
+  .pgnov-dots i.on{width:26px;background:var(--mint)}
+  .pgnov-body{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 0}
+  .pgnov-in{width:100%;max-width:980px;margin:auto;display:flex;flex-direction:column;align-items:center;gap:18px}
+  .pgnov-badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-tit);font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:8px 18px;border-radius:99px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff}
+  .t-felicitacion .pgnov-badge{color:var(--mint);border-color:rgba(45,191,163,.45);background:rgba(45,191,163,.10)}
+  .pgnov-badge .em{font-size:15px;line-height:1}
+  .pgnov-sub{font-family:var(--f-num);font-size:12.5px;font-weight:600;letter-spacing:.06em;color:rgba(255,255,255,.6);margin-top:-6px}
+  .pgnov-tit{margin:0;font-family:var(--f-tit);font-weight:800;line-height:1.06;letter-spacing:-.015em;color:#fff;font-size:40px}
+  .pgnov-cue{margin:0;line-height:1.55;color:rgba(255,255,255,.82);max-width:56ch;font-size:17px;white-space:pre-wrap}
+  .pgnov-foto{border-radius:14px;overflow:hidden;max-width:100%;max-height:300px}
+  .pgnov-foto img{display:block;max-width:100%;max-height:300px;object-fit:cover}
+  .pgnov-pie{font-family:var(--f-num);font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.06em;text-transform:uppercase}
+  .pgnov-bot{padding-top:18px;display:flex;flex-direction:column;align-items:center;gap:10px}
+  .pgnov-bar{width:min(420px,100%);height:6px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
+  .pgnov-bar i{display:block;height:100%;width:0;background:var(--mint)}
+  .pgnov-btn{width:min(420px,100%);padding:15px;border:none;border-radius:12px;font-family:var(--f-num);font-weight:600;font-size:14px;background:rgba(255,255,255,.05);color:rgba(255,255,255,.62);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);cursor:default}
+  .pgnov-reac{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;opacity:.38}
+  .rx{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;font-size:15px;line-height:1}
+  .fel-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;width:100%;max-width:900px}
+  .fel-card{width:250px;background:rgba(255,255,255,.055);border:1px solid rgba(45,191,163,.22);border-radius:18px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .fel-foto{width:140px;height:140px;border-radius:16px;overflow:hidden;border:2px solid rgba(45,191,163,.75);background:rgba(45,191,163,.08);flex-shrink:0}
+  .fel-foto img{display:block;width:100%;height:100%;object-fit:cover}
+  .fel-ini{width:140px;height:140px;border-radius:16px;background:linear-gradient(150deg,var(--mint-deep),#1B7A67);color:#fff;font-family:var(--f-tit);font-weight:800;font-size:50px;display:flex;align-items:center;justify-content:center;border:2px solid rgba(45,191,163,.75);flex-shrink:0}
+  .fel-nom{font-family:var(--f-tit);font-weight:800;font-size:19px;line-height:1.1;color:#fff;margin-top:6px}
+  .fel-logro{font-family:var(--f-tit);font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);line-height:1.35}
+  .fel-cue{font-size:13px;line-height:1.5;color:rgba(255,255,255,.78);margin:0}
+  .per{display:flex;flex-direction:column;align-items:center;gap:13px;text-align:center;width:100%}
+  .per-foto{width:230px;height:230px;border-radius:22px;overflow:hidden;border:3px solid var(--mint);background:rgba(45,191,163,.08);flex-shrink:0}
+  .per-foto img{display:block;width:100%;height:100%;object-fit:cover}
+  .per-ini{width:230px;height:230px;border-radius:22px;background:linear-gradient(150deg,var(--mint-deep),#1B7A67);color:#fff;font-family:var(--f-tit);font-weight:800;font-size:84px;display:flex;align-items:center;justify-content:center;border:3px solid var(--mint);flex-shrink:0}
+  .per-nom{font-family:var(--f-tit);font-weight:800;font-size:42px;line-height:1.04;color:#fff}
+  .per-logro{display:inline-block;font-family:var(--f-tit);font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:6px 14px;border-radius:999px;background:rgba(45,191,163,.16);color:var(--mint)}
+  .per-cue{font-size:17px;line-height:1.55;color:rgba(255,255,255,.82);max-width:52ch;margin:0;white-space:pre-wrap}
+  .pgnov-ens{width:100%;max-width:640px;text-align:left;border-radius:14px;border:1px solid rgba(217,165,32,.35);border-left:4px solid var(--ambar);background:rgba(217,165,32,.09);padding:14px 18px;display:flex;flex-direction:column;gap:8px}
+  .pgnov-ens-badge{align-self:flex-start;font-family:var(--f-tit);font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:rgba(217,165,32,.2);color:#F7DFA2}
+  .pgnov-ens-texto{margin:0;line-height:1.55;color:rgba(255,255,255,.85);font-size:14px}
+  .pgnov-ens-acento{color:#FFCB57;font-weight:800}
+  /* tema claro (temática Renovaciones v27) */
+  .pgnov-ov.claro{background:var(--bg);color:var(--txt)}
+  .pgnov-ov.claro.t-felicitacion{background:radial-gradient(120% 70% at 50% 0%,rgba(45,191,163,.16) 0%,rgba(45,191,163,0) 60%),var(--bg)}
+  .pgnov-ov.claro.t-aviso,.pgnov-ov.claro.t-novedad,.pgnov-ov.claro.t-recordatorio{background:var(--bg)}
+  .ovtop{background:#fff;border-bottom:1px solid var(--line);position:relative;z-index:2}
+  .ovtop-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 46px}
+  .ovtop .sec .mono{letter-spacing:.04em;color:var(--ink);margin-left:4px}
+  .cdpill{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-num);font-weight:700;font-size:14px;background:#0D3040;color:#fff;border-radius:999px;padding:7px 15px;white-space:nowrap}
+  .cdpill small{font-family:var(--f-body);font-weight:500;font-size:11px;opacity:.7}
+  .claro .pgnov-kicker,.claro .pgnov-sub,.claro .pgnov-pie{color:var(--muted)}
+  .claro .pgnov-dots i{background:#D5DEE5}
+  .claro .pgnov-dots i.on{background:var(--mint-deep)}
+  .claro .pgnov-badge,.claro.t-felicitacion .pgnov-badge{color:#186F5D;border-color:var(--mint-soft);background:var(--mint-soft)}
+  .claro .pgnov-tit{color:var(--ink)}
+  .claro .pgnov-cue{color:var(--txt)}
+  .ovpanel{width:100%;max-width:820px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:30px 34px;display:flex;flex-direction:column;align-items:center;gap:13px;box-shadow:0 10px 40px rgba(27,45,58,.10)}
+  .claro .per-nom{color:var(--ink);font-size:32px}
+  .claro .per-logro{background:var(--mint-soft);color:#186F5D}
+  .claro .per-cue{color:var(--txt)}
+  .claro .per-ini,.claro .fel-ini{border-color:#fff}
+  .claro .pgnov-ens{background:#FFFBF0;border-color:#ECD08C;border-left-color:var(--ambar)}
+  .claro .pgnov-ens-badge{background:#FBF1D8;color:#8A6A14}
+  .claro .pgnov-ens-texto{color:var(--txt)}
+  .claro .pgnov-ens-acento{color:#8A6A14}
+  .claro .fel-card{background:#fff;border:1px solid var(--line);box-shadow:0 6px 18px rgba(27,45,58,.08)}
+  .claro .fel-nom{color:var(--ink)}
+  .claro .fel-logro{color:var(--mint-deep)}
+  .claro .fel-cue{color:var(--muted)}
+  .claro .pgnov-bar{background:#E7EDF2}
+  .claro .pgnov-bar i{background:var(--mint-deep)}
+  .claro .pgnov-btn{background:#fff;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+  .claro .rx{border-color:var(--line);background:#fff;color:var(--txt)}
 
-  .pv-caption{
-    font-size:12px;
-    color:var(--pg-muted);
-    margin-top:10px;
-    line-height:1.5;
-  }
+  /* ---------- listas (activas / histórico / personas) ---------- */
+  .fila{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:13px;padding:14px 18px;margin-bottom:9px;display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:center;transition:transform .16s,box-shadow .16s}
+  .fila.clic{cursor:pointer}
+  .fila.clic:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(27,45,58,.09)}
+  .fila .tit{font-family:var(--f-tit);font-weight:700;color:var(--ink);font-size:14px;margin-bottom:4px}
+  .fila .meta{font-size:11.5px;color:var(--muted);display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .fila .nums{display:flex;gap:14px;align-items:center;font-family:var(--f-num);font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap}
+  .fila .nums .et{font-family:var(--f-body);font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block}
+  .fila.u-felicitacion{border-left-color:var(--mint)}
+  .fila.u-novedad{border-left-color:var(--mint-deep)}
+  .fila.u-aviso{border-left-color:var(--ambar)}
+  .fila.u-recordatorio{border-left-color:#C9D4DC}
+  .vacio{text-align:center;color:var(--muted);font-size:13px;padding:34px 10px}
+  .reac-min{font-family:var(--f-num);font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+  .reac-min b{color:var(--ink);font-weight:700}
 
-  /* ---------- Activas tab ---------- */
-  .activas-list{display:flex;flex-direction:column;gap:10px;}
-  .activa-item{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    border:1px solid var(--pg-line);
-    border-radius:13px;
-    padding:14px 16px;
-    background:#fff;
-    cursor:pointer;
-    transition:.15s;
-  }
-  .activa-item:hover{border-color:var(--pg-mint);box-shadow:0 4px 14px rgba(27,45,58,.06);}
-  .activa-tipo-dot{
-    width:10px;height:10px;border-radius:50%;
-    flex-shrink:0;
-    background:var(--tipo-color,#8da0ad);
-  }
-  .activa-main{flex:1;min-width:0;}
-  .activa-titulo{font-weight:700;color:var(--pg-ink);font-size:14.5px;margin-bottom:3px;}
-  .activa-meta{font-size:12px;color:var(--pg-muted);display:flex;gap:10px;flex-wrap:wrap;}
-  .activa-lecturas{
-    font-family:'JetBrains Mono',monospace;
-    font-weight:600;
-    font-size:13px;
-    color:var(--pg-mint-deep);
-    white-space:nowrap;
-  }
-  .btn-bajar{
-    background:#fff;
-    border:1px solid #f3cfcb;
-    color:var(--pg-neg);
-    padding:8px 13px;
-    border-radius:8px;
-    font-size:12.5px;
-    font-weight:700;
-    white-space:nowrap;
-  }
-  .btn-bajar:hover{background:#FBEAE8;}
-  .empty-state{
-    text-align:center;
-    color:var(--pg-muted);
-    font-size:13.5px;
-    padding:40px 10px;
-  }
+  /* ---------- personas ---------- */
+  .ptabla{width:100%;border-collapse:collapse}
+  .ptabla th{font-family:var(--f-tit);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .ptabla td{padding:9px 10px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+  .ptabla td.ar{text-align:center}
+  .ptabla input[type=checkbox]{accent-color:var(--mint-deep);width:16px;height:16px;cursor:pointer}
+  .ptabla tr:hover td{background:#FAFCFD}
+  .p-nom{display:flex;align-items:center;gap:9px}
+  .p-nom .col{display:flex;flex-direction:column;min-width:0}
+  .p-nom .nm{font-weight:600;color:var(--ink)}
+  .p-nom .em{font-family:var(--f-num);font-size:10.5px;color:var(--muted)}
+  .sinfoto{font-family:var(--f-num);font-size:10px;font-weight:700;color:#8A6A14;background:#FBF1D8;border:1px solid #ECD08C;border-radius:6px;padding:2px 7px;white-space:nowrap}
+  .linkish{color:var(--mint-deep);font-weight:600;font-size:12px;text-decoration:none}
+  .linkish:hover{text-decoration:underline}
 
-  /* ---------- Modal (detalle lecturas) ---------- */
-  .modal-overlay{
-    position:fixed;inset:0;
-    background:rgba(22,38,48,.45);
-    display:flex;align-items:center;justify-content:center;
-    z-index:500;
-    padding:20px;
-  }
-  .modal-box{
-    background:#fff;
-    border-radius:16px;
-    max-width:480px;
-    width:100%;
-    max-height:80vh;
-    display:flex;flex-direction:column;
-    box-shadow:0 20px 60px rgba(0,0,0,.25);
-  }
-  .modal-head{
-    padding:18px 20px;
-    border-bottom:1px solid var(--pg-line);
-    display:flex;align-items:center;justify-content:space-between;
-  }
-  .modal-head h3{font-size:16px;margin:0;}
-  .modal-close{
-    background:transparent;border:none;font-size:18px;color:var(--pg-muted);
-    line-height:1;padding:4px 6px;border-radius:6px;
-  }
-  .modal-close:hover{background:var(--pg-bg);}
-  .modal-body{padding:14px 20px 20px;overflow-y:auto;}
-  .lectura-row{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:9px 0;
-    border-bottom:1px solid var(--pg-line);
-    font-size:13px;
-  }
-  .lectura-row:last-child{border-bottom:none;}
-  .lectura-email{color:var(--pg-txt);font-weight:500;}
-  .lectura-hora{font-family:'JetBrains Mono',monospace;color:var(--pg-muted);font-size:12px;white-space:nowrap;margin-left:10px;}
+  /* ---------- modales ---------- */
+  .modal-overlay{position:fixed;inset:0;background:rgba(22,38,48,.45);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px}
+  .modal-box{background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:84vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  .modal-head{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .modal-head h3{font-size:16px}
+  .modal-close{background:transparent;border:none;font-size:18px;color:var(--muted);line-height:1;padding:4px 6px;border-radius:6px}
+  .modal-close:hover{background:var(--bg)}
+  .modal-body{padding:16px 22px 22px;overflow-y:auto}
+  .modal-foot{padding:14px 22px 20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+  .lin{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .lin:last-child{border-bottom:none}
+  .lin .em{color:var(--txt);font-weight:500;word-break:break-all}
+  .lin .hora{font-family:var(--f-num);color:var(--muted);font-size:11.5px;white-space:nowrap}
+  .msj{border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:9px;background:#FAFCFD}
+  .msj .cab{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+  .msj .nm{font-weight:600;font-size:12.5px;color:var(--ink)}
+  .msj .hora{font-family:var(--f-num);font-size:10.5px;color:var(--muted);margin-left:auto}
+  .msj .txt{font-size:13px;line-height:1.5;color:var(--txt);white-space:pre-wrap}
+  .msj .acc{margin-top:8px}
+  .msj.oculto{opacity:.5}
+  .sub-t{font-family:var(--f-tit);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+  .sub-t:first-child{margin-top:0}
 
-  /* ---------- Ajustes tab ---------- */
-  .ajustes-current{
-    text-align:center;
-    padding:26px 10px 30px;
-    border-bottom:1px solid var(--pg-line);
-    margin-bottom:24px;
-  }
-  .ajustes-current .lbl{font-size:12px;color:var(--pg-muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;}
-  .ajustes-current .big{
-    font-family:'JetBrains Mono',monospace;
-    font-size:46px;
-    font-weight:600;
-    color:var(--pg-ink);
-  }
-  .ajustes-current .big small{font-size:16px;color:var(--pg-muted);margin-left:4px;}
-  .duracion-opts{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(100px,1fr));
-    gap:10px;
-    margin-bottom:16px;
-  }
-  .dur-btn{
-    border:2px solid var(--pg-line);
-    background:#fff;
-    border-radius:11px;
-    padding:12px 8px;
-    font-weight:700;
-    font-size:13.5px;
-    font-family:'JetBrains Mono',monospace;
-    color:var(--pg-txt);
-    transition:.15s;
-  }
-  .dur-btn:hover{border-color:var(--pg-mint);}
-  .dur-btn.selected{
-    border-color:var(--pg-mint);
-    background:var(--pg-mint-soft);
-    color:var(--pg-mint-deep);
-  }
-  .dur-custom{margin-top:6px;margin-bottom:18px;}
-  .dur-custom input{
-    width:140px;
-    padding:10px 12px;
-    border:1px solid var(--pg-line);
-    border-radius:9px;
-    font-family:'JetBrains Mono',monospace;
-    font-size:14px;
-  }
-  .btn-guardar{
-    background:var(--pg-mint);
-    color:#fff;
-    border:none;
-    padding:12px 22px;
-    border-radius:10px;
-    font-weight:700;
-    font-size:14px;
-  }
-  .btn-guardar:hover{background:var(--pg-mint-deep);}
+  /* ---------- login / restringido ---------- */
+  .center-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .auth-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:34px 32px;width:100%;max-width:380px;box-shadow:0 8px 30px rgba(27,45,58,.10);text-align:center}
+  .auth-card .logo-mark{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--mint),var(--mint-deep));margin:0 auto 16px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;font-weight:800;font-family:var(--f-tit)}
+  .auth-card h1{font-size:19px;margin-bottom:4px}
+  .auth-card p.sub{color:var(--muted);font-size:13px;margin:0 0 22px 0}
+  .auth-err{background:#FBEAE8;color:var(--rojo);border:1px solid #f3cfcb;border-radius:8px;padding:9px 11px;font-size:12.5px;margin-bottom:14px;text-align:left}
+  .restricted-icon{width:56px;height:56px;border-radius:50%;background:#FBEAE8;color:var(--rojo);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px}
+  .restricted-email{font-family:var(--f-num);font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:14px 0 20px;word-break:break-all}
+  .link-back{display:inline-block;margin-top:14px;font-size:13px;color:var(--muted);text-decoration:none}
+  .link-back:hover{color:var(--ink);text-decoration:underline}
+  .btn-ancho{width:100%}
 
-  /* ---------- Toast ---------- */
-  .toast{
-    position:fixed;
-    bottom:24px;
-    left:50%;
-    transform:translateX(-50%) translateY(20px);
-    background:var(--pg-ink);
-    color:#fff;
-    padding:13px 20px;
-    border-radius:11px;
-    font-size:13.5px;
-    font-weight:600;
-    box-shadow:0 10px 30px rgba(0,0,0,.25);
-    opacity:0;
-    pointer-events:none;
-    transition:.25s;
-    z-index:999;
-    max-width:90vw;
-  }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-  .toast.err{background:var(--pg-neg);}
-  .toast.ok{background:var(--pg-pos);}
+  /* ---------- toast ---------- */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:13px 20px;border-radius:11px;font-size:13.5px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:.25s;z-index:999;max-width:90vw}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.err{background:var(--rojo)}
+  .toast.ok{background:var(--pg-pos)}
 
-  /* ---------- Accesos tab ---------- */
-  .acceso-toolbar{margin-bottom:16px;}
-  .acceso-toolbar input{
-    width:100%;
-    padding:10px 12px;
-    border:1px solid var(--pg-line);
-    border-radius:9px;
-    font-size:14px;
-    color:var(--pg-txt);
-    background:#fbfcfd;
+  /* ---------- accesos (se conserva) ---------- */
+  .acceso-toolbar{margin-bottom:16px}
+  .acceso-toolbar input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:14px;color:var(--txt);background:#FAFCFD}
+  .acceso-toolbar input:focus{outline:none;border-color:var(--mint);background:#fff}
+  .acceso-list{display:flex;flex-direction:column;gap:10px}
+  .acceso-item{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:13px;padding:14px 16px;background:#fff}
+  .acceso-main{flex:1;min-width:0}
+  .acceso-email{font-weight:700;color:var(--ink);font-size:14px;word-break:break-all}
+  .acceso-meta{font-size:12px;color:var(--muted);margin-top:3px}
+  .acceso-badge-area{display:inline-block;font-family:var(--f-num);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#8A6A14;background:#FBF1D8;border:1px solid #ECD08C;border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+  .acceso-confirm{border:1px solid var(--line);border-left:3px solid var(--mint);border-radius:10px;background:var(--bg);padding:14px 16px;font-size:13.5px;color:var(--txt)}
+  .acceso-confirm-area{border-left-color:var(--rojo)}
+  .acceso-confirm-warn{color:var(--rojo);font-weight:700;display:block;margin-top:6px}
+  .acceso-confirm-btns{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .acceso-pass-box{max-width:440px}
+  .acceso-pass-label{font-size:13px;color:var(--muted);margin-bottom:10px}
+  .acceso-pass-valor{font-family:var(--f-num);font-size:30px;font-weight:700;color:var(--ink);background:var(--mint-soft);border:1px solid var(--mint);border-radius:11px;padding:16px 14px;text-align:center;word-break:break-all;margin-bottom:14px}
+  .acceso-pass-mensaje{font-size:13px;line-height:1.5;color:var(--txt);background:#FAFCFD;border:1px solid var(--line);border-radius:10px;padding:12px 13px;margin:6px 0 14px}
+  .acceso-pass-aviso{font-size:12.5px;font-weight:700;color:var(--rojo);background:#FBEAE8;border:1px solid #f3cfcb;border-radius:8px;padding:9px 11px;margin-bottom:14px}
+
+  /* ---------- responsive ---------- */
+  @media(max-width:1100px){
+    .ronda-two{grid-template-columns:1fr}
+    .publicar-two{grid-template-columns:1fr}
   }
-  .acceso-toolbar input:focus{outline:none;border-color:var(--pg-mint);background:#fff;}
-  .acceso-list{display:flex;flex-direction:column;gap:10px;}
-  .acceso-item{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    border:1px solid var(--pg-line);
-    border-radius:13px;
-    padding:14px 16px;
-    background:#fff;
+  @media(max-width:860px){
+    .wrap{padding:0 16px 60px}
+    .pgtop{padding-top:16px}
+    .tipo-grid{grid-template-columns:repeat(2,1fr)}
+    .dos,.opts{grid-template-columns:1fr}
+    .fila{grid-template-columns:1fr;gap:10px}
+    .fila .nums{flex-wrap:wrap}
+    .nav{gap:2px}
+    .nv{padding:11px 10px}
+    .ptabla{display:block;overflow-x:auto;white-space:nowrap}
   }
-  .acceso-main{flex:1;min-width:0;}
-  .acceso-email{font-weight:700;color:var(--pg-ink);font-size:14px;word-break:break-all;}
-  .acceso-meta{font-size:12px;color:var(--pg-muted);margin-top:3px;}
-  .acceso-badge-area{
-    display:inline-block;
-    font-size:10.5px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:.3px;
-    color:var(--pg-warn);
-    background:#FFF6E0;
-    border:1px solid #f3e1ac;
-    border-radius:6px;
-    padding:2px 7px;
-    margin-left:6px;
-    vertical-align:middle;
-  }
-  .acceso-confirm{
-    border:1px solid var(--pg-line);
-    border-left:3px solid var(--pg-mint);
-    border-radius:10px;
-    background:var(--pg-bg);
-    padding:14px 16px;
-    margin-top:-2px;
-    font-size:13.5px;
-    color:var(--pg-txt);
-  }
-  .acceso-confirm-area{border-left-color:var(--pg-neg);}
-  .acceso-confirm-warn{color:var(--pg-neg);font-weight:700;display:block;margin-top:6px;}
-  .acceso-confirm-btns{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
-  .acceso-btn-secundario{
-    background:#fff;
-    border:1px solid var(--pg-line);
-    color:var(--pg-ink);
-    padding:9px 16px;
-    border-radius:9px;
-    font-weight:700;
-    font-size:13px;
-  }
-  .acceso-btn-secundario:hover{background:var(--pg-bg);}
-  .acceso-pass-box{max-width:440px;}
-  .acceso-pass-label{font-size:13px;color:var(--pg-muted);margin-bottom:10px;}
-  .acceso-pass-valor{
-    font-family:'JetBrains Mono',monospace;
-    font-size:30px;
-    font-weight:700;
-    color:var(--pg-ink);
-    background:var(--pg-mint-soft);
-    border:1px solid var(--pg-mint);
-    border-radius:11px;
-    padding:16px 14px;
-    text-align:center;
-    letter-spacing:.5px;
-    word-break:break-all;
-    margin-bottom:14px;
-  }
-  .acceso-pass-mensaje{
-    font-size:13px;
-    line-height:1.5;
-    color:var(--pg-txt);
-    background:#fbfcfd;
-    border:1px solid var(--pg-line);
-    border-radius:10px;
-    padding:12px 13px;
-    margin:6px 0 14px;
-  }
-  .acceso-pass-aviso{
-    font-size:12.5px;
-    font-weight:700;
-    color:var(--pg-neg);
-    background:#FBEAE8;
-    border:1px solid #f3cfcb;
-    border-radius:8px;
-    padding:9px 11px;
-    margin-bottom:14px;
-  }
+  .publicar-two{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:start}
 </style>
 
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
@@ -777,188 +369,334 @@
     <div class="logo-mark">PG</div>
     <h1>ProtectGo · Novedades</h1>
     <p class="sub">Panel de administración</p>
-    <div id="loginErrorBox" class="auth-error hidden"></div>
+    <div id="loginErrorBox" class="auth-err hidden"></div>
     <form id="loginForm">
-      <div class="field">
+      <div class="field" style="text-align:left">
         <label for="loginEmail">Correo</label>
         <input type="email" id="loginEmail" autocomplete="username" value="sales@protectgoservices.com" required>
       </div>
-      <div class="field">
+      <div class="field" style="text-align:left">
         <label for="loginPass">Contraseña</label>
         <input type="password" id="loginPass" autocomplete="current-password" required>
       </div>
-      <button type="submit" id="loginBtn" class="btn-primary">Entrar</button>
+      <button type="submit" id="loginBtn" class="pgb pri btn-ancho">Entrar</button>
     </form>
   </div>
 </div>
 
-<!-- ===================== RESTRICTED ===================== -->
+<!-- ===================== RESTRINGIDO ===================== -->
 <div id="restrictedScreen" class="center-screen hidden">
   <div class="auth-card">
     <div class="restricted-icon">🚫</div>
     <h1>Acceso restringido</h1>
     <p class="sub">Esta página es solo para el administrador de Novedades.</p>
     <div class="restricted-email" id="restrictedEmail"></div>
-    <button type="button" id="btnRestrictedLogout" class="btn-primary">Cerrar sesión y volver a intentar</button>
+    <button type="button" id="btnRestrictedLogout" class="pgb pri btn-ancho">Cerrar sesión y volver a intentar</button>
     <div><a class="link-back" href="index.html">← Volver al portal</a></div>
   </div>
 </div>
 
 <!-- ===================== APP ===================== -->
 <div id="appScreen" class="hidden">
-  <div class="topbar">
-    <div class="brand">ProtectGo · <span>Novedades</span></div>
-    <div class="session">
-      <span><b id="sessionEmail"></b></span>
-      <button type="button" id="btnLogout" class="btn-logout">Salir</button>
-    </div>
-  </div>
-
   <div class="wrap">
-    <div class="tabs">
-      <button type="button" class="tab-btn active" data-tab="publicar">Publicar</button>
-      <button type="button" class="tab-btn" data-tab="activas">Activas</button>
-      <button type="button" class="tab-btn" data-tab="ajustes">Ajustes</button>
-      <button type="button" class="tab-btn hidden" data-tab="accesos" id="tabBtnAccesos">Accesos</button>
+
+    <div class="pgtop">
+      <div class="pgbrand">
+        <span class="gabi">GABI</span><span class="sep"></span>
+        <span class="sec" id="topSec">Novedades · panel</span>
+      </div>
+      <div class="acts">
+        <span class="sello mono" id="topSello"></span>
+        <button type="button" id="btnRefrescar" class="pgb">Actualizar</button>
+        <button type="button" id="btnLogout" class="pgb">Cerrar sesión</button>
+      </div>
     </div>
 
-    <!-- ---------- TAB PUBLICAR ---------- -->
-    <div id="tab-publicar" class="tab-panel active">
-      <div class="publicar-grid">
-        <div class="card">
-          <span class="field-label">Tipo de novedad</span>
-          <div class="tipo-grid" id="tipoGrid"></div>
+    <nav class="nav" id="navTabs">
+      <button type="button" class="nv on" data-tab="publicar"><span class="k">01</span><span class="t">Publicar</span></button>
+      <button type="button" class="nv" data-tab="ronda"><span class="k">02</span><span class="t">Ronda de felicitaciones</span></button>
+      <button type="button" class="nv" data-tab="activas"><span class="k">03</span><span class="t">Activas</span></button>
+      <button type="button" class="nv" data-tab="personas"><span class="k">04</span><span class="t">Personas</span></button>
+      <button type="button" class="nv" data-tab="ajustes"><span class="k">05</span><span class="t">Ajustes</span></button>
+      <button type="button" class="nv hidden" data-tab="accesos" id="tabBtnAccesos"><span class="k">06</span><span class="t">Accesos</span></button>
+    </nav>
 
-          <div class="form-row">
-            <span class="field-label">Título</span>
-            <input type="text" id="fldTitulo" maxlength="120" placeholder="Ej: Cambió el horario de atención">
-          </div>
+    <!-- ---------- 01 · PUBLICAR ---------- -->
+    <div id="tab-publicar" class="pane on">
+      <div class="pg-eyebrow">Novedades · publicar</div>
+      <h1>Publicar una novedad</h1>
+      <div class="pg-sub">Elige el tipo, el área a la que le sale y si bloquea la pantalla. La vista previa de la derecha es exactamente lo que verá la gente.</div>
 
-          <div class="form-row">
-            <span class="field-label">Cuerpo</span>
-            <textarea id="fldCuerpo" maxlength="2000" placeholder="Escribe el mensaje completo..."></textarea>
-          </div>
-
-          <div class="form-row">
-            <span class="field-label">Enseñanza del mes (opcional)</span>
-            <textarea id="fldEnsenanza" maxlength="600" placeholder="Ej: Con **Canal** se puede liberar el **binder** sin necesidad de cambiar la licencia... Usa **doble asterisco** para resaltar en dorado."></textarea>
-          </div>
-
-          <div class="form-row hidden" id="fotoSection">
-            <span class="field-label">Foto</span>
-            <div class="dropzone" id="dropZone">
-              <span class="dz-icon">📷</span>
-              Arrastra una imagen aquí o haz clic para elegirla
-              <input type="file" id="fldFoto" accept="image/*" class="hidden">
-            </div>
-            <div class="foto-preview-wrap hidden" id="fotoPreviewWrap">
-              <img id="fotoPreviewImg" src="" alt="Vista previa">
-            </div>
-            <div class="foto-status hidden" id="fotoStatus"></div>
-
-            <div class="form-row" style="margin-top:14px;margin-bottom:0;">
-              <span class="field-label">Pie de foto</span>
-              <input type="text" id="fldPie" maxlength="140" placeholder="Ej: Camila Restrepo · Mejor vendedora · Semana 31">
-            </div>
-          </div>
-
-          <button type="button" id="btnPublicar" class="btn-publicar">Publicar</button>
-        </div>
-
+      <div class="publicar-two">
         <div>
-          <div class="preview-label">Así se va a ver</div>
-          <!-- Maqueta a escala de la pantalla completa (SPEC-pantallas.md).
-               Clases pv-* propias del preview: nunca chocan con pgnov-* del lector real. -->
-          <div class="pv-wrap">
-            <div class="pv-frame" id="pvFrame">
-              <div class="pv-scale" id="pvScale">
-                <div class="pv-ov pv-t-novedad" id="pvOv">
-                  <div class="pv-slide">
-                    <header class="pv-top">
-                      <div class="pv-kicker">📢 ProtectGo · al día</div>
-                      <div class="pv-prog">
-                        <span class="pv-dots"><i class="on"></i></span>
-                        <span class="pv-count">1 de 1</span>
-                      </div>
-                    </header>
-                    <main class="pv-body">
-                      <div class="pv-content">
-                        <div class="pv-badge" id="previewBadge"></div>
-                        <img id="previewFoto" class="pv-foto hidden" src="" alt="">
-                        <h3 class="pv-titulo" id="previewTitulo">Título de la novedad</h3>
-                        <div class="pv-cuerpo" id="previewCuerpo">El cuerpo del mensaje aparecerá aquí a medida que escribas.</div>
-                        <div class="pv-pie hidden" id="previewPie"></div>
-                        <div class="pv-ens hidden" id="previewEns">
-                          <div class="pv-ens-badge">ENSEÑANZA DEL MES</div>
-                          <div class="pv-ens-texto" id="previewEnsTexto"></div>
-                        </div>
-                      </div>
-                    </main>
-                    <footer class="pv-bot">
-                      <div class="pv-bar"><i></i></div>
-                      <button type="button" class="pv-btn" id="pvBtn" disabled>Ya lo leí, entendido</button>
-                    </footer>
-                  </div>
+          <div class="panel">
+            <div class="ph"><div><div class="pt">Contenido</div><div class="ps">El título y el cuerpo son obligatorios.</div></div></div>
+            <div class="pb">
+              <div class="field"><label>Tipo de novedad</label><div class="tipo-grid" id="tipoGrid"></div></div>
+
+              <div class="dos">
+                <div class="field" id="wrapArea">
+                  <label for="fldArea">Área a la que le sale *</label>
+                  <select id="fldArea">
+                    <option value="">Elige el área…</option>
+                    <option value="general">general · todo el personal</option>
+                    <option value="kam">kam</option>
+                    <option value="fam">fam</option>
+                    <option value="coi">coi</option>
+                    <option value="rrhh">rrhh</option>
+                    <option value="amazon">amazon</option>
+                  </select>
+                  <div class="nota">Obligatorio. "general" le sale a todo el personal; las demás solo a esa área.</div>
+                </div>
+                <div class="field">
+                  <label>Cómo interrumpe</label>
+                  <button type="button" class="sw" id="swBloqueante" role="switch" aria-checked="true">
+                    <i></i><span id="swBloqTxt">Bloqueante<small id="swBloqSub">Pantalla completa con contador; después queda en el muro.</small></span>
+                  </button>
                 </div>
               </div>
+
+              <div class="field">
+                <label for="fldTitulo">Título</label>
+                <input type="text" id="fldTitulo" maxlength="120" placeholder="Ej: Cambió el horario de atención">
+              </div>
+
+              <div class="field">
+                <label for="fldCuerpo">Cuerpo <span class="cnt" id="cntCuerpo">0/2000</span></label>
+                <textarea id="fldCuerpo" maxlength="2000" placeholder="Escribe el mensaje completo..."></textarea>
+              </div>
+
+              <div class="field">
+                <label for="fldEnsenanza">Enseñanza del mes (opcional)</label>
+                <textarea id="fldEnsenanza" maxlength="600" style="min-height:80px" placeholder="Usa **doble asterisco** para resaltar en dorado."></textarea>
+              </div>
             </div>
-            <div class="pv-caption">Así se verá en pantalla completa, una novedad por pantalla.</div>
-            <div class="pv-caption hidden" id="pvCaptionFoto">Si no cargas foto, el nombre crece y ocupa el centro.</div>
+          </div>
+
+          <div class="panel">
+            <div class="ph"><div><div class="pt">Personas y foto</div><div class="ps">Los destinatarios son opcionales; si es una felicitación y quieres que la persona reciba mensajes en su bandeja, agrégala aquí.</div></div></div>
+            <div class="pb">
+              <div class="field busca-wrap" id="wrapDest">
+                <label for="fldDestBuscar">Destinatarios (opcional)</label>
+                <div class="pchip-wrap" id="destChips">
+                  <input type="text" id="fldDestBuscar" autocomplete="off" placeholder="Escribe un nombre o correo…">
+                </div>
+                <div class="sugs hidden" id="destSugs"></div>
+                <div class="nota" id="notaDest">Se guardan siempre en minúsculas.</div>
+              </div>
+
+              <div class="field">
+                <label for="fldFoto">Foto (opcional, para cualquier tipo)</label>
+                <input type="file" id="fldFoto" accept="image/*">
+                <div class="nota" id="fotoStatus"></div>
+                <div class="hidden" id="fotoPreviewWrap" style="margin-top:10px">
+                  <img id="fotoPreviewImg" src="" alt="Vista previa de la foto" style="max-width:100%;max-height:150px;border-radius:10px;border:1px solid var(--line);display:block">
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="fldPie">Pie de foto (opcional)</label>
+                <input type="text" id="fldPie" maxlength="140" placeholder="Ej: Camila Restrepo · Mejor vendedora · Semana 31">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-pegada">
+          <div class="panel">
+            <div class="ph"><div><div class="pt">Vista previa en vivo</div><div class="ps">A escala, con el tema del overlay que está vigente.</div></div></div>
+            <div class="pb">
+              <div class="prev-outer" id="pubPrevOuter"><div class="prev-inner" id="pubPrevInner"></div></div>
+              <div class="prev-nota" id="pubPrevNota"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="ph"><div><div class="pt">Cómo sale</div></div></div>
+            <div class="pb">
+              <div class="vig" id="pubVigencia" style="margin-top:0;padding-top:0;border-top:0"></div>
+              <div class="pub-row">
+                <button type="button" id="btnPublicar" class="pgb pri">Publicar</button>
+                <span style="font-size:12px;color:var(--muted)" id="pubResumen"></span>
+              </div>
+              <div class="pg-warn-box" id="pubAviso"><span>Elige el área para saber a quién le sale.</span></div>
+              <div class="pg-err-box hidden" id="pubError"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ---------- TAB ACTIVAS ---------- -->
-    <div id="tab-activas" class="tab-panel">
-      <div class="card">
-        <h2 style="margin-bottom:14px;">Novedades activas</h2>
-        <div id="activasList" class="activas-list">
-          <div class="empty-state">Cargando...</div>
+    <!-- ---------- 02 · RONDA ---------- -->
+    <div id="tab-ronda" class="pane">
+      <div class="pg-eyebrow">Novedades · publicar en lote</div>
+      <h1>Ronda de felicitaciones</h1>
+      <div class="pg-sub">Una fila por persona. Todas salen juntas en el mismo lote, y cada una tiene su propia bandeja para reacciones y mensajes.</div>
+
+      <div class="ronda-two">
+        <div>
+          <div class="panel">
+            <div class="ph"><div><div class="pt">Personas de la ronda</div><div class="ps">La foto se precarga de Fotos (Control Maestro). Si alguien no tiene, salen sus iniciales.</div></div></div>
+            <div class="pb">
+              <div id="rondaFilas"></div>
+              <div class="add-row">
+                <button type="button" class="pgb" id="btnAgregarPersona">+ Agregar persona</button>
+                <span class="lim mono" id="rondaLimite"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-pegada">
+          <div class="panel">
+            <div class="ph"><div><div class="pt">Vista previa en vivo</div><div class="ps">Exactamente como saldrá en el overlay, a escala.</div></div></div>
+            <div class="pb">
+              <div class="prev-outer" id="rondaPrevOuter"><div class="prev-inner" id="rondaPrevInner"></div></div>
+              <div class="prev-nota" id="rondaPrevNota"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="ph"><div><div class="pt">Cómo sale</div></div></div>
+            <div class="pb">
+              <div class="opts">
+                <div class="field"><label>Área</label>
+                  <select id="rondaArea" disabled><option value="general">general</option></select>
+                  <div class="nota">Las rondas siempre son generales: le salen a todo el personal.</div>
+                </div>
+                <div class="field"><label>Bloqueante</label>
+                  <div class="sw" aria-checked="true" role="img"><i></i><span>Activado<small>Pantalla completa con contador; después queda en el muro.</small></span></div>
+                </div>
+              </div>
+              <div class="vig" id="rondaVigencia"></div>
+              <div class="pub-row">
+                <button type="button" class="pgb pri" id="btnPublicarRonda">Publicar ronda (<span class="n" id="rondaN">0</span> personas)</button>
+                <span style="font-size:12px;color:var(--muted)" id="rondaResumen"></span>
+              </div>
+              <div class="pg-warn-box"><span>Le saldrá a <b>todo el personal</b> en una sola tanda.</span></div>
+              <div class="pg-err-box hidden" id="rondaError"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ---------- TAB AJUSTES ---------- -->
-    <div id="tab-ajustes" class="tab-panel">
-      <div class="card" style="max-width:520px;">
-        <h2 style="margin-bottom:6px;">Duración del bloqueo</h2>
-        <p style="color:var(--pg-muted);font-size:13px;margin:0 0 4px 0;">Cuánto tiempo debe permanecer bloqueada la pantalla hasta que la persona confirme que leyó la novedad.</p>
-        <div class="ajustes-current">
-          <div class="lbl">Valor vigente</div>
-          <div class="big" id="ajustesActual">-- <small>seg</small></div>
+    <!-- ---------- 03 · ACTIVAS ---------- -->
+    <div id="tab-activas" class="pane">
+      <div class="pg-eyebrow">Novedades · seguimiento</div>
+      <h1>Novedades activas</h1>
+      <div class="pg-sub">Quién la leyó, cuánta gente reaccionó y qué mensajes le escribieron a los felicitados. Dirección ve todos los mensajes.</div>
+      <div class="chips" id="activasChips">
+        <button type="button" class="chip on" data-sub="activas">Activas<span class="n" id="chipNActivas">0</span></button>
+        <button type="button" class="chip" data-sub="historico">Histórico 90 días<span class="n" id="chipNHist">0</span></button>
+      </div>
+      <div id="activasList"><div class="vacio">Cargando…</div></div>
+      <div id="historicoList" class="hidden"><div class="vacio">Cargando…</div></div>
+    </div>
+
+    <!-- ---------- 04 · PERSONAS ---------- -->
+    <div id="tab-personas" class="pane">
+      <div class="pg-eyebrow">Novedades · ruteo</div>
+      <h1>Personas y áreas</h1>
+      <div class="pg-sub">Marca a qué áreas pertenece cada persona. De esto depende qué novedades le llegan. "general" le llega a todo el mundo, esté o no marcado.</div>
+      <div class="panel">
+        <div class="ph">
+          <div><div class="pt">Directorio</div><div class="ps">Sale de la vista de personas (RRHH + fotos), sin correos repetidos.</div></div>
+          <div class="chips" style="margin:0">
+            <button type="button" class="chip" id="chipSinArea">Solo sin área específica<span class="n" id="nSinArea">0</span></button>
+            <button type="button" class="chip" id="chipSinFoto">Solo sin foto<span class="n" id="nSinFoto">0</span></button>
+          </div>
         </div>
-        <span class="field-label">Nueva duración</span>
-        <div class="duracion-opts" id="duracionOpts"></div>
-        <div class="dur-custom hidden" id="durCustomWrap">
-          <span class="field-label">Segundos personalizados</span>
-          <input type="number" id="durCustomInput" min="5" max="3600" placeholder="Ej: 45">
+        <div class="pb">
+          <div class="field" style="max-width:340px"><label for="personasBuscar">Buscar</label><input type="text" id="personasBuscar" placeholder="Nombre o correo…"></div>
+          <div id="personasTablaWrap"><div class="vacio">Cargando…</div></div>
         </div>
-        <button type="button" id="btnGuardarDuracion" class="btn-guardar">Guardar</button>
       </div>
     </div>
 
-    <!-- ---------- TAB ACCESOS ---------- -->
-    <div id="tab-accesos" class="tab-panel">
-      <div class="card">
-        <h2 style="margin-bottom:6px;">Restablecer accesos</h2>
-        <p style="color:var(--pg-muted);font-size:13px;margin:0 0 16px 0;">Para restablecer la clave de alguien que la olvidó y no tiene buzón (cuentas de área) o que no le llega el correo de recuperación.</p>
+    <!-- ---------- 05 · AJUSTES ---------- -->
+    <div id="tab-ajustes" class="pane">
+      <div class="pg-eyebrow">Novedades · configuración</div>
+      <h1>Ajustes</h1>
+      <div class="pg-sub">Todo esto se cambia sin tocar código. Los cambios aplican a las novedades que se publiquen de aquí en adelante (y la duración también a las activas).</div>
 
-        <div class="acceso-toolbar">
-          <input type="text" id="accesoBuscar" placeholder="Buscar por correo...">
+      <div class="panel">
+        <div class="ph"><div><div class="pt">Tiempos</div><div class="ps">Cuánto dura el bloqueo y cuántos días se ve cada cosa.</div></div></div>
+        <div class="pb">
+          <div class="dos">
+            <div class="field">
+              <label for="ajDuracion">Duración del bloqueo (segundos)</label>
+              <input type="number" id="ajDuracion" min="5" max="3600">
+              <div class="nota">Cuánto tiene que quedarse la pantalla bloqueada antes de que la persona pueda confirmar que leyó.</div>
+            </div>
+            <div class="field">
+              <label for="ajDiasVigencia">Días que la novedad bloquea (overlay)</label>
+              <input type="number" id="ajDiasVigencia" min="1" max="30">
+              <div class="nota">Cuántos días seguidos sale en pantalla completa. Con 1, solo bloquea el día que la publicas.</div>
+            </div>
+            <div class="field">
+              <label for="ajDiasMuro">Días que se queda en el muro del portal</label>
+              <input type="number" id="ajDiasMuro" min="1" max="365">
+              <div class="nota">Cuántos días la gente la sigue viendo en la página de inicio, la haya leído o no.</div>
+            </div>
+            <div class="field">
+              <label for="ajSegPersona">Segundos por persona en una ronda</label>
+              <input type="number" id="ajSegPersona" min="5" max="600" placeholder="vacío = repartir el total">
+              <div class="nota">Si lo dejas vacío, el tiempo total se reparte entre las personas de la ronda. Si pones un número, cada persona dura ese tiempo.</div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div id="accesoListWrap">
-          <div class="empty-state">Cargando...</div>
-        </div>
-
-        <h2 style="margin:30px 0 4px;">Últimos resets</h2>
-        <p style="color:var(--pg-muted);font-size:13px;margin:0 0 14px 0;">Los 20 más recientes.</p>
-        <div id="accesoHistWrap">
-          <div class="empty-state">Cargando...</div>
+      <div class="panel">
+        <div class="ph"><div><div class="pt">Cómo se ve y cómo participa la gente</div></div></div>
+        <div class="pb">
+          <div class="dos">
+            <div class="field">
+              <label>Tema del overlay</label>
+              <div class="segs" id="segTema">
+                <button type="button" data-v="claro">Claro</button>
+                <button type="button" data-v="oscuro">Oscuro</button>
+              </div>
+              <div class="nota">Claro: pantalla blanca como Renovaciones. Oscuro: pantalla azul oscura como hasta ahora.</div>
+            </div>
+            <div class="field">
+              <label>Modo de la ronda de felicitaciones</label>
+              <div class="segs" id="segModo">
+                <button type="button" data-v="persona">Una pantalla por persona</button>
+                <button type="button" data-v="mosaico">Mosaico</button>
+              </div>
+              <div class="nota">Por persona: pasan una a una, cada quien con su pantalla. Mosaico: todas juntas en una sola pantalla.</div>
+            </div>
+            <div class="field">
+              <label>Reacciones</label>
+              <button type="button" class="sw" id="swReacciones" role="switch" aria-checked="true"><i></i><span id="swReaccionesTxt">Activadas<small>La gente puede aplaudir 👏 🎉 ❤️ 🔥 💪 en el muro y en la pantalla.</small></span></button>
+            </div>
+            <div class="field">
+              <label>Mensajes a los felicitados</label>
+              <button type="button" class="sw" id="swComentarios" role="switch" aria-checked="true"><i></i><span id="swComentariosTxt">Activados<small>La gente puede escribirle un mensaje corto a quien felicitamos. Solo lo lee esa persona y dirección.</small></span></button>
+            </div>
+          </div>
+          <div class="pub-row">
+            <button type="button" class="pgb pri" id="btnGuardarAjustes">Guardar ajustes</button>
+            <span style="font-size:12px;color:var(--muted)" id="ajustesEstado"></span>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- ---------- 06 · ACCESOS (SE CONSERVA TAL CUAL) ---------- -->
+    <div id="tab-accesos" class="pane">
+      <div class="panel">
+        <div class="ph"><div><div class="pt">Restablecer accesos</div><div class="ps">Para restablecer la clave de alguien que la olvidó y no tiene buzón (cuentas de área) o que no le llega el correo de recuperación.</div></div></div>
+        <div class="pb">
+          <div class="acceso-toolbar">
+            <input type="text" id="accesoBuscar" placeholder="Buscar por correo...">
+          </div>
+          <div id="accesoListWrap"><div class="vacio">Cargando...</div></div>
+          <div class="sub-t" style="margin-top:26px">Últimos resets · los 20 más recientes</div>
+          <div id="accesoHistWrap"><div class="vacio">Cargando...</div></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -972,22 +710,37 @@
     <div class="modal-body">
       <div class="acceso-pass-label">Cuenta: <b id="accesoPassEmail"></b></div>
       <div class="acceso-pass-valor" id="accesoPassValor"></div>
-      <button type="button" class="btn-primary" id="accesoPassCopiar">Copiar clave y mensaje</button>
+      <button type="button" class="pgb pri btn-ancho" id="accesoPassCopiar">Copiar clave y mensaje</button>
       <div class="acceso-pass-mensaje" id="accesoPassMensaje"></div>
       <div class="acceso-pass-aviso">⚠️ Esta clave no se vuelve a mostrar. Cópiala antes de cerrar.</div>
-      <button type="button" class="acceso-btn-secundario" id="accesoPassCerrar" style="width:100%;">Cerrar</button>
+      <button type="button" class="pgb btn-ancho" id="accesoPassCerrar">Cerrar</button>
     </div>
   </div>
 </div>
 
-<!-- ===================== MODAL DETALLE LECTURAS ===================== -->
+<!-- ===================== MODAL DETALLE ===================== -->
 <div id="modalOverlay" class="modal-overlay hidden">
   <div class="modal-box">
     <div class="modal-head">
-      <h3 id="modalTitulo">Lecturas</h3>
+      <h3 id="modalTitulo">Detalle</h3>
       <button type="button" class="modal-close" id="modalCloseBtn">✕</button>
     </div>
     <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ===================== MODAL CONFIRMACIÓN ===================== -->
+<div id="confirmOverlay" class="modal-overlay hidden">
+  <div class="modal-box" style="max-width:460px">
+    <div class="modal-head">
+      <h3 id="confirmTitulo">Confirmar</h3>
+      <button type="button" class="modal-close" id="confirmCerrarX">✕</button>
+    </div>
+    <div class="modal-body" id="confirmBody"></div>
+    <div class="modal-foot">
+      <button type="button" class="pgb" id="confirmNo">Cancelar</button>
+      <button type="button" class="pgb pri" id="confirmSi">Sí, publicar</button>
+    </div>
   </div>
 </div>
 
@@ -1004,24 +757,48 @@ var SUPABASE_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var sb=null;
 
 var PERMITIDOS=['sales@protectgoservices.com','andres.lopez@protectgoservices.com'];
+var AREAS=['general','kam','fam','coi','rrhh','amazon'];
+var EMOJIS=['👏','🎉','❤️','🔥','💪'];
+var RONDA_MAX=12;
+var RONDA_INICIAL=3;
 
 var TIPOS={
-  felicitacion:{emoji:'🎉',label:'Felicitación',color:'#00C864',bg:'#E6FBEF'},
-  novedad:     {emoji:'🔧',label:'Novedad',      color:'#229A82',bg:'#E4F5F1'},
-  aviso:       {emoji:'⚠️',label:'Aviso',        color:'#FFB400',bg:'#FFF6E0'},
-  recordatorio:{emoji:'📌',label:'Recordatorio', color:'#8da0ad',bg:'#EEF2F4'}
+  felicitacion:{emoji:'🎉',label:'Felicitación',color:'#229A82',bg:'#E4F5F1',bloqueante:true},
+  novedad:     {emoji:'🔧',label:'Novedad',      color:'#229A82',bg:'#E4F5F1',bloqueante:true},
+  aviso:       {emoji:'⚠️',label:'Aviso',        color:'#8A6A14',bg:'#FBF1D8',bloqueante:true},
+  recordatorio:{emoji:'📌',label:'Recordatorio', color:'#5f7382',bg:'#EEF2F4',bloqueante:false}
 };
 
-var duracionCache=90; // se sincroniza con novedades_config al cargar
+/* config vigente en base (se sincroniza al cargar) */
+var cfg={
+  duracion_segundos:90,
+  dias_vigencia:1,
+  dias_muro:30,
+  reacciones_activas:true,
+  comentarios_activos:true,
+  tema_overlay:'claro',
+  modo_ronda:'persona',
+  segundos_por_persona:null
+};
 
 var state={
   tipo:'novedad',
+  area:'',
+  bloqueante:true,
+  bloqueanteTocado:false,
   imagen_url:null,
   subiendo:false,
-  publicando:false
+  destinatarios:[]      /* [{email,nombre,foto_url}] */
 };
 
-/* ---- Accesos (reset de clave por admin) ---- */
+var ronda=[];           /* [{persona:null|{email,nombre,foto_url}, logro:'', cuerpo:'', busca:''}] */
+var personasCache=[];   /* v_personas deduplicado por email */
+var personasAreas={};   /* email -> {area:true} */
+var activasCache=[];
+var subActivas='activas';
+var personasFiltro={texto:'',sinArea:false,sinFoto:false};
+
+/* ---- Accesos (reset de clave por admin) — SE CONSERVA ---- */
 var ACCESOS_ADMIN_EMAIL='sales@protectgoservices.com';
 var ACCESOS_FN_URL='https://hivpqsepwsfmafamxkzy.supabase.co/functions/v1/admin-reset-password';
 var CUENTAS_AREA=['fam@','kam@','coi@','rrhh@','sales@','endorsement@','renewal@','retention@','amazonaud@'];
@@ -1032,49 +809,62 @@ var accesosPassActual=null;
 var accesosInicializado=false;
 
 /* =========================================================
-   HELPERS
+   HELPERS DE DOM (siempre textContent, nunca innerHTML con datos)
 ========================================================= */
 function $(id){return document.getElementById(id);}
+function el(tag,cls,txt){
+  var e=document.createElement(tag);
+  if(cls)e.className=cls;
+  if(txt!==undefined&&txt!==null)e.textContent=String(txt);
+  return e;
+}
+function vaciar(nodo){
+  if(!nodo)return nodo;
+  while(nodo.firstChild)nodo.removeChild(nodo.firstChild);
+  return nodo;
+}
+function ponVacio(nodo,texto){
+  vaciar(nodo).appendChild(el('div','vacio',texto));
+}
+function uuid(){
+  try{
+    if(window.crypto&&window.crypto.randomUUID)return window.crypto.randomUUID();
+  }catch(e){}
+  var s='0123456789abcdef',out='';
+  for(var i=0;i<36;i++){
+    if(i===8||i===13||i===18||i===23)out+='-';
+    else if(i===14)out+='4';
+    else if(i===19)out+=s[(Math.random()*4|0)+8];
+    else out+=s[Math.random()*16|0];
+  }
+  return out;
+}
 
-/* Traducimos los errores de Supabase: al usuario NUNCA le sale inglés crudo.
-   El detalle técnico original siempre se manda a console.log('[novedades-admin] ...'). */
+/* Traducimos los errores de Supabase: al usuario NUNCA le sale inglés crudo. */
 function enEspanol(err){
   var m=String((err&&(err.message||err.error_description||err.code))||"").toLowerCase();
   if(!m)return "No se pudo completar. Intenta de nuevo; si sigue igual, avísale a soporte.";
-  if(m.indexOf("invalid login credentials")>=0)
-    return "Correo o contraseña incorrectos.";
+  if(m.indexOf("invalid login credentials")>=0)return "Correo o contraseña incorrectos.";
   if(m.indexOf("rate limit")>=0||m.indexOf("too many requests")>=0||m.indexOf("over_email_send_rate_limit")>=0)
     return "Se hicieron muchos intentos seguidos. Espera un minuto y vuelve a intentar.";
-  if(m.indexOf("failed to fetch")>=0||m.indexOf("network")>=0)
-    return "No hay conexión. Revisa tu internet y vuelve a intentar.";
+  if(m.indexOf("failed to fetch")>=0||m.indexOf("network")>=0)return "No hay conexión. Revisa tu internet y vuelve a intentar.";
   if(m.indexOf("jwt")>=0||m.indexOf("session")>=0||m.indexOf("not authenticated")>=0||m.indexOf("token")>=0)
     return "Se venció la sesión. Vuelve a iniciar sesión.";
   if(m.indexOf("row-level security")>=0||m.indexOf("permission denied")>=0||m.indexOf("rls")>=0||m.indexOf("403")>=0)
     return "No tienes permiso para hacer esto. Avísale a soporte.";
-  if(m.indexOf("timeout")>=0||m.indexOf("timed out")>=0)
-    return "La operación tardó demasiado. Vuelve a intentar.";
+  if(m.indexOf("timeout")>=0||m.indexOf("timed out")>=0)return "La operación tardó demasiado. Vuelve a intentar.";
   if(m.indexOf("payload too large")>=0||m.indexOf("too large")>=0||m.indexOf("exceeded")>=0)
     return "El archivo es muy pesado. Usa una foto más liviana.";
   return "No se pudo completar. Intenta de nuevo; si sigue igual, avísale a soporte.";
 }
 
-function escapeHtml(str){
-  if(str===null||str===undefined)return '';
-  return String(str)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;');
-}
-
 var toastTimer=null;
 function toast(msg,tipo){
-  var el=$('toast');
-  el.textContent=msg;
-  el.className='toast show'+(tipo?(' '+tipo):'');
+  var t=$('toast');
+  t.textContent=msg;
+  t.className='toast show'+(tipo?(' '+tipo):'');
   if(toastTimer)clearTimeout(toastTimer);
-  toastTimer=setTimeout(function(){el.className='toast';},3200);
+  toastTimer=setTimeout(function(){t.className='toast';},3400);
 }
 
 function formatFecha(iso){
@@ -1082,24 +872,23 @@ function formatFecha(iso){
     var d=new Date(iso);
     var dias=['dom','lun','mar','mié','jue','vie','sáb'];
     var meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    var hh=d.getHours();
-    var mm=d.getMinutes();
+    var hh=d.getHours(),mm=d.getMinutes();
     var ampm=hh>=12?'pm':'am';
     var hh12=hh%12;if(hh12===0)hh12=12;
-    var mmStr=mm<10?('0'+mm):mm;
-    return dias[d.getDay()]+' '+d.getDate()+' '+meses[d.getMonth()]+' · '+hh12+':'+mmStr+ampm;
-  }catch(e){return iso;}
+    return dias[d.getDay()]+' '+d.getDate()+' '+meses[d.getMonth()]+' · '+hh12+':'+(mm<10?'0'+mm:mm)+ampm;
+  }catch(e){return String(iso);}
 }
-
-function formatDuracion(seg){
-  seg=Number(seg)||0;
-  if(seg<60)return seg+' seg';
-  var m=Math.floor(seg/60);
-  var s=seg%60;
-  if(s===0)return m+' min';
-  return m+':'+(s<10?'0'+s:s)+' min';
+function mmss(seg){
+  seg=Math.max(0,Number(seg)||0);
+  var m=Math.floor(seg/60),s=seg%60;
+  return m+':'+(s<10?'0'+s:s);
 }
-
+function iniciales(nombre){
+  var p=String(nombre||'').trim().split(/\s+/);
+  var a=(p[0]||'')[0]||'';
+  var b=(p.length>1?p[p.length-1]:'')[0]||'';
+  return (a+b).toUpperCase()||'··';
+}
 function sanitizeFileName(name){
   var parts=String(name).split('.');
   var ext=parts.length>1?parts.pop():'jpg';
@@ -1110,6 +899,20 @@ function sanitizeFileName(name){
   return Date.now()+'-'+base+'.'+ext.toLowerCase();
 }
 
+/* avatar (foto o iniciales) sin innerHTML */
+function avatar(persona,cls){
+  var av=el('span',cls||'av');
+  if(persona&&persona.foto_url){
+    var img=document.createElement('img');
+    img.src=persona.foto_url;
+    img.alt='';
+    av.appendChild(img);
+  }else{
+    av.textContent=iniciales(persona?persona.nombre:'');
+  }
+  return av;
+}
+
 /* =========================================================
    AUTENTICACIÓN / GUARDIA DE ACCESO
 ========================================================= */
@@ -1117,9 +920,7 @@ var currentEmail='';
 
 function showOnly(id){
   var ids=['loginScreen','restrictedScreen','appScreen'];
-  for(var i=0;i<ids.length;i++){
-    $(ids[i]).classList.toggle('hidden',ids[i]!==id);
-  }
+  for(var i=0;i<ids.length;i++)$(ids[i]).classList.toggle('hidden',ids[i]!==id);
 }
 
 function onAuthed(session){
@@ -1130,20 +931,12 @@ function onAuthed(session){
     showOnly('restrictedScreen');
     return;
   }
-  $('sessionEmail').textContent=email;
+  $('topSec').textContent='Novedades · '+email.split('@')[0]+' · '+new Date().getFullYear();
   showOnly('appScreen');
   iniciarApp();
 }
-
-function onNoSession(){
-  currentEmail='';
-  showOnly('loginScreen');
-}
-
-function handleSession(session){
-  if(!session){onNoSession();return;}
-  onAuthed(session);
-}
+function onNoSession(){currentEmail='';showOnly('loginScreen');}
+function handleSession(session){if(!session){onNoSession();return;}onAuthed(session);}
 
 function bootSupabase(){
   if(!(window.supabase&&window.supabase.createClient)){
@@ -1155,17 +948,12 @@ function bootSupabase(){
     return;
   }
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{db:{schema:'portal'}});
-  sb.auth.getSession().then(function(res){
-    handleSession(res && res.data ? res.data.session : null);
-  });
-  sb.auth.onAuthStateChange(function(event,session){
-    handleSession(session);
-  });
+  sb.auth.getSession().then(function(res){handleSession(res&&res.data?res.data.session:null);});
+  sb.auth.onAuthStateChange(function(event,session){handleSession(session);});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(bootSupabase,30);});
 else setTimeout(bootSupabase,30);
 
-/* Login form */
 $('loginForm').addEventListener('submit',function(e){
   e.preventDefault();
   if(!sb)return;
@@ -1174,249 +962,362 @@ $('loginForm').addEventListener('submit',function(e){
   var errBox=$('loginErrorBox');
   errBox.classList.add('hidden');
   var btn=$('loginBtn');
-  btn.disabled=true;
-  btn.textContent='Entrando...';
+  btn.disabled=true;btn.textContent='Entrando...';
   sb.auth.signInWithPassword({email:email,password:pass}).then(function(res){
-    btn.disabled=false;
-    btn.textContent='Entrar';
+    btn.disabled=false;btn.textContent='Entrar';
     if(res.error){
       console.log('[novedades-admin] error de login:',res.error);
       errBox.textContent=enEspanol(res.error);
       errBox.classList.remove('hidden');
     }
   })["catch"](function(err){
-    btn.disabled=false;
-    btn.textContent='Entrar';
+    btn.disabled=false;btn.textContent='Entrar';
     console.log('[novedades-admin] error de conexión en login:',err);
     errBox.textContent=enEspanol(err);
     errBox.classList.remove('hidden');
   });
 });
-
-$('btnLogout').addEventListener('click',function(){
-  if(sb)sb.auth.signOut();
-});
-$('btnRestrictedLogout').addEventListener('click',function(){
-  if(sb)sb.auth.signOut();
-});
+$('btnLogout').addEventListener('click',function(){if(sb)sb.auth.signOut();});
+$('btnRestrictedLogout').addEventListener('click',function(){if(sb)sb.auth.signOut();});
 
 var appIniciado=false;
 function iniciarApp(){
   if(appIniciado)return;
   appIniciado=true;
+  sello();
   initTabs();
   initTipoSelector();
-  initFormListeners();
-  initFotoUpload();
   initPublicar();
-  initAjustes();
+  initRonda();
   initActivas();
-  initModal();
+  initPersonas();
+  initAjustes();
+  initModales();
   initAccesos();
-  cargarConfigYActivas();
+  $('btnRefrescar').addEventListener('click',function(){
+    sello();cargarConfig();cargarPersonas();cargarActivas();
+  });
+  cargarConfig();
+  cargarPersonas();
+  cargarActivas();
 }
 
-function cargarConfigYActivas(){
-  cargarConfig();
-  loadActivas();
+function sello(){
+  var d=new Date();
+  var hh=d.getHours(),mm=d.getMinutes();
+  var ampm=hh>=12?'p. m.':'a. m.';
+  var h12=hh%12;if(h12===0)h12=12;
+  $('topSello').textContent='datos al '+h12+':'+(mm<10?'0'+mm:mm)+' '+ampm;
 }
 
 /* =========================================================
-   TABS
+   PESTAÑAS
 ========================================================= */
 function initTabs(){
-  var btns=document.querySelectorAll('.tab-btn');
+  var btns=document.querySelectorAll('.nv');
   for(var i=0;i<btns.length;i++){
     btns[i].addEventListener('click',function(){
       var tab=this.getAttribute('data-tab');
-      var allBtns=document.querySelectorAll('.tab-btn');
-      var allPanels=document.querySelectorAll('.tab-panel');
-      var j;
-      for(j=0;j<allBtns.length;j++)allBtns[j].classList.remove('active');
-      for(j=0;j<allPanels.length;j++)allPanels[j].classList.remove('active');
-      this.classList.add('active');
-      $('tab-'+tab).classList.add('active');
-      if(tab==='activas')loadActivas();
+      var all=document.querySelectorAll('.nv'),panes=document.querySelectorAll('.pane'),j;
+      for(j=0;j<all.length;j++)all[j].classList.remove('on');
+      for(j=0;j<panes.length;j++)panes[j].classList.remove('on');
+      this.classList.add('on');
+      $('tab-'+tab).classList.add('on');
+      if(tab==='activas')cargarActivas();
+      if(tab==='personas')cargarPersonas();
+      if(tab==='ronda')pintarRonda();
+      if(tab==='publicar')actualizarPreviewPublicar();
       if(tab==='accesos'){cargarListaAccesos();cargarHistorialAccesos();}
     });
   }
 }
 
 /* =========================================================
-   PUBLICAR — selector de tipo
+   CONFIG
+========================================================= */
+function cargarConfig(){
+  sb.from('novedades_config')
+    .select('duracion_segundos,dias_vigencia,dias_muro,reacciones_activas,comentarios_activos,tema_overlay,modo_ronda,segundos_por_persona')
+    .eq('id',true).maybeSingle().then(function(res){
+      if(!res.error&&res.data){
+        var d=res.data;
+        if(d.duracion_segundos)cfg.duracion_segundos=Number(d.duracion_segundos);
+        if(d.dias_vigencia!==null&&d.dias_vigencia!==undefined)cfg.dias_vigencia=Number(d.dias_vigencia);
+        if(d.dias_muro!==null&&d.dias_muro!==undefined)cfg.dias_muro=Number(d.dias_muro);
+        if(d.reacciones_activas!==null&&d.reacciones_activas!==undefined)cfg.reacciones_activas=!!d.reacciones_activas;
+        if(d.comentarios_activos!==null&&d.comentarios_activos!==undefined)cfg.comentarios_activos=!!d.comentarios_activos;
+        if(d.tema_overlay)cfg.tema_overlay=d.tema_overlay;
+        if(d.modo_ronda)cfg.modo_ronda=d.modo_ronda;
+        cfg.segundos_por_persona=(d.segundos_por_persona===null||d.segundos_por_persona===undefined)?null:Number(d.segundos_por_persona);
+      }else if(res.error){
+        console.log('[novedades-admin] error al cargar config:',res.error);
+      }
+      pintarAjustes();
+      pintarVigencias();
+      actualizarPreviewPublicar();
+      pintarRonda();
+    })["catch"](function(err){
+      console.log('[novedades-admin] error al cargar config:',err);
+      pintarAjustes();pintarVigencias();
+    });
+}
+
+function pintarVigencias(){
+  var txtPub=vaciar($('pubVigencia'));
+  txtPub.appendChild(document.createTextNode('Vigencia: overlay '));
+  txtPub.appendChild(el('b',null,cfg.dias_vigencia));
+  txtPub.appendChild(document.createTextNode(cfg.dias_vigencia===1?' día · muro ':' días · muro '));
+  txtPub.appendChild(el('b',null,cfg.dias_muro));
+  txtPub.appendChild(document.createTextNode(' días · bloqueo '));
+  txtPub.appendChild(el('b',null,mmss(cfg.duracion_segundos)));
+  txtPub.appendChild(document.createTextNode(' (se cambia en Ajustes)'));
+
+  var txtR=vaciar($('rondaVigencia'));
+  txtR.appendChild(document.createTextNode('Vigencia: overlay '));
+  txtR.appendChild(el('b',null,cfg.dias_vigencia));
+  txtR.appendChild(document.createTextNode(cfg.dias_vigencia===1?' día · muro ':' días · muro '));
+  txtR.appendChild(el('b',null,cfg.dias_muro));
+  txtR.appendChild(document.createTextNode(' días (se cambia en Ajustes)'));
+}
+
+/* =========================================================
+   PERSONAS (v_personas) — deduplicado por correo
+========================================================= */
+function cargarPersonas(){
+  sb.from('v_personas').select('email,nombre,cargo,area_rrhh,foto_url').then(function(res){
+    if(res.error){
+      console.log('[novedades-admin] error al cargar personas:',res.error);
+      ponVacio($('personasTablaWrap'),'No se pudo cargar el directorio de personas.');
+      return;
+    }
+    personasCache=dedupPersonas(res.data||[]);
+    cargarPersonasAreas();
+  })["catch"](function(err){
+    console.log('[novedades-admin] error al cargar personas:',err);
+    ponVacio($('personasTablaWrap'),'No se pudo cargar el directorio de personas.');
+  });
+}
+
+/* OJO: hay correos duplicados en rrhh_colaboradores (p.ej. admin@…),
+   así que la vista devuelve más de una fila por correo. Se colapsan aquí:
+   gana la primera y se completa nombre/foto con lo que traiga la otra. */
+function dedupPersonas(rows){
+  var mapa={},orden=[];
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i]||{};
+    var em=String(r.email||'').trim().toLowerCase();
+    if(!em)continue;
+    if(!mapa[em]){
+      mapa[em]={email:em,nombre:r.nombre||em,cargo:r.cargo||'',area_rrhh:r.area_rrhh||'',foto_url:r.foto_url||null};
+      orden.push(em);
+    }else{
+      if(!mapa[em].foto_url&&r.foto_url)mapa[em].foto_url=r.foto_url;
+      if((!mapa[em].cargo)&&r.cargo)mapa[em].cargo=r.cargo;
+    }
+  }
+  var out=[];
+  for(var j=0;j<orden.length;j++)out.push(mapa[orden[j]]);
+  out.sort(function(a,b){return String(a.nombre).localeCompare(String(b.nombre),'es');});
+  return out;
+}
+
+function personaPorEmail(email){
+  var em=String(email||'').toLowerCase();
+  for(var i=0;i<personasCache.length;i++)if(personasCache[i].email===em)return personasCache[i];
+  return null;
+}
+
+function buscarPersonas(q,excluir){
+  q=String(q||'').trim().toLowerCase();
+  excluir=excluir||[];
+  var out=[];
+  for(var i=0;i<personasCache.length&&out.length<40;i++){
+    var p=personasCache[i];
+    if(excluir.indexOf(p.email)>=0)continue;
+    if(!q||p.email.indexOf(q)>=0||String(p.nombre).toLowerCase().indexOf(q)>=0)out.push(p);
+  }
+  return out;
+}
+
+/* =========================================================
+   PUBLICAR — tipo, área, interruptor
 ========================================================= */
 function initTipoSelector(){
-  var grid=$('tipoGrid');
-  grid.innerHTML='';
+  var grid=vaciar($('tipoGrid'));
   var keys=['felicitacion','novedad','aviso','recordatorio'];
   for(var i=0;i<keys.length;i++){
     (function(key){
       var t=TIPOS[key];
-      var btn=document.createElement('button');
+      var btn=el('button','tipo-btn');
       btn.type='button';
-      btn.className='tipo-btn';
       btn.setAttribute('data-tipo',key);
       btn.style.setProperty('--tipo-color',t.color);
       btn.style.setProperty('--tipo-bg',t.bg);
-      btn.innerHTML='<span class="emoji">'+t.emoji+'</span>'+t.label;
+      btn.appendChild(el('span','emoji',t.emoji));
+      btn.appendChild(document.createTextNode(t.label));
       btn.addEventListener('click',function(){
         state.tipo=key;
-        actualizarSelectorTipo();
-        actualizarVisibilidadFoto();
-        actualizarPreview();
+        if(!state.bloqueanteTocado)state.bloqueante=TIPOS[key].bloqueante;
+        pintarSelectorTipo();
+        pintarSwitchBloqueante();
+        actualizarPreviewPublicar();
+        actualizarAvisoPublicar();
       });
       grid.appendChild(btn);
     })(keys[i]);
   }
-  actualizarSelectorTipo();
+  pintarSelectorTipo();
 }
-
-function actualizarSelectorTipo(){
+function pintarSelectorTipo(){
   var btns=document.querySelectorAll('.tipo-btn');
-  for(var i=0;i<btns.length;i++){
-    var key=btns[i].getAttribute('data-tipo');
-    btns[i].classList.toggle('selected',key===state.tipo);
-  }
+  for(var i=0;i<btns.length;i++)btns[i].classList.toggle('on',btns[i].getAttribute('data-tipo')===state.tipo);
+}
+function pintarSwitchBloqueante(){
+  var sw=$('swBloqueante');
+  sw.setAttribute('aria-checked',state.bloqueante?'true':'false');
+  vaciar($('swBloqTxt'));
+  $('swBloqTxt').appendChild(document.createTextNode(state.bloqueante?'Bloqueante':'Informativa'));
+  var s=el('small',null,state.bloqueante
+    ? 'Pantalla completa con contador; después queda en el muro.'
+    : 'No interrumpe a nadie: solo aparece en el muro con punto de "sin leer".');
+  $('swBloqTxt').appendChild(s);
 }
 
-function actualizarVisibilidadFoto(){
-  $('fotoSection').classList.toggle('hidden',state.tipo!=='felicitacion');
-}
-
-/* =========================================================
-   PUBLICAR — inputs + vista previa en vivo
-========================================================= */
-function initFormListeners(){
-  $('fldTitulo').addEventListener('input',actualizarPreview);
-  $('fldCuerpo').addEventListener('input',actualizarPreview);
-  $('fldPie').addEventListener('input',actualizarPreview);
-  $('fldEnsenanza').addEventListener('input',actualizarPreview);
-  actualizarVisibilidadFoto();
-  actualizarPreview();
-}
-
-/* Vista previa = maqueta a escala de la pantalla completa (SPEC-pantallas.md).
-   Traje por categoría vía clase pv-t-<tipo>; texto SIEMPRE por textContent
-   (nunca innerHTML con datos que escribió el usuario). */
-/* Escribe texto con **acentos** en dorado, sin innerHTML (mismo criterio que el lector real). */
-function pintarConAcento(elemento,texto){
-  elemento.textContent='';
-  var partes=String(texto).split('**');
-  var i,s;
-  for(i=0;i<partes.length;i++){
-    if(partes[i]==='')continue;
-    if(i%2===1){
-      s=document.createElement('strong');
-      s.className='pv-ens-acento';
-      s.textContent=partes[i];
-      elemento.appendChild(s);
-    }else{
-      elemento.appendChild(document.createTextNode(partes[i]));
-    }
-  }
-}
-
-function actualizarPreview(){
-  var t=TIPOS[state.tipo];
-  var titulo=$('fldTitulo').value.trim();
-  var cuerpo=$('fldCuerpo').value.trim();
-  var pie=$('fldPie').value.trim();
-  var ensenanza=$('fldEnsenanza').value.trim();
-
-  var ov=$('pvOv');
-  ov.className='pv-ov pv-t-'+state.tipo;
-
-  $('previewBadge').textContent=t.emoji+' '+t.label.toUpperCase();
-  $('previewTitulo').textContent=titulo||'Título de la novedad';
-  $('previewCuerpo').textContent=cuerpo||'El cuerpo del mensaje aparecerá aquí a medida que escribas.';
-
-  var fotoImg=$('previewFoto');
-  var piePrev=$('previewPie');
-  var esFelicitacion=(state.tipo==='felicitacion');
-  var conFoto=(esFelicitacion&&!!state.imagen_url);
-  if(conFoto){
-    fotoImg.src=state.imagen_url;
-    fotoImg.classList.remove('hidden');
-  }else{
-    fotoImg.classList.add('hidden');
-    fotoImg.src='';
-  }
-  ov.classList.toggle('pv-sin-foto',esFelicitacion&&!conFoto);
-  if(esFelicitacion&&pie){
-    piePrev.textContent=pie;
-    piePrev.classList.remove('hidden');
-  }else{
-    piePrev.classList.add('hidden');
-  }
-
-  $('pvCaptionFoto').classList.toggle('hidden',!esFelicitacion);
-
-  var ensBox=$('previewEns');
-  if(ensenanza){
-    pintarConAcento($('previewEnsTexto'),ensenanza);
-    ensBox.classList.remove('hidden');
-  }else{
-    ensBox.classList.add('hidden');
-  }
-
-  ajustarEscalaPreview();
-}
-
-/* Escala la maqueta de 1400x875 al ancho real disponible en la columna,
-   igual en carga inicial que en resize, para que la tipografía nunca se
-   duplique en dos hojas de estilo distintas. */
-function ajustarEscalaPreview(){
-  var frame=$('pvFrame');
-  var scale=$('pvScale');
-  if(!frame||!scale)return;
-  var anchoDisponible=frame.clientWidth;
-  if(!anchoDisponible)return;
-  var escala=anchoDisponible/1400;
-  scale.style.transform='scale('+escala+')';
-}
-window.addEventListener('resize',ajustarEscalaPreview);
-
-/* =========================================================
-   PUBLICAR — subida de foto
-========================================================= */
-function initFotoUpload(){
-  var dz=$('dropZone');
-  var input=$('fldFoto');
-
-  dz.addEventListener('click',function(){input.click();});
-  input.addEventListener('change',function(){
-    if(input.files&&input.files[0])manejarArchivo(input.files[0]);
+function initPublicar(){
+  $('fldArea').addEventListener('change',function(){
+    state.area=this.value;
+    $('wrapArea').classList.remove('malo');
+    if(this.value)errorPublicar('');
+    actualizarAvisoPublicar();
   });
+  $('swBloqueante').addEventListener('click',function(){
+    state.bloqueante=!state.bloqueante;
+    state.bloqueanteTocado=true;
+    pintarSwitchBloqueante();
+    actualizarAvisoPublicar();
+  });
+  $('fldTitulo').addEventListener('input',actualizarPreviewPublicar);
+  $('fldCuerpo').addEventListener('input',function(){
+    $('cntCuerpo').textContent=this.value.length+'/2000';
+    actualizarPreviewPublicar();
+  });
+  $('fldEnsenanza').addEventListener('input',actualizarPreviewPublicar);
+  $('fldPie').addEventListener('input',actualizarPreviewPublicar);
+  $('fldFoto').addEventListener('change',function(){
+    if(this.files&&this.files[0])subirFoto(this.files[0]);
+  });
+  $('btnPublicar').addEventListener('click',publicarNovedad);
+  initBuscadorDestinatarios();
+  pintarSwitchBloqueante();
+  pintarChipsDestinatarios();
+  actualizarAvisoPublicar();
+  actualizarPreviewPublicar();
+  window.addEventListener('resize',function(){escalarPreview('pubPrevOuter','pubPrevInner');escalarPreview('rondaPrevOuter','rondaPrevInner');});
+}
 
-  dz.addEventListener('dragover',function(e){
-    e.preventDefault();
-    dz.classList.add('drag');
-  });
-  dz.addEventListener('dragleave',function(){
-    dz.classList.remove('drag');
-  });
-  dz.addEventListener('drop',function(e){
-    e.preventDefault();
-    dz.classList.remove('drag');
-    if(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]){
-      manejarArchivo(e.dataTransfer.files[0]);
+function actualizarAvisoPublicar(){
+  var aviso=vaciar($('pubAviso'));
+  var sp=el('span');
+  if(!state.area){
+    sp.appendChild(document.createTextNode('Elige el área para saber a quién le sale.'));
+  }else if(state.area==='general'){
+    sp.appendChild(document.createTextNode('Le saldrá a '));
+    sp.appendChild(el('b',null,'todo el personal'));
+    sp.appendChild(document.createTextNode(state.bloqueante?', en pantalla completa.':', sin interrumpir (solo muro).'));
+  }else{
+    sp.appendChild(document.createTextNode('Le saldrá solo al área '));
+    sp.appendChild(el('b',null,state.area.toUpperCase()));
+    sp.appendChild(document.createTextNode(state.bloqueante?', en pantalla completa.':', sin interrumpir (solo muro).'));
+  }
+  aviso.appendChild(sp);
+  var res=$('pubResumen');
+  res.textContent=state.destinatarios.length
+    ? ('Dirigida a '+state.destinatarios.length+(state.destinatarios.length===1?' persona.':' personas.'))
+    : '';
+}
+
+/* ---- destinatarios ---- */
+function initBuscadorDestinatarios(){
+  var input=$('fldDestBuscar'),caja=$('destSugs');
+  input.addEventListener('input',function(){pintarSugerencias(this.value);});
+  input.addEventListener('focus',function(){pintarSugerencias(this.value);});
+  input.addEventListener('keydown',function(e){
+    if(e.key==='Escape')caja.classList.add('hidden');
+    if(e.key==='Backspace'&&!this.value&&state.destinatarios.length){
+      state.destinatarios.pop();
+      pintarChipsDestinatarios();
+      actualizarAvisoPublicar();
     }
   });
+  document.addEventListener('click',function(e){
+    if(!$('wrapDest').contains(e.target))caja.classList.add('hidden');
+  });
+}
+function emailsDestinatarios(){
+  var out=[];
+  for(var i=0;i<state.destinatarios.length;i++)out.push(state.destinatarios[i].email);
+  return out;
+}
+function pintarSugerencias(q){
+  var caja=vaciar($('destSugs'));
+  var lista=buscarPersonas(q,emailsDestinatarios());
+  if(!lista.length){
+    caja.appendChild(el('div','sug-vacio','No hay personas que coincidan.'));
+  }else{
+    for(var i=0;i<Math.min(lista.length,12);i++){
+      (function(p){
+        var b=el('button','sug');
+        b.type='button';
+        b.appendChild(avatar(p));
+        var col=el('span','col');
+        col.appendChild(el('span','nm',p.nombre));
+        col.appendChild(el('span','em',p.email));
+        b.appendChild(col);
+        b.addEventListener('click',function(){
+          state.destinatarios.push(p);
+          $('fldDestBuscar').value='';
+          $('destSugs').classList.add('hidden');
+          pintarChipsDestinatarios();
+          actualizarAvisoPublicar();
+          actualizarPreviewPublicar();
+        });
+        caja.appendChild(b);
+      })(lista[i]);
+    }
+  }
+  caja.classList.remove('hidden');
+}
+function pintarChipsDestinatarios(){
+  var wrap=$('destChips'),input=$('fldDestBuscar');
+  vaciar(wrap);
+  for(var i=0;i<state.destinatarios.length;i++){
+    (function(p){
+      var chip=el('span','pchip');
+      chip.appendChild(avatar(p));
+      chip.appendChild(el('span','nm',p.nombre));
+      chip.appendChild(el('span','em',p.email));
+      var x=el('button','x','×');
+      x.type='button';
+      x.title='Quitar';
+      x.addEventListener('click',function(){
+        var idx=state.destinatarios.indexOf(p);
+        if(idx>=0)state.destinatarios.splice(idx,1);
+        pintarChipsDestinatarios();
+        actualizarAvisoPublicar();
+      });
+      chip.appendChild(x);
+      wrap.appendChild(chip);
+    })(state.destinatarios[i]);
+  }
+  wrap.appendChild(input);
 }
 
-function setFotoStatus(msg,cls){
-  var el=$('fotoStatus');
-  el.textContent=msg;
-  el.className='foto-status'+(cls?(' '+cls):'');
-  if(msg)el.classList.remove('hidden');else el.classList.add('hidden');
-}
-
-function manejarArchivo(file){
+/* ---- foto (cualquier tipo) ---- */
+function subirFoto(file){
   if(!file.type||file.type.indexOf('image/')!==0){
-    setFotoStatus('El archivo debe ser una imagen.','err');
+    $('fotoStatus').textContent='El archivo debe ser una imagen.';
     return;
   }
-
   var reader=new FileReader();
   reader.onload=function(e){
     $('fotoPreviewImg').src=e.target.result;
@@ -1425,367 +1326,1213 @@ function manejarArchivo(file){
   reader.readAsDataURL(file);
 
   state.subiendo=true;
-  setFotoStatus('Subiendo foto...','busy');
-
+  $('fotoStatus').textContent='Subiendo foto…';
   var path=sanitizeFileName(file.name);
   sb.storage.from('novedades').upload(path,file).then(function(res){
     state.subiendo=false;
-    if(res.error){
+    if(res&&res.error){
       state.imagen_url=null;
       console.log('[novedades-admin] error al subir foto:',res.error);
-      setFotoStatus('No se pudo subir la foto ('+enEspanol(res.error)+'). Puedes publicar sin foto.','err');
-      actualizarPreview();
+      $('fotoStatus').textContent='No se pudo subir la foto ('+enEspanol(res.error)+'). Puedes publicar sin foto.';
+      actualizarPreviewPublicar();
       return;
     }
     var pub=sb.storage.from('novedades').getPublicUrl(path);
     state.imagen_url=(pub&&pub.data)?pub.data.publicUrl:null;
-    setFotoStatus('Foto lista ✓','ok');
-    actualizarPreview();
+    $('fotoStatus').textContent='Foto lista ✓';
+    actualizarPreviewPublicar();
   })["catch"](function(err){
-    state.subiendo=false;
-    state.imagen_url=null;
-    setFotoStatus('No se pudo subir la foto. Puedes publicar sin foto.','err');
-    actualizarPreview();
+    state.subiendo=false;state.imagen_url=null;
+    console.log('[novedades-admin] error al subir foto:',err);
+    $('fotoStatus').textContent='No se pudo subir la foto. Puedes publicar sin foto.';
+    actualizarPreviewPublicar();
   });
 }
 
 /* =========================================================
-   PUBLICAR — publicar novedad
+   VISTA PREVIA DEL OVERLAY (compartida por Publicar y Ronda)
 ========================================================= */
-function initPublicar(){
-  $('btnPublicar').addEventListener('click',publicarNovedad);
+function textoConAcento(nodo,texto){
+  vaciar(nodo);
+  var partes=String(texto).split('**');
+  for(var i=0;i<partes.length;i++){
+    if(partes[i]==='')continue;
+    if(i%2===1){
+      var s=el('strong','pgnov-ens-acento',partes[i]);
+      nodo.appendChild(s);
+    }else{
+      nodo.appendChild(document.createTextNode(partes[i]));
+    }
+  }
 }
 
-function limpiarFormularioPublicar(){
+function marcoOverlay(opts){
+  /* opts: {tipo, tema, actual, total, seg, contenidoFn} */
+  var claro=(opts.tema!=='oscuro');
+  var ov=el('div','pgnov-ov t-'+opts.tipo+(claro?' claro':''));
+  if(claro){
+    var top=el('div','ovtop'),tin=el('div','ovtop-in');
+    var brand=el('div','pgbrand');
+    brand.appendChild(el('span','gabi','GABI'));
+    brand.appendChild(el('span','sep'));
+    var sec=el('span','sec');
+    sec.appendChild(document.createTextNode('Novedades ·'));
+    sec.appendChild(el('span','mono',' '+opts.actual+' de '+opts.total));
+    brand.appendChild(sec);
+    tin.appendChild(brand);
+    var pill=el('span','cdpill');
+    pill.appendChild(el('b','mono',mmss(opts.seg)));
+    pill.appendChild(el('small',null,'para continuar'));
+    tin.appendChild(pill);
+    top.appendChild(tin);
+    ov.appendChild(top);
+  }
+  var slide=el('div','pgnov-slide');
+  if(!claro){
+    var cab=el('div','pgnov-top');
+    cab.appendChild(el('span','pgnov-kicker','Novedades · ProtectGo'));
+    var dots=el('span','pgnov-dots');
+    for(var i=1;i<=opts.total;i++)dots.appendChild(el('i',i===opts.actual?'on':''));
+    cab.appendChild(dots);
+    slide.appendChild(cab);
+  }
+  var body=el('div','pgnov-body');
+  var inner=el('div','pgnov-in');
+  opts.contenidoFn(inner,claro);
+  body.appendChild(inner);
+  slide.appendChild(body);
+
+  var bot=el('div','pgnov-bot');
+  bot.appendChild((function(){var b=el('div','pgnov-bar');b.appendChild(el('i'));return b;})());
+  var btn=el('button','pgnov-btn');
+  btn.type='button';btn.disabled=true;
+  btn.appendChild(document.createTextNode('Podrás continuar en '+mmss(opts.seg)));
+  bot.appendChild(btn);
+  if(cfg.reacciones_activas){
+    var rw=el('div','pgnov-reac');
+    for(var k=0;k<EMOJIS.length;k++)rw.appendChild(el('span','rx',EMOJIS[k]));
+    bot.appendChild(rw);
+  }
+  slide.appendChild(bot);
+  ov.appendChild(slide);
+  return ov;
+}
+
+function bloquePersona(host,persona,logro,cuerpo,ensenanza,claro){
+  var caja=host;
+  if(claro){
+    caja=el('div','ovpanel');
+    host.appendChild(caja);
+  }
+  var per=el('div','per');
+  var badge=el('span','pgnov-badge');
+  badge.appendChild(el('span','em','🎉'));
+  badge.appendChild(document.createTextNode('Felicitación'));
+  per.appendChild(badge);
+  if(persona&&persona.foto_url){
+    var f=el('div','per-foto');
+    var img=document.createElement('img');img.src=persona.foto_url;img.alt='';
+    f.appendChild(img);per.appendChild(f);
+  }else{
+    per.appendChild(el('div','per-ini',iniciales(persona?persona.nombre:'')));
+  }
+  per.appendChild(el('div','per-nom',(persona&&persona.nombre)?persona.nombre:'Elige a la persona'));
+  per.appendChild(el('span','per-logro',logro||'Su logro va aquí'));
+  if(cuerpo)per.appendChild(el('p','per-cue',cuerpo));
+  if(ensenanza){
+    var ens=el('div','pgnov-ens');
+    ens.appendChild(el('span','pgnov-ens-badge','Enseñanza'));
+    var p=el('p','pgnov-ens-texto');
+    textoConAcento(p,ensenanza);
+    ens.appendChild(p);
+    caja.appendChild(per);
+    caja.appendChild(ens);
+    return;
+  }
+  caja.appendChild(per);
+}
+
+function escalarPreview(idOuter,idInner){
+  var outer=$(idOuter),inner=$(idInner);
+  if(!outer||!inner)return;
+  var ancho=outer.clientWidth;
+  if(!ancho)return;
+  var k=Math.min(0.62,ancho/1100);
+  inner.style.transform='scale('+k+')';
+  outer.style.height=Math.ceil(inner.offsetHeight*k)+'px';
+}
+
+function actualizarPreviewPublicar(){
+  var host=$('pubPrevInner');
+  if(!host)return;
+  vaciar(host);
+  var titulo=$('fldTitulo').value.trim();
+  var cuerpo=$('fldCuerpo').value.trim();
+  var ensenanza=$('fldEnsenanza').value.trim();
+  var pie=$('fldPie').value.trim();
+  var t=TIPOS[state.tipo];
+
+  var ov=marcoOverlay({
+    tipo:state.tipo,tema:cfg.tema_overlay,actual:1,total:1,seg:cfg.duracion_segundos,
+    contenidoFn:function(inner,claro){
+      var caja=inner;
+      if(claro){caja=el('div','ovpanel');inner.appendChild(caja);}
+      var badge=el('span','pgnov-badge');
+      badge.appendChild(el('span','em',t.emoji));
+      badge.appendChild(document.createTextNode(t.label));
+      caja.appendChild(badge);
+      if(state.imagen_url){
+        var fw=el('div','pgnov-foto');
+        var img=document.createElement('img');img.src=state.imagen_url;img.alt='';
+        fw.appendChild(img);caja.appendChild(fw);
+      }
+      caja.appendChild(el('h3','pgnov-tit',titulo||'Título de la novedad'));
+      caja.appendChild(el('p','pgnov-cue',cuerpo||'El cuerpo del mensaje aparecerá aquí a medida que escribas.'));
+      if(pie)caja.appendChild(el('div','pgnov-pie',pie));
+      if(ensenanza){
+        var ens=el('div','pgnov-ens');
+        ens.appendChild(el('span','pgnov-ens-badge','Enseñanza del mes'));
+        var p=el('p','pgnov-ens-texto');
+        textoConAcento(p,ensenanza);
+        ens.appendChild(p);
+        caja.appendChild(ens);
+      }
+    }
+  });
+  host.appendChild(ov);
+  var nota=vaciar($('pubPrevNota'));
+  nota.appendChild(document.createTextNode('Tema '+cfg.tema_overlay+' · contador '));
+  nota.appendChild(el('b',null,mmss(cfg.duracion_segundos)));
+  nota.appendChild(document.createTextNode(state.bloqueante?' · bloquea la pantalla.':' · informativa: no bloquea, solo muro.'));
+  escalarPreview('pubPrevOuter','pubPrevInner');
+  setTimeout(function(){escalarPreview('pubPrevOuter','pubPrevInner');},60);
+}
+
+/* =========================================================
+   PUBLICAR — confirmación y envío
+========================================================= */
+function limpiarPublicar(){
   $('fldTitulo').value='';
   $('fldCuerpo').value='';
-  $('fldPie').value='';
   $('fldEnsenanza').value='';
+  $('fldPie').value='';
   $('fldFoto').value='';
+  $('cntCuerpo').textContent='0/2000';
   $('fotoPreviewWrap').classList.add('hidden');
   $('fotoPreviewImg').src='';
-  setFotoStatus('','');
+  $('fotoStatus').textContent='';
   state.imagen_url=null;
+  state.destinatarios=[];
   state.tipo='novedad';
-  actualizarSelectorTipo();
-  actualizarVisibilidadFoto();
-  actualizarPreview();
+  state.bloqueante=TIPOS.novedad.bloqueante;
+  state.bloqueanteTocado=false;
+  pintarSelectorTipo();
+  pintarSwitchBloqueante();
+  pintarChipsDestinatarios();
+  actualizarAvisoPublicar();
+  actualizarPreviewPublicar();
+}
+
+function errorPublicar(msg){
+  var box=$('pubError');
+  if(!msg){box.classList.add('hidden');box.textContent='';return;}
+  box.textContent=msg;
+  box.classList.remove('hidden');
 }
 
 function publicarNovedad(){
+  errorPublicar('');
   var titulo=$('fldTitulo').value.trim();
   var cuerpo=$('fldCuerpo').value.trim();
-  var pie=$('fldPie').value.trim();
   var ensenanza=$('fldEnsenanza').value.trim();
+  var pie=$('fldPie').value.trim();
 
-  if(!titulo){toast('Falta el título.','err');return;}
-  if(!cuerpo){toast('Falta el cuerpo del mensaje.','err');return;}
-  if(state.subiendo){toast('Espera a que termine de subir la foto.','err');return;}
+  if(!state.area){
+    $('wrapArea').classList.add('malo');
+    errorPublicar('Falta elegir el área. Sin área no se publica.');
+    return;
+  }
+  if(!titulo){errorPublicar('Falta el título.');return;}
+  if(!cuerpo){errorPublicar('Falta el cuerpo del mensaje.');return;}
+  if(state.subiendo){errorPublicar('Espera a que termine de subir la foto.');return;}
 
-  var ok=confirm('Esto le va a salir a todo el personal. ¿Publicar?');
-  if(!ok)return;
+  var dest=[];
+  for(var i=0;i<state.destinatarios.length;i++)dest.push(String(state.destinatarios[i].email).toLowerCase());
 
-  var esFelicitacion=state.tipo==='felicitacion';
-  var payload={
-    area:'general',
-    tipo:state.tipo,
-    titulo:titulo,
-    cuerpo:cuerpo,
-    imagen_url:esFelicitacion?(state.imagen_url||null):null,
-    pie_foto:esFelicitacion?(pie||null):null,
-    ensenanza:ensenanza||null,
-    created_by:'sales@protectgoservices.com',
-    segundos_lectura:duracionCache
-  };
-
-  var btn=$('btnPublicar');
-  btn.disabled=true;
-  btn.textContent='Publicando...';
-
-  sb.from('novedades').insert(payload).then(function(res){
-    btn.disabled=false;
-    btn.textContent='Publicar';
-    if(res.error){
-      console.log('[novedades-admin] error al publicar:',res.error);
-      toast('Error al publicar: '+enEspanol(res.error),'err');
-      return;
-    }
-    toast('Novedad publicada ✓','ok');
-    limpiarFormularioPublicar();
-    loadActivas();
-  })["catch"](function(err){
-    btn.disabled=false;
-    btn.textContent='Publicar';
-    toast('Error al publicar.','err');
+  var lineas=[
+    'Tipo: '+TIPOS[state.tipo].label,
+    'Área: '+state.area+(state.area==='general'?' (todo el personal)':' (solo esa área)'),
+    state.bloqueante?'Bloquea la pantalla con contador de '+mmss(cfg.duracion_segundos)+'.':'Informativa: no bloquea a nadie, solo aparece en el muro.',
+    dest.length?('Dirigida a '+dest.length+(dest.length===1?' persona.':' personas.')):'Sin destinatarios específicos.'
+  ];
+  confirmar('¿Publicar esta novedad?',lineas,'Sí, publicar',function(){
+    var payload={
+      area:state.area,
+      tipo:state.tipo,
+      titulo:titulo,
+      cuerpo:cuerpo,
+      ensenanza:ensenanza||null,
+      imagen_url:state.imagen_url||null,
+      pie_foto:pie||null,
+      bloqueante:!!state.bloqueante,
+      destinatarios:dest,
+      logro:null,
+      created_by:'sales@protectgoservices.com',
+      publicado_por:String(currentEmail||'').toLowerCase(),
+      segundos_lectura:cfg.duracion_segundos
+    };
+    var btn=$('btnPublicar');
+    btn.disabled=true;btn.textContent='Publicando…';
+    sb.from('novedades').insert(payload).then(function(res){
+      btn.disabled=false;btn.textContent='Publicar';
+      if(res&&res.error){
+        console.log('[novedades-admin] error al publicar:',res.error);
+        errorPublicar('Error al publicar: '+enEspanol(res.error));
+        return;
+      }
+      toast('Novedad publicada ✓','ok');
+      limpiarPublicar();
+      cargarActivas();
+    })["catch"](function(err){
+      btn.disabled=false;btn.textContent='Publicar';
+      console.log('[novedades-admin] error al publicar:',err);
+      errorPublicar('Error al publicar. Intenta de nuevo.');
+    });
   });
 }
 
 /* =========================================================
-   ACTIVAS
+   RONDA DE FELICITACIONES
+========================================================= */
+function initRonda(){
+  ronda=[];
+  for(var i=0;i<RONDA_INICIAL;i++)ronda.push({persona:null,logro:'',cuerpo:''});
+  $('btnAgregarPersona').addEventListener('click',function(){
+    if(ronda.length>=RONDA_MAX){
+      toast('El máximo es '+RONDA_MAX+' personas por ronda.','err');
+      return;
+    }
+    ronda.push({persona:null,logro:'',cuerpo:''});
+    pintarRonda();
+  });
+  $('btnPublicarRonda').addEventListener('click',publicarRonda);
+  pintarRonda();
+}
+
+/* El botón se reconstruye entero (texto + número) para que el id rondaN
+   nunca se pierda cuando se cambia el rótulo mientras publica. */
+function pintarBotonRonda(){
+  var btn=$('btnPublicarRonda');
+  if(!btn)return;
+  vaciar(btn);
+  btn.appendChild(document.createTextNode('Publicar ronda ('));
+  var n=el('span','n',String(ronda.length));
+  n.id='rondaN';
+  btn.appendChild(n);
+  btn.appendChild(document.createTextNode(' personas)'));
+}
+
+function pintarRonda(){
+  errorRonda('');
+  var cont=vaciar($('rondaFilas'));
+  for(var i=0;i<ronda.length;i++)cont.appendChild(filaRonda(ronda[i],i));
+  pintarBotonRonda();
+  $('rondaLimite').textContent=ronda.length+' de '+RONDA_MAX;
+  $('rondaResumen').textContent='Se crean '+ronda.length+' filas con el mismo lote.';
+  $('btnAgregarPersona').disabled=(ronda.length>=RONDA_MAX);
+  actualizarPreviewRonda();
+}
+
+function filaRonda(item,idx){
+  var row=el('div','pers-row');
+  row.setAttribute('data-fila',String(idx));
+  row.appendChild(el('div','num',String(idx+1).padStart(2,'0')));
+
+  var campos=el('div','pers-fields');
+
+  /* persona */
+  var fP=el('div','field busca-wrap persona');
+  fP.appendChild(el('label',null,'Persona'));
+  var wrap=el('div','pchip-wrap');
+  if(item.persona){
+    var chip=el('span','pchip');
+    chip.appendChild(avatar(item.persona));
+    chip.appendChild(el('span','nm',item.persona.nombre));
+    chip.appendChild(el('span','em',item.persona.email));
+    var x=el('button','x','×');
+    x.type='button';x.title='Quitar';
+    x.addEventListener('click',function(){item.persona=null;pintarRonda();});
+    chip.appendChild(x);
+    wrap.appendChild(chip);
+  }else{
+    var inp=document.createElement('input');
+    inp.type='text';
+    inp.autocomplete='off';
+    inp.placeholder='Escribe un nombre o correo…';
+    inp.setAttribute('data-busca',String(idx));
+    wrap.appendChild(inp);
+    var sugs=el('div','sugs hidden');
+    fP.appendChild(wrap);
+    fP.appendChild(sugs);
+    inp.addEventListener('input',function(){pintarSugsRonda(sugs,this.value,item);});
+    inp.addEventListener('focus',function(){pintarSugsRonda(sugs,this.value,item);});
+    inp.addEventListener('blur',function(){setTimeout(function(){sugs.classList.add('hidden');},180);});
+  }
+  if(item.persona)fP.appendChild(wrap);
+  campos.appendChild(fP);
+
+  /* logro */
+  var fL=el('div','field');
+  var labL=el('label',null,'Logro (una línea)');
+  labL.appendChild(el('span','cnt',(item.logro||'').length+'/90'));
+  fL.appendChild(labL);
+  var iL=document.createElement('input');
+  iL.type='text';iL.maxLength=90;iL.value=item.logro||'';
+  iL.placeholder='Ej: Mejor vendedor de agosto';
+  iL.addEventListener('input',function(){
+    item.logro=this.value;
+    labL.lastChild.textContent=this.value.length+'/90';
+    if(this.value.trim()){row.classList.remove('malo');errorRonda('');}
+    actualizarPreviewRonda();
+  });
+  fL.appendChild(iL);
+  campos.appendChild(fL);
+
+  /* cuerpo */
+  var fC=el('div','field');
+  var labC=el('label',null,'Mensaje corto (opcional)');
+  labC.appendChild(el('span','cnt',(item.cuerpo||'').length+'/400'));
+  fC.appendChild(labC);
+  var iC=document.createElement('input');
+  iC.type='text';iC.maxLength=400;iC.value=item.cuerpo||'';
+  iC.placeholder='Aquí va lo jocoso';
+  iC.addEventListener('input',function(){
+    item.cuerpo=this.value;
+    labC.lastChild.textContent=this.value.length+'/400';
+    actualizarPreviewRonda();
+  });
+  fC.appendChild(iC);
+  campos.appendChild(fC);
+
+  row.appendChild(campos);
+
+  var quitar=el('button','quitar','×');
+  quitar.type='button';
+  quitar.title='Quitar esta fila';
+  quitar.addEventListener('click',function(){
+    if(ronda.length<=1){toast('Debe quedar al menos una fila.','err');return;}
+    var i=ronda.indexOf(item);
+    if(i>=0)ronda.splice(i,1);
+    pintarRonda();
+  });
+  row.appendChild(quitar);
+  return row;
+}
+
+function emailsRonda(){
+  var out=[];
+  for(var i=0;i<ronda.length;i++)if(ronda[i].persona)out.push(ronda[i].persona.email);
+  return out;
+}
+
+function pintarSugsRonda(caja,q,item){
+  vaciar(caja);
+  var lista=buscarPersonas(q,emailsRonda());
+  if(!lista.length){
+    caja.appendChild(el('div','sug-vacio','No hay personas que coincidan.'));
+  }else{
+    for(var i=0;i<Math.min(lista.length,10);i++){
+      (function(p){
+        var b=el('button','sug');
+        b.type='button';
+        b.appendChild(avatar(p));
+        var col=el('span','col');
+        col.appendChild(el('span','nm',p.nombre));
+        col.appendChild(el('span','em',p.email));
+        b.appendChild(col);
+        b.addEventListener('mousedown',function(e){e.preventDefault();});
+        b.addEventListener('click',function(){
+          item.persona=p;
+          pintarRonda();
+        });
+        caja.appendChild(b);
+      })(lista[i]);
+    }
+  }
+  caja.classList.remove('hidden');
+}
+
+function segundosRonda(){
+  var n=Math.max(1,ronda.length);
+  if(cfg.segundos_por_persona)return Number(cfg.segundos_por_persona);
+  if(cfg.modo_ronda==='mosaico')return cfg.duracion_segundos;
+  return Math.max(15,Math.floor(cfg.duracion_segundos/n));
+}
+
+function actualizarPreviewRonda(){
+  var host=$('rondaPrevInner');
+  if(!host)return;
+  vaciar(host);
+  var modo=cfg.modo_ronda,n=ronda.length,seg=segundosRonda();
+  var ov;
+  if(modo==='mosaico'){
+    ov=marcoOverlay({
+      tipo:'felicitacion',tema:cfg.tema_overlay,actual:1,total:1,seg:cfg.duracion_segundos,
+      contenidoFn:function(inner){
+        var badge=el('span','pgnov-badge');
+        badge.appendChild(el('span','em','🎉'));
+        badge.appendChild(document.createTextNode('Felicitaciones de la semana'));
+        inner.appendChild(badge);
+        inner.appendChild(el('div','pgnov-sub',n+(n===1?' persona':' personas')));
+        var grid=el('div','fel-grid');
+        for(var i=0;i<ronda.length;i++){
+          var it=ronda[i];
+          var card=el('div','fel-card');
+          if(it.persona&&it.persona.foto_url){
+            var fw=el('div','fel-foto');
+            var img=document.createElement('img');img.src=it.persona.foto_url;img.alt='';
+            fw.appendChild(img);card.appendChild(fw);
+          }else{
+            card.appendChild(el('div','fel-ini',iniciales(it.persona?it.persona.nombre:'')));
+          }
+          card.appendChild(el('div','fel-nom',(it.persona&&it.persona.nombre)?it.persona.nombre:'Persona '+(i+1)));
+          card.appendChild(el('div','fel-logro',it.logro||'Su logro va aquí'));
+          if(it.cuerpo)card.appendChild(el('p','fel-cue',it.cuerpo));
+          grid.appendChild(card);
+        }
+        inner.appendChild(grid);
+      }
+    });
+  }else{
+    var p1=ronda[0]||{persona:null,logro:'',cuerpo:''};
+    ov=marcoOverlay({
+      tipo:'felicitacion',tema:cfg.tema_overlay,actual:1,total:n,seg:seg,
+      contenidoFn:function(inner,claro){
+        bloquePersona(inner,p1.persona,p1.logro,p1.cuerpo,'',claro);
+      }
+    });
+  }
+  host.appendChild(ov);
+
+  var nota=vaciar($('rondaPrevNota'));
+  if(modo==='mosaico'){
+    nota.appendChild(document.createTextNode('Mosaico de '));
+    nota.appendChild(el('b',null,n));
+    nota.appendChild(document.createTextNode(' tarjetas · un solo contador de '));
+    nota.appendChild(el('b',null,mmss(cfg.duracion_segundos)));
+    nota.appendChild(document.createTextNode(' · tema '+cfg.tema_overlay+'.'));
+  }else{
+    nota.appendChild(el('b',null,n));
+    nota.appendChild(document.createTextNode(' pantallas seguidas (una por persona) · contador por pantalla '));
+    nota.appendChild(el('b',null,mmss(seg)));
+    nota.appendChild(document.createTextNode(' · tema '+cfg.tema_overlay+'. Se muestra la persona 1.'));
+  }
+  escalarPreview('rondaPrevOuter','rondaPrevInner');
+  setTimeout(function(){escalarPreview('rondaPrevOuter','rondaPrevInner');},60);
+}
+
+function errorRonda(msg){
+  var box=$('rondaError');
+  if(!msg){box.classList.add('hidden');box.textContent='';return;}
+  box.textContent=msg;
+  box.classList.remove('hidden');
+}
+
+function publicarRonda(){
+  errorRonda('');
+  var filas=document.querySelectorAll('#rondaFilas .pers-row'),i;
+  for(i=0;i<filas.length;i++)filas[i].classList.remove('malo');
+
+  var incompletas=[];
+  for(i=0;i<ronda.length;i++){
+    var it=ronda[i];
+    if(!it.persona||!String(it.logro||'').trim())incompletas.push(i+1);
+  }
+  if(incompletas.length){
+    for(i=0;i<incompletas.length;i++){
+      var f=document.querySelector('#rondaFilas .pers-row[data-fila="'+(incompletas[i]-1)+'"]');
+      if(f)f.classList.add('malo');
+    }
+    errorRonda('No se publicó: '+(incompletas.length===1?'la fila ':'las filas ')+incompletas.join(', ')+
+      (incompletas.length===1?' está incompleta.':' están incompletas.')+' Cada fila necesita persona y logro.');
+    toast('Hay filas incompletas: revisa la '+incompletas.join(', ')+'.','err');
+    return;
+  }
+
+  var n=ronda.length;
+  var lineas=[
+    n+(n===1?' persona':' personas')+' en la misma ronda.',
+    'Área general: le saldrá a TODO el personal.',
+    'Bloquea la pantalla; cada persona queda con su propia bandeja de reacciones y mensajes.'
+  ];
+  confirmar('¿Publicar la ronda de '+n+(n===1?' felicitación?':' felicitaciones?'),lineas,'Sí, publicar la ronda',function(){
+    var lote=uuid();
+    var payload=[];
+    for(var k=0;k<ronda.length;k++){
+      var it2=ronda[k];
+      payload.push({
+        area:'general',
+        tipo:'felicitacion',
+        titulo:it2.persona.nombre,
+        cuerpo:String(it2.cuerpo||'').trim()||null,
+        logro:String(it2.logro||'').trim(),
+        ensenanza:null,
+        imagen_url:it2.persona.foto_url||null,
+        pie_foto:null,
+        bloqueante:true,
+        destinatarios:[String(it2.persona.email).toLowerCase()],
+        lote_id:lote,
+        created_by:'sales@protectgoservices.com',
+        publicado_por:String(currentEmail||'').toLowerCase(),
+        segundos_lectura:cfg.duracion_segundos
+      });
+    }
+    var btn=$('btnPublicarRonda');
+    btn.disabled=true;btn.textContent='Publicando ronda…';
+    sb.from('novedades').insert(payload).then(function(res){
+      btn.disabled=false;
+      pintarBotonRonda();
+      if(res&&res.error){
+        console.log('[novedades-admin] error al publicar la ronda:',res.error);
+        errorRonda('Error al publicar la ronda: '+enEspanol(res.error));
+        return;
+      }
+      toast('Ronda publicada ✓ ('+payload.length+' personas)','ok');
+      ronda=[];
+      for(var z=0;z<RONDA_INICIAL;z++)ronda.push({persona:null,logro:'',cuerpo:''});
+      pintarRonda();
+      cargarActivas();
+    })["catch"](function(err){
+      btn.disabled=false;
+      pintarBotonRonda();
+      console.log('[novedades-admin] error al publicar la ronda:',err);
+      errorRonda('Error al publicar la ronda. Intenta de nuevo.');
+    });
+  });
+}
+
+/* =========================================================
+   ACTIVAS + HISTÓRICO
 ========================================================= */
 function initActivas(){
-  $('activasList').addEventListener('click',function(e){
-    var bajarBtn=e.target.closest?e.target.closest('.btn-bajar'):null;
-    if(bajarBtn){
-      e.stopPropagation();
-      var id=bajarBtn.getAttribute('data-id');
-      bajarNovedad(id);
-      return;
-    }
-    var item=e.target.closest?e.target.closest('.activa-item'):null;
-    if(item){
-      var nid=item.getAttribute('data-id');
-      var titulo=item.getAttribute('data-titulo');
-      abrirDetalleLecturas(nid,titulo);
-    }
-  });
+  var chips=document.querySelectorAll('#activasChips .chip');
+  for(var i=0;i<chips.length;i++){
+    chips[i].addEventListener('click',function(){
+      subActivas=this.getAttribute('data-sub');
+      var all=document.querySelectorAll('#activasChips .chip');
+      for(var j=0;j<all.length;j++)all[j].classList.remove('on');
+      this.classList.add('on');
+      $('activasList').classList.toggle('hidden',subActivas!=='activas');
+      $('historicoList').classList.toggle('hidden',subActivas!=='historico');
+      if(subActivas==='historico')cargarHistorico();
+    });
+  }
 }
 
-function loadActivas(){
-  var list=$('activasList');
-  list.innerHTML='<div class="empty-state">Cargando...</div>';
+var COLS_NOVEDAD='id,titulo,tipo,area,bloqueante,lote_id,destinatarios,logro,publicado_por,created_at';
 
-  sb.from('novedades').select('id,titulo,tipo,created_at').eq('activo',true).order('created_at',{ascending:false}).then(function(res){
+function cargarActivas(){
+  var list=$('activasList');
+  ponVacio(list,'Cargando…');
+  sb.from('novedades').select(COLS_NOVEDAD).eq('activo',true).order('created_at',{ascending:false}).then(function(res){
     if(res.error){
       console.log('[novedades-admin] error al cargar activas:',res.error);
-      list.innerHTML='<div class="empty-state">Error al cargar: '+escapeHtml(enEspanol(res.error))+'</div>';
+      ponVacio(list,'No se pudieron cargar las novedades activas.');
       return;
     }
     var rows=res.data||[];
-    if(rows.length===0){
-      list.innerHTML='<div class="empty-state">No hay novedades activas.</div>';
-      return;
-    }
-    var ids=[];
-    for(var i=0;i<rows.length;i++)ids.push(rows[i].id);
-
-    sb.from('novedades_lecturas').select('novedad_id').in('novedad_id',ids).then(function(lres){
-      var counts={};
-      if(!lres.error&&lres.data){
-        for(var j=0;j<lres.data.length;j++){
-          var nid=lres.data[j].novedad_id;
-          counts[nid]=(counts[nid]||0)+1;
-        }
-      }
-      renderActivas(rows,counts);
-    })["catch"](function(){
-      renderActivas(rows,{});
-    });
+    activasCache=rows;
+    $('chipNActivas').textContent=String(rows.length);
+    if(!rows.length){ponVacio(list,'No hay novedades activas.');return;}
+    cargarMetricas(rows,function(m){renderNovedades(list,rows,m,true);});
   })["catch"](function(err){
-    list.innerHTML='<div class="empty-state">Error al cargar.</div>';
+    console.log('[novedades-admin] error al cargar activas:',err);
+    ponVacio(list,'No se pudieron cargar las novedades activas.');
   });
 }
 
-function renderActivas(rows,counts){
-  var list=$('activasList');
-  var html='';
-  for(var i=0;i<rows.length;i++){
-    var n=rows[i];
-    var t=TIPOS[n.tipo]||TIPOS.novedad;
-    var count=counts[n.id]||0;
-    html+='<div class="activa-item" data-id="'+escapeHtml(n.id)+'" data-titulo="'+escapeHtml(n.titulo)+'">'+
-      '<span class="activa-tipo-dot" style="--tipo-color:'+t.color+'"></span>'+
-      '<div class="activa-main">'+
-        '<div class="activa-titulo">'+t.emoji+' '+escapeHtml(n.titulo)+'</div>'+
-        '<div class="activa-meta"><span>'+t.label+'</span><span>'+formatFecha(n.created_at)+'</span></div>'+
-      '</div>'+
-      '<div class="activa-lecturas mono">'+count+' leído'+(count===1?'':'s')+'</div>'+
-      '<button type="button" class="btn-bajar" data-id="'+escapeHtml(n.id)+'">Bajar</button>'+
-    '</div>';
-  }
-  list.innerHTML=html;
+function cargarHistorico(){
+  var list=$('historicoList');
+  ponVacio(list,'Cargando…');
+  var desde=new Date(Date.now()-90*24*3600*1000).toISOString();
+  sb.from('novedades').select(COLS_NOVEDAD).eq('activo',false).gte('created_at',desde)
+    .order('created_at',{ascending:false}).then(function(res){
+      if(res.error){
+        console.log('[novedades-admin] error al cargar histórico:',res.error);
+        ponVacio(list,'No se pudo cargar el histórico.');
+        return;
+      }
+      var rows=res.data||[];
+      $('chipNHist').textContent=String(rows.length);
+      if(!rows.length){ponVacio(list,'No hay novedades bajadas en los últimos 90 días.');return;}
+      cargarMetricas(rows,function(m){renderNovedades(list,rows,m,false);});
+    })["catch"](function(err){
+      console.log('[novedades-admin] error al cargar histórico:',err);
+      ponVacio(list,'No se pudo cargar el histórico.');
+    });
 }
 
-function bajarNovedad(id){
-  var ok=confirm('¿Bajar esta novedad? Dejará de mostrarse al equipo.');
-  if(!ok)return;
-  sb.from('novedades').update({activo:false}).eq('id',id).then(function(res){
-    if(res.error){
-      console.log('[novedades-admin] error al bajar novedad:',res.error);
-      toast('Error al bajar: '+enEspanol(res.error),'err');
+/* lecturas + reacciones por emoji + mensajes, para un conjunto de novedades */
+function cargarMetricas(rows,cb){
+  var ids=[],i;
+  for(i=0;i<rows.length;i++)ids.push(rows[i].id);
+  var m={lecturas:{},reacciones:{},comentarios:{}};
+
+  sb.from('novedades_lecturas').select('novedad_id').in('novedad_id',ids).then(function(r1){
+    if(!r1.error&&r1.data)for(var a=0;a<r1.data.length;a++){
+      var k=r1.data[a].novedad_id;m.lecturas[k]=(m.lecturas[k]||0)+1;
+    }
+    return sb.from('novedades_reacciones').select('novedad_id,emoji').in('novedad_id',ids);
+  }).then(function(r2){
+    if(r2&&!r2.error&&r2.data)for(var b=0;b<r2.data.length;b++){
+      var row=r2.data[b];
+      if(!m.reacciones[row.novedad_id])m.reacciones[row.novedad_id]={};
+      m.reacciones[row.novedad_id][row.emoji]=(m.reacciones[row.novedad_id][row.emoji]||0)+1;
+    }
+    return sb.from('novedades_comentarios').select('novedad_id').eq('borrado',false).in('novedad_id',ids);
+  }).then(function(r3){
+    if(r3&&!r3.error&&r3.data)for(var c=0;c<r3.data.length;c++){
+      var k3=r3.data[c].novedad_id;m.comentarios[k3]=(m.comentarios[k3]||0)+1;
+    }
+    cb(m);
+  })["catch"](function(err){
+    console.log('[novedades-admin] error al cargar métricas:',err);
+    cb(m);
+  });
+}
+
+function renderNovedades(host,rows,m,conAcciones){
+  vaciar(host);
+  for(var i=0;i<rows.length;i++){
+    (function(n){
+      var t=TIPOS[n.tipo]||TIPOS.novedad;
+      var fila=el('div','fila u-'+(n.tipo||'novedad')+' clic');
+      fila.setAttribute('data-id',n.id);
+
+      var main=el('div');
+      main.appendChild(el('div','tit',t.emoji+' '+(n.titulo||'(sin título)')));
+      var meta=el('div','meta');
+      meta.appendChild(el('span',null,t.label));
+      meta.appendChild(el('span','badge-area',n.area||'general'));
+      meta.appendChild(el('span','badge-bloq'+(n.bloqueante===false?'':' si'),n.bloqueante===false?'informativa':'bloqueante'));
+      meta.appendChild(el('span',null,formatFecha(n.created_at)));
+      if(n.lote_id)meta.appendChild(el('span','badge-area','en lote'));
+      if(n.destinatarios&&n.destinatarios.length)
+        meta.appendChild(el('span',null,'→ '+n.destinatarios.join(', ')));
+      main.appendChild(meta);
+      fila.appendChild(main);
+
+      var nums=el('div','nums');
+      var c1=el('div');
+      c1.appendChild(el('span','et','Leídas'));
+      c1.appendChild(el('span','mono',String(m.lecturas[n.id]||0)));
+      nums.appendChild(c1);
+
+      var c2=el('div');
+      c2.appendChild(el('span','et','Reacciones'));
+      var rr=el('div','reac-min');
+      var reac=m.reacciones[n.id]||{},total=0,k;
+      for(k in reac)if(Object.prototype.hasOwnProperty.call(reac,k))total+=reac[k];
+      if(!total){
+        rr.appendChild(el('span',null,'0'));
+      }else{
+        for(var e=0;e<EMOJIS.length;e++){
+          var cnt=reac[EMOJIS[e]]||0;
+          if(!cnt)continue;
+          var sp=el('span');
+          sp.appendChild(document.createTextNode(EMOJIS[e]+' '));
+          sp.appendChild(el('b',null,String(cnt)));
+          rr.appendChild(sp);
+        }
+      }
+      c2.appendChild(rr);
+      nums.appendChild(c2);
+
+      var c3=el('div');
+      c3.appendChild(el('span','et','Mensajes'));
+      c3.appendChild(el('span','mono',String(m.comentarios[n.id]||0)));
+      nums.appendChild(c3);
+      fila.appendChild(nums);
+
+      var acc=el('div');
+      if(conAcciones){
+        var bajar=el('button','pgb peligro','Bajar');
+        bajar.type='button';
+        bajar.addEventListener('click',function(ev){
+          ev.stopPropagation();
+          bajarNovedad(n);
+        });
+        acc.appendChild(bajar);
+      }else{
+        acc.appendChild(el('span','sello mono','bajada'));
+      }
+      fila.appendChild(acc);
+
+      fila.addEventListener('click',function(){abrirDetalle(n);});
+      host.appendChild(fila);
+    })(rows[i]);
+  }
+}
+
+function bajarNovedad(n){
+  confirmar('¿Bajar esta novedad?',[n.titulo||'(sin título)','Deja de mostrarse al equipo. Queda en el histórico.'],'Sí, bajarla',function(){
+    sb.from('novedades').update({activo:false}).eq('id',n.id).then(function(res){
+      if(res&&res.error){
+        console.log('[novedades-admin] error al bajar novedad:',res.error);
+        toast('Error al bajar: '+enEspanol(res.error),'err');
+        return;
+      }
+      toast('Novedad bajada ✓','ok');
+      cargarActivas();
+    })["catch"](function(err){
+      console.log('[novedades-admin] error al bajar novedad:',err);
+      toast('Error al bajar la novedad.','err');
+    });
+  });
+}
+
+/* ---- detalle: lecturas + mensajes ---- */
+function abrirDetalle(n){
+  $('modalTitulo').textContent=(n.titulo||'(sin título)');
+  var body=vaciar($('modalBody'));
+  body.appendChild(el('div','sub-t','Lecturas'));
+  var lecWrap=el('div');
+  lecWrap.appendChild(el('div','vacio','Cargando…'));
+  body.appendChild(lecWrap);
+  body.appendChild(el('div','sub-t','Mensajes privados'));
+  var msjWrap=el('div');
+  msjWrap.appendChild(el('div','vacio','Cargando…'));
+  body.appendChild(msjWrap);
+  $('modalOverlay').classList.remove('hidden');
+
+  sb.from('novedades_lecturas').select('user_email,leido_at').eq('novedad_id',n.id)
+    .order('leido_at',{ascending:false}).then(function(res){
+      vaciar(lecWrap);
+      if(res.error){
+        console.log('[novedades-admin] error al cargar lecturas:',res.error);
+        lecWrap.appendChild(el('div','vacio','No se pudieron cargar las lecturas.'));
+        return;
+      }
+      var rows=res.data||[];
+      if(!rows.length){lecWrap.appendChild(el('div','vacio','Nadie la ha leído todavía.'));return;}
+      for(var i=0;i<rows.length;i++){
+        var lin=el('div','lin');
+        lin.appendChild(el('span','em',rows[i].user_email));
+        lin.appendChild(el('span','hora',formatFecha(rows[i].leido_at)));
+        lecWrap.appendChild(lin);
+      }
+    })["catch"](function(err){
+      console.log('[novedades-admin] error al cargar lecturas:',err);
+      vaciar(lecWrap).appendChild(el('div','vacio','No se pudieron cargar las lecturas.'));
+    });
+
+  cargarMensajes(n,msjWrap);
+}
+
+function cargarMensajes(n,host){
+  sb.rpc('novedades_comentarios_de',{p_novedad:n.id}).then(function(res){
+    vaciar(host);
+    if(res&&res.error){
+      console.log('[novedades-admin] error al cargar mensajes:',res.error);
+      host.appendChild(el('div','vacio','No se pudieron cargar los mensajes.'));
       return;
     }
-    toast('Novedad bajada ✓','ok');
-    loadActivas();
-  })["catch"](function(){
-    toast('Error al bajar la novedad.','err');
+    var rows=(res&&res.data)||[];
+    if(!rows.length){host.appendChild(el('div','vacio','Todavía no hay mensajes.'));return;}
+    for(var i=0;i<rows.length;i++){
+      (function(c){
+        var caja=el('div','msj');
+        var cab=el('div','cab');
+        cab.appendChild(avatar({nombre:c.nombre||c.user_email,foto_url:c.foto_url||c.foto||null}));
+        cab.appendChild(el('span','nm',c.nombre||c.user_email||'(sin nombre)'));
+        cab.appendChild(el('span','hora',formatFecha(c.created_at)));
+        caja.appendChild(cab);
+        caja.appendChild(el('div','txt',c.texto||''));
+        var acc=el('div','acc');
+        var btn=el('button','pgb peligro','Ocultar');
+        btn.type='button';
+        btn.addEventListener('click',function(){
+          btn.disabled=true;btn.textContent='Ocultando…';
+          sb.from('novedades_comentarios').update({borrado:true}).eq('id',c.id).then(function(r){
+            if(r&&r.error){
+              btn.disabled=false;btn.textContent='Ocultar';
+              console.log('[novedades-admin] error al ocultar mensaje:',r.error);
+              toast('No se pudo ocultar el mensaje.','err');
+              return;
+            }
+            caja.classList.add('oculto');
+            vaciar(acc).appendChild(el('span','sello mono','oculto ✓'));
+            toast('Mensaje oculto ✓','ok');
+          })["catch"](function(err){
+            btn.disabled=false;btn.textContent='Ocultar';
+            console.log('[novedades-admin] error al ocultar mensaje:',err);
+            toast('No se pudo ocultar el mensaje.','err');
+          });
+        });
+        acc.appendChild(btn);
+        caja.appendChild(acc);
+        host.appendChild(caja);
+      })(rows[i]);
+    }
+  })["catch"](function(err){
+    console.log('[novedades-admin] error al cargar mensajes:',err);
+    vaciar(host).appendChild(el('div','vacio','No se pudieron cargar los mensajes.'));
   });
 }
 
 /* =========================================================
-   MODAL — detalle de lecturas
+   PERSONAS Y ÁREAS
 ========================================================= */
-function initModal(){
-  $('modalCloseBtn').addEventListener('click',cerrarModal);
-  $('modalOverlay').addEventListener('click',function(e){
-    if(e.target===$('modalOverlay'))cerrarModal();
+function initPersonas(){
+  $('personasBuscar').addEventListener('input',function(){
+    personasFiltro.texto=this.value.trim().toLowerCase();
+    renderPersonas();
+  });
+  $('chipSinArea').addEventListener('click',function(){
+    personasFiltro.sinArea=!personasFiltro.sinArea;
+    this.classList.toggle('on',personasFiltro.sinArea);
+    renderPersonas();
+  });
+  $('chipSinFoto').addEventListener('click',function(){
+    personasFiltro.sinFoto=!personasFiltro.sinFoto;
+    this.classList.toggle('on',personasFiltro.sinFoto);
+    renderPersonas();
   });
 }
 
-function cerrarModal(){
-  $('modalOverlay').classList.add('hidden');
+function cargarPersonasAreas(){
+  sb.from('novedades_personas_areas').select('user_email,area').then(function(res){
+    personasAreas={};
+    if(res.error){
+      console.log('[novedades-admin] error al cargar áreas de personas:',res.error);
+    }else{
+      var rows=res.data||[];
+      for(var i=0;i<rows.length;i++){
+        var em=String(rows[i].user_email||'').toLowerCase();
+        if(!personasAreas[em])personasAreas[em]={};
+        personasAreas[em][rows[i].area]=true;
+      }
+    }
+    renderPersonas();
+  })["catch"](function(err){
+    console.log('[novedades-admin] error al cargar áreas de personas:',err);
+    renderPersonas();
+  });
 }
 
-function abrirDetalleLecturas(novedadId,titulo){
-  $('modalTitulo').textContent='Lecturas · '+titulo;
-  $('modalBody').innerHTML='<div class="empty-state">Cargando...</div>';
-  $('modalOverlay').classList.remove('hidden');
+function tieneAreaEspecifica(email){
+  var a=personasAreas[email];
+  if(!a)return false;
+  for(var k in a)if(Object.prototype.hasOwnProperty.call(a,k)&&k!=='general'&&a[k])return true;
+  return false;
+}
 
-  sb.from('novedades_lecturas').select('user_email,leido_at').eq('novedad_id',novedadId).order('leido_at',{ascending:false}).then(function(res){
-    if(res.error){
-      console.log('[novedades-admin] error al cargar lecturas:',res.error);
-      $('modalBody').innerHTML='<div class="empty-state">Error al cargar: '+escapeHtml(enEspanol(res.error))+'</div>';
+function renderPersonas(){
+  var wrap=$('personasTablaWrap');
+  var sinArea=0,sinFoto=0,i;
+  for(i=0;i<personasCache.length;i++){
+    if(!tieneAreaEspecifica(personasCache[i].email))sinArea++;
+    if(!personasCache[i].foto_url)sinFoto++;
+  }
+  $('nSinArea').textContent=String(sinArea);
+  $('nSinFoto').textContent=String(sinFoto);
+
+  var filtradas=[];
+  for(i=0;i<personasCache.length;i++){
+    var p=personasCache[i];
+    if(personasFiltro.texto&&p.email.indexOf(personasFiltro.texto)<0&&String(p.nombre).toLowerCase().indexOf(personasFiltro.texto)<0)continue;
+    if(personasFiltro.sinArea&&tieneAreaEspecifica(p.email))continue;
+    if(personasFiltro.sinFoto&&p.foto_url)continue;
+    filtradas.push(p);
+  }
+
+  vaciar(wrap);
+  if(!personasCache.length){wrap.appendChild(el('div','vacio','Cargando…'));return;}
+  if(!filtradas.length){wrap.appendChild(el('div','vacio','No hay personas que coincidan.'));return;}
+
+  var tabla=el('table','ptabla');
+  var thead=el('thead'),trh=el('tr');
+  trh.appendChild(el('th',null,'Persona'));
+  for(i=0;i<AREAS.length;i++)trh.appendChild(el('th',null,AREAS[i]));
+  trh.appendChild(el('th',null,'Foto'));
+  trh.appendChild(el('th',null,''));
+  thead.appendChild(trh);
+  tabla.appendChild(thead);
+
+  var tbody=el('tbody');
+  for(i=0;i<filtradas.length;i++)tbody.appendChild(filaPersonaArea(filtradas[i]));
+  tabla.appendChild(tbody);
+  wrap.appendChild(tabla);
+}
+
+function filaPersonaArea(p){
+  var tr=el('tr');
+  tr.setAttribute('data-email',p.email);
+  var td1=el('td');
+  var nom=el('div','p-nom');
+  nom.appendChild(avatar(p));
+  var col=el('span','col');
+  col.appendChild(el('span','nm',p.nombre));
+  col.appendChild(el('span','em',p.email));
+  nom.appendChild(col);
+  td1.appendChild(nom);
+  tr.appendChild(td1);
+
+  var cambios={};
+  for(var i=0;i<AREAS.length;i++){
+    (function(area){
+      var td=el('td','ar');
+      var cb=document.createElement('input');
+      cb.type='checkbox';
+      cb.setAttribute('data-area',area);
+      cb.checked=!!(personasAreas[p.email]&&personasAreas[p.email][area]);
+      cb.addEventListener('change',function(){
+        cambios[area]=cb.checked;
+        btn.disabled=false;
+        btn.classList.add('pri');
+      });
+      td.appendChild(cb);
+      tr.appendChild(td);
+    })(AREAS[i]);
+  }
+
+  var tdF=el('td');
+  if(p.foto_url){
+    tdF.appendChild(el('span','sello mono','ok'));
+  }else{
+    tdF.appendChild(el('span','sinfoto','sin foto'));
+    var a=el('a','linkish','Subirla');
+    a.href='control-maestro.html';
+    a.title='Control Maestro → Fotos';
+    a.style.marginLeft='8px';
+    tdF.appendChild(a);
+  }
+  tr.appendChild(tdF);
+
+  var tdB=el('td');
+  var btn=el('button','pgb','Guardar');
+  btn.type='button';
+  btn.disabled=true;
+  btn.addEventListener('click',function(){
+    guardarAreasPersona(p,cambios,btn);
+  });
+  tdB.appendChild(btn);
+  tr.appendChild(tdB);
+  return tr;
+}
+
+function guardarAreasPersona(p,cambios,btn){
+  var altas=[],bajas=[],k;
+  for(k in cambios){
+    if(!Object.prototype.hasOwnProperty.call(cambios,k))continue;
+    if(cambios[k])altas.push(k);else bajas.push(k);
+  }
+  if(!altas.length&&!bajas.length)return;
+  btn.disabled=true;btn.textContent='Guardando…';
+
+  var pasos=[];
+  if(altas.length){
+    var filas=[];
+    for(var i=0;i<altas.length;i++)filas.push({user_email:p.email,area:altas[i]});
+    pasos.push(sb.from('novedades_personas_areas').insert(filas));
+  }
+  for(var j=0;j<bajas.length;j++){
+    pasos.push(sb.from('novedades_personas_areas').delete().eq('user_email',p.email).eq('area',bajas[j]));
+  }
+  Promise.all(pasos).then(function(res){
+    var err=null;
+    for(var z=0;z<res.length;z++)if(res[z]&&res[z].error)err=res[z].error;
+    btn.textContent='Guardar';
+    btn.classList.remove('pri');
+    if(err){
+      btn.disabled=false;
+      console.log('[novedades-admin] error al guardar áreas:',err);
+      toast('No se pudieron guardar las áreas: '+enEspanol(err),'err');
       return;
     }
-    var rows=res.data||[];
-    if(rows.length===0){
-      $('modalBody').innerHTML='<div class="empty-state">Nadie la ha leído todavía.</div>';
-      return;
-    }
-    var html='';
-    for(var i=0;i<rows.length;i++){
-      html+='<div class="lectura-row">'+
-        '<span class="lectura-email">'+escapeHtml(rows[i].user_email)+'</span>'+
-        '<span class="lectura-hora mono">'+formatFecha(rows[i].leido_at)+'</span>'+
-      '</div>';
-    }
-    $('modalBody').innerHTML=html;
-  })["catch"](function(){
-    $('modalBody').innerHTML='<div class="empty-state">Error al cargar.</div>';
+    if(!personasAreas[p.email])personasAreas[p.email]={};
+    for(var a=0;a<altas.length;a++)personasAreas[p.email][altas[a]]=true;
+    for(var b=0;b<bajas.length;b++)delete personasAreas[p.email][bajas[b]];
+    for(var c in cambios)if(Object.prototype.hasOwnProperty.call(cambios,c))delete cambios[c];
+    toast('Áreas guardadas ✓','ok');
+    renderPersonas();
+  })["catch"](function(err2){
+    btn.disabled=false;btn.textContent='Guardar';
+    console.log('[novedades-admin] error al guardar áreas:',err2);
+    toast('No se pudieron guardar las áreas.','err');
   });
 }
 
 /* =========================================================
    AJUSTES
 ========================================================= */
-var DURACIONES=[30,60,90,120,180];
-var duracionSeleccionada=90;
-
 function initAjustes(){
-  var opts=$('duracionOpts');
-  opts.innerHTML='';
-  for(var i=0;i<DURACIONES.length;i++){
-    (function(seg){
-      var btn=document.createElement('button');
-      btn.type='button';
-      btn.className='dur-btn';
-      btn.setAttribute('data-seg',seg);
-      btn.textContent=formatDuracion(seg);
-      btn.addEventListener('click',function(){
-        duracionSeleccionada=seg;
-        $('durCustomWrap').classList.add('hidden');
-        actualizarSelectorDuracion();
-      });
-      opts.appendChild(btn);
-    })(DURACIONES[i]);
+  var segs=document.querySelectorAll('#segTema button');
+  for(var i=0;i<segs.length;i++){
+    segs[i].addEventListener('click',function(){
+      cfg.tema_overlay=this.getAttribute('data-v');
+      pintarAjustes(false);
+      actualizarPreviewPublicar();
+      actualizarPreviewRonda();
+    });
   }
-  var customBtn=document.createElement('button');
-  customBtn.type='button';
-  customBtn.className='dur-btn';
-  customBtn.setAttribute('data-seg','custom');
-  customBtn.textContent='Personalizado';
-  customBtn.addEventListener('click',function(){
-    duracionSeleccionada='custom';
-    $('durCustomWrap').classList.remove('hidden');
-    actualizarSelectorDuracion();
+  var segs2=document.querySelectorAll('#segModo button');
+  for(var j=0;j<segs2.length;j++){
+    segs2[j].addEventListener('click',function(){
+      cfg.modo_ronda=this.getAttribute('data-v');
+      pintarAjustes(false);
+      actualizarPreviewRonda();
+    });
+  }
+  $('swReacciones').addEventListener('click',function(){
+    cfg.reacciones_activas=!cfg.reacciones_activas;
+    pintarAjustes(false);
+    actualizarPreviewPublicar();
+    actualizarPreviewRonda();
   });
-  opts.appendChild(customBtn);
-
-  $('btnGuardarDuracion').addEventListener('click',guardarDuracion);
-}
-
-function actualizarSelectorDuracion(){
-  var btns=document.querySelectorAll('.dur-btn');
-  for(var i=0;i<btns.length;i++){
-    var seg=btns[i].getAttribute('data-seg');
-    var match=(seg==='custom'&&duracionSeleccionada==='custom')||(Number(seg)===duracionSeleccionada);
-    btns[i].classList.toggle('selected',match);
-  }
-}
-
-function cargarConfig(){
-  sb.from('novedades_config').select('duracion_segundos').eq('id',true).maybeSingle().then(function(res){
-    if(res.error||!res.data){
-      $('ajustesActual').innerHTML=formatoActualHtml(duracionCache);
-      preseleccionarDuracion(duracionCache);
-      return;
-    }
-    duracionCache=res.data.duracion_segundos||90;
-    $('ajustesActual').innerHTML=formatoActualHtml(duracionCache);
-    preseleccionarDuracion(duracionCache);
-  })["catch"](function(){
-    $('ajustesActual').innerHTML=formatoActualHtml(duracionCache);
-    preseleccionarDuracion(duracionCache);
+  $('swComentarios').addEventListener('click',function(){
+    cfg.comentarios_activos=!cfg.comentarios_activos;
+    pintarAjustes(false);
   });
+  $('btnGuardarAjustes').addEventListener('click',guardarAjustes);
 }
 
-function formatoActualHtml(seg){
-  return seg+' <small>seg ('+formatDuracion(seg)+')</small>';
-}
-
-function preseleccionarDuracion(seg){
-  if(DURACIONES.indexOf(seg)>=0){
-    duracionSeleccionada=seg;
-    $('durCustomWrap').classList.add('hidden');
-  }else{
-    duracionSeleccionada='custom';
-    $('durCustomInput').value=seg;
-    $('durCustomWrap').classList.remove('hidden');
-  }
-  actualizarSelectorDuracion();
-}
-
-function guardarDuracion(){
-  var nuevoValor;
-  if(duracionSeleccionada==='custom'){
-    nuevoValor=parseInt($('durCustomInput').value,10);
-    if(!nuevoValor||nuevoValor<5){
-      toast('Ingresa un número de segundos válido.','err');
-      return;
-    }
-  }else{
-    nuevoValor=duracionSeleccionada;
+/* incluirNumeros=false cuando solo se toca un interruptor: así no se le borra
+   al operador lo que acaba de escribir en las casillas de números. */
+function pintarAjustes(incluirNumeros){
+  if(incluirNumeros!==false){
+    $('ajDuracion').value=cfg.duracion_segundos;
+    $('ajDiasVigencia').value=cfg.dias_vigencia;
+    $('ajDiasMuro').value=cfg.dias_muro;
+    $('ajSegPersona').value=(cfg.segundos_por_persona===null||cfg.segundos_por_persona===undefined)?'':cfg.segundos_por_persona;
   }
 
-  var btn=$('btnGuardarDuracion');
-  btn.disabled=true;
-  btn.textContent='Guardando...';
+  var t=document.querySelectorAll('#segTema button'),i;
+  for(i=0;i<t.length;i++)t[i].classList.toggle('on',t[i].getAttribute('data-v')===cfg.tema_overlay);
+  var m=document.querySelectorAll('#segModo button');
+  for(i=0;i<m.length;i++)m[i].classList.toggle('on',m[i].getAttribute('data-v')===cfg.modo_ronda);
 
-  sb.from('novedades_config').update({duracion_segundos:nuevoValor,updated_at:new Date().toISOString()}).eq('id',true).then(function(res){
-    if(res.error){
-      btn.disabled=false;
-      btn.textContent='Guardar';
-      console.log('[novedades-admin] error al guardar duración:',res.error);
+  var sr=$('swReacciones');
+  sr.setAttribute('aria-checked',cfg.reacciones_activas?'true':'false');
+  vaciar($('swReaccionesTxt'));
+  $('swReaccionesTxt').appendChild(document.createTextNode(cfg.reacciones_activas?'Activadas':'Desactivadas'));
+  $('swReaccionesTxt').appendChild(el('small',null,cfg.reacciones_activas
+    ? 'La gente puede aplaudir 👏 🎉 ❤️ 🔥 💪 en el muro y en la pantalla.'
+    : 'Nadie puede reaccionar: no aparecen los emojis.'));
+
+  var sc=$('swComentarios');
+  sc.setAttribute('aria-checked',cfg.comentarios_activos?'true':'false');
+  vaciar($('swComentariosTxt'));
+  $('swComentariosTxt').appendChild(document.createTextNode(cfg.comentarios_activos?'Activados':'Desactivados'));
+  $('swComentariosTxt').appendChild(el('small',null,cfg.comentarios_activos
+    ? 'La gente puede escribirle un mensaje corto a quien felicitamos. Solo lo lee esa persona y dirección.'
+    : 'Nadie puede escribir mensajes; solo quedan las reacciones.'));
+
+  pintarVigencias();
+}
+
+function guardarAjustes(){
+  var dur=parseInt($('ajDuracion').value,10);
+  var dv=parseInt($('ajDiasVigencia').value,10);
+  var dm=parseInt($('ajDiasMuro').value,10);
+  var spTxt=String($('ajSegPersona').value||'').trim();
+  var sp=spTxt===''?null:parseInt(spTxt,10);
+
+  if(!dur||dur<5){toast('La duración del bloqueo debe ser de al menos 5 segundos.','err');return;}
+  if(!dv||dv<1){toast('Los días de bloqueo deben ser al menos 1.','err');return;}
+  if(!dm||dm<1){toast('Los días del muro deben ser al menos 1.','err');return;}
+  if(sp!==null&&(!sp||sp<5)){toast('Los segundos por persona deben ser al menos 5 (o déjalo vacío).','err');return;}
+
+  var duracionCambio=(dur!==cfg.duracion_segundos);
+  var payload={
+    duracion_segundos:dur,
+    dias_vigencia:dv,
+    dias_muro:dm,
+    reacciones_activas:!!cfg.reacciones_activas,
+    comentarios_activos:!!cfg.comentarios_activos,
+    tema_overlay:cfg.tema_overlay,
+    modo_ronda:cfg.modo_ronda,
+    segundos_por_persona:sp,
+    updated_at:new Date().toISOString()
+  };
+
+  var btn=$('btnGuardarAjustes');
+  btn.disabled=true;btn.textContent='Guardando…';
+  $('ajustesEstado').textContent='';
+
+  sb.from('novedades_config').update(payload).eq('id',true).then(function(res){
+    if(res&&res.error){
+      btn.disabled=false;btn.textContent='Guardar ajustes';
+      console.log('[novedades-admin] error al guardar ajustes:',res.error);
       toast('Error al guardar: '+enEspanol(res.error),'err');
       return;
     }
-    sb.from('novedades').update({segundos_lectura:nuevoValor}).eq('activo',true).then(function(res2){
-      btn.disabled=false;
-      btn.textContent='Guardar';
-      if(res2.error){
+    cfg.duracion_segundos=dur;cfg.dias_vigencia=dv;cfg.dias_muro=dm;cfg.segundos_por_persona=sp;
+    pintarAjustes();
+    actualizarPreviewPublicar();
+    actualizarPreviewRonda();
+    if(!duracionCambio){
+      btn.disabled=false;btn.textContent='Guardar ajustes';
+      $('ajustesEstado').textContent='Guardado ✓';
+      toast('Ajustes guardados ✓','ok');
+      return;
+    }
+    sb.from('novedades').update({segundos_lectura:dur}).eq('activo',true).then(function(res2){
+      btn.disabled=false;btn.textContent='Guardar ajustes';
+      if(res2&&res2.error){
         console.log('[novedades-admin] error al actualizar segundos_lectura de activas:',res2.error);
-        toast('Duración guardada, pero no se pudo actualizar las activas: '+enEspanol(res2.error),'err');
+        toast('Ajustes guardados, pero no se pudo actualizar las activas.','err');
       }else{
-        toast('Duración actualizada ✓','ok');
+        $('ajustesEstado').textContent='Guardado ✓';
+        toast('Ajustes guardados ✓','ok');
       }
-      duracionCache=nuevoValor;
-      $('ajustesActual').innerHTML=formatoActualHtml(duracionCache);
     })["catch"](function(){
-      btn.disabled=false;
-      btn.textContent='Guardar';
-      duracionCache=nuevoValor;
-      $('ajustesActual').innerHTML=formatoActualHtml(duracionCache);
-      toast('Duración guardada, pero hubo un error actualizando las activas.','err');
+      btn.disabled=false;btn.textContent='Guardar ajustes';
+      toast('Ajustes guardados, pero hubo un error actualizando las activas.','err');
     });
-  })["catch"](function(){
-    btn.disabled=false;
-    btn.textContent='Guardar';
-    toast('Error al guardar la duración.','err');
+  })["catch"](function(err){
+    btn.disabled=false;btn.textContent='Guardar ajustes';
+    console.log('[novedades-admin] error al guardar ajustes:',err);
+    toast('Error al guardar los ajustes.','err');
   });
 }
 
 /* =========================================================
-   ACCESOS — restablecer clave (solo sales@)
+   MODALES (detalle + confirmación)
+========================================================= */
+var confirmCb=null;
+function initModales(){
+  $('modalCloseBtn').addEventListener('click',function(){$('modalOverlay').classList.add('hidden');});
+  $('modalOverlay').addEventListener('click',function(e){
+    if(e.target===$('modalOverlay'))$('modalOverlay').classList.add('hidden');
+  });
+  $('confirmCerrarX').addEventListener('click',cerrarConfirm);
+  $('confirmNo').addEventListener('click',cerrarConfirm);
+  $('confirmSi').addEventListener('click',function(){
+    var cb=confirmCb;
+    cerrarConfirm();
+    if(cb)cb();
+  });
+}
+function cerrarConfirm(){
+  confirmCb=null;
+  $('confirmOverlay').classList.add('hidden');
+}
+function confirmar(titulo,lineas,textoBoton,cb){
+  $('confirmTitulo').textContent=titulo;
+  var body=vaciar($('confirmBody'));
+  for(var i=0;i<lineas.length;i++){
+    var p=el('p',null,lineas[i]);
+    p.style.cssText='margin:0 0 8px;font-size:13.5px;line-height:1.55;color:var(--txt)';
+    body.appendChild(p);
+  }
+  $('confirmSi').textContent=textoBoton||'Sí, publicar';
+  confirmCb=cb;
+  $('confirmOverlay').classList.remove('hidden');
+}
+
+/* =========================================================
+   ACCESOS — restablecer clave (solo sales@) · SE CONSERVA
 ========================================================= */
 function esCuentaArea(email){
   var local=String(email||'').split('@')[0].toLowerCase()+'@';
@@ -1807,9 +2554,7 @@ function formatUltimoAcceso(iso){
     if(diffDias<30)return 'hace '+diffDias+(diffDias===1?' día':' días');
     try{
       return d.toLocaleDateString('es-CO',{timeZone:'America/Bogota',day:'numeric',month:'long',year:'numeric'});
-    }catch(e2){
-      return formatFecha(iso);
-    }
+    }catch(e2){return formatFecha(iso);}
   }catch(e){return String(iso);}
 }
 
@@ -1820,11 +2565,7 @@ function accesosLlamar(payload){
     if(!token)return Promise.reject(new Error('No hay sesión activa. Vuelve a iniciar sesión.'));
     return fetch(ACCESOS_FN_URL,{
       method:'POST',
-      headers:{
-        'Authorization':'Bearer '+token,
-        'apikey':SUPABASE_KEY,
-        'Content-Type':'application/json'
-      },
+      headers:{'Authorization':'Bearer '+token,'apikey':SUPABASE_KEY,'Content-Type':'application/json'},
       body:JSON.stringify(payload)
     }).then(function(resp){
       return resp.json()["catch"](function(){
@@ -1832,8 +2573,6 @@ function accesosLlamar(payload){
         throw new Error('Por ahora no se puede completar esta acción de accesos. Vuelve a intentar en un momento; si sigue igual, avísale a soporte.');
       }).then(function(data){
         if(!resp.ok||!data||data.ok===false){
-          // El detalle técnico (status, mensaje del servidor, a veces en inglés)
-          // se queda en la consola; a pantalla solo va un mensaje humano.
           console.log('[accesos] error del servidor, status '+resp.status+':',(data&&data.error)?data.error:'(sin detalle)');
           throw new Error('Por ahora no se puede completar esta acción de accesos. Vuelve a intentar en un momento; si sigue igual, avísale a soporte.');
         }
@@ -1884,13 +2623,13 @@ function initAccesos(){
 function cargarListaAccesos(){
   if(String(currentEmail||'').toLowerCase()!==ACCESOS_ADMIN_EMAIL)return;
   var wrap=$('accesoListWrap');
-  wrap.innerHTML='<div class="empty-state">Cargando...</div>';
+  ponVacio(wrap,'Cargando...');
   accesosLlamar({action:'list'}).then(function(data){
     accesosCache=(data&&data.usuarios)?data.usuarios:[];
     renderAccesosFiltrado();
   })["catch"](function(err){
     console.log('[accesos] no se pudo cargar la lista:',(err&&err.message)||err);
-    wrap.innerHTML='<div class="empty-state">No se pudo cargar la lista de accesos. Vuelve a intentar en un momento; si sigue igual, avísale a soporte.</div>';
+    ponVacio(wrap,'No se pudo cargar la lista de accesos. Vuelve a intentar en un momento; si sigue igual, avísale a soporte.');
   });
 }
 
@@ -1906,37 +2645,49 @@ function renderAccesosFiltrado(){
 }
 
 function renderAccesosList(rows){
-  var wrap=$('accesoListWrap');
+  var wrap=vaciar($('accesoListWrap'));
   if(!rows||rows.length===0){
-    wrap.innerHTML='<div class="empty-state">No hay cuentas que coincidan.</div>';
+    wrap.appendChild(el('div','vacio','No hay cuentas que coincidan.'));
     return;
   }
-  var html='<div class="acceso-list">';
+  var lista=el('div','acceso-list');
   for(var i=0;i<rows.length;i++){
-    var u=rows[i];
-    var email=u.email||'';
-    var esArea=esCuentaArea(email);
-    var pendiente=(accesosConfirmEmail===email);
-    html+='<div class="acceso-item">'+
-      '<div class="acceso-main">'+
-        '<div class="acceso-email">'+escapeHtml(email)+(esArea?' <span class="acceso-badge-area">Área (clave compartida)</span>':'')+'</div>'+
-        '<div class="acceso-meta">Último acceso: '+escapeHtml(formatUltimoAcceso(u.ultimo_acceso))+'</div>'+
-      '</div>'+
-      '<button type="button" class="btn-bajar acceso-btn-reset" data-email="'+escapeHtml(email)+'">Resetear clave</button>'+
-    '</div>';
-    if(pendiente){
-      html+='<div class="acceso-confirm'+(esArea?' acceso-confirm-area':'')+'">'+
-        'Vas a restablecer la clave de <b>'+escapeHtml(email)+'</b>.'+
-        (esArea?'<span class="acceso-confirm-warn">Es una cuenta de área: el cambio afecta a todas las personas que la usan.</span>':'')+
-        '<div class="acceso-confirm-btns">'+
-          '<button type="button" class="btn-publicar acceso-btn-confirmar" data-email="'+escapeHtml(email)+'" style="width:auto;padding:9px 18px;">Confirmar reset</button>'+
-          '<button type="button" class="acceso-btn-secundario acceso-btn-cancelar">Cancelar</button>'+
-        '</div>'+
-      '</div>';
-    }
+    (function(u){
+      var email=u.email||'';
+      var esArea=esCuentaArea(email);
+      var item=el('div','acceso-item');
+      var main=el('div','acceso-main');
+      var lin=el('div','acceso-email',email);
+      if(esArea)lin.appendChild(el('span','acceso-badge-area','Área (clave compartida)'));
+      main.appendChild(lin);
+      main.appendChild(el('div','acceso-meta','Último acceso: '+formatUltimoAcceso(u.ultimo_acceso)));
+      item.appendChild(main);
+      var btn=el('button','pgb peligro acceso-btn-reset','Resetear clave');
+      btn.type='button';
+      btn.setAttribute('data-email',email);
+      item.appendChild(btn);
+      lista.appendChild(item);
+
+      if(accesosConfirmEmail===email){
+        var cf=el('div','acceso-confirm'+(esArea?' acceso-confirm-area':''));
+        cf.appendChild(document.createTextNode('Vas a restablecer la clave de '));
+        cf.appendChild(el('b',null,email));
+        cf.appendChild(document.createTextNode('.'));
+        if(esArea)cf.appendChild(el('span','acceso-confirm-warn','Es una cuenta de área: el cambio afecta a todas las personas que la usan.'));
+        var btns=el('div','acceso-confirm-btns');
+        var ok=el('button','pgb pri acceso-btn-confirmar','Confirmar reset');
+        ok.type='button';
+        ok.setAttribute('data-email',email);
+        btns.appendChild(ok);
+        var no=el('button','pgb acceso-btn-cancelar','Cancelar');
+        no.type='button';
+        btns.appendChild(no);
+        cf.appendChild(btns);
+        lista.appendChild(cf);
+      }
+    })(rows[i]);
   }
-  html+='</div>';
-  wrap.innerHTML=html;
+  wrap.appendChild(lista);
 }
 
 function ejecutarResetClave(email,btn){
@@ -2007,9 +2758,7 @@ function copiarAccesoPass(){
     setTimeout(function(){btn.textContent=prev;},1800);
   }
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(texto).then(ok)["catch"](function(){
-      copiarAccesoPassFallback(texto,ok);
-    });
+    navigator.clipboard.writeText(texto).then(ok)["catch"](function(){copiarAccesoPassFallback(texto,ok);});
   }else{
     copiarAccesoPassFallback(texto,ok);
   }
@@ -2018,28 +2767,26 @@ function copiarAccesoPass(){
 function cargarHistorialAccesos(){
   if(String(currentEmail||'').toLowerCase()!==ACCESOS_ADMIN_EMAIL)return;
   var wrap=$('accesoHistWrap');
-  wrap.innerHTML='<div class="empty-state">Cargando...</div>';
+  ponVacio(wrap,'Cargando...');
   sb.from('accesos_resets').select('admin_email,target_email,created_at').order('created_at',{ascending:false}).limit(20).then(function(res){
     if(res.error){
       console.log('[accesos] no se pudo cargar el historial:',res.error);
-      wrap.innerHTML='<div class="empty-state">No se pudo cargar el historial de restablecimientos.</div>';
+      ponVacio(wrap,'No se pudo cargar el historial de restablecimientos.');
       return;
     }
     var rows=res.data||[];
-    if(rows.length===0){
-      wrap.innerHTML='<div class="empty-state">Todavía no hay resets registrados.</div>';
-      return;
-    }
-    var html='';
+    if(rows.length===0){ponVacio(wrap,'Todavía no hay resets registrados.');return;}
+    vaciar(wrap);
     for(var i=0;i<rows.length;i++){
-      html+='<div class="lectura-row">'+
-        '<span class="lectura-email">'+escapeHtml(rows[i].target_email)+' <span style="color:var(--pg-muted);font-weight:400;">por '+escapeHtml(rows[i].admin_email)+'</span></span>'+
-        '<span class="lectura-hora mono">'+formatFecha(rows[i].created_at)+'</span>'+
-      '</div>';
+      var lin=el('div','lin');
+      var em=el('span','em',rows[i].target_email);
+      em.appendChild(el('span','hora',' por '+rows[i].admin_email));
+      lin.appendChild(em);
+      lin.appendChild(el('span','hora',formatFecha(rows[i].created_at)));
+      wrap.appendChild(lin);
     }
-    wrap.innerHTML=html;
   })["catch"](function(){
-    wrap.innerHTML='<div class="empty-state">No se pudo cargar el historial.</div>';
+    ponVacio($('accesoHistWrap'),'No se pudo cargar el historial.');
   });
 }
 </script>
@@ -2053,17 +2800,38 @@ function cargarHistorialAccesos(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="novedades-admin.html";
-var PGV_VERSION=10; // corrige --pg-warn (era #B8841F, ahora #D9A520)
+var PGV_VERSION=11; // v11 · Novedades v2: área obligatoria, bloqueante, destinatarios, ronda, personas, ajustes
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
-function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
+function pgvBanner(){
+  if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
   b.id='pgvBar';
-  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
-  b.innerHTML='🔄 Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button> <span style="opacity:.75">(o Ctrl + Shift + R)</span>';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#D9A520;color:#0D3040;font:600 13px Inter,system-ui,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
+  var s=document.createElement('span');
+  s.style.cssText='font-weight:800';
+  s.textContent='Guarda tu trabajo y la página se actualizará sola.';
+  b.appendChild(s);
+  b.appendChild(document.createTextNode('🔄 Hay una versión nueva de esta página. '));
+  var btn=document.createElement('button');
+  btn.id='pgvBtn';
+  btn.type='button';
+  btn.style.cssText='font:700 13px Inter,system-ui,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;';
+  btn.textContent='Actualizar ahora';
+  b.appendChild(btn);
+  var sp=document.createElement('span');
+  sp.style.opacity='.75';
+  sp.textContent='(o Ctrl + Shift + R)';
+  b.appendChild(sp);
   document.body.appendChild(b);
-  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
-if(!window.__pgIdle){window.__pgIdle=setInterval(function(){if(window.__pgLastInput&&Date.now()-window.__pgLastInput>30000){try{location.reload(!0)}catch(e){location.reload()}}},5000);}try{var _b=document.getElementById('pgvBar');if(_b&&!_b.__aug){_b.__aug=1;var _s=document.createElement('span');_s.style.cssText='font-weight:800';_s.textContent='Guarda tu trabajo y la página se actualizará sola.';_b.insertBefore(_s,_b.firstChild);}}catch(e){}
+  btn.addEventListener('click',function(){location.reload(true);});
+  if(!window.__pgIdle){
+    window.__pgIdle=setInterval(function(){
+      if(window.__pgLastInput&&Date.now()-window.__pgLastInput>30000){
+        try{location.reload(!0)}catch(e){location.reload()}
+      }
+    },5000);
+  }
 }
 function pgvRun(){
   try{

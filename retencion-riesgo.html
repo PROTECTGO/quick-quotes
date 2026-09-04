@@ -110,6 +110,8 @@ body { margin: 0; background: var(--pg-bg); }
 
 .pg-pill { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space:nowrap; }
 </style>
+<!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
+<script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
 </head>
 <body>
 <a href="index.html" id="pgVolver" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
@@ -552,7 +554,7 @@ function renderAdvertencias(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="retencion-riesgo.html";
-var PGV_VERSION=4; // Vista Maestra Ronda 1: banner "ver como" (ver-como-helper.js)
+var PGV_VERSION=5; // Vista Maestra Ronda 1: banner "ver como" (ver-como-helper.js)
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -585,5 +587,6 @@ else setTimeout(pgvCheck,400);
 setInterval(pgvCheck,600000);
 })();
 </script>
+<script>window.addEventListener('DOMContentLoaded',function(){ if(window.pgNovedadesAuto) pgNovedadesAuto('renovaciones'); });</script>
 </body>
 </html>

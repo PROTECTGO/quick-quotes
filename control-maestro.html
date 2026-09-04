@@ -288,6 +288,8 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
 .vm-sinurl{font-size:11px;color:var(--pg-muted)}
 .vm-ver-como-banner{position:fixed;top:0;left:0;right:0;z-index:99998;background:#1B2D3A;color:#fff;font:600 13px/1.4 Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 </style>
+<!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
+<script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
 </head>
 <body>
 
@@ -1393,7 +1395,7 @@ document.getElementById("verComoBtn").addEventListener("click", abrirVerComo);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="control-maestro.html";
-var PGV_VERSION=7; // + panel Fotos: sales@ sube la foto por persona (bucket fotos + portal.fotos_personas), filtro "sin foto todavía"
+var PGV_VERSION=8; // + panel Fotos: sales@ sube la foto por persona (bucket fotos + portal.fotos_personas), filtro "sin foto todavía"
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -1618,5 +1620,6 @@ setInterval(pgvCheck,600000);
   try{ SB.auth.onAuthStateChange(function(){ initCierre(); }); }catch(e){}
 })();
 </script>
+<script>window.addEventListener('DOMContentLoaded',function(){ if(window.pgNovedadesAuto) pgNovedadesAuto('general'); });</script>
 </body>
 </html>

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portal · ProtectGo</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
 :root{
 --navy:#002F3D; --navy-2:#0a5b54; --teal:#229A82; --teal-2:#1a7a68;
@@ -113,11 +113,168 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 .brk-btn:disabled{opacity:.5;cursor:not-allowed;}
 .brk-err{max-width:1080px;font-size:12.5px;color:#c0392b;min-height:16px;margin-top:8px;}
 
+/* ============================================================
+   MURO DE NOVEDADES (v15) · estandar visual GABI/ProtectGo
+   Todo el bloque va con prefijo .mu-* y vive dentro de #muro:
+   NO puede pisar .card / .chip / .grid / .tag del hub de tarjetas.
+   ============================================================ */
+.muro{max-width:1080px;margin:0 auto;padding:0 22px;display:none;
+--mu-ink:#1B2D3A;--mu-ink2:#152430;--mu-mint:#2DBFA3;--mu-mint-deep:#229A82;--mu-mint-soft:#C4E8DF;
+--mu-line:#E7EDF2;--mu-txt:#28323B;--mu-muted:#6B7D89;--mu-bg:#F4F7FA;
+--mu-ambar:#D9A520;--mu-ambar-bg:#FBF1D8;--mu-ambar-tx:#8A6A14;--mu-azul:#5B6BD6;
+--mu-num:"JetBrains Mono","IBM Plex Mono",ui-monospace,monospace;
+--mu-tit:"Montserrat",system-ui,sans-serif;--mu-body:"Inter",system-ui,sans-serif;}
+.muro.on{display:block;}
+.muro .mu-mono{font-family:var(--mu-num);}
+
+/* -- cabecera de seccion -- */
+.mu-sec-t{font-family:var(--mu-tit);font-weight:800;font-size:17px;color:var(--mu-ink);margin:26px 0 3px;}
+.mu-sec-s{font-size:12.5px;color:var(--mu-muted);margin-bottom:14px;}
+
+/* -- franja oscura "Te felicitaron" -- */
+.mu-strip{background:linear-gradient(135deg,#1B2D3A 0%,#233A4A 100%);border-radius:16px;padding:26px 30px;color:#fff;display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;margin:22px 0 12px;box-shadow:0 4px 18px rgba(27,45,58,.16);}
+.mu-st-eye{font-family:var(--mu-tit);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mu-mint);margin-bottom:6px;}
+.mu-st-big{font-family:var(--mu-num);font-size:56px;font-weight:700;line-height:1;letter-spacing:-2px;}
+.mu-st-big small{font-family:var(--mu-body);font-size:17px;font-weight:500;opacity:.75;letter-spacing:0;margin-left:9px;}
+.mu-st-nums{display:flex;gap:30px;margin-top:18px;flex-wrap:wrap;}
+.mu-st-n .k{font-family:var(--mu-body);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.62;margin-bottom:3px;}
+.mu-st-n .v{font-family:var(--mu-num);font-size:19px;font-weight:600;}
+.mu-st-n .v .em{font-size:15px;margin-right:4px;}
+.mu-st-n .v.mint{color:var(--mu-mint);}
+.mu-st-n .v.ambar{color:var(--mu-ambar);}
+.mu-yo{width:104px;height:104px;border-radius:22px;background:rgba(45,191,163,.14);border:2px solid rgba(45,191,163,.55);color:#fff;font-family:var(--mu-tit);font-weight:800;font-size:40px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 8px rgba(45,191,163,.06);}
+
+/* -- lista de eventos de la bandeja -- */
+.mu-bandeja{background:#fff;border:1px solid var(--mu-line);border-left:4px solid var(--mu-mint);border-radius:13px;padding:6px 18px;margin-bottom:22px;box-shadow:0 1px 3px rgba(27,45,58,.05);}
+.mu-bj{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--mu-line);}
+.mu-bj:last-child{border-bottom:none;}
+.mu-bj .av{width:40px;height:40px;border-radius:10px;overflow:hidden;background:var(--mu-bg);border:1px solid var(--mu-line);}
+.mu-bj .av img{width:100%;height:100%;object-fit:cover;display:block;}
+.mu-bj .av.ini{background:linear-gradient(150deg,var(--mu-mint-deep),#1B7A67);color:#fff;font-family:var(--mu-tit);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;border:none;}
+.mu-bj .txt{min-width:0;font-size:13px;color:var(--mu-txt);line-height:1.45;}
+.mu-bj .txt b{font-family:var(--mu-tit);font-weight:700;color:var(--mu-ink);}
+.mu-bj .txt q{quotes:"\00AB" "\00BB";color:var(--mu-ink);font-weight:500;}
+.mu-bj .hora{font-family:var(--mu-num);font-size:11px;color:var(--mu-muted);white-space:nowrap;display:flex;align-items:center;gap:8px;}
+.mu-bj .nuevo{width:8px;height:8px;border-radius:50%;background:var(--mu-mint);box-shadow:0 0 0 3px rgba(45,191,163,.2);flex:none;}
+.mu-bj .nuevo-lbl{font-family:var(--mu-tit);font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mu-mint-deep);}
+
+/* -- chips de filtro + pildora sin leer -- */
+.mu-chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 12px;align-items:center;}
+.mu-chip{font-family:var(--mu-body);font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:999px;border:1px solid var(--mu-line);background:#fff;color:var(--mu-muted);cursor:pointer;transition:all .15s;}
+.mu-chip:hover{border-color:var(--mu-mint);color:var(--mu-mint-deep);}
+.mu-chip.on{background:var(--mu-mint-deep);border-color:var(--mu-mint-deep);color:#fff;}
+.mu-chip .n{font-family:var(--mu-num);font-weight:700;margin-left:6px;opacity:.85;}
+.mu-chip:focus-visible{outline:2px solid var(--mu-mint);outline-offset:2px;}
+.mu-sinleer{display:inline-flex;align-items:center;gap:6px;font-family:var(--mu-body);font-size:11.5px;font-weight:700;color:var(--mu-ambar-tx);background:var(--mu-ambar-bg);padding:6px 11px;border-radius:999px;margin-left:auto;}
+.mu-sinleer::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--mu-ambar);}
+.mu-sinleer .n{font-family:var(--mu-num);}
+
+/* -- tarjeta base del muro -- */
+.mu-card{background:#fff;border:1px solid var(--mu-line);border-left:4px solid var(--mu-line);border-radius:13px;padding:15px 18px;margin-bottom:9px;transition:transform .16s,box-shadow .16s;}
+.mu-card.u-mint{border-left-color:var(--mu-mint);}
+.mu-card.u-ambar{border-left-color:var(--mu-ambar);}
+.mu-card.u-azul{border-left-color:var(--mu-azul);}
+.mu-card.u-gris{border-left-color:#C9D4DC;}
+.mu-card.destacada{border-color:var(--mu-mint);box-shadow:0 0 0 2px rgba(45,191,163,.25);}
+.mu-nom{font-family:var(--mu-tit);font-weight:700;font-size:15.5px;color:var(--mu-ink);letter-spacing:-.15px;}
+.mu-cue{font-size:12.5px;color:var(--mu-muted);margin-top:4px;line-height:1.5;}
+.mu-meta{font-size:12px;color:var(--mu-muted);margin-top:6px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;}
+.mu-dot{width:3px;height:3px;border-radius:50%;background:#C9D4DC;}
+
+/* -- mosaico de felicitaciones -- */
+.mu-fel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;align-items:start;}
+.mu-card.mu-fel{padding:16px 16px 14px;margin-bottom:0;}
+.mu-fel-head{display:flex;gap:14px;align-items:center;}
+.mu-foto{width:96px;height:96px;border-radius:12px;overflow:hidden;flex-shrink:0;border:1px solid var(--mu-line);background:var(--mu-bg);}
+.mu-foto img{width:100%;height:100%;object-fit:cover;display:block;}
+.mu-ini{width:96px;height:96px;border-radius:12px;flex-shrink:0;background:linear-gradient(150deg,var(--mu-mint-deep),#1B7A67);color:#fff;font-family:var(--mu-tit);font-weight:800;font-size:34px;display:flex;align-items:center;justify-content:center;}
+.mu-fel-info{min-width:0;}
+.mu-fel-info .mu-nom{font-size:16px;}
+.mu-logro{font-family:var(--mu-tit);font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mu-mint-deep);margin-top:4px;line-height:1.35;}
+
+/* -- reacciones -- */
+.mu-reacs{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
+.mu-rx{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;border:1px solid var(--mu-line);background:#fff;color:var(--mu-txt);font-family:var(--mu-body);font-size:14px;line-height:1;cursor:pointer;transition:all .15s;}
+.mu-rx .n{font-family:var(--mu-num);font-size:12px;font-weight:700;color:var(--mu-muted);}
+.mu-rx:hover{border-color:var(--mu-mint);background:#F7FCFB;}
+.mu-rx.mia{border-color:var(--mu-mint);background:rgba(45,191,163,.12);box-shadow:0 0 0 2px rgba(45,191,163,.28);}
+.mu-rx.mia .n{color:var(--mu-mint-deep);}
+.mu-rx.zero .n{opacity:.55;}
+.mu-rx:disabled{opacity:.55;cursor:progress;}
+.mu-rx:focus-visible{outline:2px solid var(--mu-mint);outline-offset:2px;}
+
+/* -- boton "Escribirle a X" + acordeon -- */
+.mu-acts{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;}
+.mu-msgs{font-size:11.5px;color:var(--mu-muted);flex-basis:100%;}
+.mu-msgs b{font-family:var(--mu-num);color:var(--mu-ink);}
+.mu-b{font-family:var(--mu-body);font-weight:600;font-size:12.5px;padding:9px 15px;border-radius:9px;border:1px solid var(--mu-line);background:#fff;color:var(--mu-txt);cursor:pointer;transition:all .16s;}
+.mu-b:hover{border-color:var(--mu-mint);color:var(--mu-mint-deep);}
+.mu-b.on{border-color:var(--mu-mint);color:var(--mu-mint-deep);background:#F7FCFB;}
+.mu-b.pri{background:var(--mu-ink);color:#fff;border-color:var(--mu-ink);}
+.mu-b.pri:hover{background:var(--mu-ink2);color:#fff;}
+.mu-b:disabled{opacity:.5;cursor:not-allowed;}
+.mu-b:focus-visible{outline:2px solid var(--mu-mint);outline-offset:2px;}
+.mu-ficha{background:#fff;border:1px solid var(--mu-line);border-left:4px solid var(--mu-mint);border-radius:12px;padding:16px 18px;margin:14px 0 0;box-shadow:0 1px 3px rgba(27,45,58,.05);}
+.mu-fi-tit{font-family:var(--mu-tit);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mu-muted);margin-bottom:10px;}
+.mu-ficha textarea{width:100%;box-sizing:border-box;font-family:var(--mu-body);font-size:13px;padding:10px 12px;border-radius:10px;border:1px solid var(--mu-line);resize:vertical;min-height:58px;color:var(--mu-txt);}
+.mu-ficha textarea:focus{outline:none;border-color:var(--mu-mint);}
+.mu-cnt{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:12px;flex-wrap:wrap;}
+.mu-cnt .num{font-family:var(--mu-num);font-size:11.5px;font-weight:600;color:var(--mu-muted);}
+.mu-priv{font-size:11.5px;color:var(--mu-muted);margin-top:10px;padding-top:10px;border-top:1px dashed var(--mu-line);}
+.mu-priv b{font-family:var(--mu-num);color:var(--mu-ink);}
+.mu-aviso-envio{font-size:11.5px;margin-top:8px;min-height:15px;color:var(--mu-mint-deep);}
+.mu-aviso-envio.err{color:#c0392b;}
+
+/* -- tarjetas de aviso / herramienta / recordatorio -- */
+.mu-card.mu-nov{display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:center;}
+.mu-card.mu-nov.sin-foto{grid-template-columns:1fr auto;}
+.mu-card.mu-nov.leida{opacity:.8;}
+.mu-thumb{width:84px;height:64px;border-radius:9px;overflow:hidden;border:1px solid var(--mu-line);background:var(--mu-bg);flex-shrink:0;}
+.mu-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.mu-body{min-width:0;}
+.mu-body .mu-nom{font-size:15px;}
+.mu-ens{margin-top:6px;}
+.mu-ens-lbl{font-family:var(--mu-tit);font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:var(--mu-ambar-bg);color:var(--mu-ambar-tx);border-radius:5px;padding:2px 7px;margin-right:6px;white-space:nowrap;}
+.mu-area{font-family:var(--mu-num);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:#EEF1F4;color:#5A6B78;border-radius:6px;padding:3px 8px;}
+.mu-tipo{font-family:var(--mu-tit);font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;border-radius:6px;padding:3px 8px;}
+.mu-tipo.aviso{background:var(--mu-ambar-bg);color:var(--mu-ambar-tx);display:inline-flex;align-items:center;gap:6px;}
+.mu-tipo.aviso::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--mu-ambar);}
+.mu-tipo.herr{background:#E6E9FA;color:#3E4CB0;}
+.mu-tipo.rec{background:#EEF1F4;color:#5A6B78;}
+.mu-tipo.fel{background:var(--mu-mint-soft);color:#186F5D;}
+.mu-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+.mu-side .fecha{font-family:var(--mu-num);font-size:11px;color:var(--mu-muted);}
+.mu-pill{font-family:var(--mu-body);font-size:11px;font-weight:700;padding:5px 11px;border-radius:999px;white-space:nowrap;}
+.mu-pill.leida{background:var(--mu-mint-soft);color:#186F5D;}
+.mu-pill.sinleer{background:var(--mu-ambar-bg);color:var(--mu-ambar-tx);display:inline-flex;align-items:center;gap:6px;}
+.mu-pill.sinleer::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--mu-ambar);}
+
+/* -- bloque de error propio (el muro nunca rompe el portal) -- */
+.mu-error{background:#fff;border:1px dashed var(--mu-line);border-left:4px solid var(--mu-ambar);border-radius:13px;padding:18px 20px;font-size:13px;color:var(--mu-txt);display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+.mu-vacio{background:#fff;border:1px dashed var(--mu-line);border-radius:13px;padding:28px;text-align:center;color:var(--mu-muted);font-size:13px;}
+
+/* -- responsive 1440 / 820 / 390 -- */
+@media (max-width:1000px){.mu-fel-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:860px){.mu-strip{grid-template-columns:1fr;}.mu-st-big{font-size:44px;}.mu-yo{display:none;}}
+@media (max-width:640px){
+.mu-fel-grid{grid-template-columns:1fr;}
+.mu-fel-head{align-items:flex-start;}
+.mu-foto,.mu-ini{width:72px;height:72px;font-size:26px;}
+.mu-card.mu-nov,.mu-card.mu-nov.sin-foto{grid-template-columns:1fr;gap:10px;}
+.mu-side{flex-direction:row;align-items:center;}
+.mu-thumb{width:100%;height:140px;}
+.mu-bj{grid-template-columns:40px 1fr;}
+.mu-bj .hora{grid-column:2;justify-content:flex-start;}
+.mu-strip{padding:20px 18px;}
+.mu-sinleer{margin-left:0;}
+}
+
 #app{display:none;}
 </style>
 
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
 <script defer src="https://protectgo.github.io/quick-quotes/pg-auth.js"></script>
+<script defer src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
 </head>
 <body>
 
@@ -138,6 +295,18 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 <div><div class="ag-k">Agencia Externa &middot; ProtectGo</div><div class="ag-n" id="agNombre"></div></div>
 </div>
 <p>Elige la herramienta con la que vas a trabajar. Tu sesión es la misma en todos los documentos: entras una vez y no te la vuelve a pedir.</p>
+</section>
+
+<!-- ===== MURO DE NOVEDADES (v15) =====
+     Se pinta entero desde el script inline de mas abajo (cliente Supabase propio).
+     Arranca oculto: solo se muestra con sesion y si la cuenta NO es agencia externa. -->
+<section class="muro" id="muro">
+<div id="muroBandeja"></div>
+<div class="mu-sec-t">Novedades</div>
+<div class="mu-sec-s">Lo de los últimos 30 días, leído o no. Reacciona o escríbele a quien felicitamos.</div>
+<div class="mu-chips" id="muroChips"></div>
+<div id="muroFel" class="mu-fel-grid" style="display:none"></div>
+<div id="muroLista"></div>
 </section>
 
 <!-- ===== Mi Jornada · breaks y almuerzo ===== -->
@@ -746,13 +915,737 @@ if(document.readyState==="loading") document.addEventListener("DOMContentLoaded"
 else setTimeout(init,60);
 })();
 </script>
+<!-- ===== MURO DE NOVEDADES (v15) · script propio ===== -->
+<script>
+(function(){
+"use strict";
+/* ===================== MURO DE NOVEDADES · index.html v15 =====================
+   Bloque autonomo. Cliente Supabase propio (schema portal), igual que los demas
+   scripts inline de este archivo. Regla dura: si algo aqui falla, el resto del
+   portal sigue funcionando — todo va en try/catch y el error se pinta DENTRO de
+   la seccion #muro. No toca el login, ni gateWidgets, ni aplicarPuertas, ni Mi Jornada.
+   Estado en el hash (#muro=<id>, #f=<filtro>). Nunca almacenamiento del navegador.
+   Todo el texto que viene de la base se escribe con textContent, nunca como HTML. */
+var MU_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var MU_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+
+/* Los 5 emojis permitidos por el CHECK de portal.novedades_reacciones.
+   OJO: el corazon DEBE ir con selector VS16 (U+2764 U+FE0F) o la base lo rechaza.
+   Por eso van escritos con escapes \u y no pegados como caracter: asi nadie los
+   "limpia" sin querer al editar el archivo. */
+var EMOJIS=["\uD83D\uDC4F","\uD83C\uDF89","\u2764\uFE0F","\uD83D\uDD25","\uD83D\uDCAA"];
+var EMO_APLAUSO=EMOJIS[0], EMO_FIESTA=EMOJIS[1], EMO_CORAZON=EMOJIS[2];
+
+/* Agencias externas: NO ven el muro (mismo candado "solo Quick Quote" que ya existe
+   en el bloque de arriba; se repite aqui porque cada script es un IIFE aislado). */
+var MU_EXTERNOS=["gerencia@leonis-go.com","quoteautocomercial@gmail.com"];
+
+var MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+
+var sb=null;
+var MU={
+  email:"", rows:[], bandeja:[], filtro:"todas", abierta:"", destacada:"",
+  cargado:false, vistoMarcado:false, scrollHecho:"", enviando:false,
+  poll:null, canal:null, pend:null, pendIds:{}, arrancado:false
+};
+
+/* ---------- utilidades DOM (nada de HTML armado con datos) ---------- */
+function vaciar(n){ while(n && n.firstChild) n.removeChild(n.firstChild); }
+function el(tag,cls,txt){
+  var e=document.createElement(tag);
+  if(cls) e.className=cls;
+  if(txt!==null && txt!==undefined) e.textContent=String(txt);
+  return e;
+}
+function $(id){ return document.getElementById(id); }
+function seccion(){ return $("muro"); }
+
+/* ---------- estado en el hash (nunca almacenamiento del navegador) ---------- */
+function hashLeer(){
+  var h=String(location.hash||"").replace(/^#/,""), o={};
+  h.split("&").forEach(function(p){
+    if(!p) return;
+    var i=p.indexOf("=");
+    try{
+      if(i<0) o[decodeURIComponent(p)]="";
+      else o[decodeURIComponent(p.slice(0,i))]=decodeURIComponent(p.slice(i+1));
+    }catch(e){ /* hash raro: se ignora */ }
+  });
+  return o;
+}
+function hashEscribir(k,v){
+  var o=hashLeer();
+  if(v===null||v===undefined||v==="") delete o[k]; else o[k]=v;
+  var s=Object.keys(o).map(function(x){ return encodeURIComponent(x)+"="+encodeURIComponent(o[x]); }).join("&");
+  try{ history.replaceState(null,"",location.pathname+location.search+(s?("#"+s):"")); }
+  catch(e){ location.hash=s; }
+}
+function leerEstadoHash(){
+  var o=hashLeer();
+  MU.filtro=(o.f==="felicitaciones"||o.f==="herramientas"||o.f==="avisos")?o.f:"todas";
+  MU.destacada=o.muro||"";
+  if(o.ab!==undefined) MU.abierta=o.ab||"";
+}
+
+/* ---------- formato ---------- */
+function primerNombre(n){ return String(n||"").trim().split(/\s+/)[0]||""; }
+function plural(n,uno,varios){ return (Number(n)===1)?uno:varios; }
+function iniciales(n){
+  var p=String(n||"").trim().split(/\s+/).filter(Boolean);
+  if(!p.length) return "?";
+  var a=p[0].charAt(0)||"";
+  var b=p.length>1?(p[1].charAt(0)||""):"";
+  return (a+b).toUpperCase();
+}
+function fmtHora(iso){
+  var d=new Date(iso);
+  if(isNaN(d.getTime())) return "";
+  var h=d.getHours(), m=d.getMinutes();
+  var ampm=h>=12?"p.m.":"a.m.", h12=h%12; if(h12===0) h12=12;
+  return h12+":"+(m<10?"0"+m:m)+" "+ampm;
+}
+function fmtFecha(iso){
+  var d=new Date(iso);
+  if(isNaN(d.getTime())) return "";
+  return d.getDate()+" "+MESES[d.getMonth()];
+}
+function fmtCuando(iso){
+  var d=new Date(iso);
+  if(isNaN(d.getTime())) return "";
+  var hoy=new Date();
+  if(d.getFullYear()===hoy.getFullYear() && d.getMonth()===hoy.getMonth() && d.getDate()===hoy.getDate()) return fmtHora(iso);
+  return fmtFecha(iso);
+}
+
+/* ---------- helpers de datos ---------- */
+function esFelicitacionDirigida(r){
+  return r && r.tipo==="felicitacion" && Array.isArray(r.destinatarios) && r.destinatarios.length>0;
+}
+function soyDestinatario(r){
+  if(!r || !Array.isArray(r.destinatarios) || !MU.email) return false;
+  for(var i=0;i<r.destinatarios.length;i++){
+    if(String(r.destinatarios[i]||"").toLowerCase()===MU.email) return true;   // destinatarios se comparan en minusculas
+  }
+  return false;
+}
+function personasDe(r){
+  var p=(r&&r.personas)||[];
+  if(!Array.isArray(p)) return [];
+  return p;
+}
+function nombrePersona(p,r){
+  if(p && p.nombre) return p.nombre;
+  if(p && p.email) return String(p.email).split("@")[0];
+  if(r && Array.isArray(r.destinatarios) && r.destinatarios.length) return String(r.destinatarios[0]).split("@")[0];
+  return "";
+}
+function filaPorId(id){
+  for(var i=0;i<MU.rows.length;i++) if(String(MU.rows[i].id)===String(id)) return MU.rows[i];
+  return null;
+}
+function nodoDe(id){
+  var ns=document.querySelectorAll("[data-nov-card]");
+  for(var i=0;i<ns.length;i++) if(ns[i].getAttribute("data-nov-card")===String(id)) return ns[i];
+  return null;
+}
+function conteoReac(r,emoji){
+  var o=(r&&r.reacciones)||{};
+  var v=o[emoji];
+  return (typeof v==="number")?v:(parseInt(v,10)||0);
+}
+function tengoReac(r,emoji){
+  var a=(r&&r.mis_reacciones)||[];
+  return Array.isArray(a) && a.indexOf(emoji)>=0;
+}
+
+/* ---------- fila de reacciones ---------- */
+function filaReacciones(r){
+  var cont=el("div","mu-reacs");
+  EMOJIS.forEach(function(emo){
+    var n=conteoReac(r,emo), mia=tengoReac(r,emo);
+    var b=el("button","mu-rx"+(mia?" mia":"")+(n===0?" zero":""));
+    b.type="button";
+    b.setAttribute("data-nov",String(r.id));
+    b.setAttribute("data-emoji",emo);
+    b.setAttribute("aria-pressed",mia?"true":"false");
+    b.title=(mia?"Quitar mi reacción ":"Reaccionar ")+emo;
+    b.appendChild(el("span",null,emo));
+    b.appendChild(el("span","n",n));
+    cont.appendChild(b);
+  });
+  return cont;
+}
+
+/* ---------- tarjeta de felicitacion (mosaico) ---------- */
+function tarjetaFelicitacion(r){
+  var pers=personasDe(r);
+  var p=pers[0]||null;
+  var nombre=nombrePersona(p,r);
+  var nom1=primerNombre(nombre);
+  var yo=soyDestinatario(r);
+  var nCom=r.n_comentarios||0;
+
+  var card=el("div","mu-card mu-fel u-mint");
+  card.setAttribute("data-nov-card",String(r.id));
+  if(String(MU.destacada)===String(r.id)) card.className+=" destacada";
+
+  var head=el("div","mu-fel-head");
+  if(p && p.foto_url){
+    var wrap=el("div","mu-foto");
+    var img=document.createElement("img");
+    img.alt=""; img.src=p.foto_url;
+    img.onerror=function(){ var ini=el("div","mu-ini",iniciales(nombre)); if(wrap.parentNode) wrap.parentNode.replaceChild(ini,wrap); };
+    wrap.appendChild(img);
+    head.appendChild(wrap);
+  } else {
+    head.appendChild(el("div","mu-ini",iniciales(nombre)));
+  }
+  var info=el("div","mu-fel-info");
+  info.appendChild(el("div","mu-nom",nombre||r.titulo||""));
+  if(r.logro) info.appendChild(el("div","mu-logro",r.logro));
+  else if(r.titulo && nombre) info.appendChild(el("div","mu-logro",r.titulo));
+  if(r.cuerpo) info.appendChild(el("div","mu-cue",r.cuerpo));
+  if(pers.length>1){
+    var otros=pers.slice(1).map(function(x){ return nombrePersona(x,null); }).filter(Boolean).join(" · ");
+    if(otros) info.appendChild(el("div","mu-cue","También: "+otros));
+  }
+  head.appendChild(info);
+  card.appendChild(head);
+
+  card.appendChild(filaReacciones(r));
+
+  var acts=el("div","mu-acts");
+  if(yo){
+    /* Es su felicitacion: los mensajes son suyos y los lee arriba, en "Te felicitaron". */
+    var m=el("span","mu-msgs");
+    m.appendChild(el("b",null,nCom));
+    m.appendChild(document.createTextNode(plural(nCom," mensaje para ti · míralo arriba"," mensajes para ti · míralos arriba")));
+    acts.appendChild(m);
+  } else if(r.puedo_comentar){
+    var abierta=String(MU.abierta)===String(r.id);
+    var b=el("button","mu-b"+(abierta?" on":""),"Escribirle a "+nom1);
+    b.type="button";
+    b.setAttribute("data-abrir",String(r.id));
+    b.setAttribute("aria-expanded",abierta?"true":"false");
+    acts.appendChild(b);
+    if(!abierta){
+      var m2=el("span","mu-msgs");
+      m2.appendChild(el("b",null,nCom));
+      m2.appendChild(document.createTextNode(plural(nCom," mensaje · solo lo lee "," mensajes · solo los lee ")+nom1));
+      acts.appendChild(m2);
+    }
+  }
+  card.appendChild(acts);
+
+  if(!yo && r.puedo_comentar && String(MU.abierta)===String(r.id)){
+    card.appendChild(acordeonMensaje(r,nom1,nCom));
+  }
+  return card;
+}
+
+/* ---------- acordeon "Escribirle a X" ---------- */
+function acordeonMensaje(r,nom1,nCom){
+  var f=el("div","mu-ficha");
+  f.appendChild(el("div","mu-fi-tit","Escribirle a "+nom1));
+
+  var ta=document.createElement("textarea");
+  ta.maxLength=280;
+  ta.placeholder="Un mensaje corto. Solo lo lee "+nom1+" (y dirección).";
+  ta.setAttribute("data-txt",String(r.id));
+  f.appendChild(ta);
+
+  var cnt=el("div","mu-cnt");
+  var num=el("span","num","0/280");
+  num.setAttribute("data-cnt",String(r.id));
+  cnt.appendChild(num);
+  var env=el("button","mu-b pri","Enviar");
+  env.type="button";
+  env.setAttribute("data-enviar",String(r.id));
+  cnt.appendChild(env);
+  f.appendChild(cnt);
+
+  var aviso=el("div","mu-aviso-envio","");
+  aviso.setAttribute("data-aviso",String(r.id));
+  f.appendChild(aviso);
+
+  var priv=el("div","mu-priv");
+  priv.appendChild(el("b",null,nCom));
+  priv.appendChild(document.createTextNode(plural(nCom," mensaje · solo lo lee "," mensajes · solo los lee ")+nom1));
+  f.appendChild(priv);
+
+  ta.addEventListener("input",function(){ num.textContent=ta.value.length+"/280"; });
+  setTimeout(function(){ try{ ta.focus(); }catch(e){} },0);
+  return f;
+}
+
+/* ---------- tarjeta de aviso / herramienta / recordatorio / felicitacion suelta ---------- */
+function tarjetaNovedad(r){
+  var tipo=String(r.tipo||"");
+  var borde="u-gris", etiqueta="Recordatorio", clsTipo="rec";
+  if(tipo==="aviso"){ borde="u-ambar"; etiqueta="AVISO"; clsTipo="aviso"; }
+  else if(tipo==="novedad"){ borde="u-azul"; etiqueta="Herramienta"; clsTipo="herr"; }
+  else if(tipo==="felicitacion"){ borde="u-mint"; etiqueta="Felicitación"; clsTipo="fel"; }
+
+  var card=el("div","mu-card mu-nov "+borde+(r.leida?" leida":""));
+  card.setAttribute("data-nov-card",String(r.id));
+  if(String(MU.destacada)===String(r.id)) card.className+=" destacada";
+
+  if(r.imagen_url){
+    var th=el("div","mu-thumb");
+    var img=document.createElement("img");
+    img.alt=""; img.src=r.imagen_url;
+    img.onerror=function(){ if(th.parentNode){ th.parentNode.removeChild(th); card.className+=" sin-foto"; } };
+    th.appendChild(img);
+    card.appendChild(th);
+  } else {
+    card.className+=" sin-foto";
+  }
+
+  var body=el("div","mu-body");
+  var meta=el("div","mu-meta");
+  meta.style.marginTop="0";
+  meta.style.marginBottom="6px";
+  meta.appendChild(el("span","mu-tipo "+clsTipo,etiqueta));
+  meta.appendChild(el("span","mu-area",r.area||"general"));
+  body.appendChild(meta);
+  body.appendChild(el("div","mu-nom",r.titulo||""));
+  if(r.cuerpo) body.appendChild(el("div","mu-cue",r.cuerpo));
+  if(r.ensenanza){
+    var ens=el("div","mu-cue mu-ens");
+    ens.appendChild(el("span","mu-ens-lbl","Enseñanza"));
+    ens.appendChild(document.createTextNode(" "+r.ensenanza));
+    body.appendChild(ens);
+  }
+  body.appendChild(filaReacciones(r));
+  card.appendChild(body);
+
+  var side=el("div","mu-side");
+  side.appendChild(el("span","fecha",fmtFecha(r.created_at)));
+  side.appendChild(el("span","mu-pill "+(r.leida?"leida":"sinleer"), r.leida?"Leída":"Sin leer"));
+  card.appendChild(side);
+  return card;
+}
+
+function tarjetaDe(r){
+  return esFelicitacionDirigida(r) ? tarjetaFelicitacion(r) : tarjetaNovedad(r);
+}
+
+/* ---------- bandeja "Te felicitaron" ---------- */
+function pintarBandeja(){
+  var cont=$("muroBandeja");
+  if(!cont) return;
+  vaciar(cont);
+  if(!MU.bandeja.length) return;
+
+  var total=MU.bandeja.length, ap=0, ce=0, co=0, ms=0;
+  MU.bandeja.forEach(function(f){
+    if(f.tipo_evento==="comentario"){ ms++; return; }
+    if(f.emoji===EMO_APLAUSO) ap++;
+    else if(f.emoji===EMO_FIESTA) ce++;
+    else if(f.emoji===EMO_CORAZON) co++;
+  });
+
+  var strip=el("div","mu-strip");
+  var izq=el("div");
+  izq.appendChild(el("div","mu-st-eye","Te felicitaron"));
+  var big=el("div","mu-st-big",total);
+  big.appendChild(el("small",null,"reacciones y mensajes"));
+  izq.appendChild(big);
+  var nums=el("div","mu-st-nums");
+  function cifra(k,v,cls,emo){
+    var d=el("div","mu-st-n");
+    d.appendChild(el("div","k",k));
+    var val=el("div","v"+(cls?(" "+cls):""));
+    if(emo) val.appendChild(el("span","em",emo));
+    val.appendChild(document.createTextNode(String(v)));
+    d.appendChild(val);
+    nums.appendChild(d);
+  }
+  cifra("Aplausos",ap,"mint",EMO_APLAUSO);
+  cifra("Celebraciones",ce,"",EMO_FIESTA);
+  cifra("Cariño",co,"",EMO_CORAZON);
+  cifra("Mensajes",ms,"ambar",null);
+  izq.appendChild(nums);
+  strip.appendChild(izq);
+  strip.appendChild(el("div","mu-yo",iniciales(String(MU.email).split("@")[0].replace(/[._-]+/g," "))));
+  cont.appendChild(strip);
+
+  var lista=el("div","mu-bandeja");
+  MU.bandeja.forEach(function(f){
+    var fila=el("div","mu-bj");
+    var nom=f.quien_nombre||String(f.quien_email||"").split("@")[0];
+    if(f.quien_foto){
+      var av=el("div","av");
+      var img=document.createElement("img");
+      img.alt=""; img.src=f.quien_foto;
+      img.onerror=function(){ var i2=el("div","av ini",iniciales(nom)); if(av.parentNode) av.parentNode.replaceChild(i2,av); };
+      av.appendChild(img);
+      fila.appendChild(av);
+    } else {
+      fila.appendChild(el("div","av ini",iniciales(nom)));
+    }
+    var txt=el("div","txt");
+    txt.appendChild(el("b",null,nom));
+    if(f.tipo_evento==="comentario"){
+      txt.appendChild(document.createTextNode(" te escribió: "));
+      txt.appendChild(el("q",null,f.texto||""));
+    } else if(f.emoji===EMO_APLAUSO){
+      txt.appendChild(document.createTextNode(" te aplaudió "+EMO_APLAUSO));
+    } else if(f.emoji===EMO_FIESTA){
+      txt.appendChild(document.createTextNode(" te celebró "+EMO_FIESTA));
+    } else {
+      txt.appendChild(document.createTextNode(" reaccionó "+(f.emoji||"")));
+    }
+    fila.appendChild(txt);
+    var hora=el("div","hora");
+    if(f.nuevo){
+      hora.appendChild(el("span","nuevo-lbl","nuevo"));
+      hora.appendChild(el("span","nuevo"));
+    }
+    hora.appendChild(el("span",null,fmtCuando(f.created_at)));
+    fila.appendChild(hora);
+    lista.appendChild(fila);
+  });
+  cont.appendChild(lista);
+
+  marcarBandejaVista();
+}
+
+function marcarBandejaVista(){
+  if(MU.vistoMarcado || !MU.email || !sb) return;
+  MU.vistoMarcado=true;
+  try{
+    sb.from("novedades_bandeja_vistas")
+      .upsert({user_email:MU.email,visto_at:new Date().toISOString()},{onConflict:"user_email"})
+      .then(function(){}, function(){});
+  }catch(e){ /* que no vea el punto "nuevo" nunca rompe el portal */ }
+}
+
+/* ---------- chips ---------- */
+function pintarChips(){
+  var cont=$("muroChips");
+  if(!cont) return;
+  vaciar(cont);
+  var nTodas=MU.rows.length, nFel=0, nHerr=0, nAv=0, nSin=0;
+  MU.rows.forEach(function(r){
+    if(r.tipo==="felicitacion") nFel++;
+    else if(r.tipo==="novedad") nHerr++;
+    else if(r.tipo==="aviso") nAv++;
+    if(!r.leida) nSin++;
+  });
+  [["todas","Todas",nTodas],["felicitaciones","Felicitaciones",nFel],
+   ["herramientas","Herramientas",nHerr],["avisos","Avisos",nAv]].forEach(function(c){
+    var b=el("button","mu-chip"+(MU.filtro===c[0]?" on":""));
+    b.type="button";
+    b.setAttribute("data-filtro",c[0]);
+    b.setAttribute("aria-pressed",MU.filtro===c[0]?"true":"false");
+    b.appendChild(document.createTextNode(c[1]));
+    b.appendChild(el("span","n",c[2]));
+    cont.appendChild(b);
+  });
+  if(nSin>0){
+    /* Ambar SIEMPRE con etiqueta: nunca color solo. */
+    var p=el("span","mu-sinleer");
+    p.appendChild(el("span","n",nSin));
+    p.appendChild(document.createTextNode(" sin leer"));
+    cont.appendChild(p);
+  }
+}
+
+/* ---------- pintado completo ---------- */
+function pasaFiltro(r){
+  if(MU.filtro==="todas") return true;
+  if(MU.filtro==="felicitaciones") return r.tipo==="felicitacion";
+  if(MU.filtro==="herramientas") return r.tipo==="novedad";
+  if(MU.filtro==="avisos") return r.tipo==="aviso";
+  return true;
+}
+
+function pintar(){
+  var fel=$("muroFel"), lista=$("muroLista");
+  if(!fel||!lista) return;
+  pintarBandeja();
+  pintarChips();
+  vaciar(fel); vaciar(lista);
+
+  var visibles=MU.rows.filter(pasaFiltro);
+  var conFoto=0;
+  visibles.forEach(function(r){
+    if(esFelicitacionDirigida(r)){ fel.appendChild(tarjetaFelicitacion(r)); conFoto++; }
+    else lista.appendChild(tarjetaNovedad(r));
+  });
+  fel.style.display = conFoto ? "grid" : "none";
+
+  if(!visibles.length){
+    lista.appendChild(el("div","mu-vacio","No hay novedades para mostrar con este filtro."));
+  }
+  irADestacada();
+}
+
+function irADestacada(){
+  if(!MU.destacada) return;
+  if(MU.scrollHecho===MU.destacada) return;
+  var n=nodoDe(MU.destacada);
+  if(!n) return;
+  MU.scrollHecho=MU.destacada;
+  try{ n.scrollIntoView({behavior:"smooth",block:"center"}); }
+  catch(e){ try{ n.scrollIntoView(); }catch(e2){} }
+}
+
+/* ---------- bloque de error propio ---------- */
+function pintarError(detalle){
+  var lista=$("muroLista"), fel=$("muroFel"), chips=$("muroChips");
+  if(!lista) return;
+  vaciar(lista); vaciar(fel||document.createElement("div"));
+  if(fel) fel.style.display="none";
+  if(chips) vaciar(chips);
+  var box=el("div","mu-error");
+  box.appendChild(el("span",null,"No se pudieron cargar las novedades"));
+  var b=el("button","mu-b","Reintentar");
+  b.type="button";
+  b.setAttribute("data-reintentar","1");
+  box.appendChild(b);
+  lista.appendChild(box);
+  if(detalle) { try{ console.warn("[muro] ",detalle); }catch(e){} }
+}
+
+/* ---------- carga ---------- */
+function cargar(){
+  if(!sb) return;
+  try{
+    sb.rpc("novedades_muro",{p_limite:50}).then(function(r){
+      if(r && r.error){ pintarError(r.error.message); return; }
+      MU.rows=(r && r.data) ? r.data : [];
+      MU.cargado=true;
+      pintar();
+    }, function(e){ pintarError(e && e.message); });
+  }catch(e){ pintarError(e && e.message); }
+  try{
+    sb.rpc("novedades_bandeja").then(function(r){
+      if(r && r.error){ MU.bandeja=[]; }
+      else MU.bandeja=(r && r.data) ? r.data : [];
+      pintarBandeja();
+    }, function(){ MU.bandeja=[]; });
+  }catch(e){ MU.bandeja=[]; }
+}
+
+/* Refresco parcial: vuelve a pedir el muro pero SOLO cambia en pantalla las
+   tarjetas afectadas (las demas ni se tocan, para no perder foco ni scroll). */
+function refrescarUna(id){
+  if(!id || !sb) return;
+  MU.pendIds[String(id)]=1;
+  if(MU.pend) return;
+  MU.pend=setTimeout(function(){
+    MU.pend=null;
+    var ids=Object.keys(MU.pendIds); MU.pendIds={};
+    try{
+      sb.rpc("novedades_muro",{p_limite:50}).then(function(r){
+        if(!r || r.error || !r.data) return;
+        var nuevas=r.data, completo=false;
+        ids.forEach(function(idd){
+          var nf=null;
+          for(var i=0;i<nuevas.length;i++) if(String(nuevas[i].id)===String(idd)) nf=nuevas[i];
+          var vieja=nodoDe(idd);
+          if(!nf || !vieja){ completo=true; return; }
+          for(var k=0;k<MU.rows.length;k++) if(String(MU.rows[k].id)===String(idd)) MU.rows[k]=nf;
+          var nodo=tarjetaDe(nf);
+          vieja.parentNode.replaceChild(nodo,vieja);
+        });
+        if(completo){ MU.rows=nuevas; pintar(); }
+        else pintarChips();
+      }, function(){});
+    }catch(e){}
+  },500);
+}
+
+/* ---------- acciones ---------- */
+function toggleReaccion(btn){
+  var id=btn.getAttribute("data-nov"), emoji=btn.getAttribute("data-emoji");
+  var r=filaPorId(id);
+  if(!r || !sb || !MU.email) return;
+  var tengo=tengoReac(r,emoji);
+  btn.disabled=true;
+  var q;
+  try{
+    q = tengo
+      ? sb.from("novedades_reacciones").delete().eq("novedad_id",id).eq("user_email",MU.email).eq("emoji",emoji)
+      : sb.from("novedades_reacciones").insert({novedad_id:id,user_email:MU.email,emoji:emoji});
+  }catch(e){ btn.disabled=false; return; }
+  q.then(function(res){
+    btn.disabled=false;
+    if(res && res.error){ try{ console.warn("[muro] reaccion:",res.error.message); }catch(e){} return; }
+    /* pinta ya el cambio (optimista) y confirma contra la base */
+    var mias=(r.mis_reacciones||[]).slice();
+    var i=mias.indexOf(emoji);
+    if(tengo){ if(i>=0) mias.splice(i,1); } else if(i<0){ mias.push(emoji); }
+    r.mis_reacciones=mias;
+    r.reacciones=r.reacciones||{};
+    r.reacciones[emoji]=Math.max(0, conteoReac(r,emoji)+(tengo?-1:1));
+    var vieja=nodoDe(id);
+    if(vieja && vieja.parentNode) vieja.parentNode.replaceChild(tarjetaDe(r),vieja);
+    refrescarUna(id);
+  }, function(){ btn.disabled=false; });
+}
+
+function abrirAcordeon(id){
+  MU.abierta = (String(MU.abierta)===String(id)) ? "" : String(id);
+  hashEscribir("ab",MU.abierta);
+  var r=filaPorId(id);
+  var vieja=nodoDe(id);
+  if(r && vieja && vieja.parentNode) vieja.parentNode.replaceChild(tarjetaDe(r),vieja);
+}
+
+function enviarMensaje(id){
+  if(MU.enviando) return;
+  var r=filaPorId(id);
+  if(!r || !sb || !MU.email) return;
+  var ta=null, aviso=null;
+  document.querySelectorAll("[data-txt]").forEach(function(n){ if(n.getAttribute("data-txt")===String(id)) ta=n; });
+  document.querySelectorAll("[data-aviso]").forEach(function(n){ if(n.getAttribute("data-aviso")===String(id)) aviso=n; });
+  if(!ta) return;
+  var texto=String(ta.value||"").trim();
+  if(!texto){ if(aviso){ aviso.className="mu-aviso-envio err"; aviso.textContent="Escribe un mensaje primero."; } return; }
+  if(texto.length>280) texto=texto.slice(0,280);
+  MU.enviando=true;
+  if(aviso){ aviso.className="mu-aviso-envio"; aviso.textContent="Enviando…"; }
+  try{
+    sb.from("novedades_comentarios").insert({novedad_id:id,user_email:MU.email,texto:texto}).then(function(res){
+      MU.enviando=false;
+      if(res && res.error){
+        if(aviso){ aviso.className="mu-aviso-envio err"; aviso.textContent="No se pudo enviar: "+(res.error.message||""); }
+        return;
+      }
+      ta.value="";
+      if(aviso){ aviso.className="mu-aviso-envio"; aviso.textContent="Enviado."; }
+      MU.abierta="";
+      hashEscribir("ab","");
+      refrescarUna(id);
+    }, function(){
+      MU.enviando=false;
+      if(aviso){ aviso.className="mu-aviso-envio err"; aviso.textContent="No se pudo enviar."; }
+    });
+  }catch(e){
+    MU.enviando=false;
+    if(aviso){ aviso.className="mu-aviso-envio err"; aviso.textContent="No se pudo enviar."; }
+  }
+}
+
+function cambiarFiltro(f){
+  MU.filtro=f;
+  hashEscribir("f", f==="todas"?"":f);
+  pintar();
+}
+
+/* ---------- eventos (delegados en la seccion) ---------- */
+function conectarEventos(){
+  var sec=seccion();
+  if(!sec || sec.__muEv) return;
+  sec.__muEv=1;
+  sec.addEventListener("click",function(e){
+    var t=e.target;
+    var rx=t.closest?t.closest(".mu-rx"):null;
+    if(rx){ toggleReaccion(rx); return; }
+    var ab=t.closest?t.closest("[data-abrir]"):null;
+    if(ab){ abrirAcordeon(ab.getAttribute("data-abrir")); return; }
+    var en=t.closest?t.closest("[data-enviar]"):null;
+    if(en){ enviarMensaje(en.getAttribute("data-enviar")); return; }
+    var ch=t.closest?t.closest("[data-filtro]"):null;
+    if(ch){ cambiarFiltro(ch.getAttribute("data-filtro")); return; }
+    var re=t.closest?t.closest("[data-reintentar]"):null;
+    if(re){ cargar(); return; }
+  });
+  window.addEventListener("hashchange",function(){
+    var antes=MU.filtro+"|"+MU.abierta+"|"+MU.destacada;
+    leerEstadoHash();
+    if(antes!==MU.filtro+"|"+MU.abierta+"|"+MU.destacada) pintar();
+  });
+}
+
+/* ---------- realtime (opcional) + polling de respaldo ---------- */
+function conectarRealtime(){
+  if(MU.canal || !sb) return;
+  try{
+    MU.canal=sb.channel("muro-novedades-v15")
+      .on("postgres_changes",{event:"INSERT",schema:"portal",table:"novedades_reacciones"},function(p){
+        refrescarUna(p && p["new"] && p["new"].novedad_id);
+      })
+      .on("postgres_changes",{event:"INSERT",schema:"portal",table:"novedades_comentarios"},function(p){
+        refrescarUna(p && p["new"] && p["new"].novedad_id);
+      })
+      .subscribe();
+  }catch(e){
+    /* Si Realtime no esta disponible, el muro sigue vivo con el polling de 60 s. */
+    MU.canal=null;
+    try{ console.warn("[muro] realtime no disponible; queda el polling de 60 s"); }catch(e2){}
+  }
+}
+function arrancarPolling(){
+  if(MU.poll) return;
+  MU.poll=setInterval(function(){ if(!document.hidden) cargar(); },60000);
+}
+function pararTodo(){
+  if(MU.poll){ clearInterval(MU.poll); MU.poll=null; }
+  if(MU.canal){ try{ sb.removeChannel(MU.canal); }catch(e){} MU.canal=null; }
+}
+
+/* ---------- arranque / sesion ---------- */
+function mostrar(v){
+  var s=seccion();
+  if(s) s.className = v ? "muro on" : "muro";
+}
+
+function conSesion(email){
+  MU.email=String(email||"").toLowerCase();
+  if(!MU.email){ salir(); return; }
+  /* Candado de agencias externas: no ven el muro, igual que solo ven Quick Quote. */
+  if(MU_EXTERNOS.indexOf(MU.email)>=0){ mostrar(false); pararTodo(); return; }
+  mostrar(true);
+  leerEstadoHash();
+  conectarEventos();
+  if(!MU.arrancado){
+    MU.arrancado=true;
+    cargar();
+    conectarRealtime();
+    arrancarPolling();
+    /* El portal tambien bloquea (decision de Andres §1.12): el widget v4 resuelve
+       las areas de la persona solo, por eso va sin argumento. Solo con sesion:
+       nunca se llama desde el overlay de login. */
+    try{ if(window.pgNovedadesAuto) window.pgNovedadesAuto(); }catch(e){}
+  }
+}
+function salir(){
+  MU.email=""; MU.rows=[]; MU.bandeja=[]; MU.cargado=false; MU.arrancado=false; MU.vistoMarcado=false;
+  mostrar(false);
+  pararTodo();
+}
+
+function init(){
+  try{
+    if(!(window.supabase && window.supabase.createClient)) return;
+    sb=window.supabase.createClient(MU_URL,MU_KEY,{db:{schema:"portal"}});
+    sb.auth.getSession().then(function(r){
+      var s=r && r.data && r.data.session;
+      if(s && s.user) conSesion(s.user.email); else salir();
+    }, function(){ salir(); });
+    sb.auth.onAuthStateChange(function(evt,session){
+      if(session && session.user) conSesion(session.user.email); else salir();
+    });
+  }catch(e){
+    /* Nunca romper el portal por el muro. */
+    try{ console.warn("[muro] no arranco:",e && e.message); }catch(e2){}
+  }
+}
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(init,90); });
+else setTimeout(init,90);
+})();
+</script>
 <script>
 (function(){
 "use strict";
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
-var PGV_VERSION=14; // Tarjeta nueva: Cuarentena BOS (financiera y dirección)
+var PGV_VERSION=15; // Muro de Novedades v2 en el portal (seccion #muro) + widget pg-novedades en el index
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

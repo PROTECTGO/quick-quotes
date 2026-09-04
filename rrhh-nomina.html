@@ -116,6 +116,8 @@
   #app{display:none;}
   @media(max-width:760px){.frm{grid-template-columns:1fr 1fr;}.f.c2,.f.c4{grid-column:span 2;}}
 </style>
+<!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
+<script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
 </head>
 <body>
 
@@ -990,7 +992,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="rrhh-nomina.html";
-var PGV_VERSION=3;
+var PGV_VERSION=4;
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
@@ -1020,5 +1022,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 else setTimeout(pgvCheck,400);
 })();
 </script>
+<script>window.addEventListener('DOMContentLoaded',function(){ if(window.pgNovedadesAuto) pgNovedadesAuto('rrhh'); });</script>
 </body>
 </html>

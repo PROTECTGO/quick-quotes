@@ -112,6 +112,8 @@ tr.roster-retirado td { color:var(--pg-muted); }
 .ajustes-tabla td { vertical-align:top; }
 .ajustes-tabla .ajuste-btn-corregido { white-space:nowrap; }
 </style>
+<!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
+<script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
 </head>
 <body>
 <a href="index.html" id="pgVolver" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
@@ -719,7 +721,7 @@ function cablearAjustes(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="cuarentena.html";
-var PGV_VERSION=3; // Se agrega el bloque "Fechas por corregir en el BOS" (v_ajustes_pendientes_bos): tabla de ajustes de fecha hechos desde renovaciones.html que Financiera todavia no ha llevado al Google Sheet del BOS, con boton "Ya lo corregí en el BOS" que marca bos_corregido=true (nada se borra, la fila solo sale de la bandeja). Mismo candado de front que el roster: rol director/socio/financiera.
+var PGV_VERSION=4; // Se agrega el bloque "Fechas por corregir en el BOS" (v_ajustes_pendientes_bos): tabla de ajustes de fecha hechos desde renovaciones.html que Financiera todavia no ha llevado al Google Sheet del BOS, con boton "Ya lo corregí en el BOS" que marca bos_corregido=true (nada se borra, la fila solo sale de la bandeja). Mismo candado de front que el roster: rol director/socio/financiera.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -752,5 +754,6 @@ else setTimeout(pgvCheck,400);
 setInterval(pgvCheck,600000);
 })();
 </script>
+<script>window.addEventListener('DOMContentLoaded',function(){ if(window.pgNovedadesAuto) pgNovedadesAuto('fam'); });</script>
 </body>
 </html>

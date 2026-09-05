@@ -1136,7 +1136,7 @@ async function actividadEquipo(sb){
     + '<div><div class="l">Promedio por persona</div><div class="v">' + (data.length ? (total / data.length).toFixed(1).replace('.', ',') : '0') + '</div><div class="s">el estándar a hoy son ' + hab + '</div></div>';
 
   cont.innerHTML = '<div style="overflow-x:auto"><table class="act-tab">'
-    + '<thead><tr><th>Persona</th><th class="n">Mandados a cotizar</th><th style="width:120px">Contra el estándar</th><th class="n">Montados</th>'
+    + '<thead><tr><th>Persona</th><th class="n">Mandados a cotizar</th><th style="width:120px">Contra el estándar</th><th class="n">Montados</th><th class="n">Llamadas</th>'
     + '<th class="n">Días en cero</th><th class="n">Sin subir hace</th><th class="n">Ventas del mes</th></tr></thead><tbody>'
     + data.map(function(r){
         const pct = Math.min(100, Math.round((r.pct_estandar == null ? 0 : Number(r.pct_estandar))));
@@ -1146,6 +1146,7 @@ async function actividadEquipo(sb){
           + '<td class="n' + ((r.positivos_mes || 0) === 0 ? ' cero' : '') + '">' + (r.positivos_mes || 0) + '</td>'
           + '<td><div class="act-bar"><i class="' + cls + '" style="width:' + pct + '%"></i></div></td>'
           + '<td class="n">' + (r.creados_mes || 0) + '</td>'
+          + '<td class="n">' + (r.llamadas_mes == null ? '—' : r.llamadas_mes) + '</td>'
           + '<td class="n' + (r.dias_en_cero >= hab ? ' cero' : '') + '">' + (r.dias_en_cero || 0) + '</td>'
           + '<td class="n">' + sin + '</td>'
           + '<td class="n">' + (r.ventas_mes || 0) + '</td></tr>';
@@ -1156,7 +1157,7 @@ async function actividadEquipo(sb){
   document.getElementById('act-pie').innerHTML = conVentaSinPos.length
     ? '<b>Ojo:</b> ' + conVentaSinPos.map(r => r.agente).join(', ') + (conVentaSinPos.length === 1 ? ' vendió' : ' vendieron')
       + ' este mes sin haber mandado un solo negocio a cotizar. El trabajo existe, pero no está pasando por el sistema — y así la conversión del equipo sale inflada.'
-    : 'Los datos vienen de HubSpot y se actualizan solos cada mañana.';
+    : 'Positivos de HubSpot y llamadas de RingCentral; se actualizan solos cada mañana. Las llamadas llegan con un día de retraso.';
 }
 
 let YA_PINTADO = false;
@@ -1200,7 +1201,7 @@ boot();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-brahian.html";
-var PGV_VERSION=7; // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
+var PGV_VERSION=8; // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

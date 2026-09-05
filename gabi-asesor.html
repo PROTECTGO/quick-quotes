@@ -358,7 +358,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
       <div class="inc-head"><div><h2 style="margin:0">Los incentivos de este mes</h2><p class="pg-purpose" style="margin:4px 0 0"><span id="lb-inc">Cambian cada mes. Estos son los de este mes: cuánto llevas y cuánto te falta para cada uno.</span></p></div><span class="vig" id="vig"></span></div>
       <div class="x10" id="x10"></div>
             <div class="inc" style="margin-top:14px">
-        <div class="inc-card full"><h3>Mi meta del mes <span class="st" id="meta-st"></span></h3><div class="why">$80.000 combinada: premium + fee × 10. Es la meta de la casa para cada asesor.</div><div id="meta-bar"></div></div>
+        <div class="inc-card full"><h3>Mi meta del mes <span class="st" id="meta-st"></span></h3><div class="why" id="why-meta"></div><div id="meta-bar"></div></div>
         <div class="inc-card"><h3>Turbo · 25 % del fee <span class="st" id="turbo-st"></span></h3><div class="why">Solo este mes. Las tres a la vez:</div><div id="turbo-chk"></div></div>
         <div class="inc-card"><h3>Mi escala de fee</h3><div class="why">El porcentaje del fee cobrado que es tuyo.</div><div class="esc" id="esc-fee"></div><div class="falta" id="esc-fee-s"></div>
           <h3 style="margin-top:14px">Mi escalón de premium</h3><div class="esc" id="esc-prem"></div><div class="falta" id="esc-prem-s"></div></div>
@@ -376,7 +376,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
   <section class="pg-section" id="s-historia">
     <div class="pg-top"><div class="pg-eyebrow">Mi historia</div><h1>¿De dónde vengo?</h1>
       <div class="pg-sub">Todo desde que entraste, medido como se mide tu meta: <b>combinada = premium + fee × 10</b>. La comisión punteada es "con el plan de hoy": la misma fórmula sobre tus ventas reales, para que veas cómo se mueve tu plata cuando se mueven tus ventas.</div></div>
-    <div class="pg-card"><h2>Mi meta combinada y mi comisión, mes a mes</h2><p class="pg-purpose">Onda verde: tu combinada del mes (premium + fee × 10). Línea ámbar punteada: la meta de $80.000. Azul: tu comisión — cuando la verde sube, la azul sube detrás.</p><div class="pg-chart-wrap" style="height:340px"><canvas id="chHist"></canvas></div></div>
+    <div class="pg-card"><h2>Mi meta combinada y mi comisión, mes a mes</h2><p class="pg-purpose">Onda verde: tu combinada del mes (premium + fee × 10). <span id="lb-meta-graf"></span> Azul: tu comisión — cuando la verde sube, la azul sube detrás.</p><div class="pg-chart-wrap" style="height:340px"><canvas id="chHist"></canvas></div></div>
     <div class="rec" id="rec"></div>
     <div class="pg-card" style="background:transparent;border:none;box-shadow:none;padding:0"><h2>Lo que me está costando</h2><p class="pg-purpose">Tres patrones tuyos, con la plata que te cuestan. Cada uno trae una sola sugerencia y un botón para volverla tu plan del mes.</p><div id="pats"></div></div>
   </section>
@@ -387,7 +387,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 
     <div class="pg-card">
       <div class="pg-eyebrow" style="margin-bottom:12px">Lo que quiero</div>
-      <div class="x10" style="margin:0 0 14px">Tu meta es una alcancía de <b>$80.000</b> al mes. Cada venta echa su premium; <b>cada $1 de fee echa $10</b>.</div>
+      <div class="x10" style="margin:0 0 14px"><span id="lb-alcancia"></span> Cada venta echa su premium; <b>cada $1 de fee echa $10</b>.</div>
       <div class="sim" style="grid-template-columns:1.4fr 1fr 1fr">
         <label>Qué quiero<input id="m-que" type="text" value="Un carro"></label>
         <label>Cuánto tengo que juntar (USD)<input id="m-juntar" type="number" value="6000" min="0" step="100"></label>
@@ -592,7 +592,7 @@ function historia(){ if (HECHA_HIST) return; HECHA_HIST = true;
   const comReal = S.map(r => { const l = A.liq[r[0]]; return l && l[3] != null ? l[3] : null; });
   new Chart($('chHist'), { type:'line', data:{ labels, datasets:[
     { label:'Mi combinada (premium + fee × 10)', data:venta, borderColor:C.mint, backgroundColor:'rgba(45,191,163,.12)', fill:true, tension:.35, pointRadius:4, pointBackgroundColor:'#fff', pointBorderWidth:2, yAxisID:'y' },
-    { label:'Mi meta: $80.000', data:venta.map(()=>META), borderColor:C.warn, borderDash:[6,4], pointRadius:0, borderWidth:2, yAxisID:'y' },
+    { label:'Mi meta: ' + usd(META), data:venta.map(()=>META), borderColor:C.warn, borderDash:[6,4], pointRadius:0, borderWidth:2, yAxisID:'y' },
     { label:'Mi comisión (punteada = con el plan de hoy)', data:com, borderColor:C.azul, borderDash:[4,4], tension:.35, pointRadius:3, yAxisID:'y2' },
     { label:'Mi comisión liquidada', data:comReal, borderColor:C.azul, backgroundColor:C.azul, tension:.35, pointRadius:5, borderWidth:2.5, yAxisID:'y2' }
   ]}, options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index', intersect:false}, plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:8, font:{size:11} } } },
@@ -612,7 +612,7 @@ function historia(){ if (HECHA_HIST) return; HECHA_HIST = true;
   const pats = [];
   const cerca = A.serie.filter(r => { const c = combMes(r); return c > 0 && c < META && c >= META*0.85; });
   if (cerca.length) { const q = cerca[cerca.length-1], f = META - combMes(q);
-    pats.push(['ambar', 'Estuve a un paso de mi meta', 'En ' + MESL[Number(q[0].slice(5,7))-1] + ' cerraste en <b>' + usd(combMes(q)) + '</b>: te faltaron <b>' + usd(f) + '</b> para los $80.000. Eso son <span class="plata">' + usd(Math.ceil(f/10)) + ' de fee</span> — un solo cobro más.',
+    pats.push(['ambar', 'Estuve a un paso de mi meta', 'En ' + MESL[Number(q[0].slice(5,7))-1] + ' cerraste en <b>' + usd(combMes(q)) + '</b>: te faltaron <b>' + usd(f) + '</b> para los ' + usd(META) + '. Eso son <span class="plata">' + usd(Math.ceil(f/10)) + ' de fee</span> — un solo cobro más.',
       'Sugerencia: cuando vayas cerca de fin de mes, mira aquí cuánto te falta: casi siempre es un fee, no una venta.', 'Cobrar el fee en cada venta']); }
   const F = A.fee2026, mia = Math.round(F.perdido * .2);
   if (P.tasa < .6) pats.push(['rojo', 'Cobro el fee, pero no siempre',
@@ -815,6 +815,12 @@ function pintarCabecera(){
   const lp  = document.getElementById('lb-plan');   if (lp)  lp.textContent = 'Mi plan de ' + A.mesTxt;
   const li  = document.getElementById('lb-inc');    if (li)  li.textContent = 'Cambian cada mes. Estos son los de ' + A.mesTxt + ': cuánto llevas y cuánto te falta para cada uno.';
   const lt  = document.getElementById('lb-top');    if (lt)  lt.textContent = 'Los mejores del equipo';
+  const wm  = document.getElementById('why-meta');
+  if (wm) wm.textContent = usd(META) + ' combinada: premium + fee \u00d7 10. Es la meta de la casa para cada asesor.';
+  const lg  = document.getElementById('lb-meta-graf');
+  if (lg) lg.textContent = 'L\u00ednea \u00e1mbar punteada: la meta de ' + usd(META) + '.';
+  const la  = document.getElementById('lb-alcancia');
+  if (la) la.innerHTML = 'Tu meta es una alcanc\u00eda de <b>' + usd(META) + '</b> al mes.';
   const pf  = document.getElementById('p-fecha');
   if (pf && !pf.value) { const u = new Date(Number(YM.slice(0,4)), Number(YM.slice(5,7)), 0); pf.value = u.toISOString().slice(0,10); }
   const mf  = document.getElementById('m-fecha');
@@ -865,7 +871,7 @@ document.addEventListener('DOMContentLoaded', boot);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-asesor.html";
-var PGV_VERSION=2; // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada de $80.000, incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
+var PGV_VERSION=3; // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

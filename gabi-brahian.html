@@ -159,6 +159,27 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 .bt-chk input{width:16px;height:16px;accent-color:var(--pg-mint-deep);cursor:pointer;margin:0}
 .bt-vacio{background:#fff;border:1px dashed var(--pg-line);border-radius:13px;padding:34px;text-align:center;color:var(--pg-muted);font-size:13.5px}
 @media (max-width:900px){.bt-grid{grid-template-columns:1fr}.bt-item{grid-template-columns:1fr}.bt-right{flex-direction:row;align-items:center}}
+
+/* ---- actividad registrada por persona ---- */
+.act-tab{width:100%;border-collapse:collapse;font-size:13px}
+.act-tab th{text-align:left;font-family:var(--pg-font-num);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pg-muted);padding:0 8px 7px;border-bottom:1px solid var(--pg-line)}
+.act-tab th.n,.act-tab td.n{text-align:right;font-family:var(--pg-font-num)}
+.act-tab td{padding:8px;border-bottom:1px solid var(--pg-line);vertical-align:middle}
+.act-tab tr:last-child td{border-bottom:none}
+.act-tab .per{font-weight:600;color:var(--pg-ink)}
+.act-tab .sem{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle}
+.act-tab .sem.verde{background:var(--pg-mint)} .act-tab .sem.ambar{background:var(--pg-warn)} .act-tab .sem.rojo{background:var(--pg-neg)}
+.act-tab .cero{color:var(--pg-neg);font-weight:700}
+.act-bar{position:relative;height:7px;border-radius:999px;background:#EDF1F5;overflow:hidden;min-width:70px}
+.act-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--pg-mint)}
+.act-bar i.w{background:var(--pg-warn)} .act-bar i.r{background:var(--pg-neg)}
+.act-res{display:flex;gap:26px;flex-wrap:wrap;margin-bottom:14px}
+.act-res > div{min-width:120px}
+.act-res .l{font-family:var(--pg-font-num);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pg-muted)}
+.act-res .v{font-family:var(--pg-font-num);font-size:26px;font-weight:700;color:var(--pg-ink);line-height:1.15}
+.act-res .v.mal{color:var(--pg-neg)}
+.act-res .s{font-size:12px;color:var(--pg-muted)}
+.act-vacio{background:#fff;border:1px dashed var(--pg-line);border-radius:12px;padding:22px;text-align:center;color:var(--pg-muted);font-size:13px}
 </style>
 <script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
 </head>
@@ -218,6 +239,15 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
       <div class="pg-kpi a"><div class="lbl">Tu ingreso del año</div><div class="val" id="k-ing">—</div><div class="sub">Tu comisión de líder, mes a mes, sumada.</div></div>
       <div class="pg-kpi w"><div class="lbl">Volumen del año</div><div class="val" id="k-vol">—</div><div class="sub" id="k-vol-s"></div></div>
       <div class="pg-kpi r"><div class="lbl">Fee sobre lo vendido</div><div class="val" id="k-fee">—</div><div class="sub">De cada $100 que vende el equipo, esto entra por fee. Aquí está la palanca.</div></div>
+    </div>
+
+
+    <div class="pg-card" id="act-card">
+      <h2>Quién está registrando su trabajo</h2>
+      <p class="pg-purpose">El estándar es <b>un positivo al día hábil</b>: un negocio nuevo creado en HubSpot. Esto no mide si venden — mide si el trabajo está quedando anotado. Sin esto, las estadísticas de conversión del equipo no sirven para nada.</p>
+      <div class="act-res" id="act-res"></div>
+      <div id="act-lista"></div>
+      <p class="pg-purpose" style="margin:12px 0 0" id="act-pie"></p>
     </div>
 
     <div class="pg-grid-2">
@@ -1080,6 +1110,54 @@ function renderLogin(){
   });
 }
 
+
+/* ============ ACTIVIDAD REGISTRADA POR PERSONA ============
+   Sale de public.v_actividad_equipo_visible (compuerta: paquete incentivos).
+   El estandar es un positivo por dia habil. No mide ventas: mide registro. */
+async function actividadEquipo(sb){
+  const cont = document.getElementById('act-lista');
+  if (!cont) return;
+  const { data, error } = await sb.from('v_actividad_equipo_visible').select('*');
+  if (error || !data || !data.length) {
+    cont.innerHTML = '<div class="act-vacio">No pude traer la actividad. '
+      + (error ? String(error.message).replace(/[<>&]/g,'') : 'No hay filas: revisar el paquete de la cuenta.') + '</div>';
+    return;
+  }
+  const orden = { rojo: 0, ambar: 1, verde: 2 };
+  data.sort((a, b) => (orden[a.semaforo] - orden[b.semaforo]) || (a.positivos_mes - b.positivos_mes) || a.agente.localeCompare(b.agente));
+  const hab = data[0].habiles_corridos || 1, habMes = data[0].habiles_mes || 22;
+  const total = data.reduce((x, r) => x + (r.positivos_mes || 0), 0);
+  const enCero = data.filter(r => (r.positivos_mes || 0) === 0).length;
+  const enEstandar = data.filter(r => r.semaforo === 'verde').length;
+  document.getElementById('act-res').innerHTML =
+      '<div><div class="l">Positivos del equipo</div><div class="v">' + total + '</div><div class="s">van ' + hab + ' de ' + habMes + ' días hábiles</div></div>'
+    + '<div><div class="l">En el estándar</div><div class="v' + (enEstandar >= data.length / 2 ? '' : ' mal') + '">' + enEstandar + ' de ' + data.length + '</div><div class="s">uno o más por día hábil</div></div>'
+    + '<div><div class="l">Sin registrar nada este mes</div><div class="v' + (enCero ? ' mal' : '') + '">' + enCero + '</div><div class="s">' + (enCero ? 'con estas hay que hablar hoy' : 'todo el mundo anotó algo') + '</div></div>'
+    + '<div><div class="l">Promedio por persona</div><div class="v">' + (data.length ? (total / data.length).toFixed(1).replace('.', ',') : '0') + '</div><div class="s">el estándar a hoy son ' + hab + '</div></div>';
+
+  cont.innerHTML = '<div style="overflow-x:auto"><table class="act-tab">'
+    + '<thead><tr><th>Persona</th><th class="n">Positivos</th><th style="width:120px">Contra el estándar</th>'
+    + '<th class="n">Días en cero</th><th class="n">Sin subir hace</th><th class="n">Ventas del mes</th></tr></thead><tbody>'
+    + data.map(function(r){
+        const pct = Math.min(100, Math.round((r.pct_estandar == null ? 0 : Number(r.pct_estandar))));
+        const cls = r.semaforo === 'verde' ? '' : (r.semaforo === 'ambar' ? 'w' : 'r');
+        const sin = r.dias_sin_subir == null ? 'nunca' : (r.dias_sin_subir === 0 ? 'hoy' : r.dias_sin_subir + (r.dias_sin_subir === 1 ? ' día' : ' días'));
+        return '<tr><td class="per"><span class="sem ' + r.semaforo + '"></span>' + r.agente + '</td>'
+          + '<td class="n' + ((r.positivos_mes || 0) === 0 ? ' cero' : '') + '">' + (r.positivos_mes || 0) + '</td>'
+          + '<td><div class="act-bar"><i class="' + cls + '" style="width:' + pct + '%"></i></div></td>'
+          + '<td class="n' + (r.dias_en_cero >= hab ? ' cero' : '') + '">' + (r.dias_en_cero || 0) + '</td>'
+          + '<td class="n">' + sin + '</td>'
+          + '<td class="n">' + (r.ventas_mes || 0) + '</td></tr>';
+      }).join('')
+    + '</tbody></table></div>';
+
+  const conVentaSinPos = data.filter(r => (r.ventas_mes || 0) > 0 && (r.positivos_mes || 0) === 0);
+  document.getElementById('act-pie').innerHTML = conVentaSinPos.length
+    ? '<b>Ojo:</b> ' + conVentaSinPos.map(r => r.agente).join(', ') + (conVentaSinPos.length === 1 ? ' vendió' : ' vendieron')
+      + ' este mes sin haber subido un solo positivo. Eso quiere decir que el trabajo existe pero no está quedando en HubSpot, y así la conversión del equipo sale inflada.'
+    : 'Los datos vienen de HubSpot y se actualizan solos cada mañana.';
+}
+
 let YA_PINTADO = false;
 async function renderShell(session){
   if (YA_PINTADO) return;
@@ -1094,6 +1172,7 @@ async function renderShell(session){
   try {
     await esperarChart();
     const D = await cargarDatos(SB); render(D); bitacora(D);
+    actividadEquipo(SB).catch(e => console.error('actividad', e));
   } catch (e) {
     console.error(e);
     const main = document.querySelector('.pg-main');
@@ -1120,7 +1199,7 @@ boot();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-brahian.html";
-var PGV_VERSION=5; // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
+var PGV_VERSION=6; // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

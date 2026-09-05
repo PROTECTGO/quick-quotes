@@ -364,8 +364,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
           <h3 style="margin-top:14px">Mi escalón de premium</h3><div class="esc" id="esc-prem"></div><div class="falta" id="esc-prem-s"></div></div>
         <div class="inc-card"><h3>Bonos del mes <span class="st">en pesos</span></h3><div class="why">Máximo dos por persona. Se pagan aparte de la comisión.</div><div id="bonos"></div></div>
         <div class="inc-card"><h3>Fee prometido, no cobrado <span class="st warn">ojo</span></h3><div class="why" id="riesgo"></div>
-          <h3 style="margin-top:14px">Mi actividad</h3><div class="chk"><div><div style="font-size:11px;color:var(--pg-muted);font-weight:700;letter-spacing:.08em">POSITIVOS SUBIDOS ESTE MES</div><b style="font-size:22px" id="act-pos"></b> <span style="font-size:12px;color:var(--pg-muted)" id="act-pos-s"></span></div></div>
-          <div class="chk"><div><div style="font-size:11px;color:var(--pg-muted);font-weight:700;letter-spacing:.08em">LLAMADAS Y MENSAJES</div><span style="font-size:12.5px;color:var(--pg-muted)">Sin datos todavía: se conecta con RingCentral cuando termine la migración.</span></div></div></div>
+          <h3 style="margin-top:14px">Mi actividad</h3><div id="act-bloque"></div></div></div></div>
       </div>
     </div>
     <div class="pg-card"><h2 id="lb-top">Los mejores del mes</h2><p class="pg-purpose">Para celebrar. Aparecen todos los días, con su foto.</p>
@@ -550,8 +549,8 @@ function hoy(){
   const riesgo = (A.liq[YMP] || [0,0,0])[2];
   $('riesgo').innerHTML = riesgo > 0 ? 'Tienes <b>' + usd(riesgo) + '</b> de fee de agosto <b>sin fecha de pago</b>. Para tu comisión, hoy vale cero. Cuando Financiera registre el pago, cuenta.'
     : 'Todo el fee que cobraste tiene su fecha de pago. Nada tuyo está en el aire.';
-  $('act-pos').textContent = A.hubspot[YM] != null ? A.hubspot[YM] : (Object.keys(A.hubspot).length ? 0 : '—');
-  $('act-pos-s').textContent = 'Tu promedio: ' + Math.round(P.pos) + ' al mes · a esta altura del mes deberías ir en ~' + Math.round(P.pos * A.meta.hab / A.meta.habMes);
+    actividad();
+
 }
 
 function reconocimientos(){
@@ -749,6 +748,46 @@ function pintarTodo(){
 }
 
 
+/* ============ MI ACTIVIDAD ============
+   El estandar es un positivo por dia habil. Lo que se muestra no es un juicio:
+   es cuanto trabajo suyo esta quedando registrado. */
+function actividad(){
+  const el = $('act-bloque'); if (!el) return;
+  const T = A.actividad;
+  if (!T) { el.innerHTML = '<div class="chk"><div style="font-size:12.5px;color:var(--pg-muted)">Todav\u00eda no llega tu actividad.</div></div>'; return; }
+  const meta = T.metaMes || 22, alDia = T.alDia || 0, mes = T.mes || 0;
+  const pct = Math.round(mes / meta * 100), marca = Math.min(100, Math.round(alDia / meta * 100));
+  const vaBien = mes >= alDia;
+  const dias = T.serieDias || [];
+  const tira = dias.slice(-12).map(function(par){ const d = par[0], n = par[1];
+    const alto = n === 0 ? 4 : Math.min(26, 6 + n * 5);
+    const col = n === 0 ? '#E0E6EB' : (n >= 2 ? 'var(--pg-mint)' : '#8FD8C8');
+    return '<i title="' + Number(d.slice(8)) + ': ' + n + '" style="display:inline-block;width:9px;height:' + alto + 'px;background:' + col + ';border-radius:2px;vertical-align:bottom;margin-right:3px"></i>';
+  }).join('');
+  const dow = new Date(A.hoy + 'T12:00:00').getDay();
+  const hoyHabil = dow >= 1 && dow <= 5;
+  const linea = !hoyHabil
+    ? 'Hoy no es d\u00eda h\u00e1bil. El lunes arranca de nuevo.'
+    : (T.hoy > 0
+        ? '<b>Hoy ya subiste ' + T.hoy + '.</b> Con eso cumples el d\u00eda.'
+        : 'Hoy todav\u00eda no has subido ninguno. <b>Con uno cumples el d\u00eda.</b>');
+  el.innerHTML =
+    '<div class="chk"><div style="flex:1;min-width:0">'
+    + '<div style="font-size:11px;color:var(--pg-muted);font-weight:700;letter-spacing:.08em">POSITIVOS DE ESTE MES</div>'
+    + '<div style="display:flex;align-items:baseline;gap:8px"><b style="font-size:26px;font-family:var(--pg-font-num)">' + mes + '</b>'
+    + '<span style="font-size:12.5px;color:var(--pg-muted)">de ' + meta + ' \u00b7 uno por d\u00eda h\u00e1bil</span></div>'
+    + '<div class="bar" style="height:10px"><i class="' + (vaBien ? '' : 'w') + '" style="width:' + Math.min(100, pct) + '%"></i>'
+    + '<u style="position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--pg-ink);opacity:.5;left:' + marca + '%"></u></div>'
+    + '<div class="bar-l"><span><b>' + mes + '</b> \u00b7 ' + pct + ' %</span><span>hoy deber\u00edas ir en ' + alDia + '</span><span>' + meta + '</span></div>'
+    + '<div class="falta">' + linea + '</div>'
+    + (tira ? '<div style="margin-top:9px">' + tira + '<div style="font-size:11px;color:var(--pg-muted);margin-top:3px">Tus \u00faltimos d\u00edas h\u00e1biles. Gris = d\u00eda sin subir nada.</div></div>' : '')
+    + '<div style="font-size:12px;color:var(--pg-muted);margin-top:8px">El equipo va en <b>' + (T.equipoMes || 0) + '</b> este mes, en promedio.</div>'
+    + '</div></div>'
+    + '<div class="chk"><div><div style="font-size:11px;color:var(--pg-muted);font-weight:700;letter-spacing:.08em">LLAMADAS Y MENSAJES</div>'
+    + '<span style="font-size:12.5px;color:var(--pg-muted)">Todav\u00eda no llegan. Aparecen aqu\u00ed cuando RingCentral quede conectado a HubSpot.</span></div></div>';
+}
+
+
 /* ================= sesión y datos reales ================= */
 const SB_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
 const SB_ANON = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
@@ -871,7 +910,7 @@ document.addEventListener('DOMContentLoaded', boot);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-asesor.html";
-var PGV_VERSION=3; // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
+var PGV_VERSION=4; // v4 - Bloque Mi actividad con el estandar de un positivo por dia habil: barra del mes, la marca de donde deberia ir hoy, la tira de los ultimos dias habiles y el promedio del equipo. Sale de public.actividad_hubspot_dia. // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

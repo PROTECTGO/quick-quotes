@@ -244,7 +244,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 
     <div class="pg-card" id="act-card">
       <h2>Quién está registrando su trabajo</h2>
-      <p class="pg-purpose">El estándar es <b>un positivo al día hábil</b>: un negocio nuevo creado en HubSpot. Esto no mide si venden — mide si el trabajo está quedando anotado. Sin esto, las estadísticas de conversión del equipo no sirven para nada.</p>
+      <p class="pg-purpose">El estándar es <b>un positivo al día hábil</b>. Un positivo es un negocio <b>mandado a cotizar</b>: entró a la etapa Audit / Quote en HubSpot con contacto, empresa y negocio completos. Montarlo no basta. Esto no mide si venden — mide si el trabajo está quedando en el sistema.</p>
       <div class="act-res" id="act-res"></div>
       <div id="act-lista"></div>
       <p class="pg-purpose" style="margin:12px 0 0" id="act-pie"></p>
@@ -1130,13 +1130,13 @@ async function actividadEquipo(sb){
   const enCero = data.filter(r => (r.positivos_mes || 0) === 0).length;
   const enEstandar = data.filter(r => r.semaforo === 'verde').length;
   document.getElementById('act-res').innerHTML =
-      '<div><div class="l">Positivos del equipo</div><div class="v">' + total + '</div><div class="s">van ' + hab + ' de ' + habMes + ' días hábiles</div></div>'
+      '<div><div class="l">Mandados a cotizar</div><div class="v">' + total + '</div><div class="s">van ' + hab + ' de ' + habMes + ' días hábiles</div></div>'
     + '<div><div class="l">En el estándar</div><div class="v' + (enEstandar >= data.length / 2 ? '' : ' mal') + '">' + enEstandar + ' de ' + data.length + '</div><div class="s">uno o más por día hábil</div></div>'
-    + '<div><div class="l">Sin registrar nada este mes</div><div class="v' + (enCero ? ' mal' : '') + '">' + enCero + '</div><div class="s">' + (enCero ? 'con estas hay que hablar hoy' : 'todo el mundo anotó algo') + '</div></div>'
+    + '<div><div class="l">Sin mandar nada a cotizar</div><div class="v' + (enCero ? ' mal' : '') + '">' + enCero + '</div><div class="s">' + (enCero ? 'con estas hay que hablar hoy' : 'todo el mundo anotó algo') + '</div></div>'
     + '<div><div class="l">Promedio por persona</div><div class="v">' + (data.length ? (total / data.length).toFixed(1).replace('.', ',') : '0') + '</div><div class="s">el estándar a hoy son ' + hab + '</div></div>';
 
   cont.innerHTML = '<div style="overflow-x:auto"><table class="act-tab">'
-    + '<thead><tr><th>Persona</th><th class="n">Positivos</th><th style="width:120px">Contra el estándar</th>'
+    + '<thead><tr><th>Persona</th><th class="n">Mandados a cotizar</th><th style="width:120px">Contra el estándar</th><th class="n">Montados</th>'
     + '<th class="n">Días en cero</th><th class="n">Sin subir hace</th><th class="n">Ventas del mes</th></tr></thead><tbody>'
     + data.map(function(r){
         const pct = Math.min(100, Math.round((r.pct_estandar == null ? 0 : Number(r.pct_estandar))));
@@ -1145,6 +1145,7 @@ async function actividadEquipo(sb){
         return '<tr><td class="per"><span class="sem ' + r.semaforo + '"></span>' + r.agente + '</td>'
           + '<td class="n' + ((r.positivos_mes || 0) === 0 ? ' cero' : '') + '">' + (r.positivos_mes || 0) + '</td>'
           + '<td><div class="act-bar"><i class="' + cls + '" style="width:' + pct + '%"></i></div></td>'
+          + '<td class="n">' + (r.creados_mes || 0) + '</td>'
           + '<td class="n' + (r.dias_en_cero >= hab ? ' cero' : '') + '">' + (r.dias_en_cero || 0) + '</td>'
           + '<td class="n">' + sin + '</td>'
           + '<td class="n">' + (r.ventas_mes || 0) + '</td></tr>';
@@ -1154,7 +1155,7 @@ async function actividadEquipo(sb){
   const conVentaSinPos = data.filter(r => (r.ventas_mes || 0) > 0 && (r.positivos_mes || 0) === 0);
   document.getElementById('act-pie').innerHTML = conVentaSinPos.length
     ? '<b>Ojo:</b> ' + conVentaSinPos.map(r => r.agente).join(', ') + (conVentaSinPos.length === 1 ? ' vendió' : ' vendieron')
-      + ' este mes sin haber subido un solo positivo. Eso quiere decir que el trabajo existe pero no está quedando en HubSpot, y así la conversión del equipo sale inflada.'
+      + ' este mes sin haber mandado un solo negocio a cotizar. El trabajo existe, pero no está pasando por el sistema — y así la conversión del equipo sale inflada.'
     : 'Los datos vienen de HubSpot y se actualizan solos cada mañana.';
 }
 
@@ -1199,7 +1200,7 @@ boot();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-brahian.html";
-var PGV_VERSION=6; // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
+var PGV_VERSION=7; // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

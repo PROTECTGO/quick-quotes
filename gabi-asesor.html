@@ -769,18 +769,19 @@ function actividad(){
   const linea = !hoyHabil
     ? 'Hoy no es d\u00eda h\u00e1bil. El lunes arranca de nuevo.'
     : (T.hoy > 0
-        ? '<b>Hoy ya subiste ' + T.hoy + '.</b> Con eso cumples el d\u00eda.'
-        : 'Hoy todav\u00eda no has subido ninguno. <b>Con uno cumples el d\u00eda.</b>');
+        ? '<b>Hoy ya mandaste ' + T.hoy + ' a cotizar.</b> Con eso cumples el d\u00eda.'
+        : 'Hoy todav\u00eda no has mandado ninguno a cotizar. <b>Con uno cumples el d\u00eda.</b>');
   el.innerHTML =
     '<div class="chk"><div style="flex:1;min-width:0">'
-    + '<div style="font-size:11px;color:var(--pg-muted);font-weight:700;letter-spacing:.08em">POSITIVOS DE ESTE MES</div>'
+    + '<div style="font-size:11px;color:var(--pg-muted);font-weight:700;letter-spacing:.08em">POSITIVOS DE ESTE MES \u00b7 MANDADOS A COTIZAR</div>'
     + '<div style="display:flex;align-items:baseline;gap:8px"><b style="font-size:26px;font-family:var(--pg-font-num)">' + mes + '</b>'
     + '<span style="font-size:12.5px;color:var(--pg-muted)">de ' + meta + ' \u00b7 uno por d\u00eda h\u00e1bil</span></div>'
+    + '<div style="font-size:12px;color:var(--pg-muted);margin:-2px 0 4px">Un positivo es un negocio que <b>mandas a cotizar</b> (entra a Audit / Quote). Negocios montados este mes: <b>' + (T.creadosMes || 0) + '</b>.</div>'
     + '<div class="bar" style="height:10px"><i class="' + (vaBien ? '' : 'w') + '" style="width:' + Math.min(100, pct) + '%"></i>'
     + '<u style="position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--pg-ink);opacity:.5;left:' + marca + '%"></u></div>'
     + '<div class="bar-l"><span><b>' + mes + '</b> \u00b7 ' + pct + ' %</span><span>hoy deber\u00edas ir en ' + alDia + '</span><span>' + meta + '</span></div>'
     + '<div class="falta">' + linea + '</div>'
-    + (tira ? '<div style="margin-top:9px">' + tira + '<div style="font-size:11px;color:var(--pg-muted);margin-top:3px">Tus \u00faltimos d\u00edas h\u00e1biles. Gris = d\u00eda sin subir nada.</div></div>' : '')
+    + (tira ? '<div style="margin-top:9px">' + tira + '<div style="font-size:11px;color:var(--pg-muted);margin-top:3px">Tus \u00faltimos d\u00edas h\u00e1biles. Gris = d\u00eda sin mandar nada a cotizar.</div></div>' : '')
     + '<div style="font-size:12px;color:var(--pg-muted);margin-top:8px">El equipo va en <b>' + (T.equipoMes || 0) + '</b> este mes, en promedio.</div>'
     + '</div></div>'
     + '<div class="chk"><div><div style="font-size:11px;color:var(--pg-muted);font-weight:700;letter-spacing:.08em">LLAMADAS Y MENSAJES</div>'
@@ -910,7 +911,7 @@ document.addEventListener('DOMContentLoaded', boot);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-asesor.html";
-var PGV_VERSION=4; // v4 - Bloque Mi actividad con el estandar de un positivo por dia habil: barra del mes, la marca de donde deberia ir hoy, la tira de los ultimos dias habiles y el promedio del equipo. Sale de public.actividad_hubspot_dia. // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
+var PGV_VERSION=5; // v5 - Un positivo pasa a ser el negocio que ENTRA a la etapa Audit / Quote (mandado a cotizar), no el creado; se muestra aparte cuantos negocios monto. // v4 - Bloque Mi actividad con el estandar de un positivo por dia habil: barra del mes, la marca de donde deberia ir hoy, la tira de los ultimos dias habiles y el promedio del equipo. Sale de public.actividad_hubspot_dia. // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

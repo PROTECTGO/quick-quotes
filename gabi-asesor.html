@@ -789,7 +789,7 @@ function actividad(){
 function llamadasHtml(){
   const L = A.llamadas;
   if (!L) return '<div class="chk"><div><div style="font-size:11px;color:var(--pg-muted);font-weight:700;letter-spacing:.08em">LLAMADAS</div>'
-    + '<span style="font-size:12.5px;color:var(--pg-muted)">Empiezan a llegar desde RingCentral cada ma\u00f1ana. Ma\u00f1ana ya ves las de hoy.</span></div></div>';
+    + '<span style="font-size:12.5px;color:var(--pg-muted)">Se conectan con RingCentral y se actualizan solas cada 15 minutos.</span></div></div>';
   const dias = L.serieDias || [];
   const tira = dias.slice(-12).map(function(par){ const n = par[1];
     const alto = n === 0 ? 4 : Math.min(26, 6 + Math.round(n / 4));
@@ -800,8 +800,8 @@ function llamadasHtml(){
     + '<div style="font-size:11px;color:var(--pg-muted);font-weight:700;letter-spacing:.08em">LLAMADAS DE ESTE MES</div>'
     + '<div style="display:flex;align-items:baseline;gap:8px"><b style="font-size:26px;font-family:var(--pg-font-num)">' + (L.mes || 0) + '</b>'
     + '<span style="font-size:12.5px;color:var(--pg-muted)">' + (L.salientes || 0) + ' salientes \u00b7 ' + (L.contestadas || 0) + ' contestadas \u00b7 ' + (L.minutos || 0) + ' min al tel\u00e9fono</span></div>'
-    + '<div class="falta">Ayer: <b>' + (L.ayer || 0) + '</b> llamadas.' + (L.smsSalientes ? ' Mensajes de texto enviados este mes: <b>' + L.smsSalientes + '</b>.' : '') + '</div>'
-    + (tira ? '<div style="margin-top:9px">' + tira + '<div style="font-size:11px;color:var(--pg-muted);margin-top:3px">Tus \u00faltimos d\u00edas. Viene de RingCentral, con un d\u00eda de retraso.</div></div>' : '')
+    + '<div class="falta"><b>Hoy llevas ' + (L.hoy || 0) + (L.hoy === 1 ? ' llamada' : ' llamadas') + '</b>' + (L.smsHoy ? ' y ' + L.smsHoy + ' mensajes' : '') + '. Ayer: ' + (L.ayer || 0) + '.' + (L.smsSalientes ? ' Mensajes enviados este mes: <b>' + L.smsSalientes + '</b>.' : '') + '</div>'
+    + (tira ? '<div style="margin-top:9px">' + tira + '<div style="font-size:11px;color:var(--pg-muted);margin-top:3px">Tus \u00faltimos d\u00edas. Viene de RingCentral' + (L.actualizado ? ', actualizado a las ' + L.actualizado : '') + '.</div></div>' : '')
     + '</div></div>';
 }
 
@@ -928,7 +928,7 @@ document.addEventListener('DOMContentLoaded', boot);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-asesor.html";
-var PGV_VERSION=6; // v6 - Bloque de llamadas (RingCentral por correo diario -> public.actividad_llamadas_dia): total del mes, salientes, contestadas, minutos, ayer y la tira de dias. // v5 - Un positivo pasa a ser el negocio que ENTRA a la etapa Audit / Quote (mandado a cotizar), no el creado; se muestra aparte cuantos negocios monto. // v4 - Bloque Mi actividad con el estandar de un positivo por dia habil: barra del mes, la marca de donde deberia ir hoy, la tira de los ultimos dias habiles y el promedio del equipo. Sale de public.actividad_hubspot_dia. // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
+var PGV_VERSION=7; // v7 - Llamadas en tiempo casi real (API de RingCentral cada 15 min): hoy, ayer, mensajes y hora de actualizacion. // v6 - Bloque de llamadas (RingCentral por correo diario -> public.actividad_llamadas_dia): total del mes, salientes, contestadas, minutos, ayer y la tira de dias. // v5 - Un positivo pasa a ser el negocio que ENTRA a la etapa Audit / Quote (mandado a cotizar), no el creado; se muestra aparte cuantos negocios monto. // v4 - Bloque Mi actividad con el estandar de un positivo por dia habil: barra del mes, la marca de donde deberia ir hoy, la tira de los ultimos dias habiles y el promedio del equipo. Sale de public.actividad_hubspot_dia. // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

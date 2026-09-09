@@ -975,8 +975,12 @@ const FIDELIDAD_SIMULACION = {
   pendientes:      { nivel:'no_aplica', nota:'Vive en otro repo de GitHub (pendientes) — no se instrumentó en esta ronda.' },
   pendientes_kam:  { nivel:'no_aplica', nota:'Vive en otro repo de GitHub (pendientes) — no se instrumentó en esta ronda.' },
   business_quote:  { nivel:'no_aplica', nota:'No tiene URL registrada en widgets_registro.' },
-  // Wired esta ronda con ver-como-helper.js (banner + candado de rol real):
-  // gabi_asesor, gabi_brahian, gabi_fam, gabi_incentivos, retencion_riesgo,
+  // gabi_asesor es la UNICA fiel: ademas del banner y del candado de rol real,
+  // la pantalla vuelve a pedir los datos de la persona simulada con
+  // mi_proceso(<correo>), asi que las cifras SON las de ella (9-sep-2026, v8).
+  gabi_asesor: { nivel:'fiel', nota:'Fiel: ademas del banner, la pantalla pide mi_proceso(<correo>) y muestra las cifras REALES de esa persona. Todo lo que escribe queda apagado (el plan del mes y marcar el chispazo visto).' },
+  // Wired con ver-como-helper.js (banner + candado de rol real):
+  // gabi_brahian, gabi_fam, gabi_incentivos, retencion_riesgo,
   // mapa_puestos, renovaciones — usan FIDELIDAD_DEFAULT ('parcial') porque el
   // banner sí funciona pero los datos no se re-filtran por la persona simulada.
   // Todavía SIN el banner (ni siquiera muestra "Viendo como…"), revisadas pero
@@ -1395,7 +1399,7 @@ document.getElementById("verComoBtn").addEventListener("click", abrirVerComo);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="control-maestro.html";
-var PGV_VERSION=8; // + panel Fotos: sales@ sube la foto por persona (bucket fotos + portal.fotos_personas), filtro "sin foto todavía"
+var PGV_VERSION=9; // v9 - Vista Maestra: gabi_asesor (GABI - Mi proceso) pasa a FIEL. Es la unica pantalla donde "Abrir como" muestra las cifras reales de la persona simulada, no solo su diseno con los datos de quien abre el link. El resto sigue en 'parcial'. // v8 - + panel Fotos: sales@ sube la foto por persona (bucket fotos + portal.fotos_personas), filtro "sin foto todavía"
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

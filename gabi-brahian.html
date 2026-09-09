@@ -673,10 +673,14 @@ new Chart(document.getElementById('chFee'),{
 document.getElementById('hl-sem').className='pg-semaforo '+(pctRitmo>=100?'green':(pctRitmo>=70?'amber':'red'));
 
 /* ===== helpers de fila ===== */
-function barra(a){
-  const norte=a.norte||1, pct=Math.max(0,Math.min(100,a.s4/norte*100)), marca=a.min/norte*100;
-  const col=a.sem==='verde'?MINT:(a.s4>=a.min?AMBAR:(a.s4>0?ROJO:LINE));
-  return '<div class="mt-bar"><i style="width:'+pct.toFixed(1)+'%;background:'+col+'"></i><u style="left:'+marca.toFixed(1)+'%"></u></div><div class="mt-sub">'+Math.round(a.s4/a.min*100)+'% del piso</div>';
+/* La barra y el chip se calculan sobre el valor que se esta mostrando: el mes en curso por
+   defecto, o el mes anterior cuando la tabla lo pide. Antes se leia siempre el mes en curso,
+   asi que en la vista "Mes anterior" la cifra decia una cosa y la barra otra. */
+function barra(a, v){
+  const val = (v===undefined ? a.s4 : v);
+  const norte=a.norte||1, pct=Math.max(0,Math.min(100,val/norte*100)), marca=a.min/norte*100;
+  const col = val>=norte?MINT:(val>=a.min?AMBAR:(val>0?ROJO:LINE));
+  return '<div class="mt-bar"><i style="width:'+pct.toFixed(1)+'%;background:'+col+'"></i><u style="left:'+marca.toFixed(1)+'%"></u></div><div class="mt-sub">'+Math.round(val/(a.min||1)*100)+'% del piso</div>';
 }
 function barraMes(a){
   const piso=a.min||1, pct=Math.max(0,Math.min(100,a.m.mc/piso*100));
@@ -692,13 +696,15 @@ function chipMes(a){
   if(a.m.mc>0)          return '<span class="pg-pill due">Bajo el ritmo</span>';
   return '<span class="pg-pill muted">Sin venta este mes</span>';
 }
-function chipEstado(a){
-  if(a.sem==='verde') return '<span class="pg-pill ok">Llegó al norte</span>';
-  if(a.s4>=a.min) return '<span class="pg-pill warn">En el piso</span>';
-  if(a.s4>0) return '<span class="pg-pill due">Bajo el piso</span>';
-  return '<span class="pg-pill muted">Sin venta 4 sem</span>';
+function chipEstado(a, v){
+  const val = (v===undefined ? a.s4 : v);
+  if(val>=a.norte) return '<span class="pg-pill ok">Llegó al norte</span>';
+  if(val>=a.min)   return '<span class="pg-pill warn">En el piso</span>';
+  if(val>0)        return '<span class="pg-pill due">Bajo el piso</span>';
+  return '<span class="pg-pill muted">Sin venta</span>';
 }
 const ordS4=[...A].sort((a,b)=>b.s4-a.s4);
+const ordAnt=[...A].sort((a,b)=>b.ant-a.ant);
 const ordMes=[...A].sort((a,b)=>b.m.mc-a.m.mc || b.s4-a.s4);
 document.getElementById('tb-top').innerHTML=ordS4.slice(0,6).map(a=>
  '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+usd(a.s4)+'</td><td>'+barra(a)+'</td><td>'+chipEstado(a)+'</td></tr>').join('');
@@ -728,11 +734,11 @@ const TH_MES='<tr><th>Persona</th><th>Nivel</th><th class="num">Piso</th><th cla
 const TH_S4 ='<tr><th>Persona</th><th>Nivel</th><th class="num">Piso</th><th class="num">Norte</th><th class="num">Mes anterior</th><th style="width:190px">Avance</th><th class="num">Promedio</th><th>Estado</th></tr>';
 function pintaMeta(){
   const f=filtroMeta, esMes = vistaMeta==='mes';
-  let l = esMes ? ordMes : ordS4;
-  if(f==='rojo')  l=l.filter(a=> esMes ? (a.m.sem==='rojo') : a.sem==='rojo');
-  if(f==='verde') l=l.filter(a=> esMes ? (a.m.sem==='verde') : a.sem==='verde');
+  let l = esMes ? ordMes : ordAnt;
+  if(f==='rojo')  l=l.filter(a=> esMes ? (a.m.sem==='rojo')  : (a.ant>0 && a.ant<a.min));
+  if(f==='verde') l=l.filter(a=> esMes ? (a.m.sem==='verde') : (a.ant>=a.norte));
   if(f==='camada')l=l.filter(a=>a.cam);
-  if(f==='sin')   l=l.filter(a=> esMes ? a.m.mc===0 : a.sem==='sin');
+  if(f==='sin')   l=l.filter(a=> esMes ? a.m.mc===0 : a.ant===0);
   document.getElementById('th-meta').innerHTML = esMes ? TH_MES : TH_S4;
   document.getElementById('meta-purpose').innerHTML = esMes
    ? 'Lo que lleva cada quien <b>en el mes en curso</b>. La barra llega hasta su piso y la marca vertical oscura es dónde debería ir hoy para cerrarlo. Se pone en cero solo el día 1 de cada mes.'
@@ -745,8 +751,8 @@ function pintaMeta(){
      +'<td class="num">'+usd(a.m.mc)+'</td><td class="num">'+usd(a.m.fees)+'</td><td class="num">'+a.m.ven+'</td>'
      +'<td>'+barraMes(a)+'</td><td class="num">'+(a.m.mc>0?usd(a.m.proy):'—')+'</td><td>'+chipMes(a)+'</td></tr>'
    : '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+usd(a.min)+'</td>'
-     +'<td class="num">'+usd(a.norte)+'</td><td class="num">'+usd(a.ant)+'</td><td>'+barra(a)+'</td>'
-     +'<td class="num">'+usd(a.prom)+'</td><td>'+chipEstado(a)+'</td></tr>').join('')
+     +'<td class="num">'+usd(a.norte)+'</td><td class="num">'+usd(a.ant)+'</td><td>'+barra(a,a.ant)+'</td>'
+     +'<td class="num">'+usd(a.prom)+'</td><td>'+chipEstado(a,a.ant)+'</td></tr>').join('')
    ||'<tr><td colspan="9" class="mini" style="padding:18px 8px">Nadie en este grupo.</td></tr>';
 }
 pintaMeta();

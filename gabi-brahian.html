@@ -226,7 +226,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
       <div class="pg-kpi"><div class="lbl">Agosto · último mes cerrado</div><div class="val" id="r-vol">—</div><div class="sub" id="r-vol-s"></div></div>
       <div class="pg-kpi"><div class="lbl">Utilidad del equipo · agosto</div><div class="val pos" id="r-util">—</div><div class="sub" id="r-util-s"></div></div>
       <div class="pg-kpi a"><div class="lbl">Tu ingreso de agosto</div><div class="val" id="r-ing">—</div><div class="sub" id="r-ing-s"></div></div>
-      <div class="pg-kpi w"><div class="lbl">Ritmo · últimas 4 semanas</div><div class="val" id="r-s4">—</div><div class="sub" id="r-s4-s"></div></div>
+      <div class="pg-kpi w"><div class="lbl">Ritmo · este mes</div><div class="val" id="r-s4">—</div><div class="sub" id="r-s4-s"></div></div>
     </div>
 
     <div class="pg-headline">
@@ -285,8 +285,8 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
     </div>
     <div class="pg-card">
       <h2>Quién viene sosteniendo el ritmo</h2>
-      <p class="pg-purpose">Últimas 4 semanas —la ventana móvil que no depende del corte de mes—, contra el piso de cada quien.</p>
-      <table class="pg-table"><thead><tr><th>Persona</th><th>Nivel</th><th class="num">Últimas 4 sem</th><th style="width:200px">Contra su piso</th><th>Estado</th></tr></thead><tbody id="tb-top"></tbody></table>
+      <p class="pg-purpose">Lo que lleva cada quien <b>en el mes en curso</b> —del 1 al último día, por mes de venta—, contra su piso.</p>
+      <table class="pg-table"><thead><tr><th>Persona</th><th>Nivel</th><th class="num">Este mes</th><th style="width:200px">Contra su piso</th><th>Estado</th></tr></thead><tbody id="tb-top"></tbody></table>
     </div>
 
     <div class="pg-footnote" id="fn1"></div>
@@ -302,7 +302,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
     <div class="pg-kpis">
       <div class="pg-kpi r"><div class="lbl">Piso del equipo · mes</div><div class="val" id="m-min">—</div><div class="sub" id="m-min-s"></div></div>
       <div class="pg-kpi"><div class="lbl">Si todos hacen el norte</div><div class="val" id="m-norte">—</div><div class="sub" id="m-norte-s"></div></div>
-      <div class="pg-kpi w"><div class="lbl">Ritmo real · últimas 4 sem</div><div class="val" id="m-ritmo">—</div><div class="sub" id="m-ritmo-s"></div></div>
+      <div class="pg-kpi w"><div class="lbl">Ritmo real · este mes</div><div class="val" id="m-ritmo">—</div><div class="sub" id="m-ritmo-s"></div></div>
       <div class="pg-kpi a"><div class="lbl">En el norte</div><div class="val" id="m-verdes">—</div><div class="sub" id="m-verdes-s"></div></div>
     </div>
     <div class="pg-card">
@@ -311,7 +311,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
       <div class="pg-actions" style="margin-bottom:14px">
         <div class="pg-toggle" id="tg-vista">
           <button class="on" data-v="mes">Mes en curso</button>
-          <button data-v="s4">Últimas 4 semanas</button>
+          <button data-v="s4">Mes anterior</button>
         </div>
         <span class="mini" id="tg-nota"></span>
       </div>
@@ -328,7 +328,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
     <div class="pg-card">
       <h2>Cómo van los nuevos</h2>
       <p class="pg-purpose">La camada arrancó capacitación en mayo; junio y julio fueron meses piloto de operación. <b>El reloj real empieza cuando hacen su primera venta</b> — agosto para casi todas, julio para Valeria. Por eso no se miden con el promedio de seis meses: se miden desde su primer mes en firme, con un piso de arranque de $29.000 mientras hacen curva.</p>
-      <table class="pg-table"><thead><tr><th>Persona</th><th>Dónde va</th><th class="num">1ª venta</th><th class="num">Su piso hoy</th><th class="num">Últimas 4 sem</th><th style="width:180px">Contra su piso</th><th>Estado</th></tr></thead><tbody id="tb-camada"></tbody></table>
+      <table class="pg-table"><thead><tr><th>Persona</th><th>Dónde va</th><th class="num">1ª venta</th><th class="num">Su piso hoy</th><th class="num">Este mes</th><th style="width:180px">Contra su piso</th><th>Estado</th></tr></thead><tbody id="tb-camada"></tbody></table>
       <div class="pg-ok-box" style="margin-top:16px" id="camada-box"></div>
     </div>
     <div class="pg-card">
@@ -374,13 +374,13 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
     <div class="pg-top">
       <div class="pg-eyebrow">Persona por persona</div>
       <h1>Rendimiento e histórico</h1>
-      <div class="pg-sub">Escoge a alguien del equipo y mira su año completo: lo que vendió mes a mes contra su piso, y lo que cobró de fee. El anillo es dónde va en las últimas 4 semanas contra su piso.</div>
+      <div class="pg-sub">Escoge a alguien del equipo y mira su año completo: lo que vendió mes a mes contra su piso, y lo que cobró de fee. El anillo es dónde va en el mes en curso contra su piso.</div>
     </div>
     <div style="margin-bottom:20px"><select class="pg-sel" id="selPersona"></select></div>
 
     <div class="fr">
       <div class="fr-nums">
-        <div class="fr-n"><div class="l">Últimas 4 semanas</div><div class="v" id="pp-s4">—</div><div class="s" id="pp-s4-s"></div></div>
+        <div class="fr-n"><div class="l">Este mes</div><div class="v" id="pp-s4">—</div><div class="s" id="pp-s4-s"></div></div>
         <div class="fr-n"><div class="l">Su piso del mes</div><div class="v" id="pp-min">—</div><div class="s">Norte: <span id="pp-norte" class="pnum"></span></div></div>
         <div class="fr-n"><div class="l">Promedio del año</div><div class="v" id="pp-prom">—</div><div class="s" id="pp-prom-s"></div></div>
         <div class="fr-n"><div class="l">Fee del año</div><div class="v mint" id="pp-fee">—</div><div class="s" id="pp-fee-s"></div></div>
@@ -532,7 +532,10 @@ async function cargarDatos(sb){
     s.forEach(x=>{ const k=ym(x.mes); if(k in idx){ mc[idx[k]]=N(x.mc); fees[idx[k]]=N(x.fees); ven[idx[k]]=N(x.ventas); sf[idx[k]]=N(x.sin_fee); } });
     return {
       n:a.agente, niv:a.nivel_rampa, cam:!!a.camada, mop:a.meses_en_operacion,
-      min:N(a.meta_min_mes), norte:N(a.meta_norte_mes), s4:N(a.mc_ultimas_4sem), prom:N(a.mc_promedio_mes),
+      min:N(a.meta_min_mes), norte:N(a.meta_norte_mes),
+      /* Un solo reloj: el mes calendario por MES DE VENTA. La ventana móvil de 28 días
+         (mc_ultimas_4sem) queda jubilada: mostraba más de lo que el mes realmente lleva. */
+      s4:N(a.mc_mes_actual), ant:N(a.mc_mes_anterior), nuevo:!!a.primera_vez_este_mes, prom:N(a.mc_promedio_mes),
       sem:semMap(a.semaforo), mc, fees, ven, sf, util: utilPP[a.nombre_nomina] || arr(),
       m:{ mc:N(a.mc_mes_actual), fees:N(a.fees_mes_actual), ven:N(a.ventas_mes_actual), sf:N(a.ventas_sin_fee_mes_actual),
           pct:N(a.pct_del_minimo_mes), sem: a.semaforo_mes==='arranque del mes' ? 'sin' : semMap(a.semaforo_mes),
@@ -627,7 +630,7 @@ document.getElementById('r-ing-s').textContent="Del año: "+usd(ingAno);
 document.getElementById('r-s4').textContent=usd(M.ritmo);
 document.getElementById('r-s4-s').textContent=usd(M.prom_cabeza)+" por cabeza · "+Math.round(pctPiso)+"% del piso del equipo";
 document.getElementById('hl-txt').textContent= MES.nombre+" va en el "+Math.round(pctRitmo)+"% del ritmo que necesita.";
-document.getElementById('hl-sub').innerHTML="El equipo lleva <b>"+usd(MES.mc)+"</b> en "+MES.ven+" ventas y a esta altura del mes debería llevar <b>"+usd(MES.deberia)+"</b> para cerrar en el piso ("+usd(M.min_equipo)+"). A este paso cierra en <b>"+usd(MES.proy)+"</b>. En las últimas 4 semanas el equipo sumó "+usd(M.ritmo)+" — "+usd(M.prom_cabeza)+" por cabeza.";
+document.getElementById('hl-sub').innerHTML="El equipo lleva <b>"+usd(MES.mc)+"</b> en "+MES.ven+" ventas y a esta altura del mes debería llevar <b>"+usd(MES.deberia)+"</b> para cerrar en el piso ("+usd(M.min_equipo)+"). A este paso cierra en <b>"+usd(MES.proy)+"</b>. En lo que va del mes el equipo sumó "+usd(M.ritmo)+" — "+usd(M.prom_cabeza)+" por cabeza.";
 document.getElementById('k-util').textContent=usd(utilAno);
 document.getElementById('k-ing').textContent=usd(ingAno);
 document.getElementById('k-vol').textContent=usd(volAno);
@@ -722,7 +725,7 @@ document.getElementById('m-verdes-s').textContent=rojos+" bajo el piso · "+sinv
 document.getElementById('ok-min').textContent=usd(M.min_equipo);
 let vistaMeta='mes', filtroMeta='todos';
 const TH_MES='<tr><th>Persona</th><th>Nivel</th><th class="num">Piso</th><th class="num">Del mes</th><th class="num">Fee</th><th class="num">Ventas</th><th style="width:190px">Contra su piso</th><th class="num">Cierra en</th><th>Estado</th></tr>';
-const TH_S4 ='<tr><th>Persona</th><th>Nivel</th><th class="num">Piso</th><th class="num">Norte</th><th class="num">Últimas 4 sem</th><th style="width:190px">Avance</th><th class="num">Promedio</th><th>Estado</th></tr>';
+const TH_S4 ='<tr><th>Persona</th><th>Nivel</th><th class="num">Piso</th><th class="num">Norte</th><th class="num">Mes anterior</th><th style="width:190px">Avance</th><th class="num">Promedio</th><th>Estado</th></tr>';
 function pintaMeta(){
   const f=filtroMeta, esMes = vistaMeta==='mes';
   let l = esMes ? ordMes : ordS4;
@@ -733,16 +736,16 @@ function pintaMeta(){
   document.getElementById('th-meta').innerHTML = esMes ? TH_MES : TH_S4;
   document.getElementById('meta-purpose').innerHTML = esMes
    ? 'Lo que lleva cada quien <b>en el mes en curso</b>. La barra llega hasta su piso y la marca vertical oscura es dónde debería ir hoy para cerrarlo. Se pone en cero solo el día 1 de cada mes.'
-   : 'Ventana móvil de 28 días, que no depende del corte de mes. La barra llega hasta el norte de cada quien y la marca vertical oscura es su piso.';
+   : 'El mes cerrado anterior completo, para comparar contra lo que va del actual. La barra llega hasta el norte de cada quien y la marca vertical oscura es su piso.';
   document.getElementById('tg-nota').textContent = esMes
    ? MES.nombre+' · día '+MES.hab_hoy+' de '+MES.hab_mes+' hábiles ('+MES.pct_mes+'% del mes)'
-   : 'Del '+'último mes y medio de ventas, sin corte de mes';
+   : 'Mes anterior completo · se compara contra los '+MES.hab_hoy+' de '+MES.hab_mes+' días hábiles que van del actual';
   document.getElementById('tb-meta').innerHTML = l.map(a=> esMes
    ? '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+usd(a.min)+'</td>'
      +'<td class="num">'+usd(a.m.mc)+'</td><td class="num">'+usd(a.m.fees)+'</td><td class="num">'+a.m.ven+'</td>'
      +'<td>'+barraMes(a)+'</td><td class="num">'+(a.m.mc>0?usd(a.m.proy):'—')+'</td><td>'+chipMes(a)+'</td></tr>'
    : '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+usd(a.min)+'</td>'
-     +'<td class="num">'+usd(a.norte)+'</td><td class="num">'+usd(a.s4)+'</td><td>'+barra(a)+'</td>'
+     +'<td class="num">'+usd(a.norte)+'</td><td class="num">'+usd(a.ant)+'</td><td>'+barra(a)+'</td>'
      +'<td class="num">'+usd(a.prom)+'</td><td>'+chipEstado(a)+'</td></tr>').join('')
    ||'<tr><td colspan="9" class="mini" style="padding:18px 8px">Nadie en este grupo.</td></tr>';
 }
@@ -874,7 +877,7 @@ function pintaPersona(nombre){
   const pct=a.min?a.s4/a.min*100:0;
   document.getElementById('pp-s4').textContent=usd(a.s4);
   document.getElementById('pp-s4').className='v '+(pct>=100?'mint':(pct>=80?'warn':'red'));
-  document.getElementById('pp-s4-s').textContent=a.niv;
+  document.getElementById('pp-s4-s').textContent=a.niv+' · mes anterior '+usd(a.ant);
   document.getElementById('pp-min').textContent=usd(a.min);
   document.getElementById('pp-norte').textContent=usd(a.norte);
   document.getElementById('pp-prom').textContent=usd(a.prom);
@@ -892,9 +895,9 @@ function pintaPersona(nombre){
     box.innerHTML=mine.map(al=>{const t=TAGS[al.p];
       return '<div class="al sev-'+t.s+'" style="margin-bottom:10px"><div><div class="a-l">'+t.t+'</div><div class="a-c">'+al.t+'</div><div class="a-do">→ '+t.do+'</div></div><div><div class="a-v">'+usd(al.v)+'</div><div class="a-n">'+al.u+'</div></div></div>';}).join('');
   } else if(a.sem==='verde'){
-    box.innerHTML='<div class="pg-ok-box" style="margin:0">Está por encima de su norte en las últimas 4 semanas. Vale la pena mirar qué está haciendo distinto y pasarlo al resto.</div>';
+    box.innerHTML='<div class="pg-ok-box" style="margin:0">Está por encima de su norte en lo que va del mes. Vale la pena mirar qué está haciendo distinto y pasarlo al resto.</div>';
   } else if(a.s4===0){
-    box.innerHTML='<div class="pg-warn-box" style="margin:0">Sin venta registrada en las últimas 4 semanas. Si viene entrando, todavía está en curva; si no, es la primera conversación de la semana.</div>';
+    box.innerHTML='<div class="pg-warn-box" style="margin:0">Sin venta registrada en lo que va del mes. Si viene entrando, todavía está en curva; si no, es la primera conversación de la semana.</div>';
   } else {
     box.innerHTML='<div class="pg-warn-box" style="margin:0">Va en el <b>'+Math.round(pct)+'%</b> de su piso. Le faltan <b>'+usd(Math.max(0,a.min-a.s4))+'</b> para llegar.</div>';
   }
@@ -1202,7 +1205,7 @@ boot();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-brahian.html";
-var PGV_VERSION=9; // v9 - Llamadas de hoy por persona (API de RingCentral cada 15 min) y hora de actualizacion. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
+var PGV_VERSION=10; // v9 - Llamadas de hoy por persona (API de RingCentral cada 15 min) y hora de actualizacion. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

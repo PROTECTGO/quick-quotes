@@ -180,6 +180,60 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 .act-res .v.mal{color:var(--pg-neg)}
 .act-res .s{font-size:12px;color:var(--pg-muted)}
 .act-vacio{background:#fff;border:1px dashed var(--pg-line);border-radius:12px;padding:22px;text-align:center;color:var(--pg-muted);font-size:13px}
+/* ---- v11 · barras por zona, manual, alertas de una línea ---- */
+.gr{display:grid;grid-template-columns:180px 1fr 296px 122px;gap:14px;align-items:center;padding:11px 0;border-bottom:1px solid var(--pg-line)}
+.gr:last-child{border-bottom:none}
+.gr .g-n{font-family:var(--pg-font-title);font-weight:700;color:var(--pg-ink);font-size:13.5px;letter-spacing:-.1px}
+.gr .g-c{font-size:10.5px;color:var(--pg-muted);margin-top:2px}
+.gr .g-c.cur{color:#8a6a1d;font-weight:700}
+.gr .g-cif{display:flex;gap:12px;justify-content:flex-end}
+.gr .g-cif div{text-align:right;min-width:62px;font-family:var(--pg-font-num);font-size:12.5px;font-weight:600;color:var(--pg-ink);font-variant-numeric:tabular-nums}
+.gr .g-cif .k{display:block;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted);font-family:var(--pg-font-body);font-weight:700;margin-bottom:2px}
+@media(max-width:1120px){.gr{grid-template-columns:1fr;gap:7px}.gr .g-cif{justify-content:flex-start}.gr>div:last-child{text-align:left!important}}
+
+.al1{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;border-radius:12px;border:1px solid var(--pg-line);background:#FAFCFD;margin-bottom:8px}
+.al1.sev-alta{border-left:5px solid var(--pg-neg)} .al1.sev-media{border-left:5px solid var(--pg-warn)}
+.al1 .a-l{font-family:var(--pg-font-title);font-weight:800;color:var(--pg-ink);font-size:14px}
+.al1 .a-c{color:var(--pg-muted);font-family:var(--pg-font-num);font-size:12px}
+.al1 .a-v{font-family:var(--pg-font-num);font-weight:700;font-size:14px;color:var(--pg-neg);white-space:nowrap}
+.al1.sev-media .a-v{color:#8a6a1d}
+.al1 .a-do{color:var(--pg-ink);font-weight:600;font-size:12.5px}
+.al1 .sep{color:#C3CED6}
+
+.hq{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--pg-line);background:#fff;color:var(--pg-muted);font:700 11px var(--pg-font-body);cursor:pointer;margin-left:8px;padding:0;line-height:1;vertical-align:middle;flex-shrink:0}
+.hq:hover{background:var(--pg-ink);color:#fff;border-color:var(--pg-ink)}
+.hq.d{border-color:rgba(255,255,255,.28);background:transparent;color:#8da0ad}
+.hq.d:hover{background:#fff;color:var(--pg-ink)}
+.hq-back{position:fixed;inset:0;background:rgba(27,45,58,.34);z-index:9000;display:none}
+.hq-back.on{display:block}
+.hq-panel{position:fixed;top:0;right:0;bottom:0;width:400px;max-width:92vw;background:#fff;z-index:9001;box-shadow:-10px 0 34px rgba(27,45,58,.2);padding:26px 26px 40px;overflow-y:auto;transform:translateX(105%);transition:transform .22s ease}
+.hq-panel.on{transform:none}
+.hq-x{position:absolute;top:16px;right:18px;border:none;background:none;font-size:17px;color:var(--pg-muted);cursor:pointer;line-height:1}
+.man{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:16px;padding:18px 22px;margin-bottom:12px}
+.hq-panel .man{border:none;padding:0;margin:0}
+.man h3{font-family:var(--pg-font-title);font-size:15.5px;font-weight:800;color:var(--pg-ink);margin:0 0 12px}
+.man dl{display:grid;grid-template-columns:112px 1fr;gap:8px 16px;margin:0;font-size:13px}
+.man dt{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--pg-muted);padding-top:3px}
+.man dd{margin:0;color:var(--pg-txt);line-height:1.5}
+.man-idx{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.man-idx a{font-size:12px;font-weight:700;color:var(--pg-mint-deep);background:#EAF6F3;border-radius:999px;padding:6px 12px;text-decoration:none;cursor:pointer}
+.fr .fr-ring .cap{display:flex;align-items:center;justify-content:center;gap:2px}
+
+/* ---- v11.1 · encabezado de "El mes": el mes como cartel + tres circulos ---- */
+.fr.hero{display:block;padding:26px 30px 16px}
+.hero-mes{font-family:var(--pg-font-title);font-weight:700;font-size:52px;line-height:1;color:#fff;letter-spacing:-1.5px}
+.hero-mes-s{font-size:12px;color:#8da0ad;margin-top:9px;letter-spacing:.04em}
+.hero-cir{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;margin:26px 0 4px}
+.hc{text-align:center;width:216px}
+.hc-lbl{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8da0ad;margin-bottom:10px}
+.hc-ring{position:relative;width:216px;height:216px;margin:0 auto}
+.hc-in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;padding:0 42px}
+.hc-v{font-family:var(--pg-font-num);font-weight:700;font-size:24px;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-.6px;white-space:nowrap;line-height:1}
+.hc-s{font-size:11px;color:#8da0ad;margin-top:6px;line-height:1.35}
+.hc-pie{font-size:12.5px;color:#a8b7c2;margin:13px -14px 0;width:244px;font-family:var(--pg-font-num)}
+.hero-pie{display:flex;align-items:center;gap:9px;font-size:12px;color:#8da0ad;border-top:1px solid rgba(255,255,255,.1);padding-top:13px;margin-top:18px;flex-wrap:wrap;line-height:1.5}
+.hero-pie .pg-semaforo{width:9px;height:9px;box-shadow:none;margin:0;flex-shrink:0}
+@media(max-width:820px){.hero-mes{font-size:38px}.fr.hero{padding:22px 20px 14px}}
 </style>
 <script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
 </head>
@@ -192,123 +246,55 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
  <aside class="pg-side">
   <div class="pg-brand"><div class="pg-logo">G</div><div class="pg-wordmark">gabi</div></div>
   <div class="pg-tagline">EQUIPO COMERCIAL</div>
-  <a data-go="resumen" class="on"><span class="ico">◆</span> El equipo hoy</a>
-  <a data-go="meta"><span class="ico">◎</span> Meta del mes</a>
-  <a data-go="patrones"><span class="ico">▲</span> Patrones y alertas</a>
-  <a data-go="persona"><span class="ico">●</span> Persona por persona</a>
+  <a data-go="mes" class="on"><span class="ico">◆</span> El mes</a>
+  <a data-go="hoy"><span class="ico">◔</span> Hoy</a>
+  <a data-go="alertas"><span class="ico">▲</span> Alertas</a>
+  <a data-go="persona"><span class="ico">●</span> Persona</a>
   <a data-go="bitacora"><span class="ico">✎</span> Bitácora</a>
-  <a data-go="consolidado"><span class="ico">▤</span> Consolidado del año</a>
+  <a data-go="ano"><span class="ico">▤</span> Año</a>
+  <a data-go="manual"><span class="ico">?</span> Manual de lectura</a>
   <div class="pg-foot"><span id="ftuser">Brahian Toro</span><br>Líder comercial<br><span id="ftfecha"></span><br><span class="pg-logout" id="btnLogout" style="cursor:pointer;text-decoration:underline">Cerrar sesión</span></div>
  </aside>
  <main class="pg-main">
 
-  <!-- ============ RESUMEN ============ -->
-  <section class="pg-section on" id="s-resumen">
+  <!-- ============ 1 · EL MES ============ -->
+  <section class="pg-section on" id="s-mes">
     <div class="pg-top">
       <div class="pg-eyebrow">Dirección comercial</div>
-      <h1>El equipo hoy</h1>
-      <div class="pg-sub">Todo lo que ves aquí es <b>venta nueva del equipo</b>: el premium y los fees de las pólizas que tu gente cerró. Es la parte que se mueve con lo que ustedes hacen esta semana. El estándar de la casa es <b>$70.000 por cabeza al mes</b>; el piso, del que no podemos bajar, es <b>$58.000</b>.</div>
+      <h1>El mes<button class="hq" type="button" data-h="lo_que_va">?</button></h1>
     </div>
 
-    <div class="fr">
-      <div class="fr-nums">
-        <div class="fr-n"><div class="l">Lo que va del mes</div><div class="v mint" id="r-mes">—</div><div class="s" id="r-mes-s"></div></div>
-        <div class="fr-n"><div class="l">Debería llevar a hoy</div><div class="v" id="r-deb">—</div><div class="s" id="r-deb-s"></div></div>
-        <div class="fr-n"><div class="l">Fee del mes</div><div class="v warn" id="r-fmes">—</div><div class="s" id="r-fmes-s"></div></div>
-        <div class="fr-n"><div class="l">A este paso cierra en</div><div class="v" id="r-proy">—</div><div class="s" id="r-proy-s"></div></div>
+    <div class="fr hero">
+      <div class="hero-mes" id="h-mes">—</div>
+      <div class="hero-mes-s" id="h-mes-s"></div>
+
+      <div class="hero-cir">
+        <div class="hc">
+          <div class="hc-lbl">Lo que va del mes</div>
+          <div class="hc-ring"><canvas id="ringEquipo"></canvas>
+            <div class="hc-in"><div class="hc-v" id="h-va">—</div><div class="hc-s" id="h-va-s"></div></div></div>
+          <div class="hc-pie" id="h-va-pie"></div>
+        </div>
+        <div class="hc">
+          <div class="hc-lbl">Meta mínima</div>
+          <div class="hc-ring"><canvas id="ringMin"></canvas>
+            <div class="hc-in"><div class="hc-v" id="h-min">—</div><div class="hc-s" id="h-min-s"></div></div></div>
+          <div class="hc-pie" id="h-min-pie"></div>
+        </div>
+        <div class="hc">
+          <div class="hc-lbl">Meta plena</div>
+          <div class="hc-ring"><canvas id="ringPlena"></canvas>
+            <div class="hc-in"><div class="hc-v" id="h-plena">—</div><div class="hc-s" id="h-plena-s"></div></div></div>
+          <div class="hc-pie" id="h-plena-pie"></div>
+        </div>
       </div>
-      <div class="fr-ring">
-        <div style="position:relative;height:130px"><canvas id="ringEquipo"></canvas></div>
-        <div class="cap" id="ring-cap">del ritmo de hoy</div>
-      </div>
-    </div>
-    <div class="pg-kpis" style="margin-bottom:20px">
-      <div class="pg-kpi"><div class="lbl">Agosto · último mes cerrado</div><div class="val" id="r-vol">—</div><div class="sub" id="r-vol-s"></div></div>
-      <div class="pg-kpi"><div class="lbl">Utilidad del equipo · agosto</div><div class="val pos" id="r-util">—</div><div class="sub" id="r-util-s"></div></div>
-      <div class="pg-kpi a"><div class="lbl">Tu ingreso de agosto</div><div class="val" id="r-ing">—</div><div class="sub" id="r-ing-s"></div></div>
-      <div class="pg-kpi w"><div class="lbl">Ritmo · este mes</div><div class="val" id="r-s4">—</div><div class="sub" id="r-s4-s"></div></div>
-    </div>
 
-    <div class="pg-headline">
-      <div class="pg-semaforo red" id="hl-sem"></div>
-      <div><p class="pg-headline-text" id="hl-txt">—</p><div class="pg-headline-sub" id="hl-sub"></div></div>
-    </div>
-
-    <div class="pg-kpis">
-      <div class="pg-kpi"><div class="lbl">Utilidad del año</div><div class="val pos" id="k-util">—</div><div class="sub">Lo que le quedó a la agencia después de pagar comisión y costo del equipo.</div></div>
-      <div class="pg-kpi a"><div class="lbl">Tu ingreso del año</div><div class="val" id="k-ing">—</div><div class="sub">Tu comisión de líder, mes a mes, sumada.</div></div>
-      <div class="pg-kpi w"><div class="lbl">Volumen del año</div><div class="val" id="k-vol">—</div><div class="sub" id="k-vol-s"></div></div>
-      <div class="pg-kpi r"><div class="lbl">Fee sobre lo vendido</div><div class="val" id="k-fee">—</div><div class="sub">De cada $100 que vende el equipo, esto entra por fee. Aquí está la palanca.</div></div>
-    </div>
-
-
-    <div class="pg-card" id="act-card">
-      <h2>Quién está registrando su trabajo</h2>
-      <p class="pg-purpose">El estándar es <b>un positivo al día hábil</b>. Un positivo es un negocio <b>mandado a cotizar</b>: entró a la etapa Audit / Quote en HubSpot con contacto, empresa y negocio completos. Montarlo no basta. Esto no mide si venden — mide si el trabajo está quedando en el sistema.</p>
-      <div class="act-res" id="act-res"></div>
-      <div id="act-lista"></div>
-      <p class="pg-purpose" style="margin:12px 0 0" id="act-pie"></p>
-    </div>
-
-    <div class="pg-grid-2">
-      <div class="pg-card">
-        <h2>Volumen del equipo, mes a mes</h2>
-        <p class="pg-purpose">La onda es lo que el equipo vendió. La línea roja punteada es <b>el piso del equipo de hoy</b> y la azul el norte, con las personas que hay ahora. Cuando la onda va por debajo de la roja, el mes no se paga solo.</p>
-        <div class="pg-chart-wrap tall"><canvas id="chVol"></canvas></div>
-        <div class="leg"><span><b style="background:#2DBFA3"></b>Volumen vendido</span><span><b style="background:#D5594F"></b>Piso de hoy</span><span><b style="background:#5B6BD6"></b>Norte de hoy</span></div>
-      </div>
-      <div class="pg-card">
-        <h2>Utilidad del equipo</h2>
-        <p class="pg-purpose">Lo que quedó cada mes después de pagar comisión y costo de las personas. Junio fue el mes que casi no dejó nada.</p>
-        <div class="pg-chart-wrap tall"><canvas id="chUtil"></canvas></div>
-      </div>
-    </div>
-
-    <div class="pg-grid-2">
-      <div class="pg-card">
-        <h2>Tu ingreso, mes a mes</h2>
-        <p class="pg-purpose">Tu comisión de líder sube cuando sube la generación del equipo. Es la misma onda con otra escala: tu plata es el reflejo del equipo.</p>
-        <div class="pg-chart-wrap"><canvas id="chIng"></canvas></div>
-      </div>
-      <div class="pg-card">
-        <h2>Dónde está la palanca</h2>
-        <p class="pg-purpose">Las barras verdes son el fee cobrado en el mes. La línea ámbar es qué porcentaje del volumen fue fee.</p>
-        <div class="pg-chart-wrap"><canvas id="chFee"></canvas></div>
-        <div class="pg-warn-box" style="margin-top:14px;margin-bottom:0" id="palanca"></div>
-      </div>
+      <div class="hero-pie"><span class="pg-semaforo red" id="hl-sem"></span><span id="hl-txt">—</span><button class="hq d" type="button" data-h="anillo">?</button></div>
     </div>
 
     <div class="pg-card">
-      <h2>El mes, persona por persona</h2>
-      <p class="pg-purpose">Lo que lleva cada quien <b>en el mes en curso</b>, contra su piso. La marca vertical oscura es dónde debería ir hoy para cerrar el mes en el piso. Se pone en cero solo el día 1 de cada mes.</p>
-      <table class="pg-table"><thead><tr><th>Persona</th><th>Nivel</th><th class="num">Del mes</th><th class="num">Fee</th><th class="num">Ventas</th><th class="num">Sin fee</th><th style="width:190px">Contra su piso</th><th class="num">Cierra en</th><th>Estado</th></tr></thead><tbody id="tb-mes"></tbody><tfoot id="tf-mes"></tfoot></table>
-    </div>
-    <div class="pg-card">
-      <h2>Quién viene sosteniendo el ritmo</h2>
-      <p class="pg-purpose">Lo que lleva cada quien <b>en el mes en curso</b> —del 1 al último día, por mes de venta—, contra su piso.</p>
-      <table class="pg-table"><thead><tr><th>Persona</th><th>Nivel</th><th class="num">Este mes</th><th style="width:200px">Contra su piso</th><th>Estado</th></tr></thead><tbody id="tb-top"></tbody></table>
-    </div>
-
-    <div class="pg-footnote" id="fn1"></div>
-  </section>
-
-  <!-- ============ META ============ -->
-  <section class="pg-section" id="s-meta">
-    <div class="pg-top">
-      <div class="pg-eyebrow">Meta del mes</div>
-      <h1>El norte y el piso</h1>
-      <div class="pg-sub">La meta de la casa son <b>$70.000 por persona al mes</b>. El <b>piso son $58.000</b>: por debajo de ese promedio la operación no se sostiene. Quien viene entrando arranca en <b>$29.000</b> mientras hace curva —el reloj le cuenta desde su primera venta, no desde que firmó— y sube a 75% en el mes 4 y a meta plena en el mes 7. Quien ya trae experiencia va con meta plena desde el primer mes.</div>
-    </div>
-    <div class="pg-kpis">
-      <div class="pg-kpi r"><div class="lbl">Piso del equipo · mes</div><div class="val" id="m-min">—</div><div class="sub" id="m-min-s"></div></div>
-      <div class="pg-kpi"><div class="lbl">Si todos hacen el norte</div><div class="val" id="m-norte">—</div><div class="sub" id="m-norte-s"></div></div>
-      <div class="pg-kpi w"><div class="lbl">Ritmo real · este mes</div><div class="val" id="m-ritmo">—</div><div class="sub" id="m-ritmo-s"></div></div>
-      <div class="pg-kpi a"><div class="lbl">En el norte</div><div class="val" id="m-verdes">—</div><div class="sub" id="m-verdes-s"></div></div>
-    </div>
-    <div class="pg-card">
-      <h2>Persona por persona</h2>
-      <p class="pg-purpose" id="meta-purpose"></p>
-      <div class="pg-actions" style="margin-bottom:14px">
+      <h2>El equipo, persona por persona<button class="hq" type="button" data-h="deberia">?</button></h2>
+      <div class="pg-actions" style="margin:12px 0">
         <div class="pg-toggle" id="tg-vista">
           <button class="on" data-v="mes">Mes en curso</button>
           <button data-v="s4">Mes anterior</button>
@@ -317,108 +303,122 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
       </div>
       <div class="chips" id="chips-meta">
         <button class="chip on" data-f="todos">Todos</button>
-        <button class="chip" data-f="rojo">Bajo el piso</button>
-        <button class="chip" data-f="verde">En el norte</button>
+        <button class="chip" data-f="rojo">Bajo la meta mínima</button>
+        <button class="chip" data-f="verde">En la meta plena</button>
         <button class="chip" data-f="camada">En curva</button>
         <button class="chip" data-f="sin">Sin venta</button>
       </div>
-      <table class="pg-table"><thead id="th-meta"></thead><tbody id="tb-meta"></tbody></table>
-      <div class="pg-ok-box" style="margin-top:16px">La idea no es que todos lleguen a $70.000 mañana. La idea es que el <b>promedio del equipo se consolide en $58.000</b> y de ahí subamos. Con las personas de hoy, eso son <b id="ok-min">—</b> al mes.</div>
+      <div id="gen-lista"></div>
+      <div class="leg"><span><b style="background:#D5594F"></b>Bajo la meta mínima</span><span><b style="background:#D9A520"></b>Entre la mínima y la plena</span><span><b style="background:#229A82"></b>En la meta plena</span><span><b style="background:#E7EDF2"></b>Sin venta</span><span><b style="background:#1B2D3A;width:3px"></b>Debería ir hoy</span></div>
     </div>
-    <div class="pg-card">
-      <h2>Cómo van los nuevos</h2>
-      <p class="pg-purpose">La camada arrancó capacitación en mayo; junio y julio fueron meses piloto de operación. <b>El reloj real empieza cuando hacen su primera venta</b> — agosto para casi todas, julio para Valeria. Por eso no se miden con el promedio de seis meses: se miden desde su primer mes en firme, con un piso de arranque de $29.000 mientras hacen curva.</p>
-      <table class="pg-table"><thead><tr><th>Persona</th><th>Dónde va</th><th class="num">1ª venta</th><th class="num">Su piso hoy</th><th class="num">Este mes</th><th style="width:180px">Contra su piso</th><th>Estado</th></tr></thead><tbody id="tb-camada"></tbody></table>
-      <div class="pg-ok-box" style="margin-top:16px" id="camada-box"></div>
+
+    <div class="pg-kpis">
+      <div class="pg-kpi"><div class="lbl" id="r-vol-l">Último mes cerrado</div><div class="val" id="r-vol">—</div><div class="sub" id="r-vol-s"></div></div>
+      <div class="pg-kpi"><div class="lbl">Utilidad del equipo<button class="hq" type="button" data-h="utilidad">?</button></div><div class="val pos" id="r-util">—</div><div class="sub" id="r-util-s"></div></div>
+      <div class="pg-kpi a"><div class="lbl">Tu ingreso<button class="hq" type="button" data-h="ingreso">?</button></div><div class="val" id="r-ing">—</div><div class="sub" id="r-ing-s"></div></div>
+      <div class="pg-kpi w"><div class="lbl">Fee del mes<button class="hq" type="button" data-h="fee">?</button></div><div class="val" id="r-fmes">—</div><div class="sub" id="r-fmes-s"></div></div>
     </div>
+
     <div class="pg-card">
-      <h2>Cuánto falta para el piso</h2>
-      <p class="pg-purpose">Lo que le falta a cada quien para llegar a su piso del mes. Esto es la lista de trabajo de la semana.</p>
+      <h2>Cuánto falta para la meta mínima<button class="hq" type="button" data-h="meta_minima">?</button></h2>
       <div class="pg-chart-wrap" style="height:520px"><canvas id="chFalta"></canvas></div>
+      <div class="leg"><span><b style="background:#5B6BD6"></b>Lo que le falta para su meta mínima</span><span>Sin barra: ya está en su meta mínima</span></div>
     </div>
   </section>
 
-  <!-- ============ PATRONES ============ -->
-  <section class="pg-section" id="s-patrones">
+  <!-- ============ 2 · HOY ============ -->
+  <section class="pg-section" id="s-hoy">
     <div class="pg-top">
-      <div class="pg-eyebrow">Patrones y alertas</div>
-      <h1>Qué está pasando con cada quien</h1>
-      <div class="pg-sub">Esta pestaña no mira cuánto vendió cada uno: mira <b>cómo</b> lo está haciendo. Tres patrones: quien vende y no cobra fee, quien venía en un ritmo y lo perdió, y quien mueve volumen pero deja el fee sobre la mesa.</div>
+      <div class="pg-eyebrow">Actividad del día</div>
+      <h1>Hoy<button class="hq" type="button" data-h="positivo">?</button></h1>
+    </div>
+    <div class="pg-card" id="act-card">
+      <h2>Quién está registrando su trabajo<button class="hq" type="button" data-h="cero">?</button></h2>
+      <div class="act-res" id="act-res"></div>
+      <div id="act-lista"></div>
+      <div class="mini" style="margin-top:12px;line-height:1.5" id="act-pie"></div>
+    </div>
+  </section>
+
+  <!-- ============ 3 · ALERTAS ============ -->
+  <section class="pg-section" id="s-alertas">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Alertas</div>
+      <h1>Con quién sentarse esta semana<button class="hq" type="button" data-h="mesa">?</button></h1>
     </div>
     <div class="pg-kpis">
-      <div class="pg-kpi r"><div class="lbl">Dejado sobre la mesa · agosto</div><div class="val neg" id="p-mesa">—</div><div class="sub" id="p-mesa-s"></div></div>
-      <div class="pg-kpi w"><div class="lbl">Ventas sin fee · agosto</div><div class="val" id="p-sinfee">—</div><div class="sub" id="p-sinfee-s"></div></div>
-      <div class="pg-kpi a"><div class="lbl">Cumplen el estándar</div><div class="val" id="p-est">—</div><div class="sub">El estándar de la casa es <b>$1.500 de fee al mes</b> por asesor.</div></div>
+      <div class="pg-kpi r"><div class="lbl">Sobre la mesa · <span id="p-mes-l">último mes</span></div><div class="val neg" id="p-mesa">—</div><div class="sub" id="p-mesa-s"></div></div>
+      <div class="pg-kpi w"><div class="lbl">Ventas sin fee</div><div class="val" id="p-sinfee">—</div><div class="sub" id="p-sinfee-s"></div></div>
+      <div class="pg-kpi a"><div class="lbl">Cumplen el estándar de fee</div><div class="val" id="p-est">—</div><div class="sub" id="p-est-s"></div></div>
       <div class="pg-kpi"><div class="lbl">Sobre la mesa · en el año</div><div class="val neg" id="p-ano">—</div><div class="sub" id="p-ano-s"></div></div>
     </div>
-    <div class="pg-danger-box" id="p-titular" style="background:#FCEEEC;border:1px solid #F0C2BD;border-radius:12px;padding:15px 18px;color:#9c3d35;font-size:13.5px;margin-bottom:20px;line-height:1.6"></div>
+    <div class="pg-headline">
+      <div class="pg-semaforo red"></div>
+      <div><p class="pg-headline-text" id="p-titular">—</p></div>
+    </div>
     <div class="pg-card">
-      <h2>Alertas del mes</h2>
-      <p class="pg-purpose">Ordenadas por la plata que está en juego. Cada una trae qué hacer.</p>
+      <h2>Alertas del mes<button class="hq" type="button" data-h="fee">?</button></h2>
       <div id="alertas"></div>
     </div>
     <div class="pg-card">
       <h2>Vende mucho, cobra poco</h2>
-      <p class="pg-purpose">Cada punto es una persona en agosto. A la derecha, quien más volumen movió; arriba, quien mejor cobró el fee. Quien queda <b>abajo a la derecha</b> es el patrón que hay que trabajar: vende premium y no cobra.</p>
       <div class="pg-chart-wrap tall"><canvas id="chScatter"></canvas></div>
+      <div class="leg"><span>Horizontal: volumen vendido</span><span>Vertical: % de ventas con fee</span><span>Abajo a la derecha: vende y no cobra</span></div>
     </div>
     <div class="pg-card">
-      <h2>Fee cobrado contra el estándar de la casa</h2>
-      <p class="pg-purpose">La barra es el fee que cobró cada quien en agosto. La línea oscura es el estándar: $1.500 al mes.</p>
+      <h2>Fee cobrado contra el estándar</h2>
       <div class="pg-chart-wrap" style="height:440px"><canvas id="chEstandar"></canvas></div>
+      <div class="leg"><span><b style="background:#229A82"></b>En el estándar</span><span><b style="background:#D9A520"></b>A medio camino</span><span><b style="background:#D5594F"></b>Muy por debajo</span><span><b style="background:#1B2D3A;width:3px"></b>Estándar: $1.500</span></div>
     </div>
   </section>
 
-  <!-- ============ PERSONA ============ -->
+  <!-- ============ 4 · PERSONA ============ -->
   <section class="pg-section" id="s-persona">
     <div class="pg-top">
-      <div class="pg-eyebrow">Persona por persona</div>
-      <h1>Rendimiento e histórico</h1>
-      <div class="pg-sub">Escoge a alguien del equipo y mira su año completo: lo que vendió mes a mes contra su piso, y lo que cobró de fee. El anillo es dónde va en el mes en curso contra su piso.</div>
+      <div class="pg-eyebrow">Persona</div>
+      <h1>Su año completo<button class="hq" type="button" data-h="anillo">?</button></h1>
     </div>
     <div style="margin-bottom:20px"><select class="pg-sel" id="selPersona"></select></div>
 
     <div class="fr">
       <div class="fr-nums">
         <div class="fr-n"><div class="l">Este mes</div><div class="v" id="pp-s4">—</div><div class="s" id="pp-s4-s"></div></div>
-        <div class="fr-n"><div class="l">Su piso del mes</div><div class="v" id="pp-min">—</div><div class="s">Norte: <span id="pp-norte" class="pnum"></span></div></div>
+        <div class="fr-n"><div class="l">Su meta mínima</div><div class="v" id="pp-min">—</div><div class="s">Meta plena: <span id="pp-norte" class="pnum"></span></div></div>
         <div class="fr-n"><div class="l">Promedio del año</div><div class="v" id="pp-prom">—</div><div class="s" id="pp-prom-s"></div></div>
         <div class="fr-n"><div class="l">Fee del año</div><div class="v mint" id="pp-fee">—</div><div class="s" id="pp-fee-s"></div></div>
       </div>
       <div class="fr-ring">
         <div style="position:relative;height:130px"><canvas id="ringPersona"></canvas></div>
-        <div class="cap">de su piso</div>
+        <div class="cap" id="pp-cap">de su meta plena</div>
       </div>
     </div>
-    <div class="pg-card" style="padding:16px 22px">
-      <div class="pg-eyebrow" style="margin-bottom:4px">El mes en curso</div>
+    <div class="pg-card" style="padding:15px 22px">
       <div style="font-size:14px;color:var(--pg-txt);line-height:1.55" id="pp-mes">—</div>
     </div>
 
     <div class="pg-card" id="pp-box"></div>
 
     <div class="pg-card">
-      <h2>Lo que vendió, mes a mes</h2>
-      <p class="pg-purpose">La onda verde es su volumen. La línea roja punteada es su piso; la azul, su norte.</p>
+      <h2>Lo que vendió, mes a mes<button class="hq" type="button" data-h="meta_plena">?</button></h2>
       <div class="pg-chart-wrap tall"><canvas id="chP1"></canvas></div>
+      <div class="leg"><span><b style="background:#229A82"></b>Su volumen</span></div>
     </div>
     <div class="pg-card">
-      <h2>Lo que cobró de fee, mes a mes</h2>
-      <p class="pg-purpose">La onda ámbar es el fee que entró por sus ventas. La línea oscura es el estándar de la casa: $1.500 al mes. Si vende y la onda va por debajo de la línea, ahí está la conversación.</p>
+      <h2>Lo que cobró de fee, mes a mes<button class="hq" type="button" data-h="fee">?</button></h2>
       <div class="pg-chart-wrap tall"><canvas id="chP2"></canvas></div>
+      <div class="leg"><span><b style="background:#D9A520"></b>Fee cobrado</span></div>
     </div>
     <div class="pg-card">
       <h2>Su año en números</h2>
-      <table class="pg-table"><thead><tr><th>Mes</th><th class="num">Volumen</th><th class="num">Fee</th><th class="num">Ventas</th><th class="num">Sin fee</th><th class="num">Utilidad</th><th>Contra su piso</th></tr></thead><tbody id="tb-pers"></tbody></table>
+      <table class="pg-table"><thead><tr><th>Mes</th><th class="num">Volumen</th><th class="num">Fee</th><th class="num">Ventas</th><th class="num">Sin fee</th><th class="num">Utilidad</th><th>Estado</th></tr></thead><tbody id="tb-pers"></tbody></table>
     </div>
   </section>
 
-  <!-- ============ BITÁCORA ============ -->
+  <!-- ============ 5 · BITÁCORA ============ -->
   <section class="pg-section" id="s-bitacora">
     <div class="pg-top">
       <div class="pg-eyebrow">Bitácora</div>
       <h1>La libreta del equipo</h1>
-      <div class="pg-sub">Qué hablaste con cada quien, qué quedó acordado y cuándo lo revisas. Se anota después de la conversación, no antes. Nada se borra: lo cumplido se marca y queda tachado.</div>
     </div>
 
     <div class="pg-card">
@@ -427,7 +427,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
         <label>Con quién<select class="pg-sel" id="btPersona"></select></label>
         <label>Revisar el<input type="date" id="btFecha"></label>
         <label class="bt-wide">Qué hablamos<textarea id="btNota" placeholder="Dos o tres líneas, en tus palabras. Lo que pasó, no lo que planeas."></textarea></label>
-        <label class="bt-wide">Qué quedó acordado<input id="btComp" placeholder="Un compromiso concreto. Si son dos, son dos entradas. (Puede ir vacío si solo es una nota.)"></label>
+        <label class="bt-wide">Qué quedó acordado<input id="btComp" placeholder="Un compromiso concreto. (Puede ir vacío si solo es una nota.)"></label>
         <div class="bt-acc"><button class="pg-btn mint" id="btGuardar" type="button">Guardar en la bitácora</button><span class="bt-err" id="btErr"></span></div>
       </div>
     </div>
@@ -437,32 +437,63 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
     <div id="btLista"></div>
   </section>
 
-  <!-- ============ CONSOLIDADO ============ -->
-  <section class="pg-section" id="s-consolidado">
+  <!-- ============ 6 · AÑO ============ -->
+  <section class="pg-section" id="s-ano">
     <div class="pg-top">
-      <div class="pg-eyebrow">Consolidado del año</div>
-      <h1>Todo el equipo, 2026</h1>
-      <div class="pg-sub">El acumulado de los meses cerrados del año, persona por persona. Lo que vendió, lo que cobró de fee, cuántas ventas y qué utilidad dejó.</div>
+      <div class="pg-eyebrow">Consolidado</div>
+      <h1>El año</h1>
     </div>
     <div class="pg-kpis">
       <div class="pg-kpi"><div class="lbl">Volumen del año</div><div class="val" id="c-vol">—</div><div class="sub" id="c-vol-s"></div></div>
-      <div class="pg-kpi w"><div class="lbl">Fee del año</div><div class="val" id="c-fee">—</div><div class="sub" id="c-fee-s"></div></div>
+      <div class="pg-kpi w"><div class="lbl">Fee del año<button class="hq" type="button" data-h="fee">?</button></div><div class="val" id="c-fee">—</div><div class="sub" id="c-fee-s"></div></div>
       <div class="pg-kpi a"><div class="lbl">Ventas del año</div><div class="val" id="c-pol">—</div><div class="sub" id="c-pol-s"></div></div>
-      <div class="pg-kpi"><div class="lbl">Utilidad del año</div><div class="val pos" id="c-util">—</div><div class="sub">Después de comisión y costo del equipo.</div></div>
+      <div class="pg-kpi"><div class="lbl">Utilidad del año<button class="hq" type="button" data-h="utilidad">?</button></div><div class="val pos" id="c-util">—</div><div class="sub" id="c-util-s"></div></div>
     </div>
     <div class="pg-card">
       <h2>Consolidado por persona</h2>
-      <p class="pg-purpose">Ordenado por volumen del año.</p>
       <table class="pg-table"><thead><tr><th>Persona</th><th>Nivel</th><th class="num">Volumen año</th><th class="num">Fee año</th><th class="num">% fee</th><th class="num">Ventas</th><th class="num">Sin fee</th><th class="num">Utilidad</th></tr></thead><tbody id="tb-cons"></tbody><tfoot id="tf-cons"></tfoot></table>
+    </div>
+    <div class="pg-grid-2">
+      <div class="pg-card">
+        <h2>Volumen del equipo, mes a mes</h2>
+        <div class="pg-chart-wrap tall"><canvas id="chVol"></canvas></div>
+        <div class="leg"><span><b style="background:#229A82"></b>Volumen vendido</span></div>
+      </div>
+      <div class="pg-card">
+        <h2>Utilidad del equipo<button class="hq" type="button" data-h="utilidad">?</button></h2>
+        <div class="pg-chart-wrap tall"><canvas id="chUtil"></canvas></div>
+      </div>
+    </div>
+    <div class="pg-grid-2">
+      <div class="pg-card">
+        <h2>Tu ingreso, mes a mes<button class="hq" type="button" data-h="ingreso">?</button></h2>
+        <div class="pg-chart-wrap"><canvas id="chIng"></canvas></div>
+      </div>
+      <div class="pg-card">
+        <h2>Fee cobrado y qué parte del volumen fue<button class="hq" type="button" data-h="fee">?</button></h2>
+        <div class="pg-chart-wrap"><canvas id="chFee"></canvas></div>
+        <div class="leg"><span><b style="background:#5B6BD6"></b>Fee cobrado</span><span><b style="background:#D9A520"></b>Qué parte del volumen fue fee</span></div>
+      </div>
     </div>
     <div class="pg-card">
       <h2>Cómo se reparte el volumen</h2>
-      <p class="pg-purpose">Qué parte del año puso cada quien. Si una sola persona pesa demasiado, el equipo está apoyado en una pierna.</p>
       <div class="pg-chart-wrap" style="height:460px"><canvas id="chReparto"></canvas></div>
     </div>
   </section>
 
+  <!-- ============ 7 · MANUAL DE LECTURA ============ -->
+  <section class="pg-section" id="s-manual">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Manual de lectura</div>
+      <h1>Qué es cada cosa</h1>
+    </div>
+    <div class="man-idx" id="man-idx"></div>
+    <div id="man-lista"></div>
+  </section>
+
  </main>
+ <div class="hq-back" id="hq-back"></div>
+ <aside class="hq-panel" id="hq-panel"><button class="hq-x" type="button" id="hq-x">✕</button><div id="hq-body"></div></aside>
 </div>
 
 </template>
@@ -555,7 +586,7 @@ async function cargarDatos(sb){
   const minE = agentes.reduce((s,a)=>s+a.min,0), norteE = agentes.reduce((s,a)=>s+a.norte,0), ritmo = agentes.reduce((s,a)=>s+a.s4,0);
   const hh=N(M0.habiles_corridos), hm=N(M0.habiles_del_mes);
   const mesMc = agentes.reduce((s,a)=>s+a.m.mc,0);
-  const mes = { nombre: MESL[Number(ym(M0.mes_en_curso).slice(5,7))-1],
+  const mes = { nombre: MESL[Number(ym(M0.mes_en_curso).slice(5,7))-1], anio: String(M0.mes_en_curso).slice(0,4),
     mc:mesMc, fees:agentes.reduce((s,a)=>s+a.m.fees,0), ven:agentes.reduce((s,a)=>s+a.m.ven,0),
     sf:agentes.reduce((s,a)=>s+a.m.sf,0), activos:agentes.filter(a=>a.m.ven>0).length,
     deberia:Math.round(minE*hh/hm), deberia_norte:Math.round(norteE*hh/hm),
@@ -577,26 +608,224 @@ const k = n => "$" + Math.round(n/1000) + "K";
 const sum = a => a.reduce((s,x)=>s+x,0);
 const nom = n => n.replace(/\s*\([^)]*\)\s*$/,'').trim();
 const nivC = v => v.indexOf('Meta plena')===0 ? 'Meta plena' : v.replace(' en operación','');
+/* ============================================================
+   SISTEMA DE GRAFICAS (v11/SISTEMA_GRAFICAS.md) · una sola manera de dibujar.
+   Antes cada grafica traia su propia tension, su grosor, sus puntos y sus rayas:
+   se leia como una sierra con ruido. Aqui hay UN helper de linea, UNO de barra,
+   UN par de ejes, UN tooltip y UN plugin de bandas. Las diez las usan.
+   ============================================================ */
 Chart.defaults.font.family="Inter, Arial, sans-serif"; Chart.defaults.font.size=11.5;
-Chart.defaults.color=MUTED; Chart.defaults.plugins.legend.display=false;
+Chart.defaults.color='#6B7D89'; Chart.defaults.plugins.legend.display=false;
 function grad(ctx,color,a1,a2){const g=ctx.createLinearGradient(0,0,0,300);g.addColorStop(0,color+a1);g.addColorStop(1,color+a2);return g;}
-const AXIS={grid:{color:LINE,drawTicks:false},border:{display:false},ticks:{padding:8}};
-const AXIS_X={grid:{display:false},border:{display:false},ticks:{padding:6}};
-const AXIS_CAT={grid:{display:false},border:{display:false},ticks:{autoSkip:false,font:{size:11}}};
 function moneyTick(v){return v===0?"0":(Math.abs(v)>=10000?k(v):usdS(v));}
 function tk(vals){const mx=Math.max(...vals.map(x=>Math.abs(Number(x)||0)));
   return mx>=20000 ? (v=>v===0?"0":k(v)) : (v=>v===0?"0":usdS(v));}
-const TIP={backgroundColor:INK,padding:11,cornerRadius:9,titleFont:{weight:'700',size:12.5},bodyFont:{size:12.5},displayColors:false};
 
-function ring(el,pct,color){
-  const shown=Math.max(0,Math.min(100,pct));
-  return new Chart(el,{type:'doughnut',
-    data:{datasets:[{data:[shown,100-shown],backgroundColor:[color,'rgba(255,255,255,.14)'],borderWidth:0,cutout:'74%'}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{enabled:false}},animation:{duration:600}},
-    plugins:[{id:'ctr',afterDraw(c){if(!c.chartArea)return;const {ctx,chartArea:{left,right,top,bottom}}=c;ctx.save();
-      ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.font='700 26px "JetBrains Mono", monospace';
-      ctx.fillText(Math.round(pct)+"%",(left+right)/2,(top+bottom)/2);ctx.restore();}}]});
+/* Techo redondo del eje: $100K, $1,100K… nunca "$98K". */
+function techo(v){ if(!(v>0))return 1;
+  const e=Math.pow(10,Math.floor(Math.log10(v))-1), m=v/e;
+  const paso=e*(m<=15?1:(m<=30?2:(m<=70?5:10)));
+  return Math.ceil(v/paso)*paso; }
+const BASE={responsive:true,maintainAspectRatio:false,resizeDelay:80,
+  animation:{duration:600,easing:'easeOutQuart'}};
+const TIP={backgroundColor:INK,padding:11,cornerRadius:8,displayColors:false,
+  titleFont:{family:"'Montserrat', sans-serif",size:12},
+  bodyFont:{family:"'JetBrains Mono', monospace",size:12}};
+const AXIS_X={grid:{display:false},border:{display:false},
+  ticks:{font:{family:"'Montserrat', sans-serif",size:10.5},color:'#6B7D89',padding:6}};
+const AXIS_CAT={grid:{display:false},border:{display:false},
+  ticks:{autoSkip:false,font:{family:"'Montserrat', sans-serif",size:10.5},color:'#6B7D89'}};
+function AXIS_Y(vals,extra){
+  return Object.assign({grid:{color:'#EEF2F5',drawTicks:false},border:{display:false},beginAtZero:true,
+    ticks:{font:{family:"'JetBrains Mono', monospace",size:10.5},color:'#6B7D89',padding:8,
+           maxTicksLimit:5,callback:tk(vals)}}, extra||{});
+}
+/* La onda es el heroe del lienzo: trazo con peso, relleno denso y sombra suave.
+   monotone, nunca `tension` a secas: asi la curva no se pasa de largo entre dos puntos. */
+function LINEA(color,extra){
+  return Object.assign({
+    cubicInterpolationMode:'monotone', tension:0, borderWidth:3.5, borderColor:color,
+    fill:true, backgroundColor:c=>grad(c.chart.ctx,color,'5E','02'),
+    pointRadius:c=>(c.dataIndex===(c.dataset.data.length-1)?5:0),
+    pointBackgroundColor:'#fff', pointBorderColor:color, pointBorderWidth:2.5,
+    pointHoverRadius:5.5, pointHoverBackgroundColor:'#fff',
+    pointHoverBorderColor:color, pointHoverBorderWidth:2.5, clip:8
+  }, extra||{});
+}
+function hexA(h,a){ const n=parseInt(String(h).replace('#',''),16);
+  return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
+/* Relieve sin agregar un solo color nuevo. */
+const SOMBRA={id:'sombra',
+  beforeDatasetDraw(c,args){ const ctx=c.ctx; ctx.save();
+    const ds=(c.data.datasets||[])[args.index]||{};
+    if((ds.type||c.config.type)==='line'){
+      const col=(typeof ds.borderColor==='string')?ds.borderColor:MINTD;
+      ctx.shadowColor=hexA(col,.35); ctx.shadowBlur=12; ctx.shadowOffsetY=5; } },
+  afterDatasetDraw(c){ c.ctx.restore(); }};
+function BARRA(color,extra){
+  return Object.assign({backgroundColor:color,borderRadius:6,barPercentage:.62,
+    categoryPercentage:.8,borderSkipped:false}, extra||{});
+}
+/* Las metas dejan de ser rayas encima de la onda: son bandas de fondo, la misma lengua
+   de los anillos y las barras. Va en beforeDatasetsDraw para quedar por debajo. */
+/* ============================================================
+   EL EJE SALE DE LOS DATOS, NO DE LA META. Estirar el eje hasta la meta plena
+   aplastaba la onda contra el piso y la mataba. Si la meta cabe, va como linea
+   de referencia gris; si queda por encima, va como techo ambar con la frase
+   que dice el estado en palabras, sin pintar el lienzo.
+   ============================================================ */
+/* El techo cae en un multiplo de un paso bonito, para que las 5 marcas del eje
+   den numeros redondos ($200K, $400K…) en vez de "$110K / $100K / $50K". */
+function pasoBonito(v){ if(!(v>0))return 1;
+  const e=Math.pow(10,Math.floor(Math.log10(v))), m=v/e;
+  return e*(m<=1?1:(m<=2?2:(m<=2.5?2.5:(m<=3?3:(m<=5?5:10)))));
+}
+function techoOnda(datos, piso, refs){
+  const mx = Math.max.apply(null,(datos||[]).map(v=>Number(v)||0).concat([0]));
+  const objetivo = mx>0 ? mx*1.18 : Math.max(1,(Number(piso)||1000)*1.05);
+  const paso = pasoBonito(objetivo/4);
+  let tope = Math.ceil(objetivo/paso)*paso;
+  /* si una referencia queda pegada al borde no se veria ni como linea ni como techo: subimos un paso */
+  if((refs||[]).some(r=>r>tope*0.94 && r<=tope)) tope += paso;
+  return tope;
+}
+/* refs: [{v, t, peso:'fuerte'|'suave'}] · periodo: 'el año' | 'el periodo' */
+function referencias(refs, periodo){
+  return {id:'refs', afterDatasetsDraw(c){
+    if(!c.chartArea||!c.scales||!c.scales.y)return;
+    const ctx=c.ctx, a=c.chartArea, Y=c.scales.y, tope=Y.max;
+    const lista=(refs||[]).filter(r=>r&&Number(r.v)>0);
+    ctx.save(); ctx.setLineDash([]);
+    /* las que caben: linea solida fina gris con su etiqueta */
+    const puestas=[];
+    lista.filter(r=>r.v<=tope).sort((x,y)=>y.v-x.v).forEach(r=>{
+      const y=Y.getPixelForValue(r.v);
+      if(y<=a.top+2||y>=a.bottom-1)return;
+      ctx.beginPath();ctx.moveTo(a.left,y);ctx.lineTo(a.right,y);
+      ctx.strokeStyle=(r.peso==='suave'?'rgba(107,125,137,.45)':'rgba(107,125,137,.75)');
+      ctx.lineWidth=1;ctx.stroke();
+      const txt=r.t+' '+usd(r.v);
+      ctx.font='600 10px Inter, Arial';ctx.textAlign='right';
+      /* si la etiqueta de arriba queda pegada, esta se va por debajo de su linea */
+      const choca=puestas.some(q=>Math.abs(q-(y-9))<15);
+      const cy = choca ? y+9 : y-9;
+      puestas.push(cy);
+      ctx.textBaseline='middle';
+      /* halo de texto, no caja opaca: la caja le borraba un tramo a la onda */
+      ctx.lineWidth=3; ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineJoin='round';
+      ctx.strokeText(txt,a.right-4,cy);
+      ctx.fillStyle='#6B7D89';ctx.fillText(txt,a.right-4,cy);
+    });
+    /* la mas baja que no cabe: techo ambar con flecha y la frase en palabras */
+    const fuera=lista.filter(r=>r.v>tope).sort((x,y)=>x.v-y.v)[0];
+    if(fuera){
+      const y=a.top+0.75;
+      ctx.beginPath();ctx.moveTo(a.left,y);ctx.lineTo(a.right,y);
+      ctx.strokeStyle='rgba(217,165,32,.9)';ctx.lineWidth=1.5;ctx.stroke();
+      const txt='↑ '+fuera.t+' '+usd(fuera.v)+' — por encima de todo '+(periodo||'el periodo');
+      ctx.font='700 10.5px Inter, Arial';ctx.textAlign='right';ctx.textBaseline='top';
+      ctx.lineWidth=3; ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineJoin='round';
+      ctx.strokeText(txt,a.right-4,y+5);
+      ctx.fillStyle='#B07E12';ctx.fillText(txt,a.right-4,y+5);
+    }
+    ctx.restore();
+  }};
+}
+
+/* ============================================================
+   REGLA DE LA CASA (REGLA_ANILLOS_META_MINIMA_META_PLENA_9SEP2026)
+   Una sola funcion de color y un solo dibujo de anillo/barra:
+     · el avance se mide SIEMPRE contra la meta plena, nunca contra el ritmo
+     · pista por zonas: rojo hasta la minima · ambar de la minima a la plena · verde en la plena
+     · el ritmo NO pinta: es una marca (tick) en la pista y una palabra debajo
+   ============================================================ */
+function zona(valor, minima, plena){
+  const v=Number(valor)||0, mi=Number(minima)||0, pl=Number(plena)||0;
+  if(pl>0 && v>=pl) return 'verde';
+  if(mi>0 && v>=mi) return 'ambar';
+  return 'rojo';
+}
+const Z_OSC={verde:MINT,   ambar:'#F0C55A', rojo:'#F08A80'};   /* sobre fondo oscuro */
+const Z_CLA={verde:MINTD,  ambar:AMBAR,     rojo:ROJO};        /* sobre fondo claro  */
+const Z_PISTA_OSC={rojo:'rgba(240,138,128,.30)', ambar:'rgba(240,197,90,.34)'};
+const Z_PISTA_CLA={rojo:'#FBEAE8',               ambar:'#FBF3E2'};
+function colZona(valor,minima,plena,fondo){ return (fondo==='claro'?Z_CLA:Z_OSC)[zona(valor,minima,plena)]; }
+
+function ritmoPct(v,d){ const D=Number(d)||0; return D>0 ? (Number(v)||0)/D*100 : ((Number(v)||0)>0?200:0); }
+/* Bandas decididas 9-sep: adelante >=105% · en el ritmo 95-105% · atras <95% del "deberia ir hoy". */
+function ritmoPal(v,d){ const p=ritmoPct(v,d); return p>=105?'adelante':(p>=95?'en el ritmo':'atrás'); }
+function ritmoFrase(v,d){ const w=ritmoPal(v,d); return w==='en el ritmo'?'en el ritmo':w+' del ritmo'; }
+
+/* Un solo dibujo de anillo. o = {valor, minima, plena, tick, fondo, centro, plano}
+   · plano:'color'  -> aro completo de un solo color (los circulos-objetivo del encabezado)
+   · centro:false   -> no escribe el % adentro (el texto va en HTML encima) */
+function anillo(el, o){
+  if(!el) return {destroy(){}};
+  const dpr = window.devicePixelRatio||1;
+  const osc = o.fondo!=='claro';
+  function pinta(){
+    const box = el.parentNode ? el.parentNode.getBoundingClientRect() : {width:150,height:130};
+    const w = Math.max(70, box.width||150), h = Math.max(70, box.height||130);
+    el.style.width=w+'px'; el.style.height=h+'px';
+    el.width=Math.round(w*dpr); el.height=Math.round(h*dpr);
+    const g=el.getContext('2d'); if(!g) return;
+    const x=el.width/2, y=el.height/2;
+    const R=Math.min(el.width,el.height)/2 - 3*dpr;
+    const LW=Math.max(7*dpr, R*0.26), r=R-LW/2;
+    const pl=Number(o.plena)||0, val=Number(o.valor)||0;
+    const pct = pl>0 ? val/pl*100 : 0;
+    const mp  = pl>0 ? Math.max(0,Math.min(100,(Number(o.minima)||0)/pl*100)) : 0;
+    const A=p=>(-Math.PI/2)+(Math.PI*2)*(p/100);
+    const arco=(p0,p1,col)=>{ if(!(p1>p0))return; g.beginPath(); g.arc(x,y,r,A(p0),A(p1));
+      g.strokeStyle=col; g.lineWidth=LW; g.lineCap='butt'; g.stroke(); };
+    g.clearRect(0,0,el.width,el.height);
+    if(o.plano){ arco(0,100,o.plano); return; }
+    /* pista por zonas */
+    const P = osc?Z_PISTA_OSC:Z_PISTA_CLA;
+    arco(0,mp,P.rojo); arco(mp,100,P.ambar);
+    /* arco de avance, con el color de la zona donde termina */
+    const vacio = osc?'rgba(255,255,255,.16)':'#E7EDF2';
+    const col = val>0 ? colZona(val,o.minima,pl,osc?'oscuro':'claro') : vacio;
+    arco(0, Math.max(0,Math.min(100,pct)), col);
+    /* el "deberia ir hoy": una marca, nunca un color */
+    if(o.tick!=null && pl>0){
+      const tp=Math.max(0,Math.min(100,(Number(o.tick)||0)/pl*100)), ang=A(tp);
+      g.beginPath();
+      g.moveTo(x+Math.cos(ang)*(r-LW/2-1.5*dpr), y+Math.sin(ang)*(r-LW/2-1.5*dpr));
+      g.lineTo(x+Math.cos(ang)*(r+LW/2+1.5*dpr), y+Math.sin(ang)*(r+LW/2+1.5*dpr));
+      g.strokeStyle= osc?'#FFFFFF':INK; g.lineWidth=2.4*dpr; g.stroke();
+    }
+    if(o.centro===false) return;
+    g.fillStyle = val>0 ? col : (osc?'#8da0ad':MUTED);
+    g.textAlign='center'; g.textBaseline='middle';
+    g.font='700 '+Math.round(24*dpr)+'px "JetBrains Mono", monospace';
+    g.fillText(Math.round(pct)+'%', x, y);
+  }
+  pinta(); requestAnimationFrame(pinta);
+  const on=()=>{ try{pinta();}catch(e){} }; window.addEventListener('resize',on);
+  return { destroy(){ window.removeEventListener('resize',on);
+    try{ const g=el.getContext('2d'); g.clearRect(0,0,el.width,el.height); }catch(e){} } };
+}
+
+/* La misma regla, en barra: escala hasta la plena, franja ambar desde la minima, tick del deberia */
+function barraZ(val, mi, pl, deb){
+  const P = Number(pl)||1, v=Number(val)||0;
+  const mp = Math.max(0,Math.min(100,(Number(mi)||0)/P*100));
+  const w  = Math.max(0,Math.min(100, v/P*100));
+  const col = v>0 ? Z_CLA[zona(v,mi,P)] : LINE;
+  const bg = 'linear-gradient(90deg,'+Z_PISTA_CLA.rojo+' 0 '+mp.toFixed(1)+'%,'+Z_PISTA_CLA.ambar+' '+mp.toFixed(1)+'% 100%)';
+  const t = (deb==null) ? '' : '<u style="left:'+Math.max(0,Math.min(100,(Number(deb)||0)/P*100)).toFixed(1)+'%"></u>';
+  return '<div class="mt-bar" style="background:'+bg+'"><i style="width:'+w.toFixed(1)+'%;background:'+col+'"></i>'+t+'</div>';
+}
+
+/* El chip: Meta plena · Meta minima · En el ritmo · Atras · Sin venta */
+function chipZ(val, mi, pl, deb){
+  const v=Number(val)||0;
+  if(Number(pl)>0 && v>=Number(pl)) return '<span class="pg-pill ok">Meta plena</span>';
+  if(Number(mi)>0 && v>=Number(mi)) return '<span class="pg-pill warn">Meta mínima</span>';
+  if(v<=0) return '<span class="pg-pill muted">Sin venta</span>';
+  return ritmoPct(v,deb)>=95 ? '<span class="pg-pill warn">En el ritmo</span>'
+                             : '<span class="pg-pill due">Atrás</span>';
 }
 
 /* ===== agregados ===== */
@@ -610,150 +839,141 @@ const MES=D.mes;
 const pctRitmo = MES.deberia>0 ? MES.mc/MES.deberia*100 : 0;
 const verdes=A.filter(a=>a.sem==='verde').length, rojos=A.filter(a=>a.sem==='rojo').length, sinv=A.filter(a=>a.sem==='sin').length;
 
-/* ===== RESUMEN ===== */
+/* ===== 1 · EL MES ===== */
 document.getElementById('ftfecha').textContent = 'Datos al ' + new Date().toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
-document.getElementById('r-mes').textContent=usd(MES.mc);
-document.getElementById('r-mes-s').textContent=MES.ven+" ventas · "+MES.activos+" de "+M.personas+" con venta";
-document.getElementById('r-deb').textContent=usd(MES.deberia);
-document.getElementById('r-deb-s').textContent="Día "+MES.hab_hoy+" de "+MES.hab_mes+" hábiles · el mes va en el "+MES.pct_mes+"%";
-document.getElementById('r-fmes').textContent=usd(MES.fees);
-document.getElementById('r-fmes-s').textContent=MES.sf+" de "+MES.ven+" ventas sin fee";
-document.getElementById('r-proy').textContent=usd(MES.proy);
-document.getElementById('r-proy-s').textContent="Piso del mes: "+usd(M.min_equipo);
-ring(document.getElementById('ringEquipo'),pctRitmo,pctRitmo>=100?MINT:(pctRitmo>=70?"#F0C55A":"#F08A80"));
+const MESLBL = ML[ML.length-1];
+const PERIODO = ML.length>=8 ? 'el año' : 'el periodo';
+/* El anillo mide AVANCE REAL contra la meta plena. El 86% de ritmo de la v10 ya no existe. */
+const pctPlena = M.norte_equipo>0 ? MES.mc/M.norte_equipo*100 : 0;
+const pctMin   = M.min_equipo>0   ? MES.mc/M.min_equipo*100   : 0;
+const fraseRitmo = ritmoFrase(MES.mc, MES.deberia);
+
+/* El mes, como cartel */
+document.getElementById('h-mes').textContent = MES.nombre;
+document.getElementById('h-mes-s').textContent =
+  MES.anio+' · día '+MES.hab_hoy+' de '+MES.hab_mes+' hábiles · '+MES.pct_mes+'% del mes';
+
+/* Los tres circulos. El primero es el anillo de verdad, con la regla de zonas y el tick;
+   los otros dos son circulos-objetivo: el aro completo del color de la zona que representan. */
+const zEq = zona(MES.mc, M.min_equipo, M.norte_equipo);
+anillo(document.getElementById('ringEquipo'),
+  {valor:MES.mc, minima:M.min_equipo, plena:M.norte_equipo, tick:MES.deberia, fondo:'oscuro', centro:false});
+document.getElementById('h-va').textContent=usd(MES.mc);
+document.getElementById('h-va').style.color=Z_OSC[zEq];
+document.getElementById('h-va-s').textContent=Math.round(pctPlena)+'% de la meta plena';
+document.getElementById('h-va-pie').textContent=MES.ven+' ventas · '+MES.activos+' de '+M.personas+' con venta';
+
+anillo(document.getElementById('ringMin'),{plano:'rgba(240,197,90,.55)'});
+document.getElementById('h-min').textContent=usd(M.min_equipo);
+document.getElementById('h-min').style.color=Z_OSC.ambar;
+document.getElementById('h-min-s').textContent='venta combinada · '+M.personas+' personas';
+const faltaMin=Math.max(0,M.min_equipo-MES.mc);
+document.getElementById('h-min-pie').textContent = faltaMin>0 ? 'faltan '+usd(faltaMin) : 'cumplida';
+
+anillo(document.getElementById('ringPlena'),{plano:'rgba(45,191,163,.55)'});
+document.getElementById('h-plena').textContent=usd(M.norte_equipo);
+document.getElementById('h-plena').style.color=Z_OSC.verde;
+document.getElementById('h-plena-s').textContent='lo que la casa espera';
+const faltaPl=Math.max(0,M.norte_equipo-MES.mc);
+document.getElementById('h-plena-pie').textContent = faltaPl>0 ? 'faltan '+usd(faltaPl) : 'cumplida';
+
+/* La linea de titular de antes, ahora chiquita al pie */
+document.getElementById('hl-txt').textContent =
+  MES.nombre+' · '+usd(MES.mc)+' · '+Math.round(pctPlena)+'% de la meta plena · va el '+MES.pct_mes
+  +'% del mes · '+fraseRitmo+' · debería ir hoy '+usd(MES.deberia);
+document.getElementById('hl-sem').className='pg-semaforo '+({verde:'green',ambar:'amber',rojo:'red'}[zEq]);
+
+document.getElementById('r-vol-l').textContent=MESLBL+' · último mes cerrado';
 document.getElementById('r-vol').textContent=usd(ago.mc);
-document.getElementById('r-vol-s').textContent=ago.ven+" ventas · "+ago.activos+" personas vendiendo";
+document.getElementById('r-vol-s').textContent=ago.ven+' ventas · '+ago.activos+' personas vendiendo';
 document.getElementById('r-util').textContent=usd(ago.util);
-document.getElementById('r-util-s').textContent="Julio: "+usd(E[E.length-2].util);
+document.getElementById('r-util-s').textContent=ML[ML.length-2]+': '+usd(E[E.length-2].util);
 document.getElementById('r-ing').textContent=usd(agoB.override);
-document.getElementById('r-ing-s').textContent="Del año: "+usd(ingAno);
-document.getElementById('r-s4').textContent=usd(M.ritmo);
-document.getElementById('r-s4-s').textContent=usd(M.prom_cabeza)+" por cabeza · "+Math.round(pctPiso)+"% del piso del equipo";
-document.getElementById('hl-txt').textContent= MES.nombre+" va en el "+Math.round(pctRitmo)+"% del ritmo que necesita.";
-document.getElementById('hl-sub').innerHTML="El equipo lleva <b>"+usd(MES.mc)+"</b> en "+MES.ven+" ventas y a esta altura del mes debería llevar <b>"+usd(MES.deberia)+"</b> para cerrar en el piso ("+usd(M.min_equipo)+"). A este paso cierra en <b>"+usd(MES.proy)+"</b>. En lo que va del mes el equipo sumó "+usd(M.ritmo)+" — "+usd(M.prom_cabeza)+" por cabeza.";
-document.getElementById('k-util').textContent=usd(utilAno);
-document.getElementById('k-ing').textContent=usd(ingAno);
-document.getElementById('k-vol').textContent=usd(volAno);
-document.getElementById('k-vol-s').textContent=venAno+" ventas nuevas en ocho meses";
-document.getElementById('k-fee').textContent=(feeAno/volAno*100).toFixed(1)+"%";
-document.getElementById('palanca').innerHTML="El equipo vende bien y cobra poco. El fee está entre <b>2,2% y 4,0%</b> del volumen. Subirlo un punto no exige vender una póliza más: exige cobrarla.";
-document.getElementById('fn1').innerHTML="Volumen = premium + fee de las ventas nuevas del equipo. Utilidad = lo que generó el equipo menos la comisión pagada y el costo de las personas. Las gráficas muestran los meses cerrados; septiembre va aparte porque todavía está corriendo. El piso y el norte de cada mes se calculan sobre las personas que había en el equipo ese mes; quien está en curva va al 75% mientras la hace.";
+document.getElementById('r-ing-s').textContent='Del año: '+usd(ingAno);
+document.getElementById('r-fmes').textContent=usd(MES.fees);
+document.getElementById('r-fmes-s').textContent=MES.sf+' de '+MES.ven+' ventas sin fee';
 
-const pisoS=ML.map(()=>M.min_equipo), norteS=ML.map(()=>M.norte_equipo);
+/* Las cuatro ondas del año viven en la pestaña Año y se arman cuando se abre (GRAF/LISTO). */
+function chartsAno(){
+/* chVol · la onda del equipo. Las metas ya no son rayas: son bandas de fondo. */
+const TOPE_VOL=techoOnda(E.map(m=>m.mc), M.min_equipo, [M.min_equipo]);
 new Chart(document.getElementById('chVol'),{type:'line',
-  data:{labels:ML,datasets:[
-    {label:'Volumen',data:E.map(m=>m.mc),borderColor:MINTD,backgroundColor:c=>grad(c.chart.ctx,MINT,'A6','08'),fill:true,tension:.42,borderWidth:3,pointRadius:4,pointBackgroundColor:'#fff',pointBorderColor:MINTD,pointBorderWidth:2},
-    {label:'Piso de hoy',data:pisoS,borderColor:ROJO,borderDash:[6,4],borderWidth:2,pointRadius:0,fill:false,tension:.2},
-    {label:'Norte de hoy',data:norteS,borderColor:AZUL,borderDash:[2,3],borderWidth:1.5,pointRadius:0,fill:false,tension:.2}]},
-  options:{responsive:true,maintainAspectRatio:false,
-    scales:{y:{...AXIS,ticks:{...AXIS.ticks,callback:tk(norteS)},beginAtZero:true},x:AXIS_X},
-    plugins:{tooltip:{...TIP,callbacks:{label:c=>c.dataset.label+": "+usdS(c.parsed.y)}}}}});
+  data:{labels:ML,datasets:[Object.assign({label:'Volumen',data:E.map(m=>m.mc)},LINEA(MINTD))]},
+  options:Object.assign({},BASE,{
+    scales:{y:AXIS_Y([TOPE_VOL],{max:TOPE_VOL}),x:AXIS_X},
+    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>"Volumen: "+usdS(c.parsed.y)}})}}),
+  plugins:[SOMBRA,referencias([{v:M.min_equipo,t:'meta mínima',peso:'fuerte'}],PERIODO)]});
 
+/* chUtil · no hay meta contra la cual compararla: un solo color neutro. */
 new Chart(document.getElementById('chUtil'),{type:'bar',
-  data:{labels:ML,datasets:[{data:E.map(m=>m.util),backgroundColor:E.map(m=>m.util>=30000?MINT:(m.util>=15000?"#8FD8C6":AMBAR)),borderRadius:7,barPercentage:.62}]},
-  options:{responsive:true,maintainAspectRatio:false,
-    scales:{y:{...AXIS,ticks:{...AXIS.ticks,callback:tk(E.map(m=>m.util))},beginAtZero:true},x:AXIS_X},
-    plugins:{tooltip:{...TIP,callbacks:{label:c=>"Utilidad: "+usdS(c.parsed.y)}}}}});
+  data:{labels:ML,datasets:[BARRA(AZUL,{data:E.map(m=>m.util)})]},
+  options:Object.assign({},BASE,{
+    scales:{y:AXIS_Y(E.map(m=>m.util),{max:techoOnda(E.map(m=>m.util),1000)}),x:AXIS_X},
+    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>"Utilidad: "+usdS(c.parsed.y)}})}})});
 
+/* chIng · tampoco tiene meta: onda azul, sin bandas. */
 new Chart(document.getElementById('chIng'),{type:'line',
-  data:{labels:ML,datasets:[{data:B.map(m=>m.override),borderColor:AZUL,backgroundColor:c=>grad(c.chart.ctx,AZUL,'55','06'),fill:true,tension:.42,borderWidth:3,pointRadius:4,pointBackgroundColor:'#fff',pointBorderColor:AZUL,pointBorderWidth:2}]},
-  options:{responsive:true,maintainAspectRatio:false,
-    scales:{y:{...AXIS,ticks:{...AXIS.ticks,callback:tk(B.map(m=>m.override))},beginAtZero:true},x:AXIS_X},
-    plugins:{tooltip:{...TIP,callbacks:{label:c=>"Tu comisión: "+usdS(c.parsed.y)}}}}});
+  data:{labels:ML,datasets:[Object.assign({data:B.map(m=>m.override)},LINEA(AZUL))]},
+  options:Object.assign({},BASE,{
+    scales:{y:AXIS_Y(B.map(m=>m.override),{max:techoOnda(B.map(m=>m.override),1000)}),x:AXIS_X},
+    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>"Tu comisión: "+usdS(c.parsed.y)}})}}),
+  plugins:[SOMBRA]});
 
+/* chFee · barras del fee (neutro, sin meta de equipo) y la onda del % del volumen. */
 new Chart(document.getElementById('chFee'),{
   data:{labels:ML,datasets:[
-    {type:'bar',data:E.map(m=>m.fees),backgroundColor:MINT,borderRadius:6,barPercentage:.6,yAxisID:'y'},
-    {type:'line',data:E.map(m=>+(m.fees/m.mc*100).toFixed(1)),borderColor:AMBAR,borderWidth:3,tension:.4,pointRadius:3.5,pointBackgroundColor:'#fff',pointBorderColor:AMBAR,pointBorderWidth:2,fill:false,yAxisID:'y1'}]},
-  options:{responsive:true,maintainAspectRatio:false,
-    scales:{y:{...AXIS,ticks:{...AXIS.ticks,callback:tk(E.map(m=>m.fees))},beginAtZero:true},
-      y1:{position:'right',grid:{display:false},border:{display:false},beginAtZero:true,max:6,ticks:{callback:v=>v+"%"}},x:AXIS_X},
-    plugins:{tooltip:{...TIP,callbacks:{label:c=>c.datasetIndex===0?"Fee: "+usd(c.parsed.y):"Fue el "+c.parsed.y+"% del volumen"}}}}});
+    BARRA(AZUL,{type:'bar',data:E.map(m=>m.fees),yAxisID:'y'}),
+    Object.assign({type:'line',data:E.map(m=>+(m.fees/m.mc*100).toFixed(1)),yAxisID:'y1'},
+                  LINEA(AMBAR,{fill:false}))]},
+  options:Object.assign({},BASE,{
+    scales:{y:AXIS_Y(E.map(m=>m.fees),{max:techoOnda(E.map(m=>m.fees),1000)}),
+      y1:{position:'right',grid:{display:false},border:{display:false},beginAtZero:true,max:6,
+          ticks:{font:{family:"'JetBrains Mono', monospace",size:10.5},color:'#6B7D89',maxTicksLimit:5,callback:v=>v+"%"}},
+      x:AXIS_X},
+    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>c.datasetIndex===0?"Fee: "+usd(c.parsed.y):"Fue el "+c.parsed.y+"% del volumen"}})}}),
+  plugins:[SOMBRA]});
+}
 
-document.getElementById('hl-sem').className='pg-semaforo '+(pctRitmo>=100?'green':(pctRitmo>=70?'amber':'red'));
-
-/* ===== helpers de fila ===== */
-/* La barra y el chip se calculan sobre el valor que se esta mostrando: el mes en curso por
-   defecto, o el mes anterior cuando la tabla lo pide. Antes se leia siempre el mes en curso,
-   asi que en la vista "Mes anterior" la cifra decia una cosa y la barra otra. */
-function barra(a, v){
-  const val = (v===undefined ? a.s4 : v);
-  const norte=a.norte||1, pct=Math.max(0,Math.min(100,val/norte*100)), marca=a.min/norte*100;
-  const col = val>=norte?MINT:(val>=a.min?AMBAR:(val>0?ROJO:LINE));
-  return '<div class="mt-bar"><i style="width:'+pct.toFixed(1)+'%;background:'+col+'"></i><u style="left:'+marca.toFixed(1)+'%"></u></div><div class="mt-sub">'+Math.round(val/(a.min||1)*100)+'% del piso</div>';
+/* ===== 1b · LA GRAFICA GENERAL DEL EQUIPO (la pieza central) =====
+   Una barra por persona, ordenadas de mayor a menor avance contra SU meta plena.
+   La barra llega hasta la plena, la franja ambar arranca en la minima, la marca
+   vertical es el "deberia ir hoy" y el color sale de zona(). El ritmo va en el chip. */
+const IA = E.length-1;
+function cif(k,v){ return '<div><span class="k">'+k+'</span>'+v+'</div>'; }
+function etiqueta(a){
+  if(!a.cam) return '<div class="g-c">'+nivC(a.niv).toLowerCase()+'</div>';
+  const pc = M.norte_cabeza>0 ? Math.round(a.norte/M.norte_cabeza*100) : 100;
+  return '<div class="g-c cur">en curva · mes '+(a.mop||1)+' · '+pc+'%</div>';
 }
-function barraMes(a){
-  const piso=a.min||1, pct=Math.max(0,Math.min(100,a.m.mc/piso*100));
-  const marca=Math.min(100, a.m.deberia/piso*100);
-  const col = a.m.sem==='verde'?MINT:(a.m.sem==='ambar'?AMBAR:(a.m.mc>0?ROJO:LINE));
-  return '<div class="mt-bar"><i style="width:'+pct.toFixed(1)+'%;background:'+col+'"></i><u style="left:'+marca.toFixed(1)+'%"></u></div>'
-       + '<div class="mt-sub">'+(a.m.mc>0 ? Math.round(a.m.mc/piso*100)+'% del piso · hoy toca '+Math.round(marca)+'%'
-                                          : 'hoy toca '+usd(a.m.deberia))+'</div>';
+function filaGen(a,o){
+  return '<div class="gr">'
+   + '<div><div class="g-n">'+nom(a.n)+'</div>'+etiqueta(a)+'</div>'
+   + '<div>'+barraZ(o.val,a.min,a.norte,o.deb)+'</div>'
+   + '<div class="g-cif">'+cif('Lleva',usd(o.val))+cif('Meta mín.',usd(a.min))+cif('Fee',usd(o.fee))+cif('Ventas',o.ven)+'</div>'
+   + '<div style="text-align:right">'+chipZ(o.val,a.min,a.norte,o.deb)+'</div>'
+   + '</div>';
 }
-function chipMes(a){
-  if(a.m.sem==='verde') return '<span class="pg-pill ok">Sobre el ritmo</span>';
-  if(a.m.sem==='ambar') return '<span class="pg-pill warn">En el ritmo</span>';
-  if(a.m.mc>0)          return '<span class="pg-pill due">Bajo el ritmo</span>';
-  return '<span class="pg-pill muted">Sin venta este mes</span>';
-}
-function chipEstado(a, v){
-  const val = (v===undefined ? a.s4 : v);
-  if(val>=a.norte) return '<span class="pg-pill ok">Llegó al norte</span>';
-  if(val>=a.min)   return '<span class="pg-pill warn">En el piso</span>';
-  if(val>0)        return '<span class="pg-pill due">Bajo el piso</span>';
-  return '<span class="pg-pill muted">Sin venta</span>';
-}
-const ordS4=[...A].sort((a,b)=>b.s4-a.s4);
-const ordAnt=[...A].sort((a,b)=>b.ant-a.ant);
-const ordMes=[...A].sort((a,b)=>b.m.mc-a.m.mc || b.s4-a.s4);
-document.getElementById('tb-top').innerHTML=ordS4.slice(0,6).map(a=>
- '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+usd(a.s4)+'</td><td>'+barra(a)+'</td><td>'+chipEstado(a)+'</td></tr>').join('');
-document.getElementById('tb-mes').innerHTML=ordMes.map(a=>
- '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+usd(a.m.mc)+'</td>'
- +'<td class="num">'+usd(a.m.fees)+'</td><td class="num">'+a.m.ven+'</td>'
- +'<td class="num'+(a.m.sf>0?' neg':'')+'">'+a.m.sf+'</td><td>'+barraMes(a)+'</td>'
- +'<td class="num">'+(a.m.mc>0?usd(a.m.proy):'—')+'</td><td>'+chipMes(a)+'</td></tr>').join('');
-document.getElementById('tf-mes').innerHTML=
- '<tr style="background:#F7FAFB"><td><b>Equipo</b></td><td class="mini">'+M.personas+' personas</td>'
- +'<td class="num">'+usd(MES.mc)+'</td><td class="num">'+usd(MES.fees)+'</td><td class="num">'+MES.ven+'</td>'
- +'<td class="num neg">'+MES.sf+'</td><td class="mini">debería llevar '+usd(MES.deberia)+'</td>'
- +'<td class="num">'+usd(MES.proy)+'</td><td class="mini">piso '+usd(M.min_equipo)+'</td></tr>';
-
-/* ===== META ===== */
-document.getElementById('m-min').textContent=usd(M.min_equipo);
-document.getElementById('m-min-s').textContent="$"+M.min_cabeza.toLocaleString("en-US")+" por cabeza · "+M.personas+" personas";
-document.getElementById('m-norte').textContent=usd(M.norte_equipo);
-document.getElementById('m-norte-s').textContent="$"+M.norte_cabeza.toLocaleString("en-US")+" por cabeza";
-document.getElementById('m-ritmo').textContent=usd(MES.mc);
-document.getElementById('m-ritmo-s').textContent="Debería llevar "+usd(MES.deberia)+" · "+Math.round(pctRitmo)+"% del ritmo";
-document.getElementById('m-verdes').textContent=verdes+" de "+M.personas;
-document.getElementById('m-verdes-s').textContent=rojos+" bajo el piso · "+sinv+" sin venta";
-document.getElementById('ok-min').textContent=usd(M.min_equipo);
+const avc = (v,a) => (a.norte>0 ? v/a.norte : 0);
+const ordMes=[...A].sort((x,y)=>avc(y.m.mc,y)-avc(x.m.mc,x) || y.m.mc-x.m.mc);
+const ordAnt=[...A].sort((x,y)=>avc(y.ant,y)-avc(x.ant,x) || y.ant-x.ant);
+const ordS4 =[...A].sort((x,y)=>y.s4-x.s4);
 let vistaMeta='mes', filtroMeta='todos';
-const TH_MES='<tr><th>Persona</th><th>Nivel</th><th class="num">Piso</th><th class="num">Del mes</th><th class="num">Fee</th><th class="num">Ventas</th><th style="width:190px">Contra su piso</th><th class="num">Cierra en</th><th>Estado</th></tr>';
-const TH_S4 ='<tr><th>Persona</th><th>Nivel</th><th class="num">Piso</th><th class="num">Norte</th><th class="num">Mes anterior</th><th style="width:190px">Avance</th><th class="num">Promedio</th><th>Estado</th></tr>';
 function pintaMeta(){
-  const f=filtroMeta, esMes = vistaMeta==='mes';
+  const esMes = vistaMeta==='mes';
+  const V = a => esMes ? a.m.mc : a.ant;
   let l = esMes ? ordMes : ordAnt;
-  if(f==='rojo')  l=l.filter(a=> esMes ? (a.m.sem==='rojo')  : (a.ant>0 && a.ant<a.min));
-  if(f==='verde') l=l.filter(a=> esMes ? (a.m.sem==='verde') : (a.ant>=a.norte));
-  if(f==='camada')l=l.filter(a=>a.cam);
-  if(f==='sin')   l=l.filter(a=> esMes ? a.m.mc===0 : a.ant===0);
-  document.getElementById('th-meta').innerHTML = esMes ? TH_MES : TH_S4;
-  document.getElementById('meta-purpose').innerHTML = esMes
-   ? 'Lo que lleva cada quien <b>en el mes en curso</b>. La barra llega hasta su piso y la marca vertical oscura es dónde debería ir hoy para cerrarlo. Se pone en cero solo el día 1 de cada mes.'
-   : 'El mes cerrado anterior completo, para comparar contra lo que va del actual. La barra llega hasta el norte de cada quien y la marca vertical oscura es su piso.';
+  const f = filtroMeta;
+  if(f==='rojo')  l=l.filter(a=> V(a)>0 && V(a)<a.min);
+  if(f==='verde') l=l.filter(a=> a.norte>0 && V(a)>=a.norte);
+  if(f==='camada')l=l.filter(a=> a.cam);
+  if(f==='sin')   l=l.filter(a=> V(a)<=0);
   document.getElementById('tg-nota').textContent = esMes
    ? MES.nombre+' · día '+MES.hab_hoy+' de '+MES.hab_mes+' hábiles ('+MES.pct_mes+'% del mes)'
-   : 'Mes anterior completo · se compara contra los '+MES.hab_hoy+' de '+MES.hab_mes+' días hábiles que van del actual';
-  document.getElementById('tb-meta').innerHTML = l.map(a=> esMes
-   ? '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+usd(a.min)+'</td>'
-     +'<td class="num">'+usd(a.m.mc)+'</td><td class="num">'+usd(a.m.fees)+'</td><td class="num">'+a.m.ven+'</td>'
-     +'<td>'+barraMes(a)+'</td><td class="num">'+(a.m.mc>0?usd(a.m.proy):'—')+'</td><td>'+chipMes(a)+'</td></tr>'
-   : '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+usd(a.min)+'</td>'
-     +'<td class="num">'+usd(a.norte)+'</td><td class="num">'+usd(a.ant)+'</td><td>'+barra(a,a.ant)+'</td>'
-     +'<td class="num">'+usd(a.prom)+'</td><td>'+chipEstado(a,a.ant)+'</td></tr>').join('')
-   ||'<tr><td colspan="9" class="mini" style="padding:18px 8px">Nadie en este grupo.</td></tr>';
+   : MESLBL+' · mes cerrado completo';
+  document.getElementById('gen-lista').innerHTML = l.map(a=> esMes
+     ? filaGen(a,{val:a.m.mc, fee:a.m.fees, ven:a.m.ven, deb:a.m.deberia})
+     : filaGen(a,{val:a.ant,  fee:a.fees[IA], ven:a.ven[IA], deb:null})).join('')
+   || '<div class="bt-vacio">Nadie en este grupo.</div>';
 }
 pintaMeta();
 document.querySelectorAll('#chips-meta .chip').forEach(c=>c.onclick=()=>{
@@ -762,31 +982,18 @@ document.querySelectorAll('#chips-meta .chip').forEach(c=>c.onclick=()=>{
 document.querySelectorAll('#tg-vista button').forEach(bt=>bt.onclick=()=>{
   document.querySelectorAll('#tg-vista button').forEach(x=>x.classList.remove('on'));
   bt.classList.add('on'); vistaMeta=bt.dataset.v; pintaMeta();});
-/* Las gráficas de una pestaña cerrada NO se crean: Chart.js no puede medir un canvas
-   escondido, nace en cero y al intentar arreglarlo después entra en bucle de redimensionado.
-   Cada pestaña arma las suyas la primera vez que se abre, y nunca más. */
+
+/* Las graficas de una pestaña cerrada NO se crean: Chart.js no puede medir un canvas
+   escondido, nace en cero y al intentar arreglarlo despues entra en bucle de redimensionado.
+   Cada pestaña arma las suyas la primera vez que se abre, y nunca mas.
+   "El mes" es la pestaña que abre por defecto: sus graficas si se arman de una. */
 const GRAF={}, LISTO={};
-const falta=A.map(a=>({n:nom(a.n),f:Math.max(0,a.min-a.s4)})).sort((a,b)=>b.f-a.f);
-GRAF.meta=()=>{ new Chart(document.getElementById('chFalta'),{type:'bar',
-  data:{labels:falta.map(a=>a.n),datasets:[{data:falta.map(a=>a.f),backgroundColor:falta.map(a=>a.f>50000?ROJO:(a.f>25000?AMBAR:MINT)),borderRadius:6,barPercentage:.75}]},
-  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-    scales:{x:{...AXIS,ticks:{...AXIS.ticks,callback:moneyTick},beginAtZero:true},y:AXIS_CAT},
-    plugins:{tooltip:{...TIP,callbacks:{label:c=>c.parsed.x===0?"Ya está en su piso":"Le faltan "+usd(c.parsed.x)}}}}}); };
-
-
-/* ===== CAMADA · cómo van los nuevos ===== */
-const CAM=A.filter(a=>a.cam).sort((a,b)=>b.s4-a.s4);
-const PRIMERA=(a)=>{const i=a.mc.findIndex(v=>v>0);return i<0?'—':ML[i];};
-document.getElementById('tb-camada').innerHTML=CAM.map(a=>{
-  const p1=PRIMERA(a);
-  return '<tr><td><b>'+nom(a.n)+'</b></td><td class="mini">'+nivC(a.niv)+'</td><td class="num">'+p1+'</td>'
-   +'<td class="num">'+usd(a.min)+'</td><td class="num">'+usd(a.s4)+'</td><td>'+barra(a)+'</td><td>'+chipEstado(a)+'</td></tr>';
-}).join('');
-const camArr=CAM.filter(a=>a.s4>0), camLleg=CAM.filter(a=>a.s4>=a.min).length;
-document.getElementById('camada-box').innerHTML=
- '<b>'+camLleg+' de '+CAM.length+' ya están sobre su piso de arranque en su primer o segundo mes en firme.</b> '
- +'Las cinco cumplieron el hito de la primera venta, que es el estándar de entrada. Lo que falta ahora no es volumen: es fee — entre las cinco cobraron '
- + usd(sum(CAM.map(a=>sum(a.fees)))) + ' sobre ' + usd(sum(CAM.map(a=>sum(a.mc)))) + ' vendidos.';
+const falta=A.map(a=>({n:nom(a.n),f:Math.max(0,a.min-a.m.mc)})).sort((a,b)=>b.f-a.f);
+new Chart(document.getElementById('chFalta'),{type:'bar',
+  data:{labels:falta.map(a=>a.n),datasets:[BARRA(AZUL,{data:falta.map(a=>a.f)})]},
+  options:Object.assign({},BASE,{indexAxis:'y',
+    scales:{x:AXIS_Y(falta.map(a=>a.f)),y:AXIS_CAT},
+    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>c.parsed.x===0?"Ya está en su meta mínima":"Le faltan "+usd(c.parsed.x)}})}})});
 
 /* ===== PATRONES ===== */
 const iA = E.length-1, MED = ago.med;
@@ -797,42 +1004,48 @@ function detecta(a){
   const prev=a.mc[iA-1], prevV=a.ven[iA-1];
   const out=[];
   if(v>=3 && s/v>=0.66)
-    out.push({n:a.n,p:'VENDE_SIN_COBRAR',v:s*MED,u:'en fee',
-      t:v+' ventas en agosto y '+s+' salieron sin fee. Vendió '+usd(mc)+' y entraron '+usd(f)+' de fee.'});
+    out.push({n:a.n,p:'VENDE_SIN_COBRAR',v:s*MED,u:'en juego',d:s+' de '+v+' sin fee',
+      t:v+' ventas y '+s+' salieron sin fee. Vendió '+usd(mc)+' y entraron '+usd(f)+' de fee.'});
   if(!a.cam && prevV>0 && v>0 && mc < prev*0.5 && prev>=15000)
-    out.push({n:a.n,p:'CAIDA_DE_RITMO',v:prev-mc,u:'en volumen',
-      t:'Venía de '+usd(prev)+' en julio y bajó a '+usd(mc)+'. Su promedio de los meses que vendió es '+usd(promMes)+'.'});
+    out.push({n:a.n,p:'CAIDA_DE_RITMO',v:prev-mc,u:'menos',d:'de '+usd(prev)+' a '+usd(mc),
+      t:'Venía de '+usd(prev)+' y bajó a '+usd(mc)+'. Su promedio de los meses que vendió es '+usd(promMes)+'.'});
   if(v>0 && f<EST && mc>=15000 && s/v<0.66)
-    out.push({n:a.n,p:'VENDE_MAS_COBRA_MENOS',v:EST-f,u:'contra el estándar',
-      t:'Movió '+usd(mc)+' en '+v+' ventas y cobró '+usd(f)+' de fee. El estándar de la casa son '+usd(EST)+'.'});
+    out.push({n:a.n,p:'VENDE_MAS_COBRA_MENOS',v:EST-f,u:'bajo el estándar',d:usd(f)+' de fee en '+v+' ventas',
+      t:'Movió '+usd(mc)+' en '+v+' ventas y cobró '+usd(f)+' de fee. El estándar son '+usd(EST)+'.'});
   if(!a.cam && v===0 && prevV>0)
-    out.push({n:a.n,p:'SE_APAGO',v:prev,u:'dejó de entrar',
-      t:'No registró ventas en agosto. En julio había hecho '+usd(prev)+' en '+prevV+' ventas.'});
+    out.push({n:a.n,p:'SE_APAGO',v:prev,u:'dejó de entrar',d:'0 ventas · venía de '+usd(prev),
+      t:'No registró ventas. El mes anterior había hecho '+usd(prev)+' en '+prevV+' ventas.'});
   return out;
 }
 const TAGS={
- VENDE_SIN_COBRAR:{t:'Vende y no cobra',c:'tag-nofee',s:'alta',do:'Sentarse con esta persona a mirar por qué las ventas salen sin fee. Es el patrón que más plata cuesta.'},
- CAIDA_DE_RITMO:{t:'Perdió el ritmo',c:'tag-caida',s:'media',do:'Revisar la agenda de la semana. La caída casi siempre es de pipeline, no de capacidad.'},
- VENDE_MAS_COBRA_MENOS:{t:'Volumen sin fee',c:'tag-mixto',s:'media',do:'Mueve pólizas pero deja el fee sobre la mesa. Acordar el fee mínimo por póliza.'},
- SE_APAGO:{t:'Se apagó',c:'tag-caida',s:'alta',do:'Venía vendiendo y paró. Primera conversación de la semana.'}
+ VENDE_SIN_COBRAR:{t:'vende y no cobra',c:'tag-nofee',s:'alta',do:'sentarse a mirar por qué salen sin fee'},
+ CAIDA_DE_RITMO:{t:'perdió el ritmo',c:'tag-caida',s:'media',do:'revisar la agenda de la semana'},
+ VENDE_MAS_COBRA_MENOS:{t:'volumen sin fee',c:'tag-mixto',s:'media',do:'acordar el fee mínimo por póliza'},
+ SE_APAGO:{t:'se apagó',c:'tag-caida',s:'alta',do:'primera conversación de la semana'}
 };
 const PRIO={VENDE_SIN_COBRAR:0,SE_APAGO:1,CAIDA_DE_RITMO:2,VENDE_MAS_COBRA_MENOS:3};
 const ALERTAS=A.flatMap(detecta).sort((x,y)=>PRIO[x.p]-PRIO[y.p] || y.v-x.v);
 const cumplen=A.filter(a=>a.fees[iA]>=EST).length, vendieron=A.filter(a=>a.ven[iA]>0).length;
+document.getElementById('p-mes-l').textContent=MESLBL.toLowerCase();
 document.getElementById('p-mesa').textContent=usd(mesaAgo);
-document.getElementById('p-mesa-s').textContent=ago.sf+" ventas sin fee × "+usd(MED)+", el fee típico del mes.";
+document.getElementById('p-mesa-s').textContent=ago.sf+" sin fee × "+usd(MED)+" (fee típico)";
 document.getElementById('p-sinfee').textContent=ago.sf+" de "+ago.ven;
-document.getElementById('p-sinfee-s').textContent=Math.round(ago.sf/ago.ven*100)+"% de las ventas del mes salieron sin un peso de fee.";
+document.getElementById('p-sinfee-s').textContent=Math.round(ago.sf/ago.ven*100)+"% de las ventas";
 document.getElementById('p-est').textContent=cumplen+" de "+vendieron;
+document.getElementById('p-est-s').textContent="Estándar: "+usd(EST)+" de fee al mes";
 document.getElementById('p-ano').textContent=usd(mesaAno);
-document.getElementById('p-ano-s').textContent=sfAno+" ventas sin fee en ocho meses. El equipo cobró "+usd(feeAno)+".";
-document.getElementById('p-titular').innerHTML="<b>En el año el equipo dejó sobre la mesa "+usd(mesaAno)+" de fee — más de lo que cobró ("+usd(feeAno)+").</b> No es que falte vender: de las "+venAno+" ventas del año, "+sfAno+" salieron sin fee. Cobrar el fee en la mitad de esas ventas vale más que sumar dos personas al equipo.";
-document.getElementById('alertas').innerHTML=ALERTAS.map(al=>{
+document.getElementById('p-ano-s').textContent=sfAno+" de "+venAno+" ventas sin fee";
+document.getElementById('p-titular').textContent="En el año el equipo dejó sobre la mesa "+usd(mesaAno)+" de fee — más de lo que cobró ("+usd(feeAno)+").";
+function lineaAlerta(al){
   const t=TAGS[al.p];
-  return '<div class="al sev-'+t.s+'"><div><div class="a-l">'+al.n+'<span class="a-tag '+t.c+'">'+t.t+'</span></div>'
-   +'<div class="a-c">'+al.t+'</div><div class="a-do">→ '+t.do+'</div></div>'
-   +'<div><div class="a-v">'+usd(al.v)+'</div><div class="a-n">'+al.u+'</div></div></div>';
-}).join('')||'<div class="pg-ok-box">Ninguna alerta este mes.</div>';
+  return '<div class="al1 sev-'+t.s+'"><span class="a-l">'+nom(al.n)+'</span>'
+   +'<span class="sep">·</span><span class="a-tag '+t.c+'">'+t.t+'</span>'
+   +'<span class="sep">·</span><span class="a-c">'+(al.d||'')+'</span>'
+   +'<span class="sep">·</span><span class="a-v">'+usd(al.v)+' '+al.u+'</span>'
+   +'<span class="a-do">→ '+t.do+'</span></div>';
+}
+document.getElementById('alertas').innerHTML=ALERTAS.map(lineaAlerta).join('')
+  ||'<div class="bt-vacio">Ninguna alerta este mes.</div>';
 
 const NAMES={id:'names',afterDatasetsDraw(c){if(!c.chartArea)return;const m=c.getDatasetMeta(0);const ctx=c.ctx;ctx.save();
   ctx.font='600 10.5px Inter, Arial';ctx.fillStyle=INK;ctx.textAlign='center';
@@ -844,32 +1057,33 @@ const NAMES={id:'names',afterDatasetsDraw(c){if(!c.chartArea)return;const m=c.ge
   ctx.restore();}};
 const QUAD={id:'quad',beforeDatasetsDraw(c){if(!c.chartArea||!c.scales.y)return;const {ctx,chartArea:a,scales}=c;const yM=scales.y.getPixelForValue(50);
   ctx.save();ctx.fillStyle='rgba(213,89,79,.05)';ctx.fillRect((a.left+a.right)/2,yM,a.right-(a.left+a.right)/2,a.bottom-yM);
-  ctx.strokeStyle=LINE;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(a.left,yM);ctx.lineTo(a.right,yM);ctx.stroke();
-  ctx.setLineDash([]);ctx.fillStyle='#C08E88';ctx.font='700 10.5px Inter, Arial';ctx.textAlign='right';
+  ctx.strokeStyle='rgba(107,125,137,.45)';ctx.setLineDash([]);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a.left,yM);ctx.lineTo(a.right,yM);ctx.stroke();
+  ctx.fillStyle='#6B7D89';ctx.font='700 10.5px Inter, Arial';ctx.textAlign='right';
   ctx.fillText('VENDE Y NO COBRA', a.right-10, yM+16);ctx.restore();}};
 const pts=A.filter(a=>a.ven[iA]>0).map(a=>{const pc=Math.round((1-a.sf[iA]/a.ven[iA])*100);
   const p=nom(a.n).split(' ');return {x:a.mc[iA],y:pc,r:8,nn:p[0]+' '+(p[1]||'').charAt(0)+'.',
-          c:pc<=33?ROJO:(pc<=60?AMBAR:MINT),full:nom(a.n),f:a.fees[iA]};});
-GRAF.patrones=()=>{
+          c:Z_CLA[zona(pc,34,67)],full:nom(a.n),f:a.fees[iA]};});
+GRAF.alertas=()=>{
 new Chart(document.getElementById('chScatter'),{type:'bubble',
   data:{datasets:[{data:pts,backgroundColor:pts.map(p=>p.c+'CC'),borderColor:pts.map(p=>p.c),borderWidth:2}]},
-  options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:18}},
-    scales:{x:{...AXIS,title:{display:true,text:'Volumen vendido en agosto',color:MUTED,font:{size:11.5,weight:'700'}},ticks:{...AXIS.ticks,callback:moneyTick},beginAtZero:true},
-      y:{...AXIS,title:{display:true,text:'% de ventas CON fee',color:MUTED,font:{size:11.5,weight:'700'}},min:-5,max:110,ticks:{callback:v=>v+"%"}}},
-    plugins:{tooltip:{...TIP,callbacks:{label:c=>c.raw.full+" · "+usd(c.raw.x)+" · "+c.raw.y+"% con fee · "+usd(c.raw.f)+" de fee"}}}},
+  options:Object.assign({},BASE,{layout:{padding:{top:18}},
+    scales:{x:AXIS_Y(pts.map(p=>p.x),{title:{display:true,text:'Volumen vendido en '+MESLBL,color:'#8AA0AD',font:{size:11.5,weight:'700'}}}),
+      y:AXIS_Y([100],{min:-5,max:110,beginAtZero:false,title:{display:true,text:'% de ventas CON fee',color:'#8AA0AD',font:{size:11.5,weight:'700'}},
+        ticks:{font:{family:"'JetBrains Mono', monospace",size:11},color:'#8AA0AD',padding:8,maxTicksLimit:5,callback:v=>v+"%"}})},
+    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>c.raw.full+" · "+usd(c.raw.x)+" · "+c.raw.y+"% con fee · "+usd(c.raw.f)+" de fee"}})}}),
   plugins:[QUAD,NAMES]});
 
 const EL={id:'est',afterDatasetsDraw(c){if(!c.chartArea||!c.scales.x)return;const {ctx,chartArea:a,scales}=c;const x=scales.x.getPixelForValue(EST);
-  if(x>a.right||x<a.left)return;ctx.save();ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.setLineDash([5,4]);
-  ctx.beginPath();ctx.moveTo(x,a.top);ctx.lineTo(x,a.bottom);ctx.stroke();ctx.setLineDash([]);
-  ctx.fillStyle=INK;ctx.font='700 10.5px Inter, Arial';ctx.textAlign='left';
-  ctx.fillText('Estándar $1.500',x+6,a.top+12);ctx.restore();}};
+  if(x>a.right||x<a.left)return;ctx.save();ctx.setLineDash([]);ctx.strokeStyle='rgba(107,125,137,.75)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x,a.top);ctx.lineTo(x,a.bottom);ctx.stroke();
+  ctx.fillStyle='#6B7D89';ctx.font='600 10px Inter, Arial';ctx.textAlign='left';
+  ctx.fillText('estándar '+usd(EST),x+6,a.top+11);ctx.restore();}};
 const fe=A.filter(a=>a.ven[iA]>0).sort((a,b)=>b.fees[iA]-a.fees[iA]);
 new Chart(document.getElementById('chEstandar'),{type:'bar',
-  data:{labels:fe.map(a=>nom(a.n)),datasets:[{data:fe.map(a=>a.fees[iA]),backgroundColor:fe.map(a=>a.fees[iA]>=EST?MINT:(a.fees[iA]>=EST/2?AMBAR:ROJO)),borderRadius:6,barPercentage:.75}]},
-  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-    scales:{x:{...AXIS,ticks:{...AXIS.ticks,callback:tk([EST*1.3,...fe.map(a=>a.fees[iA])])},beginAtZero:true,suggestedMax:EST*1.3},y:AXIS_CAT},
-    plugins:{tooltip:{...TIP,callbacks:{label:c=>usd(c.parsed.x)+" de fee · estándar "+usd(EST)}}}},
+  data:{labels:fe.map(a=>nom(a.n)),datasets:[BARRA(fe.map(a=>Z_CLA[zona(a.fees[iA],EST/2,EST)]),{data:fe.map(a=>a.fees[iA])})]},
+  options:Object.assign({},BASE,{indexAxis:'y',
+    scales:{x:AXIS_Y([EST*1.3].concat(fe.map(a=>a.fees[iA])),{suggestedMax:EST*1.3}),y:AXIS_CAT},
+    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>usd(c.parsed.x)+" de fee · estándar "+usd(EST)}})}}),
   plugins:[EL]});
 };
 
@@ -880,10 +1094,12 @@ let cP1=null,cP2=null,cRing=null;
 function pintaPersona(nombre){
   const a=A.find(x=>x.n===nombre);
   const vA=sum(a.mc), fA=sum(a.fees), venA=sum(a.ven), sfA=sum(a.sf), uA=sum(a.util);
-  const pct=a.min?a.s4/a.min*100:0;
-  document.getElementById('pp-s4').textContent=usd(a.s4);
-  document.getElementById('pp-s4').className='v '+(pct>=100?'mint':(pct>=80?'warn':'red'));
-  document.getElementById('pp-s4-s').textContent=a.niv+' · mes anterior '+usd(a.ant);
+  /* El anillo de la persona: avance real contra SU meta plena, ambar desde SU minima. */
+  const pct = a.norte? a.m.mc/a.norte*100 : 0;
+  const zp  = zona(a.m.mc, a.min, a.norte);
+  document.getElementById('pp-s4').textContent=usd(a.m.mc);
+  document.getElementById('pp-s4').className='v '+({verde:'mint',ambar:'warn',rojo:'red'}[zp]);
+  document.getElementById('pp-s4-s').textContent=(a.cam?'en curva · mes '+(a.mop||1):nivC(a.niv))+' · mes anterior '+usd(a.ant);
   document.getElementById('pp-min').textContent=usd(a.min);
   document.getElementById('pp-norte').textContent=usd(a.norte);
   document.getElementById('pp-prom').textContent=usd(a.prom);
@@ -894,42 +1110,41 @@ function pintaPersona(nombre){
     ? '<b>'+usd(a.m.mc)+'</b> en '+a.m.ven+' venta'+(a.m.ven===1?'':'s')+' · '+usd(a.m.fees)+' de fee · a este paso cierra en <b>'+usd(a.m.proy)+'</b>'
     : 'Sin ventas registradas en '+MES.nombre+'. A esta altura del mes debería llevar '+usd(a.m.deberia)+'.';
   if(cRing)cRing.destroy();
-  cRing=ring(document.getElementById('ringPersona'),pct,pct>=100?MINT:(pct>=80?"#F0C55A":"#F08A80"));
+  cRing=anillo(document.getElementById('ringPersona'),
+    {valor:a.m.mc, minima:a.min, plena:a.norte, tick:a.m.deberia, fondo:'oscuro'});
+  document.getElementById('pp-cap').innerHTML='de su meta plena · '+ritmoPal(a.m.mc,a.m.deberia)
+    +'<button class="hq d" type="button" data-h="anillo">?</button>';
   const mine=ALERTAS.filter(x=>x.n===a.n);
   const box=document.getElementById('pp-box');
   if(mine.length){
-    box.innerHTML=mine.map(al=>{const t=TAGS[al.p];
-      return '<div class="al sev-'+t.s+'" style="margin-bottom:10px"><div><div class="a-l">'+t.t+'</div><div class="a-c">'+al.t+'</div><div class="a-do">→ '+t.do+'</div></div><div><div class="a-v">'+usd(al.v)+'</div><div class="a-n">'+al.u+'</div></div></div>';}).join('');
-  } else if(a.sem==='verde'){
-    box.innerHTML='<div class="pg-ok-box" style="margin:0">Está por encima de su norte en lo que va del mes. Vale la pena mirar qué está haciendo distinto y pasarlo al resto.</div>';
-  } else if(a.s4===0){
-    box.innerHTML='<div class="pg-warn-box" style="margin:0">Sin venta registrada en lo que va del mes. Si viene entrando, todavía está en curva; si no, es la primera conversación de la semana.</div>';
+    box.innerHTML=mine.map(lineaAlerta).join('');
+  } else if(zp==='verde'){
+    box.innerHTML='<div class="al1 sev-media" style="border-left-color:'+MINTD+'"><span class="a-l">'+nom(a.n)+'</span><span class="sep">·</span><span class="a-c">en la meta plena</span><span class="a-do">→ mirar qué hace distinto y pasarlo al resto</span></div>';
+  } else if(a.m.mc<=0){
+    box.innerHTML='<div class="al1 sev-alta"><span class="a-l">'+nom(a.n)+'</span><span class="sep">·</span><span class="a-c">sin venta en '+MES.nombre+'</span><span class="sep">·</span><span class="a-v">'+usd(a.m.deberia)+' debería ir hoy</span><span class="a-do">→ primera conversación de la semana</span></div>';
   } else {
-    box.innerHTML='<div class="pg-warn-box" style="margin:0">Va en el <b>'+Math.round(pct)+'%</b> de su piso. Le faltan <b>'+usd(Math.max(0,a.min-a.s4))+'</b> para llegar.</div>';
+    box.innerHTML='<div class="al1 sev-media"><span class="a-l">'+nom(a.n)+'</span><span class="sep">·</span><span class="a-c">'+Math.round(pct)+'% de su meta plena · '+ritmoFrase(a.m.mc,a.m.deberia)+'</span><span class="sep">·</span><span class="a-v">'+usd(Math.max(0,a.min-a.m.mc))+' para la mínima</span><span class="a-do">→ ese es el número de la semana</span></div>';
   }
   if(cP1)cP1.destroy();
   cP1=new Chart(document.getElementById('chP1'),{type:'line',
-    data:{labels:ML,datasets:[
-      {label:'Volumen',data:a.mc,borderColor:MINTD,backgroundColor:c=>grad(c.chart.ctx,MINT,'A6','08'),fill:true,tension:.42,borderWidth:3,pointRadius:4,pointBackgroundColor:'#fff',pointBorderColor:MINTD,pointBorderWidth:2},
-      {label:'Su piso',data:ML.map(()=>a.min),borderColor:ROJO,borderDash:[6,4],borderWidth:2,pointRadius:0,fill:false},
-      {label:'Su norte',data:ML.map(()=>a.norte),borderColor:AZUL,borderDash:[2,3],borderWidth:1.5,pointRadius:0,fill:false}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      scales:{y:{...AXIS,ticks:{...AXIS.ticks,callback:tk([a.norte,...a.mc])},beginAtZero:true},x:AXIS_X},
-      plugins:{tooltip:{...TIP,callbacks:{label:c=>c.dataset.label+": "+usdS(c.parsed.y)}}}}});
+    data:{labels:ML,datasets:[Object.assign({label:'Volumen',data:a.mc},LINEA(MINTD))]},
+    options:Object.assign({},BASE,{
+      scales:{y:(function(){const T=techoOnda(a.mc,a.min,[a.min]);return AXIS_Y([T],{max:T});})(),x:AXIS_X},
+      plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>"Volumen: "+usdS(c.parsed.y)}})}}),
+    plugins:[SOMBRA,referencias([{v:a.min,t:'meta mínima',peso:'fuerte'}],PERIODO)]});
   if(cP2)cP2.destroy();
   cP2=new Chart(document.getElementById('chP2'),{type:'line',
-    data:{labels:ML,datasets:[
-      {label:'Fee',data:a.fees,borderColor:AMBAR,backgroundColor:c=>grad(c.chart.ctx,AMBAR,'66','06'),fill:true,tension:.42,borderWidth:3,pointRadius:4,pointBackgroundColor:'#fff',pointBorderColor:AMBAR,pointBorderWidth:2},
-      {label:'Estándar de la casa',data:ML.map(()=>EST),borderColor:INK,borderDash:[5,4],borderWidth:2,pointRadius:0,fill:false}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      scales:{y:{...AXIS,ticks:{...AXIS.ticks,callback:tk([EST,...a.fees])},beginAtZero:true,suggestedMax:EST*1.2},x:AXIS_X},
-      plugins:{tooltip:{...TIP,callbacks:{label:c=>c.dataset.label+": "+usdS(c.parsed.y)}}}}});
+    data:{labels:ML,datasets:[Object.assign({label:'Fee',data:a.fees},LINEA(AMBAR))]},
+    options:Object.assign({},BASE,{
+      scales:{y:(function(){const T=techoOnda(a.fees,EST,[EST]);return AXIS_Y([T],{max:T});})(),x:AXIS_X},
+      plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>"Fee: "+usdS(c.parsed.y)}})}}),
+    plugins:[SOMBRA,referencias([{v:EST,t:'estándar de fee',peso:'fuerte'}],PERIODO)]});
   document.getElementById('tb-pers').innerHTML=ML.map((m,i)=>{
     const v=a.mc[i],f=a.fees[i],n=a.ven[i],s=a.sf[i],u=a.util[i]||0;
-    const est=v>=a.norte?'<span class="pg-pill ok">Norte</span>':(v>=a.min?'<span class="pg-pill warn">Piso</span>':(v>0?'<span class="pg-pill due">Bajo</span>':'<span class="pg-pill muted">—</span>'));
+    const est=v>=a.norte?'<span class="pg-pill ok">Meta plena</span>':(v>=a.min?'<span class="pg-pill warn">Meta mínima</span>':(v>0?'<span class="pg-pill due">Bajo la mínima</span>':'<span class="pg-pill muted">—</span>'));
     return '<tr><td><b>'+m+'</b></td><td class="num">'+usdS(v)+'</td><td class="num">'+usdS(f)+'</td><td class="num">'+n+'</td><td class="num'+(s>0?' neg':'')+'">'+s+'</td><td class="num '+(u<0?'neg':'pos')+'">'+usdS(u)+'</td><td>'+est+'</td></tr>';}).join('')
     +'<tr style="background:#F7FAFB"><td><b>Año</b></td><td class="num">'+usd(vA)+'</td><td class="num">'+usd(fA)+'</td><td class="num">'+venA+'</td><td class="num'+(sfA>0?' neg':'')+'">'+sfA+'</td><td class="num '+(uA<0?'neg':'pos')+'">'+usdS(uA)+'</td><td></td></tr>'
-    +(a.m.ven?'<tr><td><b>'+MES.nombre.slice(0,3)+'</b> <span class="pg-pill muted">en curso</span></td><td class="num">'+usd(a.m.mc)+'</td><td class="num">'+usd(a.m.fees)+'</td><td class="num">'+a.m.ven+'</td><td class="num'+(a.m.sf>0?' neg':'')+'">'+a.m.sf+'</td><td class="num"></td><td>'+chipMes(a)+'</td></tr>':'');
+    +(a.m.ven?'<tr><td><b>'+MES.nombre.slice(0,3)+'</b> <span class="pg-pill muted">en curso</span></td><td class="num">'+usd(a.m.mc)+'</td><td class="num">'+usd(a.m.fees)+'</td><td class="num">'+a.m.ven+'</td><td class="num'+(a.m.sf>0?' neg':'')+'">'+a.m.sf+'</td><td class="num"></td><td>'+chipZ(a.m.mc,a.min,a.norte,a.m.deberia)+'</td></tr>':'');
 }
 sel.onchange=()=>pintaPersona(sel.value);
 sel.value=ordS4[0].n;
@@ -939,22 +1154,23 @@ GRAF.persona=()=>pintaPersona(sel.value);
 const cons=A.map(a=>({n:nom(a.n),niv:nivC(a.niv),v:sum(a.mc),f:sum(a.fees),p:sum(a.ven),s:sum(a.sf),u:sum(a.util)}))
   .map(c=>({...c,pct:c.v>0?c.f/c.v*100:0})).sort((x,y)=>y.v-x.v);
 document.getElementById('c-vol').textContent=usd(volAno);
-document.getElementById('c-vol-s').textContent="Mejor mes: "+usd(Math.max(...E.map(m=>m.mc)))+" en febrero";
+document.getElementById('c-vol-s').textContent="Mejor mes: "+usd(Math.max(...E.map(m=>m.mc)))+" · "+ML[E.map(m=>m.mc).indexOf(Math.max(...E.map(m=>m.mc)))];
 document.getElementById('c-fee').textContent=usd(feeAno);
 document.getElementById('c-fee-s').textContent=(feeAno/volAno*100).toFixed(1)+"% del volumen del año";
 document.getElementById('c-pol').textContent=venAno;
 document.getElementById('c-pol-s').textContent=sfAno+" salieron sin fee";
 document.getElementById('c-util').textContent=usd(utilAno);
+document.getElementById('c-util-s').textContent="Tu ingreso del año: "+usd(ingAno);
 document.getElementById('tb-cons').innerHTML=cons.map(c=>
  '<tr><td><b>'+c.n+'</b></td><td class="mini">'+c.niv+'</td><td class="num">'+usd(c.v)+'</td><td class="num">'+usd(c.f)+'</td><td class="num">'+c.pct.toFixed(1)+'%</td><td class="num">'+c.p+'</td><td class="num'+(c.s>0?' neg':'')+'">'+c.s+'</td><td class="num '+(c.u<0?'neg':'pos')+'">'+usdS(c.u)+'</td></tr>').join('');
 document.getElementById('tf-cons').innerHTML=
  '<tr style="background:#F7FAFB"><td><b>Equipo</b></td><td class="mini">'+M.personas+' personas</td><td class="num">'+usd(volAno)+'</td><td class="num">'+usd(feeAno)+'</td><td class="num">'+(feeAno/volAno*100).toFixed(1)+'%</td><td class="num">'+venAno+'</td><td class="num neg">'+sfAno+'</td><td class="num pos">'+usdS(utilAno)+'</td></tr>';
 const rep=cons.filter(c=>c.v>0);
-GRAF.consolidado=()=>{ new Chart(document.getElementById('chReparto'),{type:'bar',
-  data:{labels:rep.map(c=>c.n),datasets:[{data:rep.map(c=>c.v),backgroundColor:rep.map((c,i)=>i===0?MINTD:(i<3?MINT:'#9FDCCE')),borderRadius:6,barPercentage:.75}]},
-  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-    scales:{x:{...AXIS,ticks:{...AXIS.ticks,callback:moneyTick},beginAtZero:true},y:AXIS_CAT},
-    plugins:{tooltip:{...TIP,callbacks:{label:c=>usd(c.parsed.x)+" · "+(c.parsed.x/volAno*100).toFixed(1)+"% del año"}}}}}); };
+GRAF.ano=()=>{ chartsAno(); new Chart(document.getElementById('chReparto'),{type:'bar',
+  data:{labels:rep.map(c=>c.n),datasets:[BARRA(AZUL,{data:rep.map(c=>c.v)})]},
+  options:Object.assign({},BASE,{indexAxis:'y',
+    scales:{x:AXIS_Y(rep.map(c=>c.v)),y:AXIS_CAT},
+    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>usd(c.parsed.x)+" · "+(c.parsed.x/volAno*100).toFixed(1)+"% del año"}})}})}); };
 
 /* ===== NAV ===== */
 document.querySelectorAll('.pg-side a[data-go]').forEach(a=>a.onclick=()=>{
@@ -969,6 +1185,111 @@ document.querySelectorAll('.pg-side a[data-go]').forEach(a=>a.onclick=()=>{
     requestAnimationFrame(()=>requestAnimationFrame(()=>{ try{ GRAF[t](); }catch(e){ console.error(e); } }));
   }
 });
+
+/* ============================================================
+   7 · MANUAL DE LECTURA
+   Toda la explicacion fija de "que es cada cosa" vive aqui: en la pestaña "?" y en
+   el panel que abre el "?" de cada bloque. Fuera de aqui, la pantalla no explica.
+   Cada entrada: que es · de donde sale · como se lee · que se hace.
+   ============================================================ */
+const MANUAL=[
+['lo_que_va','Lo que va del mes',
+ 'Premium + fee de las ventas nuevas del equipo con mes de venta = este mes.',
+ 'Del BOS: columnas SALES MONTH, POLICY PREMIUM y SELLER FEES, solo "Sale - New Sale".',
+ 'Va del 1 al último día del mes y se pone en cero el día 1.',
+ 'Es el número que se compara contra las metas.'],
+['meta_minima','Meta mínima',
+ 'Lo que cada persona tiene que vender al mes para que la operación se sostenga.',
+ '$'+M.min_cabeza.toLocaleString('en-US')+' por persona; en curva la mitad los meses 1 a 3 y tres cuartos los meses 4 a 6.',
+ 'Llegar pinta ámbar: la operación se sostiene, pero no es lo que la casa espera.',
+ 'Es el piso de la conversación, no la aspiración.'],
+['meta_plena','Meta plena',
+ 'Lo que la casa espera de una persona madura.',
+ '$'+M.norte_cabeza.toLocaleString('en-US')+' por persona; en curva, la parte que le toque según su mes.',
+ 'Llegar pinta verde. Es lo normal, no lo extraordinario.',
+ 'Reconocer a quien llega y mirar qué hace distinto.'],
+['anillo','El anillo',
+ 'El avance real: lo que va dividido entre la meta plena.',
+ 'De la meta mínima y la meta plena de cada quien (o del equipo, sumadas).',
+ 'La pista lleva tres zonas: rojo hasta la mínima, ámbar hasta la plena, verde en la plena. Nunca mide ritmo. Los tres círculos del encabezado: dónde vas, la meta mínima (ámbar) y la meta plena (verde), con lo que falta para cada una.',
+ 'El número del centro es el que se dice en voz alta.'],
+['deberia','Debería ir hoy',
+ 'La meta mínima repartida entre los días hábiles: mínima × hábiles corridos ÷ hábiles del mes.',
+ 'Del calendario: días hábiles de lunes a viernes.',
+ 'Es la marca vertical en la barra y la marca en la pista del anillo.',
+ 'Quien va debajo de la marca hoy, cierra debajo de la meta mínima.'],
+['ritmo','Ritmo',
+ 'Lo que lleva dividido entre lo que debería ir hoy.',
+ 'De los dos anteriores.',
+ 'Adelante desde el 105%, en el ritmo entre 95 y 105, atrás por debajo de 95.',
+ 'Se lee como palabra; el número no pinta nada.'],
+['curva','En curva',
+ 'Persona en sus primeros seis meses de operación.',
+ 'De nomina_personas.fecha_operacion: cuenta desde la primera venta, no desde que firmó.',
+ 'Va al 50% de las metas los meses 1 a 3, al 75% los meses 4 a 6 y a metas plenas desde el 7.',
+ 'Se mide contra sus metas de curva, no contra las de los demás.'],
+['fee','Fee',
+ 'Lo que la agencia cobra de fee en cada venta.',
+ 'Del BOS: columna SELLER FEES.',
+ 'El estándar es $'+EST.toLocaleString('en-US')+' al mes por persona; la mediana del equipo hoy es '+usd(D.mediana_fee)+'.',
+ 'Una venta sin fee es plata que se dejó sobre la mesa.'],
+['mesa','Sobre la mesa',
+ 'Ventas sin fee multiplicadas por la mediana del fee del mes.',
+ 'Del BOS.',
+ 'Es lo que se hubiera cobrado si cada venta trajera el fee típico.',
+ 'La palanca más barata: no hay que vender más.'],
+['utilidad','Utilidad del equipo',
+ 'Lo que genera el equipo menos la comisión de los agentes y el costo de nómina del equipo.',
+ 'Del BOS (comisión y fee) más la nómina.',
+ 'Positiva quiere decir que el equipo se paga solo y deja.',
+ 'Si es negativa, el equipo cuesta más de lo que trae.'],
+['ingreso','Tu ingreso',
+ 'La comisión de líder sobre la generación del equipo.',
+ 'De lideres_config multiplicado por la generación del equipo.',
+ 'Sube cuando sube el equipo.',
+ 'Es la misma onda de la utilidad, con otra escala.'],
+['positivo','Positivo',
+ 'Un negocio mandado a cotizar: llegó a Audit / Quote en HubSpot con contacto, empresa y negocio completos.',
+ 'De HubSpot.',
+ 'Montarlo no basta: tiene que entrar a esa etapa.',
+ 'El estándar es uno por día hábil por persona.'],
+['cero','Días en cero',
+ 'Días hábiles del mes sin ningún positivo.',
+ 'De HubSpot.',
+ '7 de 7 quiere decir que no ha registrado nada este mes.',
+ 'Primera conversación de la semana.']
+];
+const MAN_IX = Object.fromEntries(MANUAL.map(e=>[e[0],e]));
+const CAMPOS = ['Qué es','De dónde sale','Cómo se lee','Qué se hace'];
+function manHTML(e){
+  return '<div class="man" id="man-'+e[0]+'"><h3>'+e[1]+'</h3><dl>'
+   + CAMPOS.map((c,i)=>'<dt>'+c+'</dt><dd>'+e[2+i]+'</dd>').join('')
+   + '</dl></div>';
+}
+document.getElementById('man-lista').innerHTML = MANUAL.map(manHTML).join('');
+document.getElementById('man-idx').innerHTML = MANUAL.map(e=>'<a data-ir="man-'+e[0]+'">'+e[1]+'</a>').join('');
+document.querySelectorAll('#man-idx a').forEach(a=>a.onclick=()=>{
+  const el=document.getElementById(a.dataset.ir); if(el) el.scrollIntoView({behavior:'smooth',block:'center'});});
+
+/* El "?" de cada bloque abre SOLO su entrada, en un panel al lado. */
+const hqBack=document.getElementById('hq-back'), hqPanel=document.getElementById('hq-panel'), hqBody=document.getElementById('hq-body');
+function cerrarHq(){ hqBack.classList.remove('on'); hqPanel.classList.remove('on'); }
+function abrirHq(k){
+  const e=MAN_IX[k]; if(!e) return;
+  hqBody.innerHTML = '<div class="pg-eyebrow" style="margin-bottom:8px">Manual de lectura</div>' + manHTML(e)
+    + '<div style="margin-top:20px"><a class="man-idx" style="display:inline-block" data-todo="1">Ver el manual completo</a></div>';
+  const v=hqBody.querySelector('[data-todo]');
+  if(v){ v.style.cssText='font-size:12px;font-weight:700;color:#229A82;background:#EAF6F3;border-radius:999px;padding:6px 12px;text-decoration:none;cursor:pointer;display:inline-block';
+    v.onclick=()=>{ cerrarHq(); const link=document.querySelector('.pg-side a[data-go="manual"]'); if(link) link.click(); }; }
+  hqBack.classList.add('on'); hqPanel.classList.add('on');
+}
+document.addEventListener('click', ev=>{
+  const b = ev.target.closest ? ev.target.closest('.hq') : null;
+  if(b && b.dataset.h){ ev.preventDefault(); ev.stopPropagation(); abrirHq(b.dataset.h); }
+});
+hqBack.onclick=cerrarHq;
+document.getElementById('hq-x').onclick=cerrarHq;
+document.addEventListener('keydown', ev=>{ if(ev.key==='Escape') cerrarHq(); });
 
 
 
@@ -1211,7 +1532,7 @@ boot();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-brahian.html";
-var PGV_VERSION=10; // v9 - Llamadas de hoy por persona (API de RingCentral cada 15 min) y hora de actualizacion. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
+var PGV_VERSION=11; // v11 - Tablero simple: cinco pestanas de lectura (El mes, Hoy, Alertas, Persona, Ano) + Bitacora + Manual de lectura. Meta minima / Meta plena en toda la pantalla. Anillos y barras con la regla de la casa: avance real contra la meta plena, pista por zonas y tick del deberia ir hoy; el ritmo en palabra. Cero parrafos de explicacion fija fuera del manual. // v9 - Llamadas de hoy por persona (API de RingCentral cada 15 min) y hora de actualizacion. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

@@ -2166,7 +2166,8 @@ function arrancar(){
       // En "ver como" sin permiso el motor devuelve null: el portal sigue
       // siendo el de quien mira, exactamente como antes. Nunca se filtra nada.
       if(VC && !HERO){ VC=null; }
-      if(VC){ franja(HERO); muroDeOtra(cli); try{ cli.rpc("ver_como_registrar",{p_correo:VC,p_pantalla:"index"}); }catch(e){} }
+      if(VC){ franja(HERO); muroDeOtra(cli); try{ cli.rpc("ver_como_registrar",{p_correo:VC,p_pantalla:"index"})
+           .then(function(){},function(){}); }catch(e){}  /* el .then es lo que dispara la peticion en supabase-js: sin el, la huella no se escribe */ }
       try{ if(HERO) pintarHero(HERO); }catch(e){ console.warn("[hero]",e); }
       if(!VC) muroCompacto();
     },function(){ if(!VC) muroCompacto(); });

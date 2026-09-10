@@ -1184,11 +1184,13 @@ function pintarCabecera(){
   const li  = document.getElementById('lb-inc');    if (li)  li.textContent = 'Cambian cada mes. Estos son los de ' + A.mesTxt + ': cuánto llevas y cuánto te falta para cada uno.';
   const lt  = document.getElementById('lb-top');    if (lt)  lt.textContent = 'Los mejores del equipo';
   const wm  = document.getElementById('why-meta');
-  if (wm) wm.innerHTML = usd(META) + ' de combinada: premium + fee. ' + (MI.nivel
-    ? MI.nivel + (MI.sube_a ? ' \u2014 sube a <b>' + usd(MI.sube_a) + '</b> en ' + MI.sube_en + '.' : '.')
-    : 'Es la meta de la casa para cada asesor.');
+  /* La meta que se dice aqui es SIEMPRE la de la casa. La rampa de la camada
+     ("mes 2 en operacion \u00b7 50 %") es la vara con la que direccion mide a quien
+     lleva dos meses sin compararlo con quien lleva dos anos: vive en el tablero
+     del equipo, no en la pantalla de la persona. 10-sep-2026. */
+  if (wm) wm.innerHTML = usd(META) + ' de combinada: premium + fee. Es la meta de la casa para cada asesor.';
   const sf = document.getElementById('s-formula');
-  if (sf && MI.nivel && MI.factor < 1) sf.textContent = MI.nivel.toLowerCase();
+  if (sf) sf.textContent = '';
   const lg  = document.getElementById('lb-meta-graf');
   if (lg) lg.textContent = 'L\u00ednea \u00e1mbar punteada: la meta de ' + usd(META) + '.';
   const la  = document.getElementById('lb-alcancia');

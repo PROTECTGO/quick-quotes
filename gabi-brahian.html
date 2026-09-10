@@ -110,6 +110,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 .al.sev-media{border-left:5px solid var(--pg-warn)} .al.sev-media .a-v{color:#8a6a1d}
 .tag-nofee{background:#FCEEEC;color:#9c3d35} .tag-caida{background:#FBF3E2;color:#8a6a1d} .tag-mixto{background:#EDEFFB;color:#3f4bab}
 .tag-premium{background:#E6F0FA;color:#1f5b8f}
+.tag-llamadas{background:#FBF3E2;color:#B07E12}
 
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .chip{border:1px solid var(--pg-line);background:#fff;color:var(--pg-muted);border-radius:999px;padding:8px 15px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--pg-font-body)}
@@ -237,7 +238,6 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 @media(max-width:820px){.hero-mes{font-size:38px}.fr.hero{padding:22px 20px 14px}}
 </style>
 <script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
-<script src="https://protectgo.github.io/quick-quotes/pg-sombra.js"></script>
 </head>
 <body>
 <a href="index.html" id="pgVolver" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
@@ -557,6 +557,16 @@ async function cargarDatos(sb){
   const utilPP = {};
   (rU.data||[]).forEach(u=>{ const k=ym(u.mes); if(k in idx){ (utilPP[u.nombre] ||= Array(8).fill(0))[idx[k]] += N(u.utilidad_360_total); } });
 
+  /* Llamadas de hoy por persona (v_actividad_equipo_visible, RingCentral cada 15 min),
+     solo para alimentar la alerta SIN_LLAMAR. No es fatal si falla o si a alguien le falta
+     el paquete: se queda en null y esa persona simplemente no genera la alerta — la misma
+     vista se vuelve a leer más abajo en actividadEquipo() para pintar su propia tabla. */
+  let llamByAgente = {};
+  try{
+    const rAct = await sb.from('v_actividad_equipo_visible').select('agente,llamadas_hoy');
+    if(!rAct.error) llamByAgente = Object.fromEntries((rAct.data||[]).map(r=>[r.agente, r.llamadas_hoy]));
+  }catch(e){ /* sin datos de llamadas: la alerta SIN_LLAMAR no aplica y ya */ }
+
   const semMap = s => s==='verde'?'verde':(s==='ambar'?'ambar':(s==='rojo'?'rojo':'sin'));
   const agentes = meta.map(a=>{
     const s = serie.filter(x=>x.agente===a.agente);
@@ -569,7 +579,8 @@ async function cargarDatos(sb){
       /* Un solo reloj: el mes calendario por MES DE VENTA. La ventana móvil de 28 días
          (mc_ultimas_4sem) queda jubilada: mostraba más de lo que el mes realmente lleva. */
       s4:N(a.mc_mes_actual), ant:N(a.mc_mes_anterior), nuevo:!!a.primera_vez_este_mes, prom:N(a.mc_promedio_mes),
-      sem:semMap(a.semaforo), mc, fees, ven, sf, util: utilPP[a.nombre_nomina] || arr(),
+      sem:semMap(a.semaforo), llamadas_hoy: llamByAgente[a.agente] ?? null,
+      mc, fees, ven, sf, util: utilPP[a.nombre_nomina] || arr(),
       m:{ mc:N(a.mc_mes_actual), fees:N(a.fees_mes_actual), ven:N(a.ventas_mes_actual), sf:N(a.ventas_sin_fee_mes_actual),
           pct:N(a.pct_del_minimo_mes), sem: a.semaforo_mes==='arranque del mes' ? 'sin' : semMap(a.semaforo_mes),
           deberia:N(a.ritmo_piso_a_la_fecha), proy:N(a.proyeccion_cierre_mes) }
@@ -999,6 +1010,12 @@ new Chart(document.getElementById('chFalta'),{type:'bar',
 
 /* ===== PATRONES ===== */
 const iA = E.length-1, MED = ago.med;
+/* Hora de Colombia (UTC-5, sin horario de verano) para la alerta SIN_LLAMAR — nunca la
+   hora del navegador de quien mira la pantalla. */
+const HORA_COL = new Date(Date.now() - 5*3600000);
+const diaColHoy = HORA_COL.getUTCDay(); // 0 domingo … 6 sábado
+const esHabilHoy = diaColHoy>=1 && diaColHoy<=5;
+const horaColHoy = HORA_COL.getUTCHours();
 function detecta(a){
   const v=a.ven[iA], f=a.fees[iA], s=a.sf[iA], mc=a.mc[iA];
   const conVenta=a.mc.filter((x,i)=>a.ven[i]>0);
@@ -1020,6 +1037,11 @@ function detecta(a){
   if(!a.cam && v===0 && prevV>0)
     out.push({n:a.n,p:'SE_APAGO',v:prev,u:'dejó de entrar',d:'0 ventas · venía de '+usd(prev),
       t:'No registró ventas. El mes anterior había hecho '+usd(prev)+' en '+prevV+' ventas.'});
+  /* SIN_LLAMAR: día hábil, 11:00 o más hora Colombia, y llamadas_hoy en 0 EXACTO (no null:
+     quien no tiene usuario de RingCentral no trae el dato y no genera esta alerta). */
+  if(esHabilHoy && horaColHoy>=11 && a.llamadas_hoy===0)
+    out.push({n:a.n,p:'SIN_LLAMAR',v:0,u:'llamadas hoy',d:'va el día en cero · son las '+horaColHoy+':00',
+      t:'No registró ninguna llamada hoy. Van las '+horaColHoy+':00 (hora Colombia) y sigue en cero.'});
   return out;
 }
 const TAGS={
@@ -1027,9 +1049,10 @@ const TAGS={
  CAIDA_DE_RITMO:{t:'perdió el ritmo',c:'tag-caida',s:'media',do:'revisar la agenda de la semana'},
  VENDE_MAS_COBRA_MENOS:{t:'volumen sin fee',c:'tag-mixto',s:'media',do:'acordar el fee mínimo por póliza'},
  SE_APAGO:{t:'se apagó',c:'tag-caida',s:'alta',do:'primera conversación de la semana'},
- COBRA_Y_NO_VENDE:{t:'cobra y no vende',c:'tag-premium',s:'alta',do:'mirar el tamaño de lo que está cotizando, no el fee'}
+ COBRA_Y_NO_VENDE:{t:'cobra y no vende',c:'tag-premium',s:'alta',do:'mirar el tamaño de lo que está cotizando, no el fee'},
+ SIN_LLAMAR:{t:'sin llamar hoy',c:'tag-llamadas',s:'alta',do:'preguntar qué pasó antes del mediodía',raw:true}
 };
-const PRIO={VENDE_SIN_COBRAR:0,COBRA_Y_NO_VENDE:1,SE_APAGO:2,CAIDA_DE_RITMO:3,VENDE_MAS_COBRA_MENOS:4};
+const PRIO={VENDE_SIN_COBRAR:0,COBRA_Y_NO_VENDE:1,SE_APAGO:2,SIN_LLAMAR:3,CAIDA_DE_RITMO:4,VENDE_MAS_COBRA_MENOS:5};
 const ALERTAS=A.flatMap(detecta).sort((x,y)=>PRIO[x.p]-PRIO[y.p] || y.v-x.v);
 const cumplen=A.filter(a=>a.fees[iA]>=EST).length, vendieron=A.filter(a=>a.ven[iA]>0).length;
 document.getElementById('p-mes-l').textContent=MESLBL.toLowerCase();
@@ -1044,10 +1067,12 @@ document.getElementById('p-ano-s').textContent=sfAno+" de "+venAno+" ventas sin 
 document.getElementById('p-titular').textContent="En el año el equipo dejó sobre la mesa "+usd(mesaAno)+" de fee — más de lo que cobró ("+usd(feeAno)+").";
 function lineaAlerta(al){
   const t=TAGS[al.p];
+  /* raw:true → al.v es una cuenta (llamadas), no plata: se escribe tal cual, sin usd(). */
+  const valor = t.raw ? al.v : usd(al.v);
   return '<div class="al1 sev-'+t.s+'"><span class="a-l">'+nom(al.n)+'</span>'
    +'<span class="sep">·</span><span class="a-tag '+t.c+'">'+t.t+'</span>'
    +'<span class="sep">·</span><span class="a-c">'+(al.d||'')+'</span>'
-   +'<span class="sep">·</span><span class="a-v">'+usd(al.v)+' '+al.u+'</span>'
+   +'<span class="sep">·</span><span class="a-v">'+valor+' '+al.u+'</span>'
    +'<span class="a-do">→ '+t.do+'</span></div>';
 }
 document.getElementById('alertas').innerHTML=ALERTAS.map(lineaAlerta).join('')
@@ -1476,8 +1501,31 @@ async function actividadEquipo(sb){
     + '<div><div class="l">Sin mandar nada a cotizar</div><div class="v' + (enCero ? ' mal' : '') + '">' + enCero + '</div><div class="s">' + (enCero ? 'con estas hay que hablar hoy' : 'todo el mundo anotó algo') + '</div></div>'
     + '<div><div class="l">Promedio por persona</div><div class="v">' + (data.length ? (total / data.length).toFixed(1).replace('.', ',') : '0') + '</div><div class="s">el estándar a hoy son ' + hab + '</div></div>';
 
-  cont.innerHTML = '<div style="overflow-x:auto"><table class="act-tab">'
-    + '<thead><tr><th>Persona</th><th class="n">Mandados a cotizar</th><th style="width:120px">Contra el estándar</th><th class="n">Montados</th><th class="n">Llamadas hoy</th><th class="n">Llamadas mes</th>'
+  /* Celda combinada "Llamadas hoy · mes": hoy destacado, mes chiquito y gris al lado.
+     — nunca 0 en vez de null: si viene null (sin usuario de RingCentral), guion gris. */
+  function celdaLlamadas(lh, lm){
+    const MUT = 'color:var(--pg-muted)';
+    if (lh == null && lm == null) {
+      return '<td class="n" title="Sin usuario de RingCentral asignado"><span style="' + MUT + '">—</span></td>';
+    }
+    const hTxt = lh == null ? '<span style="' + MUT + '">—</span>' : lh;
+    const mTxt = lm == null ? '<span style="' + MUT + '">—</span>' : lm;
+    const hNum = lh == null ? '—' : lh, mNum = lm == null ? '—' : lm;
+    const ttl = hNum + (lh === 1 ? ' llamada hoy' : ' llamadas hoy') + ' · ' + mNum + ' este mes';
+    return '<td class="n" title="' + ttl.replace(/"/g, '&quot;') + '"><b>' + hTxt + '</b> <span style="' + MUT + ';font-size:11px">· ' + mTxt + '</span></td>';
+  }
+  /* Línea del equipo, arriba de la tabla: suma de llamadas_hoy (null cuenta como 0) y la
+     hora de la última sincronización (igual para todas las filas). Si da 0 y es temprano,
+     se muestra igual — el dato es el dato. */
+  const totalLlamHoy = data.reduce((s, r) => s + (Number(r.llamadas_hoy) || 0), 0);
+  const actzEquipo = data[0] && data[0].llamadas_actualizado;
+  const lineaEquipoLlam = '<div class="mini" style="margin-bottom:10px;font-size:12.5px">El equipo lleva '
+    + '<b style="color:var(--pg-ink)">' + totalLlamHoy + '</b> llamada' + (totalLlamHoy === 1 ? '' : 's') + ' hoy'
+    + (actzEquipo ? ' · actualizado a las ' + actzEquipo : '') + '</div>';
+
+  cont.innerHTML = lineaEquipoLlam
+    + '<div style="overflow-x:auto"><table class="act-tab">'
+    + '<thead><tr><th>Persona</th><th class="n">Mandados a cotizar</th><th style="width:120px">Contra el estándar</th><th class="n">Montados</th><th class="n">Llamadas hoy · mes</th>'
     + '<th class="n">Días en cero</th><th class="n">Sin subir hace</th><th class="n">Ventas del mes</th></tr></thead><tbody>'
     + data.map(function(r){
         const pct = Math.min(100, Math.round((r.pct_estandar == null ? 0 : Number(r.pct_estandar))));
@@ -1487,8 +1535,7 @@ async function actividadEquipo(sb){
           + '<td class="n' + ((r.positivos_mes || 0) === 0 ? ' cero' : '') + '">' + (r.positivos_mes || 0) + '</td>'
           + '<td><div class="act-bar"><i class="' + cls + '" style="width:' + pct + '%"></i></div></td>'
           + '<td class="n">' + (r.creados_mes || 0) + '</td>'
-          + '<td class="n">' + (r.llamadas_hoy == null ? '—' : r.llamadas_hoy) + '</td>'
-          + '<td class="n">' + (r.llamadas_mes == null ? '—' : r.llamadas_mes) + '</td>'
+          + celdaLlamadas(r.llamadas_hoy, r.llamadas_mes)
           + '<td class="n' + (r.dias_en_cero >= hab ? ' cero' : '') + '">' + (r.dias_en_cero || 0) + '</td>'
           + '<td class="n">' + sin + '</td>'
           + '<td class="n">' + (r.ventas_mes || 0) + '</td></tr>';
@@ -1543,7 +1590,7 @@ boot();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-brahian.html";
-var PGV_VERSION=12; // v12 - Quinta alerta: "cobra y no vende". Es la primera del tablero que mira el PREMIUM: salta cuando el fee del mes llega a $2.500 (la puerta de fee del 30 %) pero el premium no llega a $35.000 (la puerta de premium del mismo 30 %), o sea el mes que se ve bien de fee y deja la escala en la base. Las otras cuatro alertas miraban solo el fee. // v11 - v11 - Tablero simple: cinco pestanas de lectura (El mes, Hoy, Alertas, Persona, Ano) + Bitacora + Manual de lectura. Meta minima / Meta plena en toda la pantalla. Anillos y barras con la regla de la casa: avance real contra la meta plena, pista por zonas y tick del deberia ir hoy; el ritmo en palabra. Cero parrafos de explicacion fija fuera del manual. // v9 - Llamadas de hoy por persona (API de RingCentral cada 15 min) y hora de actualizacion. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
+var PGV_VERSION=13; // v13 - Llamadas por persona: en la tabla de Hoy, "Llamadas hoy" y "Llamadas mes" se vuelven una sola columna combinada (hoy destacado, mes chiquito y gris, con title al pasar el mouse), guion cuando la persona no tiene usuario de RingCentral (nunca 0 ni null); arriba de la tabla, una línea con el total de llamadas de hoy del equipo y la hora de la última sincronización; y sexta alerta "sin llamar hoy" — salta en día hábil desde las 11:00 hora Colombia (UTC-5, calculada aparte de la del navegador) cuando llamadas_hoy da 0 exacto (null no cuenta: sin RingCentral no hay alerta). v_actividad_equipo_visible ahora también se lee, aparte, dentro de cargarDatos() para alimentar esa alerta. // v12 - Quinta alerta: "cobra y no vende". Es la primera del tablero que mira el PREMIUM: salta cuando el fee del mes llega a $2.500 (la puerta de fee del 30 %) pero el premium no llega a $35.000 (la puerta de premium del mismo 30 %), o sea el mes que se ve bien de fee y deja la escala en la base. Las otras cuatro alertas miraban solo el fee. // v11 - v11 - Tablero simple: cinco pestanas de lectura (El mes, Hoy, Alertas, Persona, Ano) + Bitacora + Manual de lectura. Meta minima / Meta plena en toda la pantalla. Anillos y barras con la regla de la casa: avance real contra la meta plena, pista por zonas y tick del deberia ir hoy; el ritmo en palabra. Cero parrafos de explicacion fija fuera del manual. // v9 - Llamadas de hoy por persona (API de RingCentral cada 15 min) y hora de actualizacion. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

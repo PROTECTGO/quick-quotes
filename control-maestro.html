@@ -290,7 +290,6 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
 </style>
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
 <script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
-<script src="https://protectgo.github.io/quick-quotes/pg-sombra.js"></script>
 </head>
 <body>
 
@@ -331,7 +330,7 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
         <button class="mode-btn" id="modoMaestraBtn">Vista Maestra</button>
         <button class="mode-btn" id="modoFotosBtn">Fotos</button>
       </div>
-      <button class="mtb-btn" id="verComoBtn">👁 Ver como…</button>
+      <button class="mtb-btn" id="verComoBtn" title="Simula qué tarjetas verías con los cambios de permisos que tienes sin guardar en esta pantalla — no abre el portal de nadie.">Previsualizar permisos…</button>
       <div class="spacer"></div>
       <span id="pendCount" style="display:none" class="pend-badge">0 cambios sin guardar</span>
       <button class="mtb-guardar" id="guardarBtn" onclick="guardarTodo()" disabled>Guardar</button>
@@ -351,7 +350,7 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
     </section>
     <div class="uspanel" id="uspanel" style="display:none">
       <h3>Usuarios del área seleccionada</h3>
-      <p class="usub" id="uspanelSub">Elige un área en la matriz para ver quién pertenece a ella (fuente: <code>agentes</code> activos). Desde aquí puedes previsualizar el portal de cada persona con "Ver como".</p>
+      <p class="usub" id="uspanelSub">Elige un área en la matriz para ver quién pertenece a ella (fuente: <code>agentes</code> activos). Desde aquí puedes previsualizar sus tarjetas con "Ver como", o abrir su portal real con "Abrir su portal →".</p>
       <div class="uchips" id="uchips"></div>
       <div class="ulist" id="ulist"></div>
     </div>
@@ -467,7 +466,7 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
       <h2>Últimos cambios</h2>
       <div id="logList"></div>
     </div>
-    <div class="pg-note">Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy), schema <code>portal</code>: tablas <code>widgets_registro</code> y <code>widgets_log</code> (migradas desde el Portal en la consolidación). La escritura está restringida a <code>sales@protectgoservices.com</code> por RLS (<code>widgets_registro_escribe_sales</code>) — este panel no puede saltarse esa regla; solo la usa. "Ver como" reutiliza las funciones <code>ver_como()</code> / <code>ver_como_lista()</code> ya usadas en el ecosistema GABI (mismo candado a sales@, misma auditoría en <code>ver_como_auditoria</code>); la simulación que muestra usa los cambios pendientes de esta pantalla, sin llamar a <code>mis_pantallas()</code>. El panel "Candado por área" es otra tabla (<code>portal.pantalla_acceso.areas_permitidas</code>, RLS <code>pantalla_acceso_escribe_sales</code>) y sí llega hasta <code>puede_ver()</code> — las áreas que ofrece salen de <code>gabi_accesos.area</code> (poblada desde nómina), que usa un vocabulario distinto al de las columnas de esta matriz (p. ej. "ventas"/"kam"/"retencion" en vez de "comercial"): no copies el nombre de la columna de arriba como área del candado, elige la que de verdad tiene la gente en <code>gabi_accesos.area</code>.</div>
+    <div class="pg-note">Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy), schema <code>portal</code>: tablas <code>widgets_registro</code> y <code>widgets_log</code> (migradas desde el Portal en la consolidación). La escritura está restringida a <code>sales@protectgoservices.com</code> por RLS (<code>widgets_registro_escribe_sales</code>) — este panel no puede saltarse esa regla; solo la usa. "Previsualizar permisos…" reutiliza las funciones <code>ver_como()</code> / <code>ver_como_lista()</code> ya usadas en el ecosistema GABI (mismo candado a sales@, misma auditoría en <code>ver_como_auditoria</code>); la simulación que muestra usa los cambios pendientes de esta pantalla, sin llamar a <code>mis_pantallas()</code>. El botón "Abrir su portal →" (Por usuario y Vista Maestra) es otra cosa: no simula nada, abre <code>index.html?ver_como=correo</code>, el portal real de esa persona en solo lectura. El panel "Candado por área" es otra tabla (<code>portal.pantalla_acceso.areas_permitidas</code>, RLS <code>pantalla_acceso_escribe_sales</code>) y sí llega hasta <code>puede_ver()</code> — las áreas que ofrece salen de <code>gabi_accesos.area</code> (poblada desde nómina), que usa un vocabulario distinto al de las columnas de esta matriz (p. ej. "ventas"/"kam"/"retencion" en vez de "comercial"): no copies el nombre de la columna de arriba como área del candado, elige la que de verdad tiene la gente en <code>gabi_accesos.area</code>.</div>
   </main>
 </div>
 
@@ -475,8 +474,8 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
   <div class="vc-card">
     <button class="vc-close" onclick="cerrarVerComo()">×</button>
     <div id="vcPickStep">
-      <h2>Ver como…</h2>
-      <div class="vc-sub">Elige una persona para previsualizar el portal con los cambios pendientes (aún sin guardar).</div>
+      <h2>Previsualizar permisos…</h2>
+      <div class="vc-sub">Elige una persona para ver cómo quedarían sus tarjetas con los cambios de permisos que tienes sin guardar en esta pantalla — no abre su portal, solo simula la lista. Para abrir su portal real, usa "Abrir su portal →" en Por usuario o en Vista Maestra.</div>
       <input type="text" class="vc-search" id="vcSearch" placeholder="Buscar por nombre o rol…" oninput="renderVcLista()">
       <div class="ulist" id="vcLista"></div>
     </div>
@@ -750,7 +749,9 @@ async function cambiarModo(m){
   document.getElementById("pg-candado-area").style.display = m==="fotos" ? "none" : "block";
   if(m==="usuario"){
     if(!AREA_SEL) AREA_SEL = Object.keys(AREAS_LBL)[0];
-    await cargarUsuariosSiHaceFalta();
+    // Carga también gabi_accesos (GA_ALL): "Abrir su portal →" necesita el correo de cada
+    // persona, y ver_como_lista() (VC_USERS) no lo trae — solo agente_id/auth_uid/nombre/rol.
+    await Promise.all([ cargarUsuariosSiHaceFalta(), cargarGabiAccesosSiHaceFalta() ]);
     renderUsuarios(AREA_SEL);
   }
   if(m==="maestra"){
@@ -766,7 +767,7 @@ async function cambiarModo(m){
 async function seleccionarArea(area){
   AREA_SEL=area;
   if(MODO!=="usuario"){ await cambiarModo("usuario"); return; }
-  await cargarUsuariosSiHaceFalta();
+  await Promise.all([ cargarUsuariosSiHaceFalta(), cargarGabiAccesosSiHaceFalta() ]);
   renderUsuarios(area);
 }
 
@@ -798,6 +799,16 @@ async function cargarGabiAccesosSiHaceFalta(force){
     else { GA_ALL = data||[]; }
   }catch(e){ GA_ALL_ERROR = e.message||String(e); GA_ALL = []; console.error("gabi_accesos:", e); }
   return GA_ALL;
+}
+
+// Correo de una persona de ver_como_lista() (VC_USERS) a partir de su auth_uid — esa RPC
+// devuelve agente_id/auth_uid/nombre/rol, SIN correo (verificado en Postgres: TABLE(agente_id
+// uuid, auth_uid uuid, nombre text, rol text)). El correo vive en gabi_accesos.user_id = auth_uid.
+// Lo usa "Abrir su portal →" en Por usuario.
+function emailPorAuthUid(authUid){
+  if(!authUid) return null;
+  const fila = (GA_ALL||[]).find(r=>r.email && String(r.user_id)===String(authUid));
+  return fila ? fila.email : null;
 }
 
 // ===== FOTOS — panel de administración (ronda "Fotos en firmas y tarjetas") =====
@@ -980,6 +991,14 @@ const FIDELIDAD_SIMULACION = {
   // la pantalla vuelve a pedir los datos de la persona simulada con
   // mi_proceso(<correo>), asi que las cifras SON las de ella (9-sep-2026, v8).
   gabi_asesor: { nivel:'fiel', nota:'Fiel: ademas del banner, la pantalla pide mi_proceso(<correo>) y muestra las cifras REALES de esa persona. Todo lo que escribe queda apagado (el plan del mes y marcar el chispazo visto).' },
+  // El index/portal entra HOY como fiel (10-sep-2026, v10): el boton "Abrir su portal ->" nuevo
+  // de Control Maestro (Por usuario y Vista Maestra) abre index.html?ver_como=<correo>, y esa
+  // pantalla -- montada en paralelo esta misma ronda -- vuelve a pedir hero, tarjetas y muro con
+  // las funciones _como() para la persona simulada. 'index' no es una clave de widgets_registro
+  // (el index no es un widget: no tiene fila en SNAP ni aparece en la lista de la Vista Maestra):
+  // esta entrada es solo el registro de fidelidad de ese boton nuevo, para que quede escrito que
+  // tan real es lo que muestra.
+  index: { nivel:'fiel', nota:'Fiel: desde hoy el portal (index.html) se abre tal cual lo ve esa persona — su hero, sus tarjetas y su muro, con las funciones _como() para quien pregunta es director o socio. No escribe nada en ese modo (ni breaks, ni reacciones, ni comentarios) y "Mi jornada" se oculta, porque ese reloj es de quien mira, no el de ella.' },
   // Wired con ver-como-helper.js (banner + candado de rol real):
   // gabi_brahian, gabi_fam, gabi_incentivos, retencion_riesgo,
   // mapa_puestos, renovaciones — usan FIDELIDAD_DEFAULT ('parcial') porque el
@@ -1115,12 +1134,16 @@ function renderMaestra(){
         '<div class="vm-fidelidad'+(fid.nivel==='fiel'?' fiel':'')+'">"Abrir como" — '+esc(fid.nota)+'</div>'+
         personasLista.map(p=>{
           const abrirUrl = urlAbrirComo(f.clave, p.email);
+          const portalUrl = 'index.html?ver_como=' + encodeURIComponent(p.email);
           return '<div class="vm-persona">'+
             '<span class="vpn">'+esc(p.email)+'</span><span class="vpr">'+esc(p.rol||'—')+' · '+esc(p.area||'—')+'</span>'+
             '<span class="vpm">'+esc(p.motivo)+'</span>'+
-            '<span class="vpabrir">'+(abrirUrl
-              ? '<a class="vm-abrir-btn" href="'+esc(abrirUrl)+'" target="_blank" rel="noopener">👁 Abrir como…</a>'
-              : '<span class="vm-sinurl">sin URL registrada</span>')+'</span>'+
+            '<span class="vpabrir">'+
+              '<a class="vm-abrir-btn" style="margin-right:8px" href="'+esc(portalUrl)+'" target="_blank" rel="noopener">Abrir su portal →</a>'+
+              (abrirUrl
+                ? '<a class="vm-abrir-btn" href="'+esc(abrirUrl)+'" target="_blank" rel="noopener">👁 Abrir como…</a>'
+                : '<span class="vm-sinurl">sin URL registrada</span>')+
+            '</span>'+
           '</div>';
         }).join('') + (personasLista.length ? '' : '<div style="font-size:11.5px;color:var(--pg-muted)">Nadie la ve hoy.</div>')+
       '</div>'+
@@ -1160,7 +1183,7 @@ function usuariosDeArea(area){
 
 function renderUsuarios(area){
   const sub=document.getElementById("uspanelSub");
-  if(sub) sub.textContent = 'Personas relacionadas con "'+(AREAS_LBL[area]||area)+'" según su rol (fuente: ver_como_lista / agentes activos). Clic en "Ver como" para simular su portal con los cambios pendientes.';
+  if(sub) sub.textContent = 'Personas relacionadas con "'+(AREAS_LBL[area]||area)+'" según su rol (fuente: ver_como_lista / agentes activos). "Ver como" simula sus tarjetas con los cambios pendientes; "Abrir su portal →" abre su portal real.';
   const chipsWrap=document.getElementById("uchips");
   if(chipsWrap){
     chipsWrap.innerHTML = Object.keys(AREAS_LBL).map(a=>'<button type="button" class="uchip'+(a===area?" active":"")+'" onclick="seleccionarArea(\''+a+'\')">'+esc(AREAS_LBL[a])+'</button>').join("");
@@ -1177,8 +1200,13 @@ function renderUsuarios(area){
   list.innerHTML = aviso + usuarios.map(u=>{
     const nombreSeguro = escJsAttr(u.nombre);
     const rolSeguro = escJsAttr(u.rol||"");
+    const correo = emailPorAuthUid(u.auth_uid);
+    const portalUrl = correo ? ('index.html?ver_como='+encodeURIComponent(correo)) : null;
     return '<div class="urow"><span class="un">'+esc(u.nombre)+'</span><span class="ur">'+esc(u.rol||"—")+'</span>'+
-      '<span class="uv"><button type="button" class="mtb-btn" style="padding:5px 12px;font-size:11.5px" onclick="elegirVerComo(\''+esc(u.agente_id)+'\',\''+nombreSeguro+'\',\''+rolSeguro+'\')">&#128065; Ver como</button></span></div>';
+      '<span class="uv">'+
+        (portalUrl ? '<a class="vm-abrir-btn" style="margin-right:8px" href="'+esc(portalUrl)+'" target="_blank" rel="noopener">Abrir su portal →</a>' : '<span class="vm-sinurl" style="margin-right:8px">sin correo en gabi_accesos</span>')+
+        '<button type="button" class="mtb-btn" style="padding:5px 12px;font-size:11.5px" onclick="elegirVerComo(\''+esc(u.agente_id)+'\',\''+nombreSeguro+'\',\''+rolSeguro+'\')">&#128065; Ver como</button>'+
+      '</span></div>';
   }).join("");
 }
 
@@ -1400,7 +1428,7 @@ document.getElementById("verComoBtn").addEventListener("click", abrirVerComo);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="control-maestro.html";
-var PGV_VERSION=9; // v9 - Vista Maestra: gabi_asesor (GABI - Mi proceso) pasa a FIEL. Es la unica pantalla donde "Abrir como" muestra las cifras reales de la persona simulada, no solo su diseno con los datos de quien abre el link. El resto sigue en 'parcial'. // v8 - + panel Fotos: sales@ sube la foto por persona (bucket fotos + portal.fotos_personas), filtro "sin foto todavía"
+var PGV_VERSION=10; // v10 - Boton "Abrir su portal ->" (Por usuario y Vista Maestra): abre index.html?ver_como=<correo>, el portal real de esa persona, no una herramienta suelta. El "Ver como..." de la barra de arriba se renombra a "Previsualizar permisos..." para no confundirlo (sigue haciendo lo mismo: simular la lista de tarjetas con los cambios sin guardar). FIDELIDAD_SIMULACION suma 'index' como fiel. // v9 - Vista Maestra: gabi_asesor (GABI - Mi proceso) pasa a FIEL. Es la unica pantalla donde "Abrir como" muestra las cifras reales de la persona simulada, no solo su diseno con los datos de quien abre el link. El resto sigue en 'parcial'. // v8 - + panel Fotos: sales@ sube la foto por persona (bucket fotos + portal.fotos_personas), filtro "sin foto todavía"
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

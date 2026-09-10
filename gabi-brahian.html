@@ -109,6 +109,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 .al.sev-alta{border-left:5px solid var(--pg-neg)} .al.sev-alta .a-v{color:var(--pg-neg)}
 .al.sev-media{border-left:5px solid var(--pg-warn)} .al.sev-media .a-v{color:#8a6a1d}
 .tag-nofee{background:#FCEEEC;color:#9c3d35} .tag-caida{background:#FBF3E2;color:#8a6a1d} .tag-mixto{background:#EDEFFB;color:#3f4bab}
+.tag-premium{background:#E6F0FA;color:#1f5b8f}
 
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .chip{border:1px solid var(--pg-line);background:#fff;color:var(--pg-muted);border-radius:999px;padding:8px 15px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--pg-font-body)}
@@ -1012,6 +1013,9 @@ function detecta(a){
   if(v>0 && f<EST && mc>=15000 && s/v<0.66)
     out.push({n:a.n,p:'VENDE_MAS_COBRA_MENOS',v:EST-f,u:'bajo el estándar',d:usd(f)+' de fee en '+v+' ventas',
       t:'Movió '+usd(mc)+' en '+v+' ventas y cobró '+usd(f)+' de fee. El estándar son '+usd(EST)+'.'});
+  if(v>0 && f>=2500 && (mc-f)<35000)
+    out.push({n:a.n,p:'COBRA_Y_NO_VENDE',v:35000-(mc-f),u:'de premium le faltan',d:usd(f)+' de fee \u00b7 solo '+usd(mc-f)+' de premium',
+      t:'Cobr\u00f3 '+usd(f)+' de fee y movi\u00f3 '+usd(mc-f)+' de premium en '+v+(v===1?' venta':' ventas')+'. La escala de fee pide las dos cosas: el 30 % necesita $2.500 de fee Y $35.000 de premium. Con este premium la escala se le queda en la base, as\u00ed cobre bien.'});
   if(!a.cam && v===0 && prevV>0)
     out.push({n:a.n,p:'SE_APAGO',v:prev,u:'dejó de entrar',d:'0 ventas · venía de '+usd(prev),
       t:'No registró ventas. El mes anterior había hecho '+usd(prev)+' en '+prevV+' ventas.'});
@@ -1021,9 +1025,10 @@ const TAGS={
  VENDE_SIN_COBRAR:{t:'vende y no cobra',c:'tag-nofee',s:'alta',do:'sentarse a mirar por qué salen sin fee'},
  CAIDA_DE_RITMO:{t:'perdió el ritmo',c:'tag-caida',s:'media',do:'revisar la agenda de la semana'},
  VENDE_MAS_COBRA_MENOS:{t:'volumen sin fee',c:'tag-mixto',s:'media',do:'acordar el fee mínimo por póliza'},
- SE_APAGO:{t:'se apagó',c:'tag-caida',s:'alta',do:'primera conversación de la semana'}
+ SE_APAGO:{t:'se apagó',c:'tag-caida',s:'alta',do:'primera conversación de la semana'},
+ COBRA_Y_NO_VENDE:{t:'cobra y no vende',c:'tag-premium',s:'alta',do:'mirar el tamaño de lo que está cotizando, no el fee'}
 };
-const PRIO={VENDE_SIN_COBRAR:0,SE_APAGO:1,CAIDA_DE_RITMO:2,VENDE_MAS_COBRA_MENOS:3};
+const PRIO={VENDE_SIN_COBRAR:0,COBRA_Y_NO_VENDE:1,SE_APAGO:2,CAIDA_DE_RITMO:3,VENDE_MAS_COBRA_MENOS:4};
 const ALERTAS=A.flatMap(detecta).sort((x,y)=>PRIO[x.p]-PRIO[y.p] || y.v-x.v);
 const cumplen=A.filter(a=>a.fees[iA]>=EST).length, vendieron=A.filter(a=>a.ven[iA]>0).length;
 document.getElementById('p-mes-l').textContent=MESLBL.toLowerCase();
@@ -1208,6 +1213,11 @@ const MANUAL=[
  '$'+M.norte_cabeza.toLocaleString('en-US')+' por persona; en curva, la parte que le toque según su mes.',
  'Llegar pinta verde. Es lo normal, no lo extraordinario.',
  'Reconocer a quien llega y mirar qué hace distinto.'],
+['cobra_no_vende','Cobra y no vende',
+ 'Cobr\u00f3 buen fee pero movi\u00f3 poco premium: el mes se ve bien y no lo es.',
+ 'Del BOS: fee cobrado del mes contra el premium del mes, por persona.',
+ 'Salta cuando el fee llega a $2.500 (la puerta de fee del 30 %) y el premium no llega a $35.000 (la puerta de premium del mismo 30 %). La escala pide las dos cosas.',
+ 'El premium es la puerta y el fee es el multiplicador: sin premium el fee no sube de escal\u00f3n, ni el de la agencia ni el del asesor. Mirar el tama\u00f1o de lo que est\u00e1 cotizando.'],
 ['anillo','El anillo',
  'El avance real: lo que va dividido entre la meta plena.',
  'De la meta mínima y la meta plena de cada quien (o del equipo, sumadas).',
@@ -1532,7 +1542,7 @@ boot();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-brahian.html";
-var PGV_VERSION=11; // v11 - Tablero simple: cinco pestanas de lectura (El mes, Hoy, Alertas, Persona, Ano) + Bitacora + Manual de lectura. Meta minima / Meta plena en toda la pantalla. Anillos y barras con la regla de la casa: avance real contra la meta plena, pista por zonas y tick del deberia ir hoy; el ritmo en palabra. Cero parrafos de explicacion fija fuera del manual. // v9 - Llamadas de hoy por persona (API de RingCentral cada 15 min) y hora de actualizacion. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
+var PGV_VERSION=12; // v12 - Quinta alerta: "cobra y no vende". Es la primera del tablero que mira el PREMIUM: salta cuando el fee del mes llega a $2.500 (la puerta de fee del 30 %) pero el premium no llega a $35.000 (la puerta de premium del mismo 30 %), o sea el mes que se ve bien de fee y deja la escala en la base. Las otras cuatro alertas miraban solo el fee. // v11 - v11 - Tablero simple: cinco pestanas de lectura (El mes, Hoy, Alertas, Persona, Ano) + Bitacora + Manual de lectura. Meta minima / Meta plena en toda la pantalla. Anillos y barras con la regla de la casa: avance real contra la meta plena, pista por zonas y tick del deberia ir hoy; el ritmo en palabra. Cero parrafos de explicacion fija fuera del manual. // v9 - Llamadas de hoy por persona (API de RingCentral cada 15 min) y hora de actualizacion. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

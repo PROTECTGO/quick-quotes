@@ -343,7 +343,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
     <div class="eco" id="eco"></div>
     <div class="fr">
       <div class="fr-nums">
-        <div class="fr-n"><div class="l">Mi meta del mes</div><div class="v" id="h-meta"></div><div class="s">combinada = premium + fee × 10</div></div>
+        <div class="fr-n"><div class="l">Mi meta del mes</div><div class="v" id="h-meta"></div><div class="s" id="s-formula">combinada = premium + fee</div></div>
         <div class="fr-n"><div class="l">Lo que llevo</div><div class="v mint" id="h-comb"></div><div class="s" id="h-comb-s"></div></div>
         <div class="fr-n"><div class="l">Me falta</div><div class="v warn" id="h-falta"></div><div class="s" id="h-falta-s"></div></div>
         <div class="fr-n"><div class="l">Fee cobrado</div><div class="v mint" id="h-fee"></div><div class="s" id="h-fee-s"></div></div>
@@ -362,7 +362,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
         <div class="inc-card full"><h3>Mi meta del mes <span class="st" id="meta-st"></span></h3><div class="why" id="why-meta"></div><div id="meta-bar"></div></div>
         <div class="inc-card"><h3>Turbo · 25 % del fee <span class="st" id="turbo-st"></span></h3><div class="why">Solo este mes. Las tres a la vez:</div><div id="turbo-chk"></div></div>
         <div class="inc-card"><h3>Mi escala de fee</h3><div class="why">El porcentaje del fee cobrado que es tuyo.</div><div class="esc" id="esc-fee"></div><div class="falta" id="esc-fee-s"></div>
-          <h3 style="margin-top:14px">Mi escalón de premium</h3><div class="esc" id="esc-prem"></div><div class="falta" id="esc-prem-s"></div></div>
+          <h3 style="margin-top:14px">Mi escalón de premium</h3><div class="why">Este escalón se mide con <b>premium equivalente</b>: premium + fee × 10. Es otra vara, solo para la comisión — no es tu meta del mes.</div><div class="esc" id="esc-prem"></div><div class="falta" id="esc-prem-s"></div></div>
         <div class="inc-card"><h3>Bonos del mes <span class="st">en pesos</span></h3><div class="why">Máximo dos por persona. Se pagan aparte de la comisión.</div><div id="bonos"></div></div>
         <div class="inc-card"><h3>Fee prometido, no cobrado <span class="st warn">ojo</span></h3><div class="why" id="riesgo"></div>
           <h3 style="margin-top:14px">Mi actividad</h3><div id="act-bloque"></div></div></div></div>
@@ -375,8 +375,8 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 
   <section class="pg-section" id="s-historia">
     <div class="pg-top"><div class="pg-eyebrow">Mi historia</div><h1>¿De dónde vengo?</h1>
-      <div class="pg-sub">Todo desde que entraste, medido como se mide tu meta: <b>combinada = premium + fee × 10</b>. La comisión punteada es "con el plan de hoy": la misma fórmula sobre tus ventas reales, para que veas cómo se mueve tu plata cuando se mueven tus ventas.</div></div>
-    <div class="pg-card"><h2>Mi meta combinada y mi comisión, mes a mes</h2><p class="pg-purpose">Onda verde: tu combinada del mes (premium + fee × 10). <span id="lb-meta-graf"></span> Azul: tu comisión — cuando la verde sube, la azul sube detrás.</p><div class="pg-chart-wrap" style="height:340px"><canvas id="chHist"></canvas></div></div>
+      <div class="pg-sub">Todo desde que entraste, medido como se mide tu meta: <b>combinada = premium + fee</b>. La comisión punteada es "con el plan de hoy": la misma fórmula sobre tus ventas reales, para que veas cómo se mueve tu plata cuando se mueven tus ventas.</div></div>
+    <div class="pg-card"><h2>Mi meta combinada y mi comisión, mes a mes</h2><p class="pg-purpose">Onda verde: tu combinada del mes (premium + fee). <span id="lb-meta-graf"></span> Azul: tu comisión — cuando la verde sube, la azul sube detrás.</p><div class="pg-chart-wrap" style="height:340px"><canvas id="chHist"></canvas></div></div>
     <div class="rec" id="rec"></div>
     <div class="pg-card" style="background:transparent;border:none;box-shadow:none;padding:0"><h2>Lo que me está costando</h2><p class="pg-purpose">Tres patrones tuyos, con la plata que te cuestan. Cada uno trae una sola sugerencia y un botón para volverla tu plan del mes.</p><div id="pats"></div></div>
   </section>
@@ -387,7 +387,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 
     <div class="pg-card">
       <div class="pg-eyebrow" style="margin-bottom:12px">Lo que quiero</div>
-      <div class="x10" style="margin:0 0 14px"><span id="lb-alcancia"></span> Cada venta echa su premium; <b>cada $1 de fee echa $10</b>.</div>
+      <div class="x10" style="margin:0 0 14px"><span id="lb-alcancia"></span> Cada venta echa su premium y su fee. Y <b>cada $1 de fee te sube el escalón de comisión como si fueran $10</b>.</div>
       <div class="sim" style="grid-template-columns:1.4fr 1fr 1fr">
         <label>Qué quiero<input id="m-que" type="text" value="Un carro"></label>
         <label>Cuánto tengo que juntar (USD)<input id="m-juntar" type="number" value="6000" min="0" step="100"></label>
@@ -439,9 +439,11 @@ const MESL = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
 const lbl = ym => MESN[Number(ym.slice(5,7))-1] + (ym.slice(0,4)==='2025' ? ' 25' : '');
 const C = { ink:'#1B2D3A', mint:'#2DBFA3', mintDeep:'#229A82', azul:'#5B6BD6', warn:'#D9A520', neg:'#D5594F', muted:'#6B7D89' };
 let ESCALAS = [[2500,35000,30],[4000,60000,35],[6000,70000,40]], ESCALONES = [[50000,20000,1.25],[70000,25000,1.5]];
-let META = 80000, YM = "", YMP = "", ANIO0 = "", HOYSTR = "";                       /* meta combinada del mes, por asesor */
-const comb = (premium, fee) => premium + fee*10;
-const combMes = r => (r[1] - r[2]) + r[2]*10;   /* de la serie: mc = premium + fee */
+let META = 70000, MI = {}, YM = "", YMP = "", ANIO0 = "", HOYSTR = "";                       /* meta combinada del mes, por asesor */
+/* La META se mide como en toda la casa: premium + fee. El x10 NO desaparece:
+   vive en el bloque de incentivos, donde es verdad (el escalon de comision). */
+const comb = (premium, fee) => premium + fee;
+const combMes = r => r[1];   /* de la serie: r[1] ya es premium + fee */
 const barra = (pct, cls) => '<div class="bar"><i class="' + (cls||'') + '" style="width:' + Math.min(100, Math.max(0, pct)) + '%"></i></div>';
 function comision(premium, fee, turbo){
   const mc = premium + fee*10; let e = 1.0, s = turbo ? 25 : 20;
@@ -481,7 +483,7 @@ function calcP(){ P = (() => {
 
 /* ================= HOY ================= */
 function hoy(){
-  const m = A.meta, premMes = m.mc - m.fee, cMes = comb(premMes, m.fee);
+  const m = A.meta, premMes = m.mc - m.fee, cMes = m.mc;
   const pct = Math.round(cMes / META * 100), arc = Math.min(100, pct);
   const falta = Math.max(0, META - cMes), delMes = m.hab / m.habMes;
   const ventasFalta = P.pXV ? Math.max(1, Math.ceil(falta / comb(P.pXV, P.feeObjetivo))) : 1;
@@ -491,7 +493,9 @@ function hoy(){
   $('h-comb-s').textContent = m.ventas + (m.ventas === 1 ? ' venta · ' : ' ventas · ') + usd(premMes) + ' de premium + ' + usd(m.fee) + ' de fee';
   $('h-falta').textContent = usd(falta);
   $('h-fee').textContent = usd(m.fee);
-  $('h-fee-s').innerHTML = 'vale <b style="color:#fff">' + usd(m.fee*10) + '</b> para tu meta';
+  $('h-fee-s').innerHTML = m.fee > 0
+    ? 'cuenta como <b style="color:#fff">' + usd(m.fee*10) + '</b> para tu escal\u00f3n'
+    : 'a\u00fan sin cobrar este mes';
   $('h-falta-s').innerHTML = falta ? 'o <b style="color:#fff">' + usd(feeFalta) + '</b> de fee' : '¡lo lograste!';
   const alDia = Math.round(META * delMes), marca = Math.min(100, Math.round(delMes*100));
   $('h-linea').innerHTML = falta === 0
@@ -500,7 +504,9 @@ function hoy(){
       ? '<b>Vas adelante.</b> Te faltan ' + usd(falta) + ': ' + ventasFalta + (ventasFalta===1?' venta':' ventas') + ' o ' + usd(feeFalta) + ' de fee.'
       : '<b>Te faltan ' + usd(falta) + '.</b> Son ' + ventasFalta + (ventasFalta===1?' venta':' ventas') + ', o ' + usd(feeFalta) + ' de fee cobrado.');
   $('h-linea').className = 'mp-linea ' + (falta === 0 || cMes >= alDia ? 'mint' : '');
-  $('x10').innerHTML = '<b>Cada $1 de fee vale $10 para tu meta.</b> Tus ' + usd(m.fee) + ' de fee valen <b>' + usd(m.fee*10) + '</b> de los ' + usd(cMes) + ' que llevas.';
+  $('x10').innerHTML = m.fee > 0
+    ? '<b>Cada $1 de fee vale $10 para tu escal\u00f3n de comisi\u00f3n.</b> Tus ' + usd(m.fee) + ' de fee cuentan como <b>' + usd(m.fee*10) + '</b> para el escal\u00f3n. Para la meta del mes valen ' + usd(m.fee) + '.'
+    : '<b>Cada $1 de fee vale $10 para tu escal\u00f3n de comisi\u00f3n.</b> Todav\u00eda no has cobrado fee este mes.';
   $('vig').textContent = 'Plan de ' + A.mesTxt + (A.turbo.vigencia ? ' · vigente hasta el ' + Number(A.turbo.vigencia.slice(8)) : '');
   $('meta-st').textContent = pct >= 100 ? 'Cumplida' : pct + ' %'; $('meta-st').className = 'st ' + (pct>=100?'on':(cMes>=alDia?'warn':'off'));
   $('meta-bar').innerHTML = '<div class="bar" style="height:16px"><i class="' + (pct>=100?'':(cMes>=alDia?'':'w')) + '" style="width:' + Math.min(100,pct) + '%"></i><u style="position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--pg-ink);opacity:.5;left:' + marca + '%"></u></div>'
@@ -537,7 +543,7 @@ function hoy(){
   $('esc-prem').innerHTML = ['1,0 %','1,25 %','1,5 %'].map((t,i) => { const val = [1,1.25,1.5][i];
     return '<div class="' + (cur.e===val?'here':(nextP && val===nextP[2]?'next':'')) + '">' + t + '</div>'; }).join('');
   $('esc-prem-s').innerHTML = nextP
-    ? barra(Math.round((prem+fee*10)/nextP[0]*100), 'a') + '<div class="bar-l"><span><b>' + usd(prem+fee*10) + '</b></span><span>' + usd(nextP[0]) + '</span></div>Para el <b>' + nextP[2] + ' %</b>: <b>' + usd(Math.max(0, nextP[0]-(prem+fee*10))) + '</b> más de combinada.'
+    ? barra(Math.round((prem+fee*10)/nextP[0]*100), 'a') + '<div class="bar-l"><span><b>' + usd(prem+fee*10) + '</b></span><span>' + usd(nextP[0]) + '</span></div>Para el <b>' + nextP[2] + ' %</b>: <b>' + usd(Math.max(0, nextP[0]-(prem+fee*10))) + '</b> más de premium equivalente (cada $1 de fee cuenta como $10).'
     : 'Estás en el más alto: 1,5 %.';
   let racha2 = 0; A.serie.slice().reverse().some(r => { if (r[2] > 0) { racha2++; return false; } return true; });
   if (m.fee > 0) racha2++;
@@ -591,7 +597,7 @@ function historia(){ if (HECHA_HIST) return; HECHA_HIST = true;
   const com = S.map(r => { const c = comDeMes(r[0]); return c == null ? null : Math.round(c); });
   const comReal = S.map(r => { const l = A.liq[r[0]]; return l && l[3] != null ? l[3] : null; });
   new Chart($('chHist'), { type:'line', data:{ labels, datasets:[
-    { label:'Mi combinada (premium + fee × 10)', data:venta, borderColor:C.mint, backgroundColor:'rgba(45,191,163,.12)', fill:true, tension:.35, pointRadius:4, pointBackgroundColor:'#fff', pointBorderWidth:2, yAxisID:'y' },
+    { label:'Mi combinada (premium + fee)', data:venta, borderColor:C.mint, backgroundColor:'rgba(45,191,163,.12)', fill:true, tension:.35, pointRadius:4, pointBackgroundColor:'#fff', pointBorderWidth:2, yAxisID:'y' },
     { label:'Mi meta: ' + usd(META), data:venta.map(()=>META), borderColor:C.warn, borderDash:[6,4], pointRadius:0, borderWidth:2, yAxisID:'y' },
     { label:'Mi comisión (punteada = con el plan de hoy)', data:com, borderColor:C.azul, borderDash:[4,4], tension:.35, pointRadius:3, yAxisID:'y2' },
     { label:'Mi comisión liquidada', data:comReal, borderColor:C.azul, backgroundColor:C.azul, tension:.35, pointRadius:5, borderWidth:2.5, yAxisID:'y2' }
@@ -872,7 +878,8 @@ function fechaLarga(iso){
 
 function prepararDatos(d){
   A = d;
-  META  = Number(A.meta_combinada) || 80000;
+  META  = Number(A.meta_combinada) || 70000;
+  MI    = A.meta_info || {};
   YM    = A.enCurso[0];
   ANIO0 = YM.slice(0,4) + '-01';
   const y = Number(YM.slice(0,4)), mm = Number(YM.slice(5,7));
@@ -895,7 +902,11 @@ function pintarCabecera(){
   const li  = document.getElementById('lb-inc');    if (li)  li.textContent = 'Cambian cada mes. Estos son los de ' + A.mesTxt + ': cuánto llevas y cuánto te falta para cada uno.';
   const lt  = document.getElementById('lb-top');    if (lt)  lt.textContent = 'Los mejores del equipo';
   const wm  = document.getElementById('why-meta');
-  if (wm) wm.textContent = usd(META) + ' combinada: premium + fee \u00d7 10. Es la meta de la casa para cada asesor.';
+  if (wm) wm.innerHTML = usd(META) + ' de combinada: premium + fee. ' + (MI.nivel
+    ? MI.nivel + (MI.sube_a ? ' \u2014 sube a <b>' + usd(MI.sube_a) + '</b> en ' + MI.sube_en + '.' : '.')
+    : 'Es la meta de la casa para cada asesor.');
+  const sf = document.getElementById('s-formula');
+  if (sf && MI.nivel && MI.factor < 1) sf.textContent = MI.nivel.toLowerCase();
   const lg  = document.getElementById('lb-meta-graf');
   if (lg) lg.textContent = 'L\u00ednea \u00e1mbar punteada: la meta de ' + usd(META) + '.';
   const la  = document.getElementById('lb-alcancia');
@@ -968,7 +979,7 @@ document.addEventListener('DOMContentLoaded', boot);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-asesor.html";
-var PGV_VERSION=8; // v8 - "Ver como" real: con ?ver_como=<correo> en la URL, y SOLO si la sesion que abre el link es director o socio de verdad (gabi_accesos), la pantalla pide mi_proceso(<correo>) y muestra las cifras REALES de esa persona, con franja fija y todo lo que escribe apagado (plan del mes y marcar chispazo visto). Sin el parametro, o para cualquier otra sesion, nada cambia. // v7 - Llamadas en tiempo casi real (API de RingCentral cada 15 min): hoy, ayer, mensajes y hora de actualizacion. // v6 - Bloque de llamadas (RingCentral por correo diario -> public.actividad_llamadas_dia): total del mes, salientes, contestadas, minutos, ayer y la tira de dias. // v5 - Un positivo pasa a ser el negocio que ENTRA a la etapa Audit / Quote (mandado a cotizar), no el creado; se muestra aparte cuantos negocios monto. // v4 - Bloque Mi actividad con el estandar de un positivo por dia habil: barra del mes, la marca de donde deberia ir hoy, la tira de los ultimos dias habiles y el promedio del equipo. Sale de public.actividad_hubspot_dia. // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
+var PGV_VERSION=9; // v9 - Una sola meta y una sola vara. La meta del mes ya no es 70.000 fijo para todos: sale de v_meta_por_agente y es la MISMA que ve el lider en el tablero del equipo, con su rampa (50% los primeros 3 meses en operacion, 75% del 4 al 6, plena despues) y diciendo a cuanto sube y cuando. Y "combinada" pasa a significar lo mismo en toda la casa: premium + fee. El x10 no se borra: se queda en el bloque de incentivos, donde es verdad, porque es la vara del ESCALON DE COMISION, no la de la meta. El piso de direccion sigue sin aparecer en esta pantalla, ni en el texto ni en los comentarios. // v8 - "Ver como" real: con ?ver_como=<correo> en la URL, y SOLO si la sesion que abre el link es director o socio de verdad (gabi_accesos), la pantalla pide mi_proceso(<correo>) y muestra las cifras REALES de esa persona, con franja fija y todo lo que escribe apagado (plan del mes y marcar chispazo visto). Sin el parametro, o para cualquier otra sesion, nada cambia. // v7 - Llamadas en tiempo casi real (API de RingCentral cada 15 min): hoy, ayer, mensajes y hora de actualizacion. // v6 - Bloque de llamadas (RingCentral por correo diario -> public.actividad_llamadas_dia): total del mes, salientes, contestadas, minutos, ayer y la tira de dias. // v5 - Un positivo pasa a ser el negocio que ENTRA a la etapa Audit / Quote (mandado a cotizar), no el creado; se muestra aparte cuantos negocios monto. // v4 - Bloque Mi actividad con el estandar de un positivo por dia habil: barra del mes, la marca de donde deberia ir hoy, la tira de los ultimos dias habiles y el promedio del equipo. Sale de public.actividad_hubspot_dia. // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

@@ -122,7 +122,16 @@
     });
 
     document.body.appendChild(b);
-    requestAnimationFrame(function () { b.classList.add('pgs-in'); });
+    // Entrada: rAF no siempre corre si la pestana arranca oculta, asi que va con
+    // reloj de respaldo y, si aun asi no entra, se pinta visible a mano. La sombra
+    // NUNCA puede quedarse invisible por culpa de la animacion.
+    function entrar() {
+      b.classList.add('pgs-in');
+      b.style.opacity = '1';
+      b.style.transform = 'translateY(0)';
+    }
+    try { requestAnimationFrame(entrar); } catch (e) { entrar(); }
+    setTimeout(entrar, 120);
 
     var antes = anterior();
     if (antes !== null && Number(d.mc) > antes) {

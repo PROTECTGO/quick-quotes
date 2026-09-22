@@ -116,7 +116,7 @@
     <h1>Contraseña actualizada</h1>
     <p class="lead">Ya puedes entrar con tu contraseña nueva. Te llevamos al portal en unos segundos…</p>
     <a class="btn" style="display:block;text-align:center;text-decoration:none"
-       href="https://protectgo.github.io/quick-quotes/">Ir al portal ahora</a>
+       href="./">Ir al portal ahora</a>
   </div>
 
   <!-- ============ 4. ENLACE VENCIDO ============ -->
@@ -162,8 +162,8 @@ var VIENE_DE_ENLACE = (HASH_INICIAL.indexOf("type=recovery") >= 0 ||
 /* ------------------------------------------------------------------ config */
 var SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
 var SUPABASE_KEY = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
-var PORTAL       = "https://protectgo.github.io/quick-quotes/";
-var REDIRECT_URL = "https://protectgo.github.io/quick-quotes/recuperar.html";
+var PORTAL       = "./";
+var REDIRECT_URL = "https://protectgo.github.io/protect-index/recuperar.html";
 var DOMINIO      = "@protectgoservices.com";
 
 var MSG_OK_ENVIO = "Si ese correo tiene cuenta, ya te llegó un enlace para crear tu " +
@@ -439,7 +439,7 @@ if(document.readyState === "loading"){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="recuperar.html";
-var PGV_VERSION="2.0.0";
+var PGV_VERSION="2.1.0";
 /* Las demás páginas guardan la versión como número entero; aquí la pidieron
    como texto "1.0.0", así que comparamos por partes (1.0.1 > 1.0.0) y también
    funciona si en app_versiones queda un entero simple.

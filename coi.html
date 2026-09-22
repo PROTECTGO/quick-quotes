@@ -92,9 +92,9 @@
 </style>
 
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
-<script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
-<script src="https://protectgo.github.io/quick-quotes/pg-sombra.js"></script>
-<script defer src="https://protectgo.github.io/quick-quotes/pg-auth.js"></script>
+<script src="pg-novedades.js"></script>
+<script src="pg-sombra.js"></script>
+<script defer src="pg-auth.js"></script>
 </head>
 <body>
 
@@ -304,7 +304,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="coi.html";
-var PGV_VERSION=4;
+var PGV_VERSION=5; // v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

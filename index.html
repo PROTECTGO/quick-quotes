@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portal · ProtectGo</title>
+<title>Protect Index · ProtectGo</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
@@ -431,14 +431,14 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 </style>
 
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
-<script defer src="https://protectgo.github.io/quick-quotes/pg-auth.js"></script>
-<script defer src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
+<script defer src="pg-auth.js"></script>
+<script defer src="pg-novedades.js"></script>
 </head>
 <body>
 
 <div id="app">
 <header class="pg-bar">
-<span class="logo">Protect<i>Go</i> · Portal</span>
+<span class="logo">Protect <i>Index</i></span>
 <span class="sp"></span>
 <span class="user" id="pgUser"></span>
 <button class="pg-b" data-act="logout">Salir</button>
@@ -2213,7 +2213,7 @@ document.addEventListener("visibilitychange",function(){ if(!document.hidden) se
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
-var PGV_VERSION=21; // v21 - Amazon Relay entra al portal: la tarjeta apunta a amazon-relay/ (ruta relativa, mismo sitio) en vez del repo aparte de GitHub. El archivo llego con su historia via git subtree, identico al original (sha256 971d0582...b33a). Falta que widgets_registro deje de mandar la URL absoluta de ese widget. // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. El desglose lo ve tambien la direccion (hero de equipo) y dice lo que el fee APORTA (fee x10 ya multiplicado), no el fee suelto: las dos cifras de la linea chica suman exacto el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
+var PGV_VERSION=22; // v22 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v21 - Amazon Relay entra al portal: la tarjeta apunta a amazon-relay/ (ruta relativa, mismo sitio) en vez del repo aparte de GitHub. El archivo llego con su historia via git subtree, identico al original (sha256 971d0582...b33a). Falta que widgets_registro deje de mandar la URL absoluta de ese widget. // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. El desglose lo ve tambien la direccion (hero de equipo) y dice lo que el fee APORTA (fee x10 ya multiplicado), no el fee suelto: las dos cifras de la linea chica suman exacto el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

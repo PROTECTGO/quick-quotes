@@ -6,7 +6,7 @@
    que ya existe ni su lógica.
 
    Cómo se usa: en el <head> de cada página, SIN defer ni async:
-     <script src="https://protectgo.github.io/quick-quotes/pg-auth.js"></script>
+     <script src="pg-auth.js"></script>
 
    REGLA DURA: este archivo se ejecuta ANTES de que exista <body>, así que
    aquí arriba NO se puede tocar el DOM. Todo el trabajo arranca en
@@ -18,7 +18,7 @@
   /* ---------------------------------------------------------------- config */
   var SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
   var SUPABASE_KEY = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
-  var REDIRECT_URL = "https://protectgo.github.io/quick-quotes/recuperar.html";
+  var REDIRECT_URL = "https://protectgo.github.io/protect-index/recuperar.html";
   var DOMINIO      = "@protectgoservices.com";
   var SOPORTE      = "sales@protectgoservices.com";
 

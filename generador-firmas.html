@@ -50,8 +50,8 @@
 </style>
 
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
-<script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
-<script src="https://protectgo.github.io/quick-quotes/pg-sombra.js"></script>
+<script src="pg-novedades.js"></script>
+<script src="pg-sombra.js"></script>
 </head>
 <body>
 <a href="index.html" id="pgVolver" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
@@ -170,7 +170,7 @@ render();
 (function(){
   var SUPABASE_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
   var SUPABASE_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
-  var BASE="https://protectgo.github.io/quick-quotes/fotos/";
+  var BASE="https://protectgo.github.io/protect-index/fotos/";
   var C_EN="GO Sales Executive", C_ES="Especialista de ventas";
   var PROFILES={
       "german.ochoa@protectgoservices.com":{n:"German Ochoa",en:"GO Sales Executive",es:"Especialista de ventas",f:"german.ochoa.jpg",fj:1},
@@ -258,7 +258,7 @@ render();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="generador-firmas.html";
-var PGV_VERSION=11; // foto ya no se sube aquí: se asigna desde Control Maestro y se carga sola desde portal.fotos_personas
+var PGV_VERSION=12; // v12 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // foto ya no se sube aquí: se asigna desde Control Maestro y se carga sola desde portal.fotos_personas
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

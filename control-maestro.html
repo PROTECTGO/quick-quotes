@@ -289,7 +289,7 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
 .vm-ver-como-banner{position:fixed;top:0;left:0;right:0;z-index:99998;background:#1B2D3A;color:#fff;font:600 13px/1.4 Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 </style>
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
-<script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
+<script src="pg-novedades.js"></script>
 </head>
 <body>
 
@@ -1428,7 +1428,7 @@ document.getElementById("verComoBtn").addEventListener("click", abrirVerComo);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="control-maestro.html";
-var PGV_VERSION=11; // v11 - Amazon Relay dejo de ser otro repo: ahora vive en amazon-relay/index.html dentro del portal. Se corrige la nota de FIDELIDAD_SIMULACION (sigue en 'no_aplica': no se instrumento "Abrir como", pero ya no es por vivir afuera). // v10 - Boton "Abrir su portal ->" (Por usuario y Vista Maestra): abre index.html?ver_como=<correo>, el portal real de esa persona, no una herramienta suelta. El "Ver como..." de la barra de arriba se renombra a "Previsualizar permisos..." para no confundirlo (sigue haciendo lo mismo: simular la lista de tarjetas con los cambios sin guardar). FIDELIDAD_SIMULACION suma 'index' como fiel. // v9 - Vista Maestra: gabi_asesor (GABI - Mi proceso) pasa a FIEL. Es la unica pantalla donde "Abrir como" muestra las cifras reales de la persona simulada, no solo su diseno con los datos de quien abre el link. El resto sigue en 'parcial'. // v8 - + panel Fotos: sales@ sube la foto por persona (bucket fotos + portal.fotos_personas), filtro "sin foto todavía"
+var PGV_VERSION=12; // v12 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v11 - Amazon Relay dejo de ser otro repo: ahora vive en amazon-relay/index.html dentro del portal. Se corrige la nota de FIDELIDAD_SIMULACION (sigue en 'no_aplica': no se instrumento "Abrir como", pero ya no es por vivir afuera). // v10 - Boton "Abrir su portal ->" (Por usuario y Vista Maestra): abre index.html?ver_como=<correo>, el portal real de esa persona, no una herramienta suelta. El "Ver como..." de la barra de arriba se renombra a "Previsualizar permisos..." para no confundirlo (sigue haciendo lo mismo: simular la lista de tarjetas con los cambios sin guardar). FIDELIDAD_SIMULACION suma 'index' como fiel. // v9 - Vista Maestra: gabi_asesor (GABI - Mi proceso) pasa a FIEL. Es la unica pantalla donde "Abrir como" muestra las cifras reales de la persona simulada, no solo su diseno con los datos de quien abre el link. El resto sigue en 'parcial'. // v8 - + panel Fotos: sales@ sube la foto por persona (bucket fotos + portal.fotos_personas), filtro "sin foto todavía"
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;

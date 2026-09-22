@@ -447,7 +447,7 @@ body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--f-body);-w
 </style>
 </head>
 <body>
-<a class="volver hidden" id="volverPortal" href="https://protectgo.github.io/quick-quotes/">← Volver al portal</a>
+<a class="volver hidden" id="volverPortal" href="../">← Volver al portal</a>
 
 <!-- LOGIN -->
 <div id="loginView" class="login-wrap">
@@ -738,7 +738,7 @@ const SB_URL='https://hivpqsepwsfmafamxkzy.supabase.co';
 const SB_KEY='sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
 const sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:'portal'}});
 /* ===== v6 ===== */
-const PGV_VERSION=7;
+const PGV_VERSION=8; // v8 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
 let CARGADO_EN=Date.now();
 let RENT=[], RENOV=[], RENOV_RES=null, CONFIG={}, TRM=4000, ERRORES={}, ES_DIR=false;
 let MES_SEL=new Date().getMonth();

@@ -26,7 +26,9 @@
 
   var URL_SB   = 'https://hivpqsepwsfmafamxkzy.supabase.co';
   var KEY_SB   = 'sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
-  var DESTINO  = 'https://protectgo.github.io/quick-quotes/gabi-asesor.html';
+  /* Relativa a la PAGINA que carga este script, no al script.
+     Todas las pantallas que lo usan viven en la raiz del sitio. */
+  var DESTINO  = 'gabi-asesor.html';
   var CACHE_MS = 10 * 60 * 1000;          // 10 minutos: se llama en cada pantalla
   var LLAVE    = 'pgSombra.v1';
 

@@ -139,10 +139,10 @@
 </style>
 
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
-<script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
-<script src="https://protectgo.github.io/quick-quotes/pg-sombra.js"></script>
+<script src="pg-novedades.js"></script>
+<script src="pg-sombra.js"></script>
 <script>window.addEventListener('DOMContentLoaded',function(){ if(window.pgNovedadesAuto) pgNovedadesAuto('rrhh'); });</script>
-<script defer src="https://protectgo.github.io/quick-quotes/pg-auth.js"></script>
+<script defer src="pg-auth.js"></script>
 </head>
 <body>
 
@@ -1717,7 +1717,7 @@ document.addEventListener('click',function(e){
     return;
   }
   if(e.target.closest('#btnPedirDato')){
-    var htmlPedir='<img src="https://protectgo.github.io/quick-quotes/insignias/b-amarillo.png" width="520" style="display:block;border:0;max-width:100%"><p>'+esc(pedirDatoTexto)+'</p>';
+    var htmlPedir='<img src="https://protectgo.github.io/protect-index/insignias/b-amarillo.png" width="520" style="display:block;border:0;max-width:100%"><p>'+esc(pedirDatoTexto)+'</p>';
     copyHTML(htmlPedir,function(ok){
       toast(ok?'Sello copiado — pégalo en tu respuesta de Gmail':'No se pudo copiar — intenta de nuevo');
     });
@@ -1806,7 +1806,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="rrhh-permisos.html";
-var PGV_VERSION=4;
+var PGV_VERSION=5; // v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');

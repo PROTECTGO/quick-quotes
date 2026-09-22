@@ -4,7 +4,7 @@
  * Archivo COMPARTIDO Y DE ALTO ALCANCE. Se carga en el <head> de 13 páginas
  * SIN defer/async:
  *
- *     <script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
+ *     <script src="pg-novedades.js"></script>
  *
  * Como se ejecuta antes de que exista <body>, este archivo NO toca el DOM en el
  * momento de la definición. Todo acceso al DOM ocurre dentro de funciones que
@@ -91,7 +91,9 @@
   var SEG_MINIMO       = 3;       // piso de lectura por pantalla (Andrés bajó el default a 5 s)
   var SEG_POR_DEFECTO  = 90;      // si la novedad no trae segundos_lectura
 
-  var URL_MURO = 'https://protectgo.github.io/quick-quotes/index.html#muro=';
+  /* Relativa a la PAGINA que carga este script, no al script.
+     Todas las pantallas que lo usan viven en la raiz del sitio. */
+  var URL_MURO = 'index.html#muro=';
 
   /* Reacciones fijas (decisión de Andrés, §1.5). Aquí el emoji ES CONTENIDO,
      no icono de interfaz: por eso está permitido por el estándar visual. */
